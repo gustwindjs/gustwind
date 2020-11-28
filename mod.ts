@@ -2,7 +2,7 @@ import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
 
 type Component = {
   element: string; // TODO: Only valid DOM elements
-  children?: string;
+  children?: string | Component[];
   class?: string;
 };
 type Meta = Record<string, string>;
@@ -25,8 +25,19 @@ async function serve(port: number) {
 
   const document: Component = {
     element: "flex",
-    class: "bg-red-200 p-2",
-    children: "Hello world",
+    class: "m-4",
+    children: [
+      {
+        element: "box",
+        class: "bg-blue-200 p-2",
+        children: "Hello",
+      },
+      {
+        element: "box",
+        class: "bg-yellow-200 p-2",
+        children: "world",
+      },
+    ],
   };
 
   app.use((context) => {
@@ -49,13 +60,15 @@ async function serve(port: number) {
   await app.listen({ port });
 }
 
-function render(component: Component) {
+function render(component: Component): string {
   const foundComponent = components[component.element];
   const element = foundComponent ? foundComponent.element : component.element;
 
-  return `<${element} class="${
-    component.class ? ow(component.class) : ""
-  }">${component.children}</${element}>`;
+  return `<${element} class="${component.class ? ow(component.class) : ""}">${
+    Array.isArray(component.children)
+      ? component.children.map(render).join("")
+      : component.children
+  }</${element}>`;
 }
 
 function htmlTemplate(
