@@ -1,5 +1,16 @@
 import { Application } from "./deps.ts";
 
+type Component = {
+  element: string; // TODO: Only valid DOM elements
+  children: string;
+};
+type Meta = Record<string, string>;
+
+const box: Component = {
+  element: "div",
+  children: "hello world",
+};
+
 async function serve(port: number) {
   const app = new Application();
 
@@ -8,14 +19,16 @@ async function serve(port: number) {
   app.use((context) => {
     context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
     context.response.body = new TextEncoder().encode(
-      htmlTemplate({ title: "Gustwind", body: "Hello world" }),
+      htmlTemplate({ title: "Gustwind", body: render(box) }),
     );
   });
 
   await app.listen({ port });
 }
 
-type Meta = Record<string, string>;
+function render(component: Component) {
+  return `<${component.element}>${component.children}</${component.element}>`;
+}
 
 function htmlTemplate(
   { title, meta, head, body }: {
