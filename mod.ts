@@ -1,9 +1,11 @@
 import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
 
+type Props = Record<string, string>;
 type Component = {
   element: string; // TODO: Only valid DOM elements
   children?: string | Component[];
-  class?: string;
+  class?: string | ((props?: Props) => string);
+  props?: Props;
 };
 type Meta = Record<string, string>;
 
@@ -13,7 +15,8 @@ const box: Component = {
 
 const flex: Component = {
   element: "box",
-  class: "flex", // TODO: How to model direction logic?
+  class: (props) =>
+    `flex flex-${props?.direction === "column" ? "col" : "row"}`,
 };
 
 const components: Record<string, Component> = { box, flex };
@@ -26,6 +29,9 @@ async function serve(port: number) {
   const document: Component = {
     element: "flex",
     class: "m-4",
+    props: {
+      direction: "row",
+    },
     children: [
       {
         element: "box",
@@ -64,11 +70,21 @@ function render(component: Component): string {
   const foundComponent = components[component.element];
   const element = foundComponent ? foundComponent.element : component.element;
 
-  return `<${element} class="${component.class ? ow(component.class) : ""}">${
+  return `<${element} class="${
+    getClass(foundComponent.class, component.props)
+  } ${getClass(component.class, component.props)}">${
     Array.isArray(component.children)
       ? component.children.map(render).join("")
       : component.children
   }</${element}>`;
+}
+
+function getClass(kls: Component["class"], props: Component["props"]) {
+  if (typeof kls === "function") {
+    return ow(kls(props));
+  }
+
+  return kls ? ow(kls) : "";
 }
 
 function htmlTemplate(
