@@ -1,4 +1,4 @@
-import { Application } from "./deps.ts";
+import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
 
 type Component = {
   element: string; // TODO: Only valid DOM elements
@@ -17,24 +17,35 @@ async function serve(port: number) {
   console.log(`Serving at ${port}`);
 
   app.use((context) => {
-    context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
-    context.response.body = new TextEncoder().encode(
-      htmlTemplate({ title: "Gustwind", body: render(box) }),
-    );
+    try {
+      const styleInjector = getStyleInjector();
+      const body = render(box);
+      const styleTag = getStyleTag(styleInjector);
+
+      context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
+      context.response.body = new TextEncoder().encode(
+        htmlTemplate({ title: "Gustwind", head: styleTag, body }),
+      );
+    } catch (err) {
+      console.error(err);
+
+      context.response.body = new TextEncoder().encode(err.stack);
+    }
   });
 
   await app.listen({ port });
 }
 
 function render(component: Component) {
-  return `<${component.element}>${component.children}</${component.element}>`;
+  return `<${component.element} class="${
+    ow("bg-red-200 p-2")
+  }">${component.children}</${component.element}>`;
 }
 
 function htmlTemplate(
   { title, meta, head, body }: {
     title: string;
     meta?: Meta;
-    styleTag?: string;
     head?: string;
     body?: string;
   },
