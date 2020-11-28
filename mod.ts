@@ -2,7 +2,7 @@ import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
 
 type Props = Record<string, string>;
 type Component = {
-  element: string; // TODO: Only valid DOM elements
+  element: string; // TODO: Only valid DOM elements and components
   children?: string | Component[];
   class?: string | ((props?: Props) => string);
   props?: Props;
