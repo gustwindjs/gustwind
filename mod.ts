@@ -51,7 +51,8 @@ async function serve(port: number) {
   app.use((context) => {
     try {
       const styleInjector = getStyleInjector();
-      const body = renderComponent(document);
+      const body = renderComponent(transformToExplorer(document)) +
+        renderComponent(document);
       const styleTag = getStyleTag(styleInjector);
 
       context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
@@ -68,13 +69,34 @@ async function serve(port: number) {
   await app.listen({ port });
 }
 
+function transformToExplorer(component: Component): Component {
+  const childrenWrapper: Component = {
+    element: "ul",
+    children: Array.isArray(component.children)
+      ? component.children.map((c) => ({
+        element: "li",
+        children: [transformToExplorer(c)],
+      }))
+      : component.children,
+  };
+
+  return {
+    element: "box",
+    children: [{
+      element: "box",
+      children: component.element,
+    }, childrenWrapper],
+  };
+}
+
 function renderComponent(component: Component): string {
   const foundComponent = components[component.element];
   const element = foundComponent ? foundComponent.element : component.element;
 
-  return `<${element} class="${
-    getClass(foundComponent.class, component.props)
-  } ${getClass(component.class, component.props)}">${
+  return `<${element} class="${foundComponent &&
+    getClass(foundComponent.class, component.props)} ${
+    getClass(component.class, component.props)
+  }">${
     Array.isArray(component.children)
       ? component.children.map(renderComponent).join("")
       : component.children
