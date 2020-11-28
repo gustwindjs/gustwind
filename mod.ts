@@ -26,6 +26,8 @@ async function serve(port: number) {
 
   console.log(`Serving at ${port}`);
 
+  // TODO: Separate this to another file and let it be adjustable through
+  // the browser
   const document: Component = {
     element: "flex",
     class: "m-4",
