@@ -2,24 +2,37 @@ import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
 
 type Component = {
   element: string; // TODO: Only valid DOM elements
-  children: string;
+  children?: string;
+  class?: string;
 };
 type Meta = Record<string, string>;
 
 const box: Component = {
   element: "div",
-  children: "hello world",
 };
+
+const flex: Component = {
+  element: "box",
+  class: "flex", // TODO: How to model direction logic?
+};
+
+const components: Record<string, Component> = { box, flex };
 
 async function serve(port: number) {
   const app = new Application();
 
   console.log(`Serving at ${port}`);
 
+  const document: Component = {
+    element: "flex",
+    class: "bg-red-200 p-2",
+    children: "Hello world",
+  };
+
   app.use((context) => {
     try {
       const styleInjector = getStyleInjector();
-      const body = render(box);
+      const body = render(document);
       const styleTag = getStyleTag(styleInjector);
 
       context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
@@ -37,9 +50,12 @@ async function serve(port: number) {
 }
 
 function render(component: Component) {
-  return `<${component.element} class="${
-    ow("bg-red-200 p-2")
-  }">${component.children}</${component.element}>`;
+  const foundComponent = components[component.element];
+  const element = foundComponent ? foundComponent.element : component.element;
+
+  return `<${element} class="${
+    component.class ? ow(component.class) : ""
+  }">${component.children}</${element}>`;
 }
 
 function htmlTemplate(
