@@ -38,11 +38,17 @@ async function serve(port: number) {
   app.use((context) => {
     try {
       const styleInjector = getStyleInjector();
-      const body = renderComponent(transformToExplorer(document)) +
-        renderComponent(document) + renderComponent({
-          element: "div",
-          children: siteConfiguration,
-        });
+      const body = renderComponent({
+        element: "main",
+        children: [
+          transformToExplorer(document),
+          document,
+          {
+            element: "div",
+            children: siteConfiguration,
+          },
+        ],
+      });
       const styleTag = getStyleTag(styleInjector);
 
       context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
