@@ -4,16 +4,29 @@
   "props": {
     "direction": "row"
   },
+  "attributes": {
+    "x-state": "false"
+  },
   "children": [
     {
       "element": "box",
       "class": "bg-blue-200 p-2",
-      "children": "Hello"
+      "children": ["Value:", {
+        "element": "box",
+        "as": "span",
+        "attributes": {
+          "x": "state"
+        }
+      }]
     },
     {
       "element": "box",
+      "as": "button",
       "class": "bg-yellow-200 p-2",
-      "children": "world"
+      "children": "Change value",
+      "attributes": {
+        "onclick": "setState(v => !v)"
+      }
     }
   ]
 }

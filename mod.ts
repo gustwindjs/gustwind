@@ -9,9 +9,11 @@ import {
 type Props = Record<string, string>;
 type Component = {
   element: string; // TODO: Only valid DOM elements and components
+  as?: string; // TODO: Only valid DOM elements
   children?: string | Component[];
   class?: string | ((props?: Props) => string);
   props?: Props;
+  attributes?: Record<string, string>;
 };
 type Meta = Record<string, string>;
 
@@ -107,6 +109,7 @@ function getClass(kls: Component["class"], props: Component["props"]) {
   return kls ? ow(kls) : "";
 }
 
+// TODO: Extract script + link bits (too specific)
 function htmlTemplate(
   { title, meta, head, body }: {
     title: string;
@@ -119,6 +122,7 @@ function htmlTemplate(
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${title || ""}</title>
+    <script type="text/javascript" src="https://unpkg.com/sidewind@3.2.1/dist/sidewind.umd.production.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.0.1/dist/base.min.css" />
     ${generateMeta(meta)}
     ${head || ""}
