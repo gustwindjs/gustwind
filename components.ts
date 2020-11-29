@@ -20,6 +20,53 @@ const codeContainer: Component = {
   }),
 };
 
+const codeEditor: Component = {
+  element: "box",
+  class: "rounded-t-lg overflow-x-auto overflow-y-hidden",
+  children: [
+    {
+      element: "box",
+      children: [
+        {
+          element: "box",
+          as: "span",
+          children: "Editor",
+        },
+      ],
+    },
+    {
+      element: "box",
+      class: "inline-block font-mono relative",
+      children: [
+        {
+          element: "box",
+          class: "mr-16 pr-16 w-full overflow-hidden",
+          attributes: (props) => ({
+            x: `Prism.highlight(${props?.parent}.${props
+              ?.value} || '', Prism.languages.tsx, 'tsx')`,
+          }),
+        },
+        {
+          element: "textarea",
+          class:
+            "overflow-hidden absolute min-w-full top-0 left-0 outline-none opacity-50 bg-none whitespace-pre resize-none",
+          attributes: (props) => ({
+            oninput: `setState({ ${props?.value}: this.value }, { parent: ${
+              props?.parent === "this" ? "this" : "'" + props?.parent + "'"
+            } })`,
+            x: `${props?.parent}.${props?.value}`,
+            autocapitalize: "off",
+            autocomplete: "off",
+            autocorrect: "off",
+            spellcheck: "false",
+            "x-rows": `${props?.parent}.${props?.value}?.split('\\n').length`,
+          }),
+        },
+      ],
+    },
+  ],
+};
+
 const box: Component = {
   element: "div",
 };
@@ -103,4 +150,4 @@ function defaultValue(
 }
 
 export type { Attributes, Component };
-export { box, codeContainer, flex, stack };
+export { box, codeContainer, codeEditor, flex, stack };
