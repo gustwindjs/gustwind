@@ -7,13 +7,14 @@ import {
 } from "./deps.ts";
 
 type Props = Record<string, string>;
+type Attributes = Record<string, string>;
 type Component = {
   element: string; // TODO: Only valid DOM elements and components
   as?: string; // TODO: Only valid DOM elements
   children?: string | Component[];
   class?: string | ((props?: Props) => string);
   props?: Props;
-  attributes?: Record<string, string>;
+  attributes?: Attributes;
 };
 type Meta = Record<string, string>;
 
@@ -102,10 +103,28 @@ function renderComponent(component: Component | string): string {
     ? component.children.map(renderComponent).join("")
     : component.children;
 
-  return `<${element} class="${foundComponent &&
-    getClass(foundComponent.class, component.props)} ${
-    getClass(component.class, component.props)
-  }">${children}</${element}>`;
+  return `<${element}${
+    generateAttributes({
+      ...component.attributes,
+      class: getClasses(foundComponent, component),
+    })
+  }>${children}</${element}>`;
+}
+
+function generateAttributes(attributes: Attributes) {
+  const ret = Object.entries(attributes).map(([k, v]) => `${k}="${v}"`).join(
+    " ",
+  );
+
+  return ret.length > 0 ? " " + ret : "";
+}
+
+function getClasses(baseComponent: Component, component: Component) {
+  const baseClass = baseComponent &&
+    getClass(baseComponent.class, component.props);
+  const componentClass = getClass(component.class, component.props);
+
+  return `${baseClass ? baseClass + " " : ""}${componentClass}`;
 }
 
 function getClass(kls: Component["class"], props: Component["props"]) {
