@@ -87,18 +87,25 @@ function transformToExplorer(component: Component): Component {
   };
 }
 
-function renderComponent(component: Component): string {
+function renderComponent(component: Component | string): string {
+  if (typeof component === "string") {
+    return component;
+  }
+
   const foundComponent = components[component.element];
-  const element = foundComponent ? foundComponent.element : component.element;
+  const element = component.as
+    ? component.as
+    : foundComponent
+    ? foundComponent.element
+    : component.element;
+  const children = Array.isArray(component.children)
+    ? component.children.map(renderComponent).join("")
+    : component.children;
 
   return `<${element} class="${foundComponent &&
     getClass(foundComponent.class, component.props)} ${
     getClass(component.class, component.props)
-  }">${
-    Array.isArray(component.children)
-      ? component.children.map(renderComponent).join("")
-      : component.children
-  }</${element}>`;
+  }">${children}</${element}>`;
 }
 
 function getClass(kls: Component["class"], props: Component["props"]) {
