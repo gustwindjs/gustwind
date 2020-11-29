@@ -19,4 +19,13 @@ const getStyleInjector = () => {
   return injector;
 };
 
-export { Application, getStyleInjector, getStyleTag, ow, setupOceanwind };
+const readJSONSync = (file: string) => JSON.parse(Deno.readTextFileSync(file));
+
+export {
+  Application,
+  getStyleInjector,
+  getStyleTag,
+  ow,
+  readJSONSync,
+  setupOceanwind,
+};

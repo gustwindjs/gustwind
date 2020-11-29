@@ -1,0 +1,19 @@
+{
+  "element": "flex",
+  "class": "m-4",
+  "props": {
+    "direction": "row"
+  },
+  "children": [
+    {
+      "element": "box",
+      "class": "bg-blue-200 p-2",
+      "children": "Hello"
+    },
+    {
+      "element": "box",
+      "class": "bg-yellow-200 p-2",
+      "children": "world"
+    }
+  ]
+}

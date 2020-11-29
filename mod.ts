@@ -1,4 +1,10 @@
-import { Application, getStyleInjector, getStyleTag, ow } from "./deps.ts";
+import {
+  Application,
+  getStyleInjector,
+  getStyleTag,
+  ow,
+  readJSONSync,
+} from "./deps.ts";
 
 type Props = Record<string, string>;
 type Component = {
@@ -26,27 +32,7 @@ async function serve(port: number) {
 
   console.log(`Serving at ${port}`);
 
-  // TODO: Separate this to another file and let it be adjustable through
-  // the browser
-  const document: Component = {
-    element: "flex",
-    class: "m-4",
-    props: {
-      direction: "row",
-    },
-    children: [
-      {
-        element: "box",
-        class: "bg-blue-200 p-2",
-        children: "Hello",
-      },
-      {
-        element: "box",
-        class: "bg-yellow-200 p-2",
-        children: "world",
-      },
-    ],
-  };
+  const document: Component = readJSONSync("./site.json");
 
   app.use((context) => {
     try {
