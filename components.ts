@@ -1,7 +1,8 @@
 import { isObject } from "./deps.ts";
 
 type Props = Record<string, string | undefined>;
-type Attributes = Record<string, string | undefined>;
+// deno-lint-ignore no-explicit-any
+type Attributes = Record<string, any>;
 type Component = {
   element: string; // TODO: Only valid DOM elements and components
   as?: string; // TODO: Only valid DOM elements
@@ -12,12 +13,19 @@ type Component = {
 };
 
 const codeContainer: Component = {
-  element: "box",
-  as: "section",
-  attributes: (props) => ({
-    "x-label": "codeEditor",
-    "x-state": props?.state,
-  }),
+  element: "section",
+  attributes: (props) => {
+    const state = `{ ${
+      Object.entries(props?.sources || {})
+        .map(([name, source]) => `${name}: atob('${btoa(source)}')`)
+        .join(", ")
+    } }`;
+
+    return {
+      "x-label": "codeEditor",
+      "x-state": state,
+    };
+  },
 };
 
 const codeEditor: Component = {
@@ -50,17 +58,22 @@ const codeEditor: Component = {
           element: "textarea",
           class:
             "overflow-hidden absolute min-w-full top-0 left-0 outline-none opacity-50 bg-none whitespace-pre resize-none",
-          attributes: (props) => ({
-            oninput: `setState({ ${props?.value}: this.value }, { parent: ${
-              props?.parent === "this" ? "this" : "'" + props?.parent + "'"
-            } })`,
-            x: `${props?.parent}.${props?.value}`,
-            autocapitalize: "off",
-            autocomplete: "off",
-            autocorrect: "off",
-            spellcheck: "false",
-            "x-rows": `${props?.parent}.${props?.value}?.split('\\n').length`,
-          }),
+          attributes: (props) => {
+            const parent = props?.parent || "this";
+            const value = props?.value || "code";
+
+            return {
+              oninput: `setState({ ${value}: this.value }, { parent: ${
+                parent === "this" ? "this" : "'" + parent + "'"
+              } })`,
+              x: `${parent}.${value}`,
+              autocapitalize: "off",
+              autocomplete: "off",
+              autocorrect: "off",
+              spellcheck: "false",
+              "x-rows": `${parent}.${value}?.split('\\n').length`,
+            };
+          },
         },
       ],
     },

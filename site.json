@@ -28,6 +28,22 @@
       "attributes": {
         "onclick": "setState(v => !v)"
       }
+    },
+    {
+      "element": "codeContainer",
+      "props": {
+        "sources": {
+          "code": "'Type source here'"
+        }
+      },
+      "children": [
+        {
+          "element": "codeEditor",
+          "props": {
+            "value": "code"
+          }
+        }
+      ]
     }
   ]
 }
