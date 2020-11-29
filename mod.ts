@@ -25,10 +25,85 @@ const box: Component = {
 const flex: Component = {
   element: "box",
   class: (props) =>
-    `flex flex-${props?.direction === "column" ? "col" : "row"}`,
+    `flex ${
+      convertToClasses(
+        "flex",
+        (mediaQuery, prefix, v) =>
+          `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
+            v === "column" ? "col" : "row"
+          }`,
+      )(props?.direction)
+    } ${(props?.sx && props.sx) || ""}`.trim(),
 };
 
-const components: Record<string, Component> = { box, flex };
+const stack: Component = {
+  element: "flex",
+  class: (props) =>
+    `flex ${
+      convertToClasses(
+        "flex",
+        (mediaQuery, prefix, v) =>
+          `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
+            v === "column" ? "col" : "row"
+          }`,
+      )(props?.direction)
+    } ${
+      parseSpacingClass(
+        props?.direction,
+        props?.spacing,
+      )
+    } ${(props?.sx && props.sx) || ""}`.trim(),
+};
+
+function parseSpacingClass(
+  direction?: string,
+  spacing?: string,
+) {
+  if (!spacing) {
+    return "";
+  }
+
+  return convertToClasses("space", (mediaQuery, prefix, direction) => {
+    const klass = `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
+      direction === "row" ? "x" : "y"
+    }-${spacing}`;
+    const inverseClass = `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
+      direction === "row" ? "y" : "x"
+    }-0`;
+
+    return `${klass} ${inverseClass}`;
+  })(direction);
+}
+
+function convertToClasses(prefix: string, customizeValue = defaultValue) {
+  // deno-lint-ignore no-explicit-any
+  return (value?: any) => {
+    if (!value) {
+      return "";
+    }
+
+    if (isObject(value)) {
+      return Object.entries(value).map(([k, v]) =>
+        customizeValue(k === "default" ? "" : k, prefix, v as string)
+      );
+    }
+
+    return customizeValue("", prefix, value);
+  };
+}
+
+// deno-lint-ignore no-explicit-any
+const isObject = (a: any) => typeof a === "object";
+
+function defaultValue(
+  mediaQuery: string,
+  prefix: string,
+  value: string | number,
+) {
+  return `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${value}`;
+}
+
+const components: Record<string, Component> = { box, flex, stack };
 
 async function serve(port: number) {
   const app = new Application();

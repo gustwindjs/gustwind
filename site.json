@@ -1,8 +1,9 @@
 {
-  "element": "flex",
+  "element": "stack",
   "class": "m-4",
   "props": {
-    "direction": "row"
+    "direction": "row",
+    "spacing": "4"
   },
   "attributes": {
     "x-state": "false"
