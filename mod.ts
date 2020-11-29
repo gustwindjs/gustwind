@@ -44,7 +44,6 @@ async function serve(port: number) {
       const body = renderComponent({
         element: "main",
         children: [
-          transformToExplorer(document),
           document,
           {
             element: "div",
@@ -66,26 +65,6 @@ async function serve(port: number) {
   });
 
   await app.listen({ port });
-}
-
-function transformToExplorer(component: Component): Component {
-  const childrenWrapper: Component = {
-    element: "ul",
-    children: Array.isArray(component.children)
-      ? component.children.map((c) => ({
-        element: "li",
-        children: [transformToExplorer(c)],
-      }))
-      : component.children,
-  };
-
-  return {
-    element: "box",
-    children: [{
-      element: "box",
-      children: component.element,
-    }, childrenWrapper],
-  };
 }
 
 function renderComponent(component: Component | string): string {
@@ -112,9 +91,10 @@ function renderComponent(component: Component | string): string {
 }
 
 function generateAttributes(attributes: Attributes) {
-  const ret = Object.entries(attributes).map(([k, v]) => `${k}="${v}"`).join(
-    " ",
-  );
+  const ret = Object.entries(attributes).map(([k, v]) => v && `${k}="${v}"`)
+    .filter(Boolean).join(
+      " ",
+    );
 
   return ret.length > 0 ? " " + ret : "";
 }
