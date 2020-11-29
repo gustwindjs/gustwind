@@ -3,7 +3,7 @@ import {
   getStyleInjector,
   getStyleTag,
   ow,
-  readJSONSync,
+  readFileSync,
 } from "./deps.ts";
 
 type Props = Record<string, string>;
@@ -32,13 +32,17 @@ async function serve(port: number) {
 
   console.log(`Serving at ${port}`);
 
-  const document: Component = readJSONSync("./site.json");
+  const siteConfiguration = readFileSync("./site.json");
+  const document: Component = JSON.parse(siteConfiguration);
 
   app.use((context) => {
     try {
       const styleInjector = getStyleInjector();
       const body = renderComponent(transformToExplorer(document)) +
-        renderComponent(document);
+        renderComponent(document) + renderComponent({
+          element: "div",
+          children: siteConfiguration,
+        });
       const styleTag = getStyleTag(styleInjector);
 
       context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
