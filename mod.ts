@@ -65,7 +65,9 @@ function renderComponent(component: Component | string): string {
 
   return `<${element}${
     generateAttributes({
-      ...component.attributes,
+      ...(typeof component.attributes === "function"
+        ? component.attributes(component.props)
+        : component.attributes),
       class: getClasses(foundComponent, component),
     })
   }>${children}</${element}>`;

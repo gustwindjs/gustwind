@@ -1,14 +1,23 @@
 import { isObject } from "./deps.ts";
 
-type Props = Record<string, string>;
-type Attributes = Record<string, string>;
+type Props = Record<string, string | undefined>;
+type Attributes = Record<string, string | undefined>;
 type Component = {
   element: string; // TODO: Only valid DOM elements and components
   as?: string; // TODO: Only valid DOM elements
   children?: string | Component[];
   class?: string | ((props?: Props) => string);
   props?: Props;
-  attributes?: Attributes;
+  attributes?: Attributes | ((props?: Props) => Attributes);
+};
+
+const codeContainer: Component = {
+  element: "box",
+  as: "section",
+  attributes: (props) => ({
+    "x-label": "codeEditor",
+    "x-state": props?.state,
+  }),
 };
 
 const box: Component = {
@@ -94,4 +103,4 @@ function defaultValue(
 }
 
 export type { Attributes, Component };
-export { box, flex, stack };
+export { box, codeContainer, flex, stack };
