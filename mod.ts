@@ -5,105 +5,10 @@ import {
   ow,
   readFileSync,
 } from "./deps.ts";
+import * as components from "./components.ts";
+import type { Attributes, Component } from "./components.ts";
 
-type Props = Record<string, string>;
-type Attributes = Record<string, string>;
-type Component = {
-  element: string; // TODO: Only valid DOM elements and components
-  as?: string; // TODO: Only valid DOM elements
-  children?: string | Component[];
-  class?: string | ((props?: Props) => string);
-  props?: Props;
-  attributes?: Attributes;
-};
 type Meta = Record<string, string>;
-
-const box: Component = {
-  element: "div",
-};
-
-const flex: Component = {
-  element: "box",
-  class: (props) =>
-    `flex ${
-      convertToClasses(
-        "flex",
-        (mediaQuery, prefix, v) =>
-          `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
-            v === "column" ? "col" : "row"
-          }`,
-      )(props?.direction)
-    } ${(props?.sx && props.sx) || ""}`.trim(),
-};
-
-const stack: Component = {
-  element: "flex",
-  class: (props) =>
-    `flex ${
-      convertToClasses(
-        "flex",
-        (mediaQuery, prefix, v) =>
-          `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
-            v === "column" ? "col" : "row"
-          }`,
-      )(props?.direction)
-    } ${
-      parseSpacingClass(
-        props?.direction,
-        props?.spacing,
-      )
-    } ${(props?.sx && props.sx) || ""}`.trim(),
-};
-
-function parseSpacingClass(
-  direction?: string,
-  spacing?: string,
-) {
-  if (!spacing) {
-    return "";
-  }
-
-  return convertToClasses("space", (mediaQuery, prefix, direction) => {
-    const klass = `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
-      direction === "row" ? "x" : "y"
-    }-${spacing}`;
-    const inverseClass = `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${
-      direction === "row" ? "y" : "x"
-    }-0`;
-
-    return `${klass} ${inverseClass}`;
-  })(direction);
-}
-
-function convertToClasses(prefix: string, customizeValue = defaultValue) {
-  // deno-lint-ignore no-explicit-any
-  return (value?: any) => {
-    if (!value) {
-      return "";
-    }
-
-    if (isObject(value)) {
-      return Object.entries(value).map(([k, v]) =>
-        customizeValue(k === "default" ? "" : k, prefix, v as string)
-      );
-    }
-
-    return customizeValue("", prefix, value);
-  };
-}
-
-// deno-lint-ignore no-explicit-any
-const isObject = (a: any) => typeof a === "object";
-
-function defaultValue(
-  mediaQuery: string,
-  prefix: string,
-  value: string | number,
-) {
-  return `${mediaQuery ? mediaQuery + ":" : ""}${prefix}-${value}`;
-}
-
-const components: Record<string, Component> = { box, flex, stack };
 
 async function serve(port: number) {
   const app = new Application();
@@ -147,7 +52,8 @@ function renderComponent(component: Component | string): string {
     return component;
   }
 
-  const foundComponent = components[component.element];
+  const foundComponent =
+    (components as Record<string, Component>)[component.element];
   const element = component.as
     ? component.as
     : foundComponent

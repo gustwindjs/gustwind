@@ -21,10 +21,14 @@ const getStyleInjector = () => {
 
 const readFileSync = (file: string) => Deno.readTextFileSync(file);
 
+// deno-lint-ignore no-explicit-any
+const isObject = (a: any) => typeof a === "object";
+
 export {
   Application,
   getStyleInjector,
   getStyleTag,
+  isObject,
   ow,
   readFileSync,
   setupOceanwind,
