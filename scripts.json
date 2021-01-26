@@ -1,6 +1,9 @@
 {
   "allow": ["env", "plugin", "read", "write", "net"],
   "scripts": {
-    "start": "deno run --unstable mod.ts"
+    "start": {
+      "cmd": "deno run --unstable mod.ts",
+      "watch": true
+    }
   }
 }
