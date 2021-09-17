@@ -1,5 +1,5 @@
 {
-  "allow": ["env", "plugin", "read", "write", "net"],
+  "allow": ["env", "read", "write", "net"],
   "scripts": {
     "start": {
       "cmd": "deno run --unstable mod.ts",
