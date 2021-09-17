@@ -1,0 +1,5 @@
+{
+	"imports": {
+		"style-vendorizer": "https://unpkg.com/style-vendorizer@2.1.1/dist/esm/bundle.min.mjs"
+	}
+}

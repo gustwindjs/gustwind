@@ -1,22 +1,17 @@
 import { Application } from "https://deno.land/x/oak@v6.3.2/mod.ts";
+import { setup, tw } from "https://unpkg.com/twind@0.16.16/twind.js";
 import {
   getStyleTag,
-  VirtualInjector,
-} from "https://unpkg.com/otion@0.6.2/server/index.mjs";
-import {
-  setup as setupOceanwind,
-  themed,
-} from "https://unpkg.com/oceanwind@0.9.0/index.js";
+  virtualSheet,
+} from "https://unpkg.com/twind@0.16.16/sheets/sheets.js";
 
-// TODO: Pass custom theme here
-const ow = themed({});
+// https://twind.dev/handbook/the-shim.html#server
+const getStyleSheet = () => {
+  const sheet = virtualSheet();
 
-const getStyleInjector = () => {
-  const injector = VirtualInjector();
+  setup({ sheet });
 
-  setupOceanwind({ injector });
-
-  return injector;
+  return sheet;
 };
 
 const readFileSync = (file: string) => Deno.readTextFileSync(file);
@@ -24,12 +19,4 @@ const readFileSync = (file: string) => Deno.readTextFileSync(file);
 // deno-lint-ignore no-explicit-any
 const isObject = (a: any) => typeof a === "object";
 
-export {
-  Application,
-  getStyleInjector,
-  getStyleTag,
-  isObject,
-  ow,
-  readFileSync,
-  setupOceanwind,
-};
+export { Application, getStyleSheet, getStyleTag, isObject, readFileSync, tw };

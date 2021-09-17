@@ -1,9 +1,9 @@
 import {
   Application,
-  getStyleInjector,
+  getStyleSheet,
   getStyleTag,
-  ow,
   readFileSync,
+  tw,
 } from "./deps.ts";
 import * as components from "./components.ts";
 import type { Attributes, Component } from "./components.ts";
@@ -20,7 +20,7 @@ async function serve(port: number) {
 
   app.use((context) => {
     try {
-      const styleInjector = getStyleInjector();
+      const stylesheet = getStyleSheet();
       const body = renderComponent({
         element: "main",
         children: [
@@ -31,7 +31,8 @@ async function serve(port: number) {
           },
         ],
       });
-      const styleTag = getStyleTag(styleInjector);
+
+      const styleTag = getStyleTag(stylesheet);
 
       context.response.headers.set("Content-Type", "text/html; charset=UTF-8");
       context.response.body = new TextEncoder().encode(
@@ -92,10 +93,10 @@ function getClasses(baseComponent: Component, component: Component) {
 
 function getClass(kls: Component["class"], props: Component["props"]) {
   if (typeof kls === "function") {
-    return ow(kls(props));
+    return tw(kls(props));
   }
 
-  return kls ? ow(kls) : "";
+  return kls ? tw(kls) : "";
 }
 
 // TODO: Extract script + link bits (too specific)
