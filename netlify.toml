@@ -1,0 +1,4 @@
+[build]
+  base    = ""
+  publish = "build"
+  command = "curl -fsSL https://deno.land/x/install/install.sh | sh && /opt/buildhome/.deno/bin/deno run --unstable --no-check --import-map=import_map.json -A ./scripts/build.ts"
