@@ -90,11 +90,11 @@ function htmlTemplate(
     ${
     mode === "development"
       ? `<div x-state="{ showEditor: false }">
-      <button type="button" hidden class="fixed bottom-0 right-0 m-2" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
+      <button type="button" class="fixed bottom-0 right-0 m-2" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
         <div x-class="state.showEditor && 'hidden'">Show editor</div>
         <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
       </button>
-      <div x-class="!state.showEditor && 'hidden'" hidden>
+      <div x-class="!state.showEditor && 'hidden'">
         <div id="jsoneditor" class="w-full h-1/2"></div>
       </div>
       <script>
