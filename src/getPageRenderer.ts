@@ -77,6 +77,7 @@ function htmlTemplate(
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="text/javascript" src="https://unpkg.com/sidewind@3.3.3/dist/sidewind.umd.production.min.js"></script>
     ${
+    // TODO: Use the same setup for shim as for twind otherwise to allow runtime behavior while matching outlook (prose etc.)
     mode === "development"
       ? `<script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">
