@@ -1,6 +1,5 @@
 import { Marked, Renderer } from "markdown";
 
-// TODO: Set up highlighting
 Marked.setOptions({
   renderer: new Renderer(),
   gfm: true,
@@ -13,9 +12,9 @@ Marked.setOptions({
 });
 
 async function getReadme() {
-  return {
-    content: "demo",
-  };
+  const readmeContent = await Deno.readTextFile("./README.md");
+
+  return Marked.parse(readmeContent);
 }
 
 export default getReadme;

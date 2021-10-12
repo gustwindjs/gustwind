@@ -11,8 +11,9 @@
   "page": [
     {
       "element": "main",
-      "class": "",
-      "children": "hello"
+      "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
+      "__bind": "readme",
+      "__children": "content"
     }
   ]
 }
