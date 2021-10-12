@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "title": "Gustwind",
+    "description": ""
+  },
+  "dataSources": [
+    {
+      "name": "readme"
+    }
+  ],
+  "page": [
+    {
+      "element": "main",
+      "class": "",
+      "children": "hello"
+    }
+  ]
+}
