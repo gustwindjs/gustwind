@@ -1,5 +1,6 @@
 import marked from "markdown";
 import hljs from "highlight";
+import { tw } from "twind";
 
 import javascript from "highlight-js";
 import json from "highlight-json";
@@ -45,7 +46,7 @@ marked.use({
           "</code></pre>\n";
       }
 
-      return '<pre class="overflow-auto"><code class="' +
+      return '<pre class="' + tw`overflow-auto` + '"><code class="' +
         this.options.langPrefix +
         lang +
         '">' +
@@ -56,7 +57,8 @@ marked.use({
       const type = ordered ? "ol" : "ul",
         startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
         klass = ordered ? "list-decimal list-inside" : "list-disc list-inside";
-      return "<" + type + startatt + ' class="' + klass + '">\n' + body + "</" +
+      return "<" + type + startatt + ' class="' + tw(klass) + '">\n' + body +
+        "</" +
         type + ">\n";
     },
   },
