@@ -76,6 +76,7 @@ function htmlTemplate(
     <meta charset="UTF-8"
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="text/javascript" src="https://unpkg.com/sidewind@3.4.0/dist/sidewind.umd.production.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
     ${
     // TODO: Use the same setup for shim as for twind otherwise to allow runtime behavior while matching outlook (prose etc.)
     mode === "development"

@@ -121,7 +121,7 @@ In the examples above, data coming from **data sources** has been connected, or 
 
 **dataSources/readme.ts**
 
-```typescript
+```javascript
 function getReadme() {
   return Deno.readTextFile("./README.md");
 }
