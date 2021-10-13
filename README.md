@@ -280,7 +280,7 @@ Transforms are powerful as they let you shape the data to fit specific needs wit
 
 ## Earlier related work
 
-* [Tailspin](https://github.com/survivejs/tailspin) - Tailspin was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further.
+* [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.
 * [Antwar](https://antwar.js.org/) was a React based static site generator. The experiences with Antwar over years have been put to good use in this project.
 
 ## Usage
