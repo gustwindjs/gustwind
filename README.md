@@ -1,13 +1,13 @@
-# 🐳💨 – Gustwind
+# 🐳💨 – Gustwind – Deno powered JSON oriented site generator
 
 Gustwind is an experimental site generator built on top of JSON definitions using [Deno](https://deno.land/), [Twind](https://twind.dev/), and [Sidewind](https://sidewind.js.org/). The goal of the design is to allow component oriented development of large scale sites (more than thousands of pages). Conceptually it's split as follows:
 
-* Development mode – during development, you can modify page definitions and have changes made to your file system to commit later
-* Production mode – during compilation, the development portions are left out and you'll get pure static HTML with CSS inlined to the files
-* Components – the JSON based component abstraction included allows you to extract shared markup and bind data to it
-* Data sources – data sources define how your data is fetched. At page level, it can then be connected and bound to components
-* Pages – the JSON page definitions describe individual pages of your site and use the concepts above to compose your site
-* Transforms – transforms let you alter data to fit the current need. You can use them for example convert Markdown input to HTML or reverse the order of an array to generate a blog index in a specific order.
+* **Development mode** lets you preview the site and modify page definitions to commit later
+* **Production mode** generates pure static HTML with CSS inlined to the files
+* **Components** defined with a JSON based component abstraction included allow you to extract shared markup and bind data to it
+* **Data sources** define how your data is fetched. At page level, it can then be connected and bound to components
+* **Transforms** let you alter data to fit the current need. You can use them for example convert Markdown input to HTML or reverse the order of an array to generate a blog index in a specific order.
+* **Pages** based on the JSON page definitions describe the site and use the concepts above to compose your site
 
 I've explained the concepts in greater detail below.
 
