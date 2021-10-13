@@ -5,7 +5,8 @@
   },
   "dataSources": [
     {
-      "name": "readme"
+      "name": "readme",
+      "transformWith": "markdown"
     }
   ],
   "page": [

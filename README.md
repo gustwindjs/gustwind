@@ -122,21 +122,14 @@ In the examples above, data coming from **data sources** has been connected, or 
 **dataSources/readme.ts**
 
 ```typescript
-import { Marked, Renderer } from "markdown";
-
-async function getReadme() {
-  const readmeContent = await Deno.readTextFile("./README.md");
-
-  // Returns { content: '<html>', ... }
-  return Marked.parse(readmeContent);
+function getReadme() {
+  return Deno.readTextFile("./README.md");
 }
 
 export default getReadme;
 ```
 
 Data sources are asynchronous functions returning objects. Then, when bound, you can access the content. This would be a good spot to connect to a database, external API, or local data. For this particular project, we only map the readme file to the site to be able to show it at the index.
-
-> The Markdown logic could be expressed as a transform as well while the source would return only pure data. In terms of architecture, that would be cleaner especially if you have to use the input in different ways. The idea of transforms is covered later in this document.
 
 ## Pages
 
@@ -158,7 +151,8 @@ The first two cases can be defined with the following syntax:
   },
   "dataSources": [
     {
-      "name": "readme"
+      "name": "readme",
+      "transformWith": "markdown"
     }
   ],
   "page": [
@@ -175,8 +169,8 @@ The first two cases can be defined with the following syntax:
 Note the `meta`, `dataSources`, and `page` portions of the configuration:
 
 * `meta` is used to define the metadata per page show in `meta` tags and `title`
-* `dataSources` define **which** data to map to the page
-* `page` is about the page content and **how** the data is bound. This is the spot where it's good to leverage the power of components and connect data with them. 
+* `dataSources` define **which** data to map to the page and how to optionally **transform** them
+* `page` is about the page content and **how** the data is bound. This is the spot where it's good to leverage the power of components and connect data with them.
 
 For the about page, you would do something similar and perhaps bind to another Markdown file somewhere in the system.
 
