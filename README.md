@@ -278,6 +278,10 @@ Transforms are powerful as they let you shape the data to fit specific needs wit
 * Implement an incremental compiler to detect changes and compile only what has changed instead of compiling the whole site
 * Allow composition of transforms (i.e. array syntax)
 
+## Notes
+
+The project needs Deno 1.15.1 or newer to run! I recommend using a tool like [dvm](https://github.com/justjavac/dvm) for managing the version.
+
 ## Earlier related work
 
 * [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.
