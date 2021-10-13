@@ -23,6 +23,8 @@ marked.setOptions({
   },
 });
 
+// https://marked.js.org/using_pro#renderer
+// https://github.com/markedjs/marked/blob/master/src/Renderer.js
 marked.use({
   renderer: {
     code(code, infostring, escaped) {
@@ -49,6 +51,13 @@ marked.use({
         '">' +
         code +
         "</code></pre>\n";
+    },
+    list(body, ordered, start) {
+      const type = ordered ? "ol" : "ul",
+        startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
+        klass = ordered ? "list-decimal list-inside" : "list-disc list-inside";
+      return "<" + type + startatt + ' class="' + klass + '">\n' + body + "</" +
+        type + ">\n";
     },
   },
 });
