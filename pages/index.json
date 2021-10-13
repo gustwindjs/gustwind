@@ -12,7 +12,7 @@
   "page": [
     {
       "element": "main",
-      "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
+      "class": "md:mx-auto my-4 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "readme",
       "__children": "content"
     }
