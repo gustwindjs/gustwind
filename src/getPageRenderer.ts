@@ -18,15 +18,23 @@ function getPageRenderer(
     pagePath: string,
     pageData: DataContext,
     page: Page,
-  ) =>
-    htmlTemplate({
+  ) => {
+    const bodyMarkup = await renderBody(
+      page.page,
+      components,
+      pageData,
+      pathname,
+    );
+
+    return htmlTemplate({
       pagePath,
       metaMarkup: renderMetaMarkup(page.meta),
       headMarkup: getStyleTag(stylesheet),
-      bodyMarkup: await renderBody(page.page, components, pageData, pathname),
+      bodyMarkup,
       mode,
       page,
     });
+  };
 }
 
 function renderMetaMarkup(meta?: Meta) {
