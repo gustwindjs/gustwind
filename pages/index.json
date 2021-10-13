@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Gustwind",
-    "description": ""
+    "description": "Deno powered JSON oriented site generator"
   },
   "dataSources": [
     {
