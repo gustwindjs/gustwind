@@ -1,7 +1,6 @@
 import { virtualSheet } from "twind-sheets";
 import { setup } from "twind";
-import * as colors from "twind-colors";
-import typography from "twind-typography";
+import sharedTwindSetup from "./sharedTwindSetup.ts";
 
 // https://twind.dev/handbook/the-shim.html#server
 function getStyleSheet() {
@@ -9,11 +8,7 @@ function getStyleSheet() {
 
   setup({
     sheet,
-    theme: { colors },
-    plugins: {
-      // TODO: How to override blockquote styles?
-      ...typography(),
-    },
+    ...sharedTwindSetup,
   });
 
   return sheet;
