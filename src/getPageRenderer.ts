@@ -75,7 +75,7 @@ function htmlTemplate(
   <head>
     <meta charset="UTF-8"
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="text/javascript" src="https://unpkg.com/sidewind@3.3.3/dist/sidewind.umd.production.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/sidewind@3.4.0/dist/sidewind.umd.production.min.js"></script>
     ${
     // TODO: Use the same setup for shim as for twind otherwise to allow runtime behavior while matching outlook (prose etc.)
     mode === "development"
@@ -90,16 +90,18 @@ function htmlTemplate(
   <body>
     ${
     mode === "development"
-      ? `<div x-state="{ showEditor: false }">
-      <button type="button" class="fixed bottom-0 right-0 m-2" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
-        <div x-class="state.showEditor && 'hidden'">Show editor</div>
-        <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
-      </button>
-      <div x-class="!state.showEditor && 'hidden'">
-        <div id="jsoneditor" class="w-full h-1/2"></div>
+      ? `<div>
+      <div hidden x-cloak x-state="{ showEditor: false }">
+        <button type="button" class="fixed bottom-0 right-0 m-2" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
+          <div x-class="state.showEditor && 'hidden'">Show editor</div>
+          <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
+        </button>
+        <div x-class="!state.showEditor && 'hidden'">
+          <div id="jsoneditor" class="w-full h-1/2"></div>
+        </div>
+        <script>
+        ${websocketClient}
       </div>
-      <script>
-      ${websocketClient}
       const editor = new JSONEditor(document.getElementById("jsoneditor"), {
         onChangeJSON(data) {
           socket.send(JSON.stringify({
