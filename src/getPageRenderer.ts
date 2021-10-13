@@ -68,7 +68,7 @@ function renderBody(
   );
 }
 
-function htmlTemplate(
+async function htmlTemplate(
   { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, page }: {
     pagePath: string;
     metaMarkup?: string;
@@ -78,6 +78,34 @@ function htmlTemplate(
     page: Page;
   },
 ) {
+  let twindSource = "";
+
+  if (mode === "development") {
+    // TODO: Generate twind shim
+    const { files, diagnostics } = await Deno.emit(
+      "./src/twindBrowserShim.ts",
+      {
+        bundle: "classic", // or "module"
+        // TODO: Read this from import_map.json
+        importMap: {
+          imports: {
+            "twind-shim": "https://cdn.skypack.dev/twind/shim",
+            "twind-colors": "https://unpkg.com/twind@0.16.16/colors/colors.js",
+            "twind-typography":
+              "https://unpkg.com/@twind/typography@0.0.2/typography.js",
+          },
+        },
+        importMapPath: "file:///import_map.json",
+      },
+    );
+
+    if (diagnostics.length) {
+      console.log("Received diagnostics from Deno compiler", diagnostics);
+    }
+
+    twindSource = files["deno:///bundle.js"];
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -88,8 +116,7 @@ function htmlTemplate(
     ${
     // TODO: Use the same setup for shim as for twind otherwise to allow runtime behavior while matching outlook (prose etc.)
     mode === "development"
-      ? `<script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">
+      ? `<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">
 <script src="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.js"></script>`
       : ""
   }
@@ -110,6 +137,7 @@ function htmlTemplate(
         </div>
       </div>
       <script>
+      ${twindSource}
       ${websocketClient}
       const editor = new JSONEditor(document.getElementById("jsoneditor"), {
         onChangeJSON(data) {
