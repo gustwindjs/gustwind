@@ -115,6 +115,17 @@ In order to bind data, `__bind` has to be used. To bind `libraries` to the compo
 }
 ```
 
+In addition to binding data from a source, you can do static bindings to pass data to components:
+
+```json
+{
+  "component": "githubCorner",
+  "__bind": {
+    "url": "https://github.com/survivejs/gustwind"
+  }
+}
+```
+
 ## Data sources
 
 In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:

@@ -1,5 +1,5 @@
 import { tw } from "twind";
-import { get } from "utils";
+import { get, isObject } from "utils";
 import type {
   Attributes,
   Component,
@@ -20,8 +20,11 @@ async function renderComponent(
   const foundComponent = components[component.component!];
 
   if (component.__bind) {
-    // @ts-ignore The assumption is that context exists
-    context = { ...context, __bound: get(context, component.__bind) };
+    if (isObject(component.__bind)) {
+      context = { ...context, __bound: component.__bind };
+    } else {
+      context = { ...context, __bound: get(context, component.__bind) };
+    }
   }
 
   if (foundComponent) {
