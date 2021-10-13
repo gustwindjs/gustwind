@@ -99,9 +99,9 @@ function htmlTemplate(
         <div x-class="!state.showEditor && 'hidden'">
           <div id="jsoneditor" class="w-full h-1/2"></div>
         </div>
-        <script>
         ${websocketClient}
       </div>
+      <script>
       const editor = new JSONEditor(document.getElementById("jsoneditor"), {
         onChangeJSON(data) {
           socket.send(JSON.stringify({
