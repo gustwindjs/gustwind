@@ -273,6 +273,11 @@ Transforms are powerful as they let you shape the data to fit specific needs wit
 * Implement an incremental compiler to detect changes and compile only what has changed instead of compiling the whole site
 * Allow composition of transforms (i.e. array syntax)
 
+## Earlier related work
+
+* [Tailspin](https://github.com/survivejs/tailspin) - Tailspin was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further.
+* [Antwar](https://antwar.js.org/) was a React based static site generator. The experiences with Antwar over years have been put to good use in this project.
+
 ## Usage
 
 Run the available commands through [velociraptor](https://github.com/umbopepato/velociraptor) (vr).
