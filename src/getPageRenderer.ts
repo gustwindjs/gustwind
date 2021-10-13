@@ -106,7 +106,7 @@ function htmlTemplate(
           <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
         </button>
         <div x-class="!state.showEditor && 'hidden'">
-          <div id="jsoneditor" class="w-full h-1/2"></div>
+          <div id="jsoneditor" class="fixed bg-white top-0 w-full max-h-1/2"></div>
         </div>
       </div>
       <script>
