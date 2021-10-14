@@ -68,6 +68,8 @@ function renderBody(
   );
 }
 
+let developmentSourceCache: string;
+
 async function htmlTemplate(
   { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, page }: {
     pagePath: string;
@@ -78,9 +80,9 @@ async function htmlTemplate(
     page: Page;
   },
 ) {
-  let developmentSource = "";
+  let developmentSource = developmentSourceCache;
 
-  if (mode === "development") {
+  if (mode === "development" && !developmentSourceCache) {
     const importMapName = "import_map.json";
     const importMap = await getJson<{ imports: Record<string, string> }>(
       importMapName,
@@ -101,6 +103,8 @@ async function htmlTemplate(
     }
 
     developmentSource = files["deno:///bundle.js"];
+
+    developmentSourceCache = developmentSource;
   }
 
   return `<!DOCTYPE html>
