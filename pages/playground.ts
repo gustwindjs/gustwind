@@ -1,3 +1,6 @@
+console.log("hello from playground");
+
+/*
 /// <reference lib="dom" />
 import "sidewind";
 import { setup } from "twind-shim";
@@ -54,3 +57,4 @@ declare global {
 }
 
 window.createPlaygroundEditor = createPlaygroundEditor;
+*/
