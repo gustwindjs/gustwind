@@ -19,7 +19,7 @@
       "children": [
         {
           "element": "div",
-          "class": "md:mx-auto py-8 w-full lg:max-w-3xl flex",
+          "class": "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
           "children": [
             {
               "element": "div",
