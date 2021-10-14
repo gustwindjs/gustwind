@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "title": "Gustwind modes",
+    "description": "Understand Gustwind's modes on this page"
+  },
+  "page": [
+    {
+      "component": "mainNavigation"
+    },
+    {
+      "element": "main",
+      "children": "TODO"
+    }
+  ]
+}

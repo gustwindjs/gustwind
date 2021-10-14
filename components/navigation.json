@@ -17,7 +17,7 @@
     "component": "link",
     "children": "Concepts",
     "attributes": {
-      "href": "/about/"
+      "href": "/concepts/"
     }
   }
 ]

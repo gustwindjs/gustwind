@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "title": "Playground",
+    "description": "Try Gustwind editor on this page"
+  },
+  "page": [
+    {
+      "component": "mainNavigation"
+    },
+    {
+      "element": "main",
+      "children": "TODO"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "title": "Concepts",
+    "description": "Understand Gustwind's concepts on this page"
+  },
+  "page": [
+    {
+      "component": "mainNavigation"
+    },
+    {
+      "element": "main",
+      "children": "TODO"
+    }
+  ]
+}
