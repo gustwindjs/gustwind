@@ -1,14 +1,14 @@
 {
   "element": "nav",
-  "class": "sticky top-0 opacity-80 px-8 py-4 flex justify-between bg-gray-100 font-thin filter drop-shadow-sm",
+  "class": "sticky top-0 opacity-80 px-8 py-4 gap-4 flex flex-col sm:flex-row justify-between bg-gray-100 font-thin filter drop-shadow-sm",
   "children": [
     {
       "element": "div",
-      "class": "flex gap-8",
+      "class": "flex flex-wrap gap-4 ml-auto sm:ml-0",
       "children": [
         {
           "element": "a",
-          "class": "scale-150",
+          "class": "scale-150 whitespace-nowrap",
           "children": "🐳💨",
           "attributes": {
             "href": "/"
@@ -21,8 +21,15 @@
     },
     {
       "element": "div",
-      "class": "flex gap-4",
+      "class": "flex gap-4 ml-auto sm:ml-0",
       "children": [
+        {
+          "component": "link",
+          "children": "Playground",
+          "attributes": {
+            "href": "/playground/"
+          }
+        },
         {
           "component": "link",
           "children": "GitHub",

@@ -27,11 +27,11 @@
               "children": [
                 {
                   "element": "h1",
-                  "class": "text-8xl",
+                  "class": "text-4xl md:text-8xl",
                   "children": [
                     {
                       "element": "span",
-                      "class": "text-8xl whitespace-nowrap pr-4",
+                      "class": "whitespace-nowrap pr-4",
                       "children": "🐳💨"
                     },
                     {
@@ -41,7 +41,7 @@
                 },
                 {
                   "element": "h2",
-                  "class": "text-4xl font-extralight",
+                  "class": "text-xl md:text-4xl font-extralight",
                   "children": "Deno powered JSON oriented site generator"
                 }
               ]

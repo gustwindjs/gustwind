@@ -19,12 +19,5 @@
     "attributes": {
       "href": "/concepts/"
     }
-  },
-  {
-    "component": "link",
-    "children": "Playground",
-    "attributes": {
-      "href": "/playground/"
-    }
   }
 ]
