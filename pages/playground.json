@@ -8,10 +8,60 @@
       "component": "mainNavigation"
     },
     {
+      "element": "div",
+      "attributes": {
+        "hidden": "",
+        "x-cloak": "",
+        "x-state": "{ showEditor: false }"
+      },
+      "children": [
+        {
+          "element": "button",
+          "class": "fixed bottom-0 left-0 m-2 z-50",
+          "attributes": {
+            "onclick": "setState(({ showEditor }) => ({ showEditor: !showEditor }))"
+          },
+          "children": [
+            {
+              "element": "div",
+              "attributes": {
+                "x-class": "state.showEditor && 'hidden'"
+              },
+              "children": "Show editor"
+            },
+            {
+              "element": "div",
+              "attributes": {
+                "x-class": "!state.showEditor && 'hidden'"
+              },
+              "children": "Hide editor"
+            }
+          ]
+        },
+        {
+          "element": "div",
+          "attributes": {
+            "x-class": "!state.showEditor && 'hidden'"
+          },
+          "children": [
+            {
+              "element": "div",
+              "class": "fixed bg-white bottom-0 w-full max-h-1/2",
+              "id": "playgroundeditor",
+              "children": "editor goes here"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "element": "main",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "modes",
-      "children": "Try modifying the contents of this page using the editor (click \"Show editor\")."
+      "children": "Try modifying the contents of this page using the editor (click \"Show editor\").",
+      "attributes": {
+        "id": "playgroundbody"
+      }
     },
     {
       "component": "mainFooter"

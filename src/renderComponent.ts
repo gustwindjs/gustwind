@@ -188,7 +188,7 @@ function generateAttributes(attributes: Attributes, context: DataContext) {
       return `${k.slice(2)}="${context.__bound[v]}"`;
     }
 
-    return v && `${k}="${v}"`;
+    return `${k}="${v}"`;
   })
     .filter(Boolean).join(
       " ",
