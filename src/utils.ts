@@ -12,6 +12,7 @@ function getJsonSync<R>(filePath: string): R {
 async function getComponents(directoryPath: string) {
   const componentFiles = await dir(directoryPath);
 
+  // TODO: Give a more specific error about which file failed to parse
   const o = await Promise.all(
     await componentFiles.map(async (
       { path },

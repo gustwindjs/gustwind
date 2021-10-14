@@ -15,6 +15,13 @@
   },
   {
     "component": "link",
+    "children": "Configuration",
+    "attributes": {
+      "href": "/configuration/"
+    }
+  },
+  {
+    "component": "link",
     "children": "Concepts",
     "attributes": {
       "href": "/concepts/"

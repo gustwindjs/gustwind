@@ -4,7 +4,7 @@ import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderBody } from "./getPageRenderer.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Page, ProjectMeta } from "../types.ts";
+import type { Components, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
@@ -20,10 +20,17 @@ async function serve(
 ) {
   console.log(`Serving at ${developmentPort}`);
 
-  const wss = getWebsocketServer();
-  const components = await getComponents(componentsPath);
+  let components: Components;
+  try {
+    components = await getComponents(componentsPath);
+  } catch (error) {
+    console.error(error);
+
+    return;
+  }
   const app = new Application();
   const router = new Router();
+  const wss = getWebsocketServer();
 
   const renderPage = getPageRenderer({
     components,
