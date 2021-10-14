@@ -35,7 +35,7 @@
                 },
                 {
                   "element": "div",
-                  "class": "flex gap-4 font-thin",
+                  "class": "flex flex-col gap-2 font-thin",
                   "children": [
                     {
                       "component": "navigation"
