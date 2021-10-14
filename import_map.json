@@ -2,9 +2,9 @@
   "imports": {
     "fs": "https://deno.land/std@0.107.0/fs/mod.ts",
     "highlight": "https://esm.sh/highlight.js@11.2.0",
-    "highlight-js": "https://esm.sh/highlight.js@11.2.0/lib/languages/javascript",
-    "highlight-json": "https://esm.sh/highlight.js@11.2.0/lib/languages/json",
-    "highlight-ts": "https://esm.sh/highlight.js@11.2.0/lib/languages/typescript",
+    "highlight-js": "https://unpkg.com/highlight.js@11.2.0/es/languages/javascript",
+    "highlight-json": "https://unpkg.com/highlight.js@11.2.0/es/languages/json",
+    "highlight-ts": "https://unpkg.com/highlight.js@11.2.0/es/languages/typescript",
     "oak": "https://deno.land/x/oak@v9.0.1/mod.ts",
     "markdown": "https://esm.sh/marked@3.0.7",
     "path": "https://deno.land/std@0.107.0/path/mod.ts",
