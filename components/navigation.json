@@ -1,13 +1,6 @@
 [
   {
     "component": "link",
-    "children": "Playground",
-    "attributes": {
-      "href": "/playground/"
-    }
-  },
-  {
-    "component": "link",
     "children": "Modes",
     "attributes": {
       "href": "/modes/"
