@@ -1,4 +1,4 @@
-## Configuration
+# Configuration
 
 Each project built with Gustwind needs minimal configuration to describe where to find the assets, site name, and development port:
 
