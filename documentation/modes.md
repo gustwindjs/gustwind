@@ -14,7 +14,7 @@ The editor is available through the "Show editor" button at the bottom right cor
 
 ## Production mode
 
-In the production mode (`vr build`), the tool generates HTML at the `./build` directory. Compared to the development mode, anything development related is removed from the output and class names are hashed to save space. At the moment no other optimizations are performed.
+In the production mode (`vr build`), the tool generates HTML at the `./build` directory. Compared to the development mode, anything development related is removed from the output. At the moment no other optimizations are performed.
 
 During tests against a large site with over 2000 pages, the build was completed in a few seconds and so far the performance seems promising although it can be still improved and not a lot of thought has been given to it.
 

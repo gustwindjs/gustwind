@@ -2,6 +2,7 @@
 import JSONEditor from "jsoneditor";
 import { setup } from "twind-shim";
 import sharedTwindSetup from "./sharedTwindSetup.ts";
+import type { Page } from "../types.ts";
 
 setup({
   target: document.body,
@@ -82,7 +83,7 @@ function createJSONEditor(
   data: string,
 ) {
   const editor = new JSONEditor(element, {
-    onChangeJSON(data: string) {
+    onChangeJSON(data: Page) {
       socket.send(JSON.stringify({
         type: "update",
         payload: {

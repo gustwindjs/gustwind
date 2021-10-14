@@ -1,5 +1,5 @@
 import { tw } from "twind";
-import { get, isObject } from "utils";
+import { get, isObject } from "./utils.ts";
 import type {
   Attributes,
   Component,

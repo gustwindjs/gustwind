@@ -1,16 +1,43 @@
 /// <reference lib="dom" />
+import "sidewind";
+import { setup } from "twind-shim";
 import JSONEditor from "jsoneditor";
+import sharedTwindSetup from "../src/sharedTwindSetup.ts";
+
+import { renderBody } from "../src/getPageRenderer.ts";
+import type { Page } from "../types.ts";
 
 console.log("Hello from the playground");
+
+setup({
+  target: document.body,
+  ...sharedTwindSetup("development"),
+});
 
 function createPlaygroundEditor(
   elementSelector: string,
   dataSelector: string,
+  bodySelector: string,
 ) {
+  const container = document.getElementById(bodySelector);
+
+  if (!container) {
+    console.error("Failed to find #pagebody");
+
+    return;
+  }
+
   const editor = new JSONEditor(document.getElementById(elementSelector), {
-    onChangeJSON(data: string) {
-      // TODO: Re-render page contents in-browser now
-      console.log("json changed", data);
+    onChangeJSON: async (pageJson: Page) => {
+      const bodyMarkup = await renderBody(
+        pageJson,
+        pageJson.page,
+        {}, // TODO: Components should go here - load through data as well
+        {}, // Data context is empty for now
+        "/playground/", // hard coded for now
+      );
+
+      container.innerHTML = bodyMarkup;
     },
   });
 

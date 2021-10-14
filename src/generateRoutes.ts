@@ -1,4 +1,4 @@
-import { dir, get, getJsonSync, zipToObject } from "utils";
+import { dir, get, getJsonSync, zipToObject } from "./utils.ts";
 import type { DataContext, Meta, Page, SiteMeta } from "../types.ts";
 import transform from "./transform.ts";
 

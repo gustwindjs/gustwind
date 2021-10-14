@@ -1,6 +1,6 @@
 import { ensureDir } from "fs";
 import { join } from "path";
-import { getComponents, getJson } from "utils";
+import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { ProjectMeta } from "../types.ts";
