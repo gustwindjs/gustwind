@@ -99,7 +99,8 @@ async function serve(
                 components[componentName] = componentDefinition;
               }
 
-              // TODO: Update the current page
+              socket.send(JSON.stringify({ type: "reload" }));
+
               return;
             }
 

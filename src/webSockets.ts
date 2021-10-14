@@ -29,6 +29,10 @@ const getWebsocketServer = (port = 8080) => {
             ),
         )
           .catch((err) => ws.send(`error: ${err}`));
+      } else if (type === "reload") {
+        ws.send(JSON.stringify({ type: "log", payload: `received ${type}` }));
+
+        Deno.run({ cmd: ["touch", path] });
       }
     });
   });

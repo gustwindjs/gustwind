@@ -138,9 +138,10 @@ async function htmlTemplate(
       </div>
       <script>
         ${developmentSource}
-        window.createJSONEditor(document.getElementById("jsoneditor"), "${pagePath}", ${
-        JSON.stringify(page, null, 2)
-      });
+        const pagePath = "${pagePath}";
+        const data = ${JSON.stringify(page, null, 2)};
+        const socket = window.createWebSocket(pagePath);
+        window.createJSONEditor(socket, document.getElementById("jsoneditor"), pagePath, data);
       </script>
       <div id="pagebody">
         ${bodyMarkup || ""}
