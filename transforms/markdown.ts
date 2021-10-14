@@ -1,7 +1,8 @@
 import marked from "markdown";
-import hljs from "highlight";
+// import hljs from "highlight";
 import { tw } from "twind";
 
+/*
 import javascript from "highlight-js";
 import json from "highlight-json";
 import typescript from "highlight-ts";
@@ -11,6 +12,7 @@ hljs.registerLanguage("js", javascript);
 hljs.registerLanguage("json", json);
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("ts", typescript);
+*/
 
 marked.setOptions({
   gfm: true,
@@ -19,9 +21,9 @@ marked.setOptions({
   sanitize: false,
   smartLists: true,
   smartypants: true,
-  highlight: (code, language) => {
+  /*highlight: (code, language) => {
     return hljs.highlight(code, { language }).value;
-  },
+  },*/
 });
 
 // https://marked.js.org/using_pro#renderer
