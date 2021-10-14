@@ -2,9 +2,9 @@ import { getStyleTag } from "twind-sheets";
 import { exists } from "fs";
 import { basename, dirname, extname, join } from "path";
 import { getJson } from "./utils.ts";
-import { renderComponent } from "./renderComponent.ts";
 import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
+import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
   { components, mode }: {
@@ -54,22 +54,6 @@ function renderMetaMarkup(meta?: Meta) {
   }
 
   return ret.join("\n");
-}
-
-function renderBody(
-  page: Page,
-  pageComponent: Page["page"],
-  components: Components,
-  pageData: DataContext,
-  pathname: string,
-) {
-  return renderComponent(
-    {
-      children: Array.isArray(pageComponent) ? pageComponent : [pageComponent],
-    },
-    components,
-    { ...pageData, pathname, page },
-  );
 }
 
 let developmentSourceCache: string;
@@ -171,4 +155,4 @@ async function compileTypeScript(path: string) {
   return files["deno:///bundle.js"];
 }
 
-export { getPageRenderer, renderBody };
+export { getPageRenderer };

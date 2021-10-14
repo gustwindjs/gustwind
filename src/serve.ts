@@ -2,7 +2,8 @@ import { Application, Router } from "oak";
 import { getComponent, getComponents, getJson, watch } from "./utils.ts";
 import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer, renderBody } from "./getPageRenderer.ts";
+import { getPageRenderer } from "./getPageRenderer.ts";
+import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Components, Page, ProjectMeta } from "../types.ts";
 
