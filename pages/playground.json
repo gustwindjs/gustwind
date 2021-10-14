@@ -9,7 +9,9 @@
     },
     {
       "element": "main",
-      "children": "TODO"
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "__bind": "modes",
+      "children": "Try modifying the contents of this page using the editor (click \"Show editor\")."
     },
     {
       "component": "mainFooter"
