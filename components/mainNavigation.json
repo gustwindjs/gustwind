@@ -21,7 +21,7 @@
     },
     {
       "element": "div",
-      "class": "flex gap-4 font-light",
+      "class": "flex gap-4",
       "children": [
         {
           "component": "link",
