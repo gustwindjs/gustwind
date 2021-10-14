@@ -1,18 +1,17 @@
 import { getStyleTag } from "twind-sheets";
 import { renderComponent } from "./renderComponent.ts";
-import type { Components, DataContext, Meta, Page } from "../types.ts";
+import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { websocketClient } from "./webSockets.ts";
 
-type Mode = "development" | "production";
-
 function getPageRenderer(
-  { components, stylesheet, mode }: {
+  { components, mode }: {
     components: Components;
-    stylesheet: ReturnType<typeof getStyleSheet>;
     mode: Mode;
   },
 ) {
+  const stylesheet = getStyleSheet(mode);
+
   return async (
     pathname: string,
     pagePath: string,

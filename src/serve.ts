@@ -3,7 +3,6 @@ import { getComponents, getJson, watch } from "utils";
 import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderBody } from "./getPageRenderer.ts";
-import { getStyleSheet } from "./getStyleSheet.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
 
@@ -26,10 +25,8 @@ async function serve(
   const app = new Application();
   const router = new Router();
 
-  const stylesheet = getStyleSheet();
   const renderPage = getPageRenderer({
     components,
-    stylesheet,
     mode: "development",
   });
   const { paths } = await generateRoutes({

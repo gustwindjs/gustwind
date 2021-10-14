@@ -6,5 +6,5 @@ import sharedTwindSetup from "./sharedTwindSetup.ts";
 setup({
   // @ts-ignore This file will be compiled for the browser
   target: document.body,
-  ...sharedTwindSetup,
+  ...sharedTwindSetup("development"),
 });

@@ -70,6 +70,7 @@ type Page = {
   dataSources?: { name: string; transformWith: string }[];
 };
 type Meta = Record<string, string>;
+type Mode = "development" | "production";
 
 export type {
   Attributes,
@@ -80,6 +81,7 @@ export type {
   DataContext,
   Library,
   Meta,
+  Mode,
   Page,
   ParentCategory,
   ProjectMeta,

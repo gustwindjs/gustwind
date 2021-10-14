@@ -3,7 +3,6 @@ import { join } from "path";
 import { getComponents, getJson } from "utils";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
-import { getStyleSheet } from "./getStyleSheet.ts";
 import type { ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
@@ -30,10 +29,8 @@ async function build(projectMeta: ProjectMeta) {
   const outputDirectory = "./build";
 
   ensureDir(outputDirectory).then(async () => {
-    const stylesheet = getStyleSheet();
     const renderPage = getPageRenderer({
       components,
-      stylesheet,
       mode: "production",
     });
     const ret = await generateRoutes({
