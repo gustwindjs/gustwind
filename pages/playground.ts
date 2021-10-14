@@ -1,13 +1,10 @@
-console.log("hello from playground");
-
-/*
 /// <reference lib="dom" />
 import "sidewind";
 import { setup } from "twind-shim";
 import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 
-import { renderBody } from "../src/getPageRenderer.ts";
+// import { renderBody } from "../src/getPageRenderer.ts";
 import type { Page } from "../types.ts";
 
 console.log("Hello from the playground");
@@ -32,7 +29,7 @@ function createPlaygroundEditor(
 
   const editor = new JSONEditor(document.getElementById(elementSelector), {
     onChangeJSON: async (pageJson: Page) => {
-      const bodyMarkup = await renderBody(
+      /*const bodyMarkup = await renderBody(
         pageJson,
         pageJson.page,
         {}, // TODO: Components should go here - load through data as well
@@ -40,7 +37,7 @@ function createPlaygroundEditor(
         "/playground/", // hard coded for now
       );
 
-      container.innerHTML = bodyMarkup;
+      container.innerHTML = bodyMarkup;*/
     },
   });
 
@@ -57,4 +54,3 @@ declare global {
 }
 
 window.createPlaygroundEditor = createPlaygroundEditor;
-*/
