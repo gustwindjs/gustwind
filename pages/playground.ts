@@ -1,8 +1,7 @@
 /// <reference lib="dom" />
 
-/*
 import "sidewind";
-import { setup } from "twind-shim";
+/*import { setup } from "twind-shim";
 import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 */
