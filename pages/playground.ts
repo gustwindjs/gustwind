@@ -1,13 +1,11 @@
 /// <reference lib="dom" />
 
 import "sidewind";
-/*import { setup } from "twind-shim";
+import { setup } from "twind-shim";
 import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
-*/
 
-// import { renderBody } from "../src/renderBody.ts";
-/*
+import { renderBody } from "../src/renderBody.ts";
 import type { Page } from "../types.ts";
 
 console.log("Hello from the playground again");
@@ -17,6 +15,7 @@ setup({
   ...sharedTwindSetup("development"),
 });
 
+/*
 function createPlaygroundEditor(
   elementSelector: string,
   dataSelector: string,
