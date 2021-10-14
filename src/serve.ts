@@ -1,5 +1,5 @@
 import { Application, Router } from "oak";
-import { getComponents, getJson, watch } from "utils";
+import { getComponent, getComponents, getJson, watch } from "utils";
 import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderBody } from "./getPageRenderer.ts";
@@ -90,9 +90,16 @@ async function serve(
           const path = paths[pagePath];
 
           if (!path) {
-            // TODO: In case a component was updated, related pages should be
-            // updated as well instead of skipping the updates!
             if (matchedPath.includes(basename(componentsPath))) {
+              const [componentName, componentDefinition] = await getComponent(
+                matchedPath,
+              );
+
+              if (componentName && componentDefinition) {
+                components[componentName] = componentDefinition;
+              }
+
+              // TODO: Update the current page
               return;
             }
 

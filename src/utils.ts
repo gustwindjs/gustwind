@@ -12,15 +12,22 @@ function getJsonSync<R>(filePath: string): R {
 async function getComponents(directoryPath: string) {
   const componentFiles = await dir(directoryPath);
 
-  // TODO: Give a more specific error about which file failed to parse
   const o = await Promise.all(
-    await componentFiles.map(async (
-      { path },
-    ) => [basename(path, extname(path)), await getJson<Component>(path)]),
+    componentFiles.map(({ path }) => getComponent(path)),
   );
 
   // @ts-ignore How to type this
   return zipToObject<Component>(o);
+}
+
+async function getComponent(path: string): Promise<[string?, Component?]> {
+  try {
+    return [basename(path, extname(path)), await getJson<Component>(path)];
+  } catch (error) {
+    console.error(`Failed to parse ${path}`, error);
+  }
+
+  return [undefined, undefined];
 }
 
 function last<O>(array: O[]) {
@@ -92,6 +99,7 @@ export {
   dir,
   dirSync,
   get,
+  getComponent,
   getComponents,
   getJson,
   getJsonSync,
