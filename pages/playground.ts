@@ -2,17 +2,17 @@
 
 import "sidewind";
 import { setup } from "twind-shim";
-import JSONEditor from "jsoneditor";
-import sharedTwindSetup from "../src/sharedTwindSetup.ts";
+// import JSONEditor from "jsoneditor";
+// import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 
-import { renderBody } from "../src/renderBody.ts";
-import type { Page } from "../types.ts";
+// import { renderBody } from "../src/renderBody.ts";
+//import type { Page } from "../types.ts";
 
 console.log("Hello from the playground again");
 
 setup({
   target: document.body,
-  ...sharedTwindSetup("development"),
+  //  ...sharedTwindSetup("development"),
 });
 
 /*
