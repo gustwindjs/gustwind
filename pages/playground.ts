@@ -7,7 +7,7 @@ import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderBody } from "../src/renderBody.ts";
 import type { Page } from "../types.ts";
 
-console.log("Hello from the playground");
+console.log("Hello from the playground again");
 
 setup({
   target: document.body,
