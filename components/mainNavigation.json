@@ -1,6 +1,6 @@
 {
   "element": "nav",
-  "class": "flex justify-between p-4 bg-gray-100 font-thin",
+  "class": "sticky top-0 opacity-80 px-8 py-4 flex justify-between bg-gray-100 font-thin filter drop-shadow-sm",
   "children": [
     {
       "element": "div",

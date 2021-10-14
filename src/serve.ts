@@ -99,7 +99,17 @@ async function serve(
             return;
           }
 
-          const { meta, page } = await getJson<Page>(pagePath);
+          let pageJson;
+          try {
+            pageJson = await getJson<Page>(pagePath);
+          } catch (error) {
+            // TODO: Send an error to the client to show
+            console.error(error);
+
+            return;
+          }
+
+          const { meta, page } = pageJson;
           const bodyMarkup = await renderBody(
             page,
             components,

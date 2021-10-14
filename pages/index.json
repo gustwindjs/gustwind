@@ -14,6 +14,44 @@
       "component": "mainNavigation"
     },
     {
+      "element": "header",
+      "class": "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
+      "children": [
+        {
+          "element": "div",
+          "class": "md:mx-auto py-8 w-full lg:max-w-3xl flex",
+          "children": [
+            {
+              "element": "div",
+              "class": "flex flex-col gap-8",
+              "children": [
+                {
+                  "element": "h1",
+                  "class": "text-8xl",
+                  "children": [
+                    {
+                      "element": "span",
+                      "class": "text-8xl whitespace-nowrap pr-4",
+                      "children": "🐳💨"
+                    },
+                    {
+                      "children": "Gustwind"
+                    }
+                  ]
+                },
+                {
+                  "element": "h2",
+                  "class": "text-4xl font-extralight",
+                  "children": "Deno powered JSON oriented site generator"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
       "element": "main",
       "class": "md:mx-auto my-2 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "readme",
