@@ -1,0 +1,36 @@
+{
+  "element": "nav",
+  "class": "flex justify-between p-4 bg-gray-100 font-thin",
+  "children": [
+    {
+      "element": "div",
+      "class": "flex gap-8",
+      "children": [
+        {
+          "element": "a",
+          "class": "scale-150",
+          "children": "🐳💨",
+          "attributes": {
+            "href": "/"
+          }
+        },
+        {
+          "component": "navigation"
+        }
+      ]
+    },
+    {
+      "element": "div",
+      "class": "flex gap-4 font-light",
+      "children": [
+        {
+          "component": "link",
+          "children": "GitHub",
+          "attributes": {
+            "href": "https://github.com/survivejs/gustwind"
+          }
+        }
+      ]
+    }
+  ]
+}

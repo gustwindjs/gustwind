@@ -11,10 +11,7 @@
   ],
   "page": [
     {
-      "component": "githubCorner",
-      "__bind": {
-        "url": "https://github.com/survivejs/gustwind"
-      }
+      "component": "mainNavigation"
     },
     {
       "element": "main",
