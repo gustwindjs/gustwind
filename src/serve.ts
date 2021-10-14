@@ -5,15 +5,16 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderBody } from "./getPageRenderer.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Page, SiteMeta } from "../types.ts";
+import type { Page, ProjectMeta } from "../types.ts";
 
 async function serve(
-  port: number,
-  pagesPath: string,
-  componentsPath: string,
-  siteMeta: SiteMeta,
+  {
+    developmentPort,
+    meta: siteMeta,
+    paths: { components: componentsPath, pages: pagesPath },
+  }: ProjectMeta,
 ) {
-  console.log(`Serving at ${port}`);
+  console.log(`Serving at ${developmentPort}`);
 
   const wss = getWebsocketServer();
   const components = await getComponents(componentsPath);
@@ -114,8 +115,13 @@ async function serve(
     },
   );
 
-  await app.listen({ port });
+  await app.listen({ port: developmentPort });
 }
 
-// TODO: Make port configurable + extract siteMeta to a JSON file
-serve(3000, "./pages", "./components", { siteName: "Gustwind" });
+if (import.meta.main) {
+  const siteMeta = await getJson<ProjectMeta>("./meta.json");
+
+  serve(siteMeta);
+}
+
+export { serve };

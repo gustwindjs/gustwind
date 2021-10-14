@@ -1,0 +1,10 @@
+{
+  "developmentPort": 3000,
+  "meta": {
+    "siteName": "Gustwind"
+  },
+  "paths": {
+    "components": "./components",
+    "pages": "./pages"
+  }
+}

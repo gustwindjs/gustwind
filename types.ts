@@ -52,7 +52,17 @@ type BlogPost = {
     photo: string;
   };
 };
-type SiteMeta = { siteName: string };
+type SiteMeta = {
+  siteName: string;
+};
+type ProjectMeta = {
+  developmentPort: number;
+  meta: SiteMeta;
+  paths: {
+    components: string;
+    pages: string;
+  };
+};
 type Page = {
   meta: Meta;
   page: Component | Component[];
@@ -72,6 +82,7 @@ export type {
   Meta,
   Page,
   ParentCategory,
+  ProjectMeta,
   Props,
   SiteMeta,
 };

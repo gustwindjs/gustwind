@@ -1,11 +1,12 @@
 import { ensureDir } from "fs";
 import { join } from "path";
-import { getComponents } from "utils";
+import { getComponents, getJson } from "utils";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
+import type { ProjectMeta } from "../types.ts";
 
-async function build() {
+async function build(projectMeta: ProjectMeta) {
   console.log("Building to static");
 
   let routes: string[] = [];
@@ -50,8 +51,7 @@ async function build() {
         );
       },
       pagesPath: "./pages",
-      // TODO: Extract to meta.json
-      siteMeta: { siteName: "JSter" },
+      siteMeta: projectMeta.meta,
     });
 
     routes = ret.routes;
@@ -59,7 +59,9 @@ async function build() {
 }
 
 if (import.meta.main) {
-  build();
+  const siteMeta = await getJson<ProjectMeta>("./meta.json");
+
+  build(siteMeta);
 }
 
 export { build };

@@ -269,6 +269,23 @@ We can apply the same idea for generating a reversed blog index:
 
 Transforms are powerful as they let you shape the data to fit specific needs within different parts of the system.
 
+## Project configuration
+
+Each project built with Gustwind needs minimal configuration to describe where to find the assets, site name, and development port:
+
+**meta.json**
+
+```json
+{
+  "developmentPort": 3000,
+  "siteName": "Gustwind",
+  "paths": {
+    "components": "./components",
+    "pages": "./pages"
+  }
+}
+```
+
 ## Further development to be done
 
 * Parallelize build process for extra performance (likely needs import maps for Web Workers in Deno)
