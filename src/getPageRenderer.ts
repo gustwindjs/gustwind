@@ -99,7 +99,8 @@ async function htmlTemplate(
     );
 
     if (diagnostics.length) {
-      console.log("Received diagnostics from Deno compiler", diagnostics);
+      // Disabled for now to avoid noise
+      // console.log("Received diagnostics from Deno compiler", diagnostics);
     }
 
     developmentSource = files["deno:///bundle.js"];
