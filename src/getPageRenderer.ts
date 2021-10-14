@@ -1,4 +1,5 @@
 import { getStyleTag } from "twind-sheets";
+import { getJson } from "./utils.ts";
 import { renderComponent } from "./renderComponent.ts";
 import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
@@ -80,21 +81,17 @@ async function htmlTemplate(
   let developmentSource = "";
 
   if (mode === "development") {
+    const importMapName = "import_map.json";
+    const importMap = await getJson<{ imports: Record<string, string> }>(
+      importMapName,
+    );
+
     const { files, diagnostics } = await Deno.emit(
       "./src/developmentShim.ts",
       {
         bundle: "classic", // or "module"
-        // TODO: Read this from import_map.json
-        importMap: {
-          imports: {
-            "jsoneditor": "https://esm.sh/jsoneditor@9.5.6",
-            "twind-shim": "https://cdn.skypack.dev/twind/shim",
-            "twind-colors": "https://unpkg.com/twind@0.16.16/colors/colors.js",
-            "twind-typography":
-              "https://unpkg.com/@twind/typography@0.0.2/typography.js",
-          },
-        },
-        importMapPath: "file:///import_map.json",
+        importMap,
+        importMapPath: `file:///${importMapName}`,
       },
     );
 
