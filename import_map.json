@@ -6,6 +6,7 @@
     "highlight-json": "https://unpkg.com/highlight.js@11.2.0/es/languages/json",
     "highlight-ts": "https://unpkg.com/highlight.js@11.2.0/es/languages/typescript",
     "oak": "https://deno.land/x/oak@v9.0.1/mod.ts",
+    "jsoneditor": "https://esm.sh/jsoneditor@9.5.6",
     "markdown": "https://esm.sh/marked@3.0.7",
     "path": "https://deno.land/std@0.107.0/path/mod.ts",
     "style-vendorizer": "https://unpkg.com/style-vendorizer@2.1.1/dist/esm/bundle.min.mjs",

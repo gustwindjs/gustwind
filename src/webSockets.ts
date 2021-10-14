@@ -36,48 +36,4 @@ const getWebsocketServer = (port = 8080) => {
   return wss;
 };
 
-const websocketClient = `const socket = new WebSocket('ws://localhost:8080');
-  
-socket.addEventListener('message', (event) => {
-  let type, payload;
-
-  try {
-    const data = JSON.parse(event.data);
-
-    type = data.type;
-    payload = data.payload;
-  } catch(err) {
-    console.error(event, err);
-
-    return;
-  }
-
-  if (type === 'log') {
-    console.log('WebSocket', payload);
-  }
-  else if (type === 'refresh') {
-    console.log('WebSocket', 'refreshing');
-
-    const container = document.getElementById("pagebody");
-    container.innerHTML = payload.bodyMarkup;
-
-    document.querySelector("title").innerHTML = payload.meta.title;
-    Object.entries(payload.meta).forEach(([k, v]) => {
-      const element = document.head.querySelector("meta[name='" + k + "']");
-
-      if (element) {
-        element.setAttribute('content', v);
-      }
-      else {
-        console.error('WebSocket', 'meta element not found for', k);
-      }
-    })
-  }
-  else {
-    console.log('WebSocket', 'unknown event', event);
-  }
-});`
-  .split("\n")
-  .join("");
-
-export { getWebsocketServer, websocketClient };
+export { getWebsocketServer };

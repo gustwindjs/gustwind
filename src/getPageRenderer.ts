@@ -2,7 +2,6 @@ import { getStyleTag } from "twind-sheets";
 import { renderComponent } from "./renderComponent.ts";
 import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
-import { websocketClient } from "./webSockets.ts";
 
 function getPageRenderer(
   { components, mode }: {
@@ -78,17 +77,17 @@ async function htmlTemplate(
     page: Page;
   },
 ) {
-  let twindSource = "";
+  let developmentSource = "";
 
   if (mode === "development") {
-    // TODO: Generate twind shim
     const { files, diagnostics } = await Deno.emit(
-      "./src/twindBrowserShim.ts",
+      "./src/developmentShim.ts",
       {
         bundle: "classic", // or "module"
         // TODO: Read this from import_map.json
         importMap: {
           imports: {
+            "jsoneditor": "https://esm.sh/jsoneditor@9.5.6",
             "twind-shim": "https://cdn.skypack.dev/twind/shim",
             "twind-colors": "https://unpkg.com/twind@0.16.16/colors/colors.js",
             "twind-typography":
@@ -103,7 +102,7 @@ async function htmlTemplate(
       console.log("Received diagnostics from Deno compiler", diagnostics);
     }
 
-    twindSource = files["deno:///bundle.js"];
+    developmentSource = files["deno:///bundle.js"];
   }
 
   return `<!DOCTYPE html>
@@ -114,10 +113,8 @@ async function htmlTemplate(
     <script type="text/javascript" src="https://unpkg.com/sidewind@3.4.0/dist/sidewind.umd.production.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
     ${
-    // TODO: Use the same setup for shim as for twind otherwise to allow runtime behavior while matching outlook (prose etc.)
     mode === "development"
-      ? `<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">
-<script src="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.js"></script>`
+      ? `<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">`
       : ""
   }
     ${metaMarkup || ""}
@@ -137,23 +134,14 @@ async function htmlTemplate(
         </div>
       </div>
       <script>
-      ${twindSource}
-      ${websocketClient}
-      const editor = new JSONEditor(document.getElementById("jsoneditor"), {
-        onChangeJSON(data) {
-          socket.send(JSON.stringify({
-            type: 'update',
-            payload: {
-              path: "${pagePath}",
-              data
-            }
-          }));
-        }
+        ${developmentSource}
+        window.createJSONEditor(document.getElementById("jsoneditor"), "${pagePath}", ${
+        JSON.stringify(page, null, 2)
       });
-
-      editor.set(${JSON.stringify(page, null, 2)});
       </script>
-      <div id="pagebody">${bodyMarkup || ""}</div>
+      <div id="pagebody">
+        ${bodyMarkup || ""}
+      </div>
     </div>`
       : bodyMarkup || ""
   }
