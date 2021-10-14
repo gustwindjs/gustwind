@@ -53,6 +53,17 @@ marked.use({
         code +
         "</code></pre>\n";
     },
+    link(href, title, text) {
+      if (href === null) {
+        return text;
+      }
+      let out = '<a class="' + tw`underline` + '" href="' + href + '"';
+      if (title) {
+        out += ' title="' + title + '"';
+      }
+      out += ">" + text + "</a>";
+      return out;
+    },
     list(body, ordered, start) {
       const type = ordered ? "ol" : "ul",
         startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
