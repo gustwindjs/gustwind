@@ -178,7 +178,7 @@ function wrapInElement(
     return typeof children === "string" ? children : "";
   }
 
-  return `<${element}${attributes}>${children}</${element}>`;
+  return `<${element}${attributes}>${children || ""}</${element}>`;
 }
 
 function generateAttributes(attributes: Attributes, context: DataContext) {

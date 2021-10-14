@@ -49,8 +49,7 @@
               "class": "fixed bg-white bottom-0 w-full max-h-1/2",
               "attributes": {
                 "id": "playgroundeditor"
-              },
-              "children": "editor goes here"
+              }
             }
           ]
         },
