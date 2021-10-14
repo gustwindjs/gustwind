@@ -184,8 +184,16 @@ function wrapInElement(
 function generateAttributes(attributes: Attributes, context: DataContext) {
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
-      // @ts-ignore: TODO: How to type this?
-      return `${k.slice(2)}="${context.__bound[v]}"`;
+      return `${k.slice(2)}="${
+        // TODO: Figure out the correct way to apply JSON.stringify as that's
+        // probably not the right default behavior here.
+        // @ts-ignore: TODO: How to type this?
+        context.__bound
+          // @ts-ignore: TODO: How to type this?
+          ? context.__bound[v]
+          : // @ts-ignore: TODO: How to type this?
+            encodeURIComponent(JSON.stringify(context[v]))
+      }"`;
     }
 
     return `${k}="${v}"`;

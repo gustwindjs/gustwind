@@ -126,6 +126,7 @@ async function serve(
 
           const { meta, page } = pageJson;
           const bodyMarkup = await renderBody(
+            pageJson,
             page,
             components,
             // TODO: Fix context

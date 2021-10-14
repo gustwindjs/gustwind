@@ -22,6 +22,7 @@ function getPageRenderer(
     initialBodyMarkup?: string,
   ) => {
     const bodyMarkup = initialBodyMarkup || await renderBody(
+      page,
       page.page,
       components,
       pageData,
@@ -56,6 +57,7 @@ function renderMetaMarkup(meta?: Meta) {
 }
 
 function renderBody(
+  page: Page,
   pageComponent: Page["page"],
   components: Components,
   pageData: DataContext,
@@ -66,7 +68,7 @@ function renderBody(
       children: Array.isArray(pageComponent) ? pageComponent : [pageComponent],
     },
     components,
-    { ...pageData, pathname },
+    { ...pageData, pathname, page },
   );
 }
 

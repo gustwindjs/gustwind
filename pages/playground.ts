@@ -3,10 +3,9 @@ import JSONEditor from "jsoneditor";
 
 console.log("Hello from the playground");
 
-// TODO: Write data to some data attribute and load it from there initially
 function createPlaygroundEditor(
   elementSelector: string,
-  data: string,
+  dataSelector: string,
 ) {
   const editor = new JSONEditor(document.getElementById(elementSelector), {
     onChangeJSON(data: string) {
@@ -15,7 +14,10 @@ function createPlaygroundEditor(
     },
   });
 
-  editor.set(data);
+  const dataElement = document.getElementById(dataSelector);
+
+  dataElement &&
+    editor.set(JSON.parse(decodeURIComponent(dataElement.dataset.page || "")));
 }
 
 declare global {

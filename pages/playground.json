@@ -17,7 +17,7 @@
       "children": [
         {
           "element": "button",
-          "class": "fixed bottom-0 left-0 m-2 z-50",
+          "class": "m-2 bg-gray-200",
           "attributes": {
             "onclick": "setState(({ showEditor }) => ({ showEditor: !showEditor }))"
           },
@@ -54,8 +54,15 @@
           ]
         },
         {
+          "element": "div",
+          "attributes": {
+            "id": "pagedata",
+            "__data-page": "page"
+          }
+        },
+        {
           "element": "script",
-          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', {});"
+          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', 'pagedata');"
         },
         {
           "element": "link",
