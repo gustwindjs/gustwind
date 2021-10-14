@@ -47,10 +47,24 @@
             {
               "element": "div",
               "class": "fixed bg-white bottom-0 w-full max-h-1/2",
-              "id": "playgroundeditor",
+              "attributes": {
+                "id": "playgroundeditor"
+              },
               "children": "editor goes here"
             }
           ]
+        },
+        {
+          "element": "script",
+          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', {});"
+        },
+        {
+          "element": "link",
+          "attributes": {
+            "rel": "stylesheet",
+            "type": "text/css",
+            "href": "https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css"
+          }
         }
       ]
     },

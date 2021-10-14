@@ -5,8 +5,12 @@ function getJson<R>(filePath: string): Promise<R> {
   return Deno.readTextFile(filePath).then((d) => JSON.parse(d));
 }
 
-function getJsonSync<R>(filePath: string): R {
-  return JSON.parse(Deno.readTextFileSync(filePath));
+function getJsonSync<R>(filePath: string) {
+  try {
+    return JSON.parse(Deno.readTextFileSync(filePath));
+  } catch (error) {
+    console.error("Failed to parse", filePath, error);
+  }
 }
 
 async function getComponents(directoryPath: string) {
@@ -53,21 +57,33 @@ function get<O = Record<string, unknown>>(dataContext: O, key: string): string {
   return value as unknown as string;
 }
 
-async function dir(p: string) {
+async function dir(p: string, extension?: string) {
   const ret = [];
 
   for await (const { name } of Deno.readDir(p)) {
-    ret.push({ path: join(p, name), name });
+    if (extension) {
+      if (extname(name) === extension) {
+        ret.push({ path: join(p, name), name });
+      }
+    } else {
+      ret.push({ path: join(p, name), name });
+    }
   }
 
   return ret;
 }
 
-function dirSync(p: string) {
+function dirSync(p: string, extension?: string) {
   const ret = [];
 
   for (const { name } of Deno.readDirSync(p)) {
-    ret.push({ path: join(p, name), name });
+    if (extension) {
+      if (extname(name) === extension) {
+        ret.push({ path: join(p, name), name });
+      }
+    } else {
+      ret.push({ path: join(p, name), name });
+    }
   }
 
   return ret;

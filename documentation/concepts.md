@@ -209,6 +209,10 @@ In this example, we're defining the mapping between the data and the pages to ge
 
 Another thing we're doing here is binding data to the `meta` of the page. That `match` property contains the data of the currently matched blog post and we can use it where we need it.
 
+## Loading scripts
+
+If a script that has the same name as a page exists, then Deno will compile it and include the result to the static page. I.e. if a `blog.json` and `blog.ts` files existed, the latter would get compiled and included to the resulting HTML file.
+
 ## Transforms
 
 Note also the `transformWith` property we use against the match body. Using it we tell the system to use the `markdown` transform to compile.

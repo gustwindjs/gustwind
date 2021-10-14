@@ -1,4 +1,6 @@
 import { getStyleTag } from "twind-sheets";
+import { exists } from "fs";
+import { basename, dirname, extname, join } from "path";
 import { getJson } from "./utils.ts";
 import { renderComponent } from "./renderComponent.ts";
 import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
@@ -83,28 +85,18 @@ async function htmlTemplate(
   let developmentSource = developmentSourceCache;
 
   if (mode === "development" && !developmentSourceCache) {
-    const importMapName = "import_map.json";
-    const importMap = await getJson<{ imports: Record<string, string> }>(
-      importMapName,
-    );
-
-    const { files, diagnostics } = await Deno.emit(
-      "./src/developmentShim.ts",
-      {
-        bundle: "classic", // or "module"
-        importMap,
-        importMapPath: `file:///${importMapName}`,
-      },
-    );
-
-    if (diagnostics.length) {
-      // Disabled for now to avoid noise
-      // console.log("Received diagnostics from Deno compiler", diagnostics);
-    }
-
-    developmentSource = files["deno:///bundle.js"];
-
+    developmentSource = await compileTypeScript("./src/developmentShim.ts");
     developmentSourceCache = developmentSource;
+  }
+
+  const scriptPath =
+    join(dirname(pagePath), basename(pagePath, extname(pagePath))) + ".ts";
+
+  let pageSource;
+
+  if (await exists(scriptPath)) {
+    // TODO: Minify in production
+    pageSource = await compileTypeScript(scriptPath);
   }
 
   return `<!DOCTYPE html>
@@ -149,8 +141,32 @@ async function htmlTemplate(
     </div>`
       : bodyMarkup || ""
   }
+  ${pageSource ? `<script>${pageSource}</script>` : ""}
   </body>
 </html>`;
+}
+
+async function compileTypeScript(path: string) {
+  const importMapName = "import_map.json";
+  const importMap = await getJson<{ imports: Record<string, string> }>(
+    importMapName,
+  );
+
+  const { files, diagnostics } = await Deno.emit(
+    path,
+    {
+      bundle: "classic", // or "module"
+      importMap,
+      importMapPath: `file:///${importMapName}`,
+    },
+  );
+
+  if (diagnostics.length) {
+    // Disabled for now to avoid noise
+    // console.log("Received diagnostics from Deno compiler", diagnostics);
+  }
+
+  return files["deno:///bundle.js"];
 }
 
 export { getPageRenderer, renderBody };
