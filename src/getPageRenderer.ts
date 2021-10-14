@@ -18,8 +18,9 @@ function getPageRenderer(
     pagePath: string,
     pageData: DataContext,
     page: Page,
+    initialBodyMarkup?: string,
   ) => {
-    const bodyMarkup = await renderBody(
+    const bodyMarkup = initialBodyMarkup || await renderBody(
       page.page,
       components,
       pageData,

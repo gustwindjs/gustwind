@@ -7,6 +7,11 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
 
+// The cache is populated based on web socket calls. If a page
+// is updated by web sockets, it should end up here so that
+// oak router can then refer to the cached version instead.
+const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
+
 async function serve(
   {
     developmentPort,
@@ -40,7 +45,12 @@ async function serve(
             ctx.request.url.pathname,
             path,
             context,
-            page,
+            // If there's cached data, use it instead. This fixes
+            // the case in which there was an update over web socket and
+            // also avoids the need to hit the file system for getting
+            // the latest data.
+            cachedPages[route]?.page || page,
+            cachedPages[route]?.bodyMarkup,
           );
 
           ctx.response.body = new TextEncoder().encode(
@@ -93,19 +103,29 @@ async function serve(
           }
 
           const { meta, page } = await getJson<Page>(pagePath);
+          const bodyMarkup = await renderBody(
+            page,
+            components,
+            // TODO: Fix context
+            // Resolve against data again if data sources have changes
+            path.context,
+            path.route,
+          );
+
+          // Cache page so that manual refresh at the client side still
+          // has access to it.
+          cachedPages[path.route] = {
+            bodyMarkup,
+            // TODO: Improve naming
+            // Update page content.
+            page: { ...path.page, page },
+          };
 
           socket.send(
             JSON.stringify({
               type: "refresh",
               payload: {
-                bodyMarkup: await renderBody(
-                  page,
-                  components,
-                  // TODO: Fix context
-                  // Resolve against data again if data sources have changes
-                  path.context,
-                  path.route,
-                ),
+                bodyMarkup,
                 meta,
               },
             }),
