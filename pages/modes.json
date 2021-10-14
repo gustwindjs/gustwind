@@ -15,7 +15,7 @@
     },
     {
       "element": "main",
-      "class": "md:mx-auto my-2 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "modes",
       "__children": "content"
     },
