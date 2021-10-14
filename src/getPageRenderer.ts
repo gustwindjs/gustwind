@@ -128,12 +128,12 @@ async function htmlTemplate(
     mode === "development"
       ? `<div>
       <div hidden x-cloak x-state="{ showEditor: false }">
-        <button type="button" class="fixed bottom-0 right-0 m-2" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
+        <button type="button" class="fixed bottom-0 right-0 m-2 z-50" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
           <div x-class="state.showEditor && 'hidden'">Show editor</div>
           <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
         </button>
         <div x-class="!state.showEditor && 'hidden'">
-          <div id="jsoneditor" class="fixed bg-white top-0 w-full max-h-1/2"></div>
+          <div id="jsoneditor" class="fixed bg-white bottom-0 w-full max-h-1/2"></div>
         </div>
       </div>
       <script>
