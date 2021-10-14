@@ -104,13 +104,18 @@ async function renderComponent(
       : component.children;
   }
 
+  const content = await transform(component?.transformWith, children);
+
   return wrapInElement(
     component.element,
     generateAttributes({
       ...component.attributes,
       class: resolveClass(component, context),
     }, context),
-    await transform(component?.transformWith, children),
+    component?.selectProperty && isObject(content)
+      // @ts-ignore: Rework how transformed values are selected
+      ? content[component.selectProperty]
+      : content,
   );
 }
 

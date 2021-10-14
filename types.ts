@@ -8,6 +8,7 @@ type Component = {
   class?: string;
   attributes?: Attributes;
   transformWith?: "markdown";
+  selectProperty?: string;
   // Data bindings
   __bind?: string;
   __class?: string;

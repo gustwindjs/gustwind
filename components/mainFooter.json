@@ -1,0 +1,69 @@
+{
+  "element": "footer",
+  "class": "py-8 font-light bg-gradient-to-br from-emerald-100 to-purple-200",
+  "children": [
+    {
+      "element": "div",
+      "class": "flex flex-col container mx-auto gap-4",
+      "children": [
+        {
+          "element": "section",
+          "class": "grid grid-cols-3 gap-4",
+          "children": [
+            {
+              "element": "div",
+              "class": "flex flex-col",
+              "children": [
+                {
+                  "element": "h2",
+                  "children": "About"
+                },
+                {
+                  "element": "div",
+                  "class": "font-thin",
+                  "children": "Gustwind is a Deno powered JSON oriented site generator. It was developed with speed and flexibility in mind."
+                }
+              ]
+            },
+            {
+              "element": "div",
+              "class": "flex flex-col",
+              "children": [
+                {
+                  "element": "h2",
+                  "children": "Navigation"
+                },
+                {
+                  "element": "div",
+                  "class": "flex gap-4 font-thin",
+                  "children": [
+                    {
+                      "component": "navigation"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "element": "div",
+              "class": "flex flex-col",
+              "children": [
+                {
+                  "element": "h2",
+                  "children": "Credits"
+                },
+                {
+                  "element": "div",
+                  "class": "font-thin",
+                  "transformWith": "markdown",
+                  "selectProperty": "content",
+                  "children": "Gustwind was developed by [Juho Vepsäläinen](https://github.com/bebraw)."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
