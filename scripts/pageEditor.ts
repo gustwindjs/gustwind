@@ -48,18 +48,18 @@ async function createPlaygroundEditor() {
   );
 
   const components = await fetch("/components.json").then((res) => res.json());
-
-  console.log("components", components);
+  const context = await fetch("./context.json").then((res) => res.json());
 
   const editor = new JSONEditor(pageEditorElement, {
     onChangeJSON: async (pageJson: Page) => {
       updateMeta(pageJson.meta);
 
+      // TODO: Figure out how to handle transforms (disallow?)
       const bodyMarkup = await renderBody(
         pageJson,
         pageJson.page,
         components,
-        {}, // TODO: Load data from JSON
+        context,
         "/playground/", // hard coded for now - TODO: get this from the location
       );
 
