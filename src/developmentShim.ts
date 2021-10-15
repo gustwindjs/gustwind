@@ -2,6 +2,7 @@
 import JSONEditor from "jsoneditor";
 import { setup } from "twind-shim";
 import sharedTwindSetup from "./sharedTwindSetup.ts";
+import updateMeta from "./updateMeta.ts";
 import type { Page } from "../types.ts";
 
 setup({
@@ -41,24 +42,7 @@ function createWebSocket(path: string) {
 
       container.innerHTML = payload.bodyMarkup;
 
-      const title = document.querySelector("title");
-
-      if (title) {
-        title.innerHTML = payload.meta.title;
-      } else {
-        console.warn(`The page doesn't have a <title>!`);
-      }
-
-      Object.entries(payload.meta).forEach(([k, v]) => {
-        const element = document.head.querySelector("meta[name='" + k + "']");
-
-        if (element) {
-          // TODO: Type better by typing possible web socket messages
-          element.setAttribute("content", v as string);
-        } else {
-          console.error("WebSocket", "meta element not found for", k);
-        }
-      });
+      updateMeta(payload.meta);
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 

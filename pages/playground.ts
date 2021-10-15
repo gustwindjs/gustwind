@@ -3,7 +3,7 @@ import "sidewind";
 import { setup } from "twind-shim";
 import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
-
+import updateMeta from "../src/updateMeta.ts";
 import { renderBody } from "../src/renderBody.ts";
 import type { Page } from "../types.ts";
 
@@ -22,13 +22,23 @@ function createPlaygroundEditor(
   const container = document.getElementById(bodySelector);
 
   if (!container) {
-    console.error("Failed to find #pagebody");
+    console.error("Failed to find body element");
 
     return;
   }
 
-  const editor = new JSONEditor(document.getElementById(elementSelector), {
+  const editorElement = document.getElementById(elementSelector);
+
+  if (!editorElement) {
+    console.error("Failed to find editor element");
+
+    return;
+  }
+
+  const editor = new JSONEditor(editorElement, {
     onChangeJSON: async (pageJson: Page) => {
+      updateMeta(pageJson.meta);
+
       const bodyMarkup = await renderBody(
         pageJson,
         pageJson.page,
