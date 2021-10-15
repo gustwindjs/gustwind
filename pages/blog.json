@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "title": "Blog",
+    "description": "A blog about Gustwind"
+  },
+  "dataSources": [
+    {
+      "id": "blogPosts",
+      "operation": "indexBlog",
+      "input": "./blogPosts"
+    }
+  ],
+  "page": [
+    {
+      "component": "mainNavigation"
+    },
+    {
+      "element": "main",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "__bind": "blogPosts",
+      "children": [
+        {
+          "element": "ul",
+          "class": "",
+          "__children": [
+            {
+              "element": "li",
+              "class": "inline",
+              "children": [
+                {
+                  "component": "link",
+                  "__children": "title",
+                  "attributes": {
+                    "__href": "slug"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "component": "mainFooter"
+    }
+  ]
+}

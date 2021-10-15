@@ -25,6 +25,8 @@ async function renderComponent(
     } else {
       context = { ...context, __bound: get(context, component.__bind) };
     }
+
+    console.log("binding", context);
   }
 
   if (foundComponent) {
@@ -66,34 +68,6 @@ async function renderComponent(
         )
       ).join("");
     }
-  } else if (component.__foreach) {
-    const { field, render } = component.__foreach;
-
-    // @ts-ignore: TODO: How to type this?
-    const childrenToRender = context.__bound[field];
-
-    if (!childrenToRender) {
-      console.warn(
-        "No children to render for",
-        component,
-        // @ts-ignore: TODO: How to type this?
-        context.__bound,
-        field,
-      );
-    }
-
-    children = (await Promise.all(
-      childrenToRender.flatMap((c: DataContext) =>
-        Array.isArray(render)
-          ? render.map((r) =>
-            renderComponent(r, components, { ...context, __bound: c })
-          )
-          : renderComponent(render, components, {
-            ...context,
-            __bound: c,
-          })
-      ),
-    )).join("");
   } else {
     children = Array.isArray(component.children)
       ? (await Promise.all(

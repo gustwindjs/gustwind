@@ -13,10 +13,6 @@ type Component = {
   __bind?: string;
   __class?: string;
   __children?: string | Component[];
-  __foreach?: {
-    field: string;
-    render: string | Component[];
-  };
 };
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
@@ -34,24 +30,13 @@ type Library = {
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
 type BlogPost = {
-  id: string;
-  title: string;
-  shortTitle: string;
-  slug: string;
-  date: string;
-  type: "comparison" | "interview" | "rating" | "static";
-  user: string;
-  includes?: string[];
-  body: string;
-  footer?: string;
-  table?: Record<string, string[]>;
-  profile?: {
-    name: string;
-    twitter: string;
-    github: string;
-    bio: string;
-    photo: string;
+  data: {
+    slug: string;
+    title: string;
+    date: Date;
+    keywords: string[];
   };
+  content: string;
 };
 type SiteMeta = {
   siteName: string;
