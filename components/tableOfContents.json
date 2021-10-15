@@ -2,8 +2,8 @@
   "element": "nav",
   "attributes": {
     "x-label": "parent",
-    "x-state": "{ closest: {}, headings: Array.from(document.querySelectorAll('main h2, h3')) }",
-    "x-closest": "{ state: { closest: document.querySelectorAll('main h2, h3') } }"
+    "x-state": "{ closest: {}, headings: Array.from(document.querySelectorAll('#main h2, h3')) }",
+    "x-closest": "{ state: { closest: document.querySelectorAll('#main h2, h3') } }"
   },
   "children": [
     {
