@@ -5,7 +5,9 @@
   },
   "dataSources": [
     {
-      "name": "modes",
+      "id": "modes",
+      "operation": "file",
+      "input": "./documentation/modes.md",
       "transformWith": "markdown"
     }
   ],

@@ -143,7 +143,9 @@ The first two cases can be defined with the following syntax:
   },
   "dataSources": [
     {
-      "name": "readme",
+      "id": "readme",
+      "operation": "file",
+      "input": "./README.md",
       "transformWith": "markdown"
     }
   ],
@@ -177,7 +179,11 @@ The `[blog].json` case is more complicated as there we'll have to define the map
     "__description": "match.description"
   },
   "matchBy": { "dataSource": "blogPosts", "field": "id" },
-  "dataSources": [{ "name": "blogPosts" }],
+  "dataSources": [{
+    "id": "blogPosts",
+    "operation": "files",
+    "input": "./content/blogPosts"
+  }],
   "page": [
     {
       "component": "mainNavigation"
@@ -227,7 +233,12 @@ We can apply the same idea for generating a reversed blog index:
     "title": "Blog",
     "description": "Blog description goes here"
   },
-  "dataSources": [{ "name": "blogPosts", "transformWith": "reversed" }],
+  "dataSources": [{
+    "id": "blogPosts",
+    "operation": "index",
+    "transformWith": "reversed",
+    "input": "./content/blogPosts"
+  }],
   "page": [
     {
       "component": "mainNavigation"

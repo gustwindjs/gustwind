@@ -68,7 +68,12 @@ type Page = {
   meta: Meta;
   page: Component | Component[];
   matchBy?: { dataSource: string; field: string };
-  dataSources?: { name: string; transformWith: string }[];
+  dataSources?: {
+    id: string;
+    operation: string;
+    input: string;
+    transformWith: string;
+  }[];
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";

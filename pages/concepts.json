@@ -5,7 +5,9 @@
   },
   "dataSources": [
     {
-      "name": "concepts",
+      "id": "concepts",
+      "operation": "file",
+      "input": "./documentation/concepts.md",
       "transformWith": "markdown"
     }
   ],

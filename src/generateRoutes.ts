@@ -17,7 +17,7 @@ async function generateRoutes(
   const pages = (await dir(pagesPath, ".json")).map((meta) => ({
     meta,
     // TODO: Can this become async?
-    page: getJsonSync<Page>(meta.path),
+    page: getJsonSync<Page>(meta.path) as Page,
   }));
   const paths: Record<
     string,
@@ -33,9 +33,9 @@ async function generateRoutes(
     if (dataSources) {
       await Promise.all(
         // @ts-ignore: Figure out how the type
-        dataSources.map(({ name, transformWith }) =>
-          import(`../dataSources/${name}.ts`).then(async (o) => (
-            [name, await transform(transformWith, await o.default())]
+        dataSources.map(({ id, operation, input, transformWith }) =>
+          import(`../dataSources/${operation}.ts`).then(async (o) => (
+            [id, await transform(transformWith, await o.default(input))]
           ))
         ),
       ).then((
