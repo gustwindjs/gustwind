@@ -46,7 +46,8 @@ async function serve(
             "text/html; charset=UTF-8",
           );
 
-          const data = await renderPage(
+          // TODO: Set up a new route for js before returning
+          const [html, js] = await renderPage(
             ctx.request.url.pathname,
             path,
             context,
@@ -59,7 +60,7 @@ async function serve(
           );
 
           ctx.response.body = new TextEncoder().encode(
-            data,
+            html,
           );
         } catch (err) {
           console.error(err);

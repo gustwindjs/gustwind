@@ -85,7 +85,7 @@ async function htmlTemplate(
     pageSource = await compileTypeScript(scriptPath);
   }
 
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8"
@@ -130,6 +130,9 @@ async function htmlTemplate(
   ${pageSource ? `<script>${pageSource}</script>` : ""}
   </body>
 </html>`;
+
+  // TODO: Return js as well
+  return [html];
 }
 
 async function compileTypeScript(path: string) {

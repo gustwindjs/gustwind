@@ -34,16 +34,17 @@ async function build(projectMeta: ProjectMeta) {
       mode: "production",
     });
     const ret = await generateRoutes({
-      renderPage(route, path, context, page) {
+      renderPage: async (route, path, context, page) => {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);
 
         const dir = join(outputDirectory, route);
+        const [html, js] = await renderPage(route, path, context, page);
 
-        ensureDir(dir).then(async () =>
+        ensureDir(dir).then(() =>
           Deno.writeTextFile(
             join(dir, "index.html"),
-            await renderPage(route, path, context, page),
+            html,
           )
         );
       },
