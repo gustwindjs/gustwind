@@ -30,7 +30,7 @@ async function toggleEditor() {
     console.error("Failed to find page editor element");
 
     try {
-      await importScript("pageEditor.js");
+      await importScript("/pageEditor.js");
 
       tries++;
 

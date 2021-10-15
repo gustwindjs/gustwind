@@ -1,10 +1,10 @@
 import { getStyleTag } from "twind-sheets";
 import { exists } from "fs";
 import { basename, dirname, extname, join } from "path";
-import { getJson } from "./utils.ts";
 import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
+import { compileTypeScript } from "./compileTypeScript.ts";
 
 function getPageRenderer(
   { components, mode }: {
@@ -136,29 +136,6 @@ async function htmlTemplate(
 </html>`;
 
   return [html, pageSource];
-}
-
-async function compileTypeScript(path: string) {
-  const importMapName = "import_map.json";
-  const importMap = await getJson<{ imports: Record<string, string> }>(
-    importMapName,
-  );
-
-  const { files, diagnostics } = await Deno.emit(
-    path,
-    {
-      bundle: "classic", // or "module"
-      importMap,
-      importMapPath: `file:///${importMapName}`,
-    },
-  );
-
-  if (diagnostics.length) {
-    // Disabled for now to avoid noise
-    // console.log("Received diagnostics from Deno compiler", diagnostics);
-  }
-
-  return files["deno:///bundle.js"];
 }
 
 export { getPageRenderer };
