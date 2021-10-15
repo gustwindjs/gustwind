@@ -11,13 +11,8 @@ function transform(name?: string | unknown, input?: unknown): Promise<unknown> {
     );
   }
 
-  // TODO: Make this browser aware and point to /transforms/<name>.js there
-  // TODO: This needs a compilation pass too to compile transforms
-  // In browser now
-  return importScript(`/transforms/${name}.js`).then((o) => {
-    // TODO: Make sure importScript returns something usable
-    console.log("o", o);
-  });
+  // In the browser now
+  return importScript(`/transforms/${name}.js`);
 }
 
 export default transform;

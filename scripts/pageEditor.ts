@@ -63,8 +63,6 @@ async function createPlaygroundEditor() {
         location.pathname,
       );
 
-      console.log(pageJson, bodyMarkup);
-
       mainElement.innerHTML = bodyMarkup;
     },
   });
