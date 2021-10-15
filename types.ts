@@ -47,6 +47,7 @@ type ProjectMeta = {
   paths: {
     components: string;
     pages: string;
+    scripts: string;
   };
 };
 type Page = {

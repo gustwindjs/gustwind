@@ -5,6 +5,7 @@
   },
   "paths": {
     "components": "./components",
-    "pages": "./pages"
+    "pages": "./pages",
+    "scripts": "./scripts"
   }
 }

@@ -1,5 +1,5 @@
 import { Application, Router } from "oak";
-import { getComponent, getComponents, getJson, watch } from "./utils.ts";
+import { dir, getComponent, getComponents, getJson, watch } from "./utils.ts";
 import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
@@ -16,7 +16,11 @@ async function serve(
   {
     developmentPort,
     meta: siteMeta,
-    paths: { components: componentsPath, pages: pagesPath },
+    paths: {
+      components: componentsPath,
+      pages: pagesPath,
+      scripts: scriptsPath,
+    },
   }: ProjectMeta,
 ) {
   console.log(`Serving at ${developmentPort}`);
@@ -32,6 +36,8 @@ async function serve(
   const app = new Application();
   const router = new Router();
   const wss = getWebsocketServer();
+
+  serveScripts(router, scriptsPath);
 
   const renderPage = getPageRenderer({
     components,
@@ -170,6 +176,23 @@ async function serve(
   );
 
   await app.listen({ port: developmentPort });
+}
+
+async function serveScripts(router: Router, scriptsPath: string) {
+  const scripts = await Promise.all(await dir(scriptsPath, ".ts"));
+  const scriptsWithFiles = await Promise.all(scripts.map(
+    async ({ path, name }) => ({
+      path,
+      name,
+      content: await Deno.readTextFile(path),
+    }),
+  ));
+
+  scriptsWithFiles.forEach(({ name, content }) => {
+    router.get("/" + name.replace("ts", "js"), (ctx) => {
+      ctx.response.body = new TextEncoder().encode(content);
+    });
+  });
 }
 
 if (import.meta.main) {
