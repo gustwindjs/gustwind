@@ -111,17 +111,33 @@ In addition to binding data from a source, you can do static bindings to pass da
 
 In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
 
-**dataSources/readme.ts**
+**dataSources/indexBlog.ts**
 
-```javascript
-function getReadme() {
-  return Deno.readTextFile("./README.md");
+```typescript
+import { parse } from "frontmatter";
+import { dir } from "../src/utils.ts";
+import type { BlogPost } from "../types.ts";
+
+async function indexBlog(directory: string) {
+  const blogFiles = await dir(directory, ".md");
+
+  return Promise.all(
+    blogFiles.map(({ path }) =>
+      Deno.readTextFile(path).then((d) => parse(d) as BlogPost)
+    ),
+  );
 }
 
-export default getReadme;
+export default indexBlog;
 ```
 
-Data sources are asynchronous functions returning objects. Then, when bound, you can access the content. This would be a good spot to connect to a database, external API, or local data. For this particular project, we only map the readme file to the site to be able to show it at the index.
+Data sources are asynchronous functions returning objects. Then, when bound, you can access the content. This would be a good spot to connect to a database, external API, or local data. In this particular example, we check the given directory for Markdown files and then parse them.
+
+Due to the signature, to implement a file loader you could do this:
+
+```javascript
+export default Deno.readTextFile;
+```
 
 ## Pages
 
