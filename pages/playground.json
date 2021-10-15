@@ -18,44 +18,10 @@
         {
           "element": "button",
           "class": "m-2 bg-gray-200",
+          "children": "Edit page",
           "attributes": {
-            "onclick": "setState(({ showEditor }) => ({ showEditor: !showEditor }))"
-          },
-          "children": [
-            {
-              "element": "div",
-              "attributes": {
-                "x-class": "state.showEditor && 'hidden'"
-              },
-              "children": "Show editor"
-            },
-            {
-              "element": "div",
-              "attributes": {
-                "x-class": "!state.showEditor && 'hidden'"
-              },
-              "children": "Hide editor"
-            }
-          ]
-        },
-        {
-          "element": "div",
-          "attributes": {
-            "x-class": "!state.showEditor && 'hidden'"
-          },
-          "children": [
-            {
-              "element": "div",
-              "class": "fixed bg-white bottom-0 w-full max-h-1/2",
-              "attributes": {
-                "id": "playgroundeditor"
-              }
-            }
-          ]
-        },
-        {
-          "element": "script",
-          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor');"
+            "onclick": "window.toggleEditor()"
+          }
         }
       ]
     },
