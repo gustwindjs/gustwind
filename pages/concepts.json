@@ -16,6 +16,15 @@
       "component": "mainNavigation"
     },
     {
+      "element": "aside",
+      "class": "fixed top-16 pl-4 hidden lg:inline",
+      "children": [
+        {
+          "component": "tableOfContents"
+        }
+      ]
+    },
+    {
       "element": "main",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "concepts",

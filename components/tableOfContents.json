@@ -1,0 +1,36 @@
+{
+  "element": "nav",
+  "attributes": {
+    "x-label": "parent",
+    "x-state": "{ closest: {}, headings: Array.from(document.querySelectorAll('main h2, h3')) }",
+    "x-closest": "{ state: { closest: document.querySelectorAll('main h2, h3') } }"
+  },
+  "children": [
+    {
+      "element": "ul",
+      "children": [
+        {
+          "element": "template",
+          "attributes": {
+            "x-each": "headings"
+          },
+          "children": [
+            {
+              "element": "li",
+              "children": [
+                {
+                  "element": "a",
+                  "attributes": {
+                    "x-href": "state.parentElement.attributes.href.value",
+                    "x": "state.textContent",
+                    "x-class": "[state.textContent === parent.closest.textContent && 'font-bold', state.tagName === 'H3' && 'ml-2']"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
