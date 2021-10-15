@@ -46,7 +46,6 @@ async function serve(
             "text/html; charset=UTF-8",
           );
 
-          // TODO: Set up a new route for js before returning
           const [html, js] = await renderPage(
             ctx.request.url.pathname,
             path,
@@ -58,6 +57,12 @@ async function serve(
             cachedPages[route]?.page || page,
             cachedPages[route]?.bodyMarkup,
           );
+
+          if (js) {
+            await router.get(`${route}/index.js`, (ctx) => {
+              ctx.response.body = new TextEncoder().encode(js);
+            });
+          }
 
           ctx.response.body = new TextEncoder().encode(
             html,
