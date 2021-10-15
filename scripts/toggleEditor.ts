@@ -30,11 +30,11 @@ async function toggleEditor() {
     console.error("Failed to find page editor element");
 
     try {
-      await addScript("pageEditor.js");
-
-      toggleEditor();
+      await importScript("pageEditor.js");
 
       tries++;
+
+      toggleEditor();
     } catch (err) {
       console.error(err);
     }
@@ -49,7 +49,7 @@ async function toggleEditor() {
   }
 }
 
-function addScript(src: string): Promise<void> {
+function importScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
 
@@ -61,6 +61,7 @@ function addScript(src: string): Promise<void> {
   });
 }
 
+// TODO: Figure out what the error means
 declare global {
   interface Window {
     toggleEditor: typeof toggleEditor;
