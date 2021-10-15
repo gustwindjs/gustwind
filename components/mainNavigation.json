@@ -1,5 +1,4 @@
 {
-  "scriptDependencies": ["toggleEditor"],
   "element": "nav",
   "class": "sticky top-0 opacity-80 px-8 py-4 gap-4 flex flex-col sm:flex-row justify-between bg-gray-100 font-thin filter drop-shadow-sm",
   "children": [
@@ -52,6 +51,13 @@
           }
         }
       ]
+    },
+    {
+      "element": "script",
+      "attributes": {
+        "type": "text/javascript",
+        "src": "/toggleEditor.js"
+      }
     }
   ]
 }
