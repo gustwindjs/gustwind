@@ -18,10 +18,12 @@ async function build(projectMeta: ProjectMeta) {
     const routeAmount = routes.length;
 
     console.log(
-      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${Math.round(
-        duration /
-          routeAmount * 1000,
-      ) / 1000} ms per page.`,
+      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+        Math.round(
+          duration /
+            routeAmount * 1000,
+        ) / 1000
+      } ms per page.`,
     );
   };
 
@@ -42,6 +44,10 @@ async function build(projectMeta: ProjectMeta) {
         const [html, js] = await renderPage(route, path, context, page);
 
         ensureDir(dir).then(() => {
+          Deno.writeTextFile(
+            join(dir, "definition.json"),
+            JSON.stringify(page),
+          );
           Deno.writeTextFile(
             join(dir, "index.html"),
             html,

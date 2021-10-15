@@ -54,16 +54,8 @@
           ]
         },
         {
-          "element": "div",
-          "class": "hidden",
-          "attributes": {
-            "id": "pagedata",
-            "__data-page": "page"
-          }
-        },
-        {
           "element": "script",
-          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', 'pagedata', 'playgroundbody');"
+          "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', 'playgroundbody');"
         },
         {
           "element": "link",

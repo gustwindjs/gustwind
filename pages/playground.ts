@@ -16,7 +16,6 @@ setup({
 
 function createPlaygroundEditor(
   elementSelector: string,
-  dataSelector: string,
   bodySelector: string,
 ) {
   const container = document.getElementById(bodySelector);
@@ -51,10 +50,9 @@ function createPlaygroundEditor(
     },
   });
 
-  const dataElement = document.getElementById(dataSelector);
-
-  dataElement &&
-    editor.set(JSON.parse(decodeURIComponent(dataElement.dataset.page || "")));
+  fetch("./definition.json").then((res) => res.json()).then((d) =>
+    editor.set(d)
+  );
 }
 
 declare global {
