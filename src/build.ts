@@ -53,6 +53,10 @@ async function build(projectMeta: ProjectMeta) {
 
         ensureDir(dir).then(() => {
           Deno.writeTextFile(
+            join(dir, "context.json"),
+            JSON.stringify(context),
+          );
+          Deno.writeTextFile(
             join(dir, "definition.json"),
             JSON.stringify(page),
           );
