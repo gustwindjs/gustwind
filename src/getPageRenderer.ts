@@ -67,7 +67,7 @@ async function htmlTemplate(
     mode: Mode;
     page: Page;
   },
-) {
+): Promise<[string, string?]> {
   let developmentSource = developmentSourceCache;
 
   if (mode === "development" && !developmentSourceCache) {
@@ -75,8 +75,8 @@ async function htmlTemplate(
     developmentSourceCache = developmentSource;
   }
 
-  const scriptPath =
-    join(dirname(pagePath), basename(pagePath, extname(pagePath))) + ".ts";
+  const scriptName = basename(pagePath, extname(pagePath));
+  const scriptPath = join(dirname(pagePath), scriptName) + ".ts";
 
   let pageSource;
 
@@ -127,12 +127,15 @@ async function htmlTemplate(
     </div>`
       : bodyMarkup || ""
   }
-  ${pageSource ? `<script>${pageSource}</script>` : ""}
+  ${
+    pageSource
+      ? `<script type="text/javascript" src="./index.js"></script>`
+      : ""
+  }
   </body>
 </html>`;
 
-  // TODO: Return js as well
-  return [html];
+  return [html, pageSource];
 }
 
 async function compileTypeScript(path: string) {

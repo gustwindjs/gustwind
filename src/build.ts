@@ -1,5 +1,5 @@
 import { ensureDir } from "fs";
-import { join } from "path";
+import { basename, extname, join } from "path";
 import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
@@ -41,12 +41,15 @@ async function build(projectMeta: ProjectMeta) {
         const dir = join(outputDirectory, route);
         const [html, js] = await renderPage(route, path, context, page);
 
-        ensureDir(dir).then(() =>
+        ensureDir(dir).then(() => {
           Deno.writeTextFile(
             join(dir, "index.html"),
             html,
-          )
-        );
+          );
+          if (js) {
+            Deno.writeTextFile(join(dir, "index.js"), js);
+          }
+        });
       },
       pagesPath: "./pages",
       siteMeta: projectMeta.meta,
