@@ -16,21 +16,20 @@ setup({
 
 function createPlaygroundEditor(
   elementSelector: string,
-  bodySelector: string,
 ) {
-  const s = document.createElement("link");
-  s.setAttribute("rel", "stylesheet");
-  s.setAttribute("type", "text/css");
-  s.setAttribute(
+  const stylesheet = document.createElement("link");
+  stylesheet.setAttribute("rel", "stylesheet");
+  stylesheet.setAttribute("type", "text/css");
+  stylesheet.setAttribute(
     "href",
     "https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css",
   );
 
-  document.body.appendChild(s);
+  document.body.appendChild(stylesheet);
 
-  const container = document.getElementById(bodySelector);
+  const mainElement = document.querySelector("main"); // document.getElementById(bodySelector);
 
-  if (!container) {
+  if (!mainElement) {
     console.error("Failed to find body element");
 
     return;
@@ -56,7 +55,7 @@ function createPlaygroundEditor(
         "/playground/", // hard coded for now
       );
 
-      container.innerHTML = bodyMarkup;
+      mainElement.innerHTML = bodyMarkup;
     },
   });
 
