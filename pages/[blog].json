@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "__title": "match.name",
+    "__description": "match.description"
+  },
+  "dataSources": [
+    {
+      "id": "blogPosts",
+      "operation": "indexBlog",
+      "input": "./blogPosts"
+    }
+  ],
+  "matchBy": { "dataSource": "blogPosts", "property": "data.slug" },
+  "page": [
+    {
+      "component": "mainNavigation"
+    },
+    {
+      "element": "main",
+      "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
+      "children": [
+        {
+          "component": "h1",
+          "__children": "match.title"
+        },
+        {
+          "element": "p",
+          "transformWith": "markdown",
+          "__children": "match.content"
+        }
+      ]
+    },
+    {
+      "component": "mainFooter"
+    }
+  ]
+}

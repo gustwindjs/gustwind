@@ -29,9 +29,9 @@
               "children": [
                 {
                   "component": "link",
-                  "__children": "title",
+                  "__children": "data.title",
                   "attributes": {
-                    "__href": "slug"
+                    "__href": "data.slug"
                   }
                 }
               ]

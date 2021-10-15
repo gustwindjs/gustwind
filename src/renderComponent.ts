@@ -162,7 +162,7 @@ function generateAttributes(attributes: Attributes, context: DataContext) {
         // @ts-ignore: TODO: How to type this?
         context.__bound
           // @ts-ignore: TODO: How to type this?
-          ? context.__bound[v]
+          ? get(context.__bound, v)
           : // @ts-ignore: TODO: How to type this?
             encodeURIComponent(JSON.stringify(context[v]))
       }"`;

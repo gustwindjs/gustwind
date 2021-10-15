@@ -52,7 +52,7 @@ type ProjectMeta = {
 type Page = {
   meta: Meta;
   page: Component | Component[];
-  matchBy?: { dataSource: string; field: string };
+  matchBy?: { dataSource: string; property: string };
   dataSources?: {
     id: string;
     operation: string;

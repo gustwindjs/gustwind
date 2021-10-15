@@ -178,12 +178,14 @@ The `[blog].json` case is more complicated as there we'll have to define the map
     "__title": "match.name",
     "__description": "match.description"
   },
-  "matchBy": { "dataSource": "blogPosts", "field": "id" },
-  "dataSources": [{
-    "id": "blogPosts",
-    "operation": "files",
-    "input": "./content/blogPosts"
-  }],
+  "dataSources": [
+    {
+      "id": "blogPosts",
+      "operation": "indexBlog",
+      "input": "./blogPosts"
+    }
+  ],
+  "matchBy": { "dataSource": "blogIndex", "property": "slug" },
   "page": [
     {
       "component": "mainNavigation"

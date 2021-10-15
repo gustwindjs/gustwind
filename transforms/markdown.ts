@@ -91,7 +91,7 @@ marked.use({
 });
 
 function transformMarkdown(input: string) {
-  return { content: marked(input) };
+  return marked(input);
 }
 
 export default transformMarkdown;
