@@ -41,7 +41,6 @@ function createPlaygroundEditor() {
     "class",
     tw`fixed bg-white bottom-0 w-full max-h-1/2`,
   );
-  pageEditorElement.style.visibility = "hidden";
 
   mainElement.parentNode?.insertBefore(
     pageEditorElement,
@@ -64,9 +63,13 @@ function createPlaygroundEditor() {
     },
   });
 
-  fetch("./definition.json").then((res) => res.json()).then((d) =>
-    editor.set(d)
-  );
+  console.log("Set up the page editor");
+
+  fetch("./definition.json").then((res) => res.json()).then((d) => {
+    console.log("Loaded page definition to the editor");
+
+    editor.set(d);
+  });
 }
 
 createPlaygroundEditor();

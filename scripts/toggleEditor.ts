@@ -27,8 +27,6 @@ async function toggleEditor() {
   const pageEditorElement = document.getElementById(pageEditorId);
 
   if (!pageEditorElement) {
-    console.error("Failed to find page editor element");
-
     try {
       await importScript("/pageEditor.js");
 
@@ -43,9 +41,9 @@ async function toggleEditor() {
   }
 
   if (mainElement.dataset.visible === "true") {
-    pageEditorElement.style.visibility = "visible";
-  } else {
     pageEditorElement.style.visibility = "hidden";
+  } else {
+    pageEditorElement.style.visibility = "visible";
   }
 }
 
