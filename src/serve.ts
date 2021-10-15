@@ -66,9 +66,12 @@ async function serve(
           );
 
           if (js) {
-            await router.get(`${route}/index.js`, (ctx) => {
-              ctx.response.body = new TextEncoder().encode(js);
-            });
+            await router.get(
+              route === "/" ? "/index.js" : `${route}/index.js`,
+              (ctx) => {
+                ctx.response.body = new TextEncoder().encode(js);
+              },
+            );
           }
 
           ctx.response.body = new TextEncoder().encode(
@@ -81,9 +84,12 @@ async function serve(
         }
       });
 
-      router.get(`${route}/definition.json`, (ctx) => {
-        ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
-      });
+      router.get(
+        route === "/" ? "/definition.json" : `${route}/definition.json`,
+        (ctx) => {
+          ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
+        },
+      );
     },
     pagesPath,
     siteMeta,
