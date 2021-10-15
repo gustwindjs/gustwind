@@ -3,6 +3,7 @@ import { join } from "path";
 import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
+import { compileScripts } from "./compileScripts.ts";
 import type { ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
@@ -31,6 +32,18 @@ async function build(projectMeta: ProjectMeta) {
   const outputDirectory = "./build";
 
   ensureDir(outputDirectory).then(async () => {
+    writeScripts(projectMeta.paths.scripts, outputDirectory);
+
+    const transformDirectory = join(outputDirectory, "transforms");
+    ensureDir(transformDirectory).then(() =>
+      writeScripts(projectMeta.paths.transforms, transformDirectory)
+    );
+
+    Deno.writeTextFile(
+      join(outputDirectory, "components.json"),
+      JSON.stringify(components),
+    );
+
     const renderPage = getPageRenderer({
       components,
       mode: "production",
@@ -44,6 +57,10 @@ async function build(projectMeta: ProjectMeta) {
         const [html, js] = await renderPage(route, path, context, page);
 
         ensureDir(dir).then(() => {
+          Deno.writeTextFile(
+            join(dir, "context.json"),
+            JSON.stringify(context),
+          );
           Deno.writeTextFile(
             join(dir, "definition.json"),
             JSON.stringify(page),
@@ -63,6 +80,17 @@ async function build(projectMeta: ProjectMeta) {
 
     routes = ret.routes;
   });
+}
+
+async function writeScripts(scriptsPath: string, outputPath: string) {
+  const scriptsWithFiles = await compileScripts(scriptsPath);
+
+  scriptsWithFiles.forEach(({ name, content }) =>
+    Deno.writeTextFile(
+      join(outputPath, name.replace("ts", "js")),
+      content,
+    )
+  );
 }
 
 if (import.meta.main) {

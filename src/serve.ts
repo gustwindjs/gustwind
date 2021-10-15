@@ -5,6 +5,7 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
+import { compileScripts } from "./compileScripts.ts";
 import type { Components, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
@@ -16,7 +17,12 @@ async function serve(
   {
     developmentPort,
     meta: siteMeta,
-    paths: { components: componentsPath, pages: pagesPath },
+    paths: {
+      components: componentsPath,
+      pages: pagesPath,
+      scripts: scriptsPath,
+      transforms: transformsPath,
+    },
   }: ProjectMeta,
 ) {
   console.log(`Serving at ${developmentPort}`);
@@ -33,12 +39,22 @@ async function serve(
   const router = new Router();
   const wss = getWebsocketServer();
 
+  serveScripts(router, scriptsPath);
+  serveScripts(router, transformsPath, "transforms/");
+
   const renderPage = getPageRenderer({
     components,
     mode: "development",
   });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {
+      router.get(
+        route === "/" ? "/context.json" : `${route}/context.json`,
+        (ctx) => {
+          ctx.response.body = new TextEncoder().encode(JSON.stringify(context));
+        },
+      );
+
       router.get(route, async (ctx) => {
         try {
           ctx.response.headers.set(
@@ -59,9 +75,12 @@ async function serve(
           );
 
           if (js) {
-            await router.get(`${route}/index.js`, (ctx) => {
-              ctx.response.body = new TextEncoder().encode(js);
-            });
+            await router.get(
+              route === "/" ? "/index.js" : `${route}/index.js`,
+              (ctx) => {
+                ctx.response.body = new TextEncoder().encode(js);
+              },
+            );
           }
 
           ctx.response.body = new TextEncoder().encode(
@@ -74,12 +93,19 @@ async function serve(
         }
       });
 
-      router.get(`${route}/definition.json`, (ctx) => {
-        ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
-      });
+      router.get(
+        route === "/" ? "/definition.json" : `${route}/definition.json`,
+        (ctx) => {
+          ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
+        },
+      );
     },
     pagesPath,
     siteMeta,
+  });
+
+  router.get("/components.json", (ctx) => {
+    ctx.response.body = new TextEncoder().encode(JSON.stringify(components));
   });
 
   app.use(router.routes());
@@ -170,6 +196,16 @@ async function serve(
   );
 
   await app.listen({ port: developmentPort });
+}
+
+async function serveScripts(router: Router, scriptsPath: string, prefix = "") {
+  const scriptsWithFiles = await compileScripts(scriptsPath);
+
+  scriptsWithFiles.forEach(({ name, content }) => {
+    router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
+      ctx.response.body = new TextEncoder().encode(content);
+    });
+  });
 }
 
 if (import.meta.main) {

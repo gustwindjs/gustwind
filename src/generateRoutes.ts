@@ -34,9 +34,9 @@ async function generateRoutes(
       await Promise.all(
         // @ts-ignore: Figure out how the type
         dataSources.map(({ id, operation, input, transformWith }) =>
-          import(`../dataSources/${operation}.ts`).then(async (o) => (
-            [id, await transform(transformWith, await o.default(input))]
-          ))
+          import(`../dataSources/${operation}.ts`).then(async (
+            o,
+          ) => [id, await transform(transformWith, await o.default(input))])
         ),
       ).then((
         dataSources,
