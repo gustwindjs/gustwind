@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+import { importScript } from "../src/importScript.ts";
 
 // TODO: Share this with the page editor in a nice way
 const pageEditorId = "pageEditor";
@@ -45,18 +46,6 @@ async function toggleEditor() {
   } else {
     pageEditorElement.style.visibility = "visible";
   }
-}
-
-function importScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-
-    script.setAttribute("src", src);
-    script.onload = () => resolve();
-    script.onerror = () => reject();
-
-    document.body.appendChild(script);
-  });
 }
 
 // TODO: Figure out what the error means

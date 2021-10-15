@@ -11,7 +11,8 @@ Each project built with Gustwind needs minimal configuration to describe where t
   "paths": {
     "components": "./components",
     "pages": "./pages",
-    "scripts": "./scripts"
+    "scripts": "./scripts",
+    "transforms": "./transforms"
   }
 }
 ```

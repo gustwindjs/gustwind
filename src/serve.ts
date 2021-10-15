@@ -21,6 +21,7 @@ async function serve(
       components: componentsPath,
       pages: pagesPath,
       scripts: scriptsPath,
+      transforms: transformsPath,
     },
   }: ProjectMeta,
 ) {
@@ -39,6 +40,7 @@ async function serve(
   const wss = getWebsocketServer();
 
   serveScripts(router, scriptsPath);
+  serveScripts(router, transformsPath, "transforms/");
 
   const renderPage = getPageRenderer({
     components,
@@ -196,11 +198,11 @@ async function serve(
   await app.listen({ port: developmentPort });
 }
 
-async function serveScripts(router: Router, scriptsPath: string) {
+async function serveScripts(router: Router, scriptsPath: string, prefix = "") {
   const scriptsWithFiles = await compileScripts(scriptsPath);
 
   scriptsWithFiles.forEach(({ name, content }) => {
-    router.get("/" + name.replace("ts", "js"), (ctx) => {
+    router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
       ctx.response.body = new TextEncoder().encode(content);
     });
   });

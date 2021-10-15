@@ -6,6 +6,7 @@
   "paths": {
     "components": "./components",
     "pages": "./pages",
-    "scripts": "./scripts"
+    "scripts": "./scripts",
+    "transforms": "./transforms"
   }
 }

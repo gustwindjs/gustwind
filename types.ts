@@ -48,6 +48,7 @@ type ProjectMeta = {
     components: string;
     pages: string;
     scripts: string;
+    transforms: string;
   };
 };
 type Page = {

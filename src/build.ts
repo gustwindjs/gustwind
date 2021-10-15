@@ -34,6 +34,11 @@ async function build(projectMeta: ProjectMeta) {
   ensureDir(outputDirectory).then(async () => {
     writeScripts(projectMeta.paths.scripts, outputDirectory);
 
+    const transformDirectory = join(outputDirectory, "transforms");
+    ensureDir(transformDirectory).then(() =>
+      writeScripts(projectMeta.paths.transforms, transformDirectory)
+    );
+
     Deno.writeTextFile(
       join(outputDirectory, "components.json"),
       JSON.stringify(components),
@@ -81,7 +86,10 @@ async function writeScripts(scriptsPath: string, outputPath: string) {
   const scriptsWithFiles = await compileScripts(scriptsPath);
 
   scriptsWithFiles.forEach(({ name, content }) =>
-    Deno.writeTextFile(join(outputPath, name.replace("ts", "js")), content)
+    Deno.writeTextFile(
+      join(outputPath, name.replace("ts", "js")),
+      content,
+    )
   );
 }
 
