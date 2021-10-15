@@ -24,11 +24,17 @@
       "class": "flex gap-4 ml-auto sm:ml-0",
       "children": [
         {
-          "component": "link",
-          "children": "Playground",
-          "attributes": {
-            "href": "/playground/"
-          }
+          "element": "button",
+          "class": "font-thin",
+          "children": [
+            {
+              "component": "link",
+              "children": "Edit page",
+              "attributes": {
+                "onclick": "window.toggleEditor()"
+              }
+            }
+          ]
         },
         {
           "component": "link",

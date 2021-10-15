@@ -8,14 +8,6 @@
       "component": "mainNavigation"
     },
     {
-      "element": "button",
-      "class": "m-2 bg-gray-200",
-      "children": "Edit page",
-      "attributes": {
-        "onclick": "window.toggleEditor()"
-      }
-    },
-    {
       "element": "main",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "children": "Try modifying the contents of this page using the editor (click \"Show editor\")."
