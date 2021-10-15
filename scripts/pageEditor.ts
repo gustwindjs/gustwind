@@ -1,5 +1,4 @@
 /// <reference lib="dom" />
-import "sidewind";
 import { setup } from "twind-shim";
 import { tw } from "twind";
 import JSONEditor from "jsoneditor";

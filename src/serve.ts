@@ -5,6 +5,7 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
+import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Components, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
@@ -181,11 +182,13 @@ async function serve(
 async function serveScripts(router: Router, scriptsPath: string) {
   const scripts = await Promise.all(await dir(scriptsPath, ".ts"));
   const scriptsWithFiles = await Promise.all(scripts.map(
-    async ({ path, name }) => ({
-      path,
-      name,
-      content: await Deno.readTextFile(path),
-    }),
+    async ({ path, name }) => (
+      {
+        path,
+        name,
+        content: await compileTypeScript(path),
+      }
+    ),
   ));
 
   scriptsWithFiles.forEach(({ name, content }) => {
