@@ -23,7 +23,7 @@
                   "attributes": {
                     "x-href": "state.parentElement.attributes.href.value",
                     "x": "state.textContent",
-                    "x-class": "[state.textContent === parent.closest.textContent && 'font-bold', state.tagName === 'H3' && 'ml-2']"
+                    "x-class": "[state.textContent === parent.closest.textContent && 'underline', state.tagName === 'H3' && 'ml-2']"
                   }
                 }
               ]
