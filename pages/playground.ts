@@ -95,9 +95,18 @@ function toggleEditor() {
 
   if (mainElement.dataset.visible === "true") {
     pageEditorElement.style.visibility = "visible";
+
+    // TODO: This should trigger addScript against the editor script to
+    // load it async as it's too heavy
   } else {
     pageEditorElement.style.visibility = "hidden";
   }
+}
+
+function addScript(src) {
+  var s = document.createElement("script");
+  s.setAttribute("src", src);
+  document.body.appendChild(s);
 }
 
 declare global {

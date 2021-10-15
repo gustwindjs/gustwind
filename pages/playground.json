@@ -8,22 +8,12 @@
       "component": "mainNavigation"
     },
     {
-      "element": "div",
+      "element": "button",
+      "class": "m-2 bg-gray-200",
+      "children": "Edit page",
       "attributes": {
-        "hidden": "",
-        "x-cloak": "",
-        "x-state": "{ showEditor: false }"
-      },
-      "children": [
-        {
-          "element": "button",
-          "class": "m-2 bg-gray-200",
-          "children": "Edit page",
-          "attributes": {
-            "onclick": "window.toggleEditor()"
-          }
-        }
-      ]
+        "onclick": "window.toggleEditor()"
+      }
     },
     {
       "element": "main",
