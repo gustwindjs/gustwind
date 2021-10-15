@@ -25,8 +25,6 @@ async function renderComponent(
     } else {
       context = { ...context, __bound: get(context, component.__bind) };
     }
-
-    console.log("binding", context);
   }
 
   if (foundComponent) {
