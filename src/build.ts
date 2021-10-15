@@ -3,6 +3,7 @@ import { join } from "path";
 import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
+import { compileScripts } from "./compileScripts.ts";
 import type { ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
@@ -31,6 +32,8 @@ async function build(projectMeta: ProjectMeta) {
   const outputDirectory = "./build";
 
   ensureDir(outputDirectory).then(async () => {
+    writeScripts(projectMeta.paths.scripts, outputDirectory);
+
     const renderPage = getPageRenderer({
       components,
       mode: "production",
@@ -63,6 +66,14 @@ async function build(projectMeta: ProjectMeta) {
 
     routes = ret.routes;
   });
+}
+
+async function writeScripts(scriptsPath: string, outputPath: string) {
+  const scriptsWithFiles = await compileScripts(scriptsPath);
+
+  scriptsWithFiles.forEach(({ name, content }) =>
+    Deno.writeTextFile(join(outputPath, name.replace("ts", "js")), content)
+  );
 }
 
 if (import.meta.main) {
