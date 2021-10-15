@@ -1,5 +1,5 @@
 import { ensureDir } from "fs";
-import { basename, extname, join } from "path";
+import { join } from "path";
 import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
