@@ -18,6 +18,16 @@ function createPlaygroundEditor(
   elementSelector: string,
   bodySelector: string,
 ) {
+  const s = document.createElement("link");
+  s.setAttribute("rel", "stylesheet");
+  s.setAttribute("type", "text/css");
+  s.setAttribute(
+    "href",
+    "https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css",
+  );
+
+  document.body.appendChild(s);
+
   const container = document.getElementById(bodySelector);
 
   if (!container) {

@@ -56,14 +56,6 @@
         {
           "element": "script",
           "children": "window.onload = () => window.createPlaygroundEditor('playgroundeditor', 'playgroundbody');"
-        },
-        {
-          "element": "link",
-          "attributes": {
-            "rel": "stylesheet",
-            "type": "text/css",
-            "href": "https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css"
-          }
         }
       ]
     },
