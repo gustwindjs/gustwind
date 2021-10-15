@@ -73,6 +73,10 @@ async function serve(
           ctx.response.body = new TextEncoder().encode(err.stack);
         }
       });
+
+      router.get(`${route}/definition.json`, (ctx) => {
+        ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
+      });
     },
     pagesPath,
     siteMeta,
