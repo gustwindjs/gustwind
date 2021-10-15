@@ -90,14 +90,14 @@ function toggleEditor() {
   if (!pageEditorElement) {
     console.error("Failed to find page editor element");
 
+    // TODO: This should trigger addScript against the editor script to
+    // load it async as it's too heavy
+
     return;
   }
 
   if (mainElement.dataset.visible === "true") {
     pageEditorElement.style.visibility = "visible";
-
-    // TODO: This should trigger addScript against the editor script to
-    // load it async as it's too heavy
   } else {
     pageEditorElement.style.visibility = "hidden";
   }
