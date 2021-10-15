@@ -34,6 +34,11 @@ async function build(projectMeta: ProjectMeta) {
   ensureDir(outputDirectory).then(async () => {
     writeScripts(projectMeta.paths.scripts, outputDirectory);
 
+    Deno.writeTextFile(
+      join(outputDirectory, "components.json"),
+      JSON.stringify(components),
+    );
+
     const renderPage = getPageRenderer({
       components,
       mode: "production",
