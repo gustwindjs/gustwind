@@ -53,6 +53,21 @@ marked.use({
         code +
         "</code></pre>\n";
     },
+    heading(text, level, raw, slugger) {
+      const slug = slugger.slug(raw);
+
+      return '<a href="#' + slug + '"><h' +
+        level +
+        ' class="' + tw`inline` + '"' +
+        ' id="' +
+        slug +
+        '">' +
+        text +
+        "</h" +
+        level +
+        ">" +
+        "</a>\n";
+    },
     link(href, title, text) {
       if (href === null) {
         return text;
