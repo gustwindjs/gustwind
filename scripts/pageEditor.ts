@@ -60,7 +60,7 @@ async function createPlaygroundEditor() {
         pageJson.page,
         components,
         context,
-        "/playground/", // hard coded for now - TODO: get this from the location
+        location.pathname,
       );
 
       console.log(pageJson, bodyMarkup);
