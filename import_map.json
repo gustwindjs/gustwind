@@ -1,5 +1,6 @@
 {
   "imports": {
+    "frontmatter": "https://deno.land/x/frontmatter/mod.ts",
     "fs": "https://deno.land/std@0.107.0/fs/mod.ts",
     "highlight": "https://esm.sh/highlight.js@11.2.0",
     "highlight-js": "https://unpkg.com/highlight.js@11.2.0/es/languages/javascript",

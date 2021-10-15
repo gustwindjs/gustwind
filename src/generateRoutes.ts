@@ -52,8 +52,15 @@ async function generateRoutes(
           if (matchBy) {
             const dataSource = pageData[matchBy.dataSource];
 
+            if (!dataSource) {
+              console.error("Missing data source", pageData, matchBy);
+
+              return;
+            }
+
+            const property = matchBy.property;
             Object.values(dataSource).forEach((v) => {
-              const route = `/${routerPath}/${v.id}`;
+              const route = `/${routerPath}/${get(v, property)}`;
               const context = { ...pageData, match: v };
 
               renderPage(
