@@ -95,6 +95,10 @@ async function serve(
     siteMeta,
   });
 
+  router.get("/components.json", (ctx) => {
+    ctx.response.body = new TextEncoder().encode(JSON.stringify(components));
+  });
+
   app.use(router.routes());
   app.use(router.allowedMethods());
 
