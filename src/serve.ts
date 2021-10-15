@@ -46,6 +46,13 @@ async function serve(
   });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {
+      router.get(
+        route === "/" ? "/context.json" : `${route}/context.json`,
+        (ctx) => {
+          ctx.response.body = new TextEncoder().encode(JSON.stringify(context));
+        },
+      );
+
       router.get(route, async (ctx) => {
         try {
           ctx.response.headers.set(
