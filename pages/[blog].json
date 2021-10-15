@@ -16,7 +16,7 @@
       "component": "mainNavigation"
     },
     {
-      "element": "main",
+      "element": "div",
       "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
       "children": [
         {

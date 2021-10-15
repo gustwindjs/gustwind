@@ -51,6 +51,8 @@ function createPlaygroundEditor() {
     onChangeJSON: async (pageJson: Page) => {
       updateMeta(pageJson.meta);
 
+      // TODO: Add /definition.json (site index)
+      // TODO: Figure out how to handle binding data (missing context!)
       const bodyMarkup = await renderBody(
         pageJson,
         pageJson.page,
@@ -58,6 +60,8 @@ function createPlaygroundEditor() {
         {}, // Data context is empty for now
         "/playground/", // hard coded for now
       );
+
+      console.log(pageJson, bodyMarkup);
 
       mainElement.innerHTML = bodyMarkup;
     },

@@ -121,11 +121,11 @@ async function htmlTemplate(
         const socket = window.createWebSocket(pagePath);
         window.createJSONEditor(socket, document.getElementById("jsoneditor"), pagePath, data);
       </script>
-      <div id="pagebody">
+      <main id="pagebody">
         ${bodyMarkup || ""}
-      </div>
+      </main>
     </div>`
-      : bodyMarkup || ""
+      : `<main>${bodyMarkup || ""}</main>` || ""
   }
   ${
     pageSource
