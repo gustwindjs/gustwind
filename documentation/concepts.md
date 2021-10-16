@@ -115,7 +115,7 @@ In the examples above, data coming from **data sources** has been connected, or 
 
 ```typescript
 import { parse } from "frontmatter";
-import { dir } from "../src/utils.ts";
+import { dir } from "../src/fsUtils.ts";
 import type { BlogPost } from "../types.ts";
 
 async function indexBlog(directory: string) {

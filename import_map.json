@@ -1,5 +1,6 @@
 {
   "imports": {
+    "esbuild": "https://deno.land/x/esbuild@v0.13.7/mod.js",
     "frontmatter": "https://deno.land/x/frontmatter/mod.ts",
     "fs": "https://deno.land/std@0.107.0/fs/mod.ts",
     "highlight": "https://esm.sh/highlight.js@11.2.0",

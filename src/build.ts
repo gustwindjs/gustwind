@@ -1,10 +1,12 @@
 import { ensureDir } from "fs";
+import { stop } from "esbuild";
 import { join } from "path";
-import { getComponents, getJson } from "./utils.ts";
+import { getComponents } from "./getComponents.ts";
+import { getJson } from "./fsUtils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { compileScripts } from "./compileScripts.ts";
-import type { ProjectMeta } from "../types.ts";
+import type { ImportMap, ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
   console.log("Building to static");
@@ -28,16 +30,27 @@ async function build(projectMeta: ProjectMeta) {
     );
   };
 
+  const importMapName = "import_map.json";
+  const importMap = await getJson<ImportMap>(
+    importMapName,
+  );
+
   const components = await getComponents("./components");
   const outputDirectory = "./build";
 
   ensureDir(outputDirectory).then(async () => {
-    writeScripts(projectMeta.paths.scripts, outputDirectory);
+    await writeScripts(projectMeta.paths.scripts, outputDirectory, importMap);
 
     const transformDirectory = join(outputDirectory, "transforms");
-    ensureDir(transformDirectory).then(() =>
-      writeScripts(projectMeta.paths.transforms, transformDirectory)
-    );
+    ensureDir(transformDirectory).then(async () => {
+      await writeScripts(
+        projectMeta.paths.transforms,
+        transformDirectory,
+        importMap,
+      );
+
+      stop();
+    });
 
     Deno.writeTextFile(
       join(outputDirectory, "components.json"),
@@ -47,6 +60,7 @@ async function build(projectMeta: ProjectMeta) {
     const renderPage = getPageRenderer({
       components,
       mode: "production",
+      importMap,
     });
     const ret = await generateRoutes({
       renderPage: async (route, path, context, page) => {
@@ -82,14 +96,26 @@ async function build(projectMeta: ProjectMeta) {
   });
 }
 
-async function writeScripts(scriptsPath: string, outputPath: string) {
-  const scriptsWithFiles = await compileScripts(scriptsPath);
+async function writeScripts(
+  scriptsPath: string,
+  outputPath: string,
+  importMap: ImportMap,
+) {
+  const scriptsWithFiles = await compileScripts(
+    scriptsPath,
+    "production",
+    importMap,
+  );
 
-  scriptsWithFiles.forEach(({ name, content }) =>
-    Deno.writeTextFile(
-      join(outputPath, name.replace("ts", "js")),
-      content,
-    )
+  return Promise.all(
+    scriptsWithFiles.map(({ name, content }) =>
+      content
+        ? Deno.writeTextFile(
+          join(outputPath, name.replace("ts", "js")),
+          content,
+        )
+        : Promise.resolve()
+    ),
   );
 }
 
