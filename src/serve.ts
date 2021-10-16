@@ -1,5 +1,6 @@
 import { Application, Router } from "oak";
-import { getComponent, getComponents, getJson, watch } from "./utils.ts";
+import { getComponent, getComponents } from "./getComponents.ts";
+import { getJson, watch } from "./fsUtils.ts";
 import { basename, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";

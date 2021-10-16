@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import { getJson } from "./utils.ts";
+import { getJson } from "./fsUtils.ts";
 import * as importMapPlugin from "./esbuildImportMapPlugin.ts";
 import type { Mode } from "../types.ts";
 

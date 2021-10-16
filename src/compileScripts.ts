@@ -1,4 +1,4 @@
-import { dir } from "./utils.ts";
+import { dir } from "./fsUtils.ts";
 import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Mode } from "../types.ts";
 
