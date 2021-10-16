@@ -85,6 +85,7 @@ async function serve(
             await router.get(
               route === "/" ? "/index.js" : `${route}/index.js`,
               (ctx) => {
+                ctx.response.headers.set("Content-Type", "text/javascript");
                 ctx.response.body = new TextEncoder().encode(js);
               },
             );
@@ -219,6 +220,7 @@ async function serveScripts(
 
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
+      ctx.response.headers.set("Content-Type", "text/javascript");
       ctx.response.body = new TextEncoder().encode(content);
     });
   });
