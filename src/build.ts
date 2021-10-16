@@ -86,7 +86,7 @@ async function writeScripts(scriptsPath: string, outputPath: string) {
   const scriptsWithFiles = await compileScripts(scriptsPath);
 
   scriptsWithFiles.forEach(({ name, content }) =>
-    Deno.writeTextFile(
+    content && Deno.writeTextFile(
       join(outputPath, name.replace("ts", "js")),
       content,
     )
