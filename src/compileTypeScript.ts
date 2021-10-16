@@ -9,55 +9,27 @@ const importMap = await getJson<{ imports: Record<string, string> }>(
 
 importMapPlugin.load(importMap);
 
-console.log(build);
-
 async function compileTypeScript(path: string) {
-  // https://esbuild.github.io/api/
-  // TODO: minify for production
-  // TODO: figure out how to get deno tsconfig
-  await build({
+  // Reference: https://esbuild.github.io/api/
+  const result = await build({
     entryPoints: [path],
-    sourcemap: false, // TODO: generate for production?
-    minify: false,
+    sourcemap: false, // TODO: generate for production
+    minify: false, // TODO: set for production
     bundle: true,
-    outdir: "./demo", // TODO
-    format: "iife", // TODO: target esm instead?
+    format: "esm",
+    target: ["esnext"],
     plugins: [importMapPlugin.plugin()],
-    // target: ['esnext'] maybe needed
-    // TODO: push this to tsconfig.json
-    // https://deno.land/manual@v1.15.1/typescript/configuration#what-an-implied-tsconfigjson-looks-like
-    /*tsconfig: {
-      "compilerOptions": {
-        "allowJs": true,
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "inlineSourceMap": true,
-        "isolatedModules": true,
-        "jsx": "react",
-        "lib": ["deno.window"],
-        "module": "esnext",
-        "strict": true,
-        "target": "esnext",
-        "useDefineForClassFields": true,
-      },
-    },*/
+    write: false,
   });
+  const output = result.outputFiles;
 
-  const { files, diagnostics } = await Deno.emit(
-    path,
-    {
-      bundle: "classic", // or "module"
-      importMap,
-      importMapPath: `file:///${importMapName}`,
-    },
-  );
+  if (output.length < 1) {
+    console.error("esbuild didn't output anything!");
 
-  if (diagnostics.length) {
-    // Disabled for now to avoid noise
-    // console.log("Received diagnostics from Deno compiler", diagnostics);
+    return;
   }
 
-  return files["deno:///bundle.js"];
+  return output[0].text;
 }
 
 export { compileTypeScript };

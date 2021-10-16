@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
-import JSONEditor from "jsoneditor";
 import { setup } from "twind-shim";
+import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "./sharedTwindSetup.ts";
 import updateMeta from "./updateMeta.ts";
 import type { Page } from "../types.ts";

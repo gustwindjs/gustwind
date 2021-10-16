@@ -114,7 +114,7 @@ async function htmlTemplate(
           <div id="jsoneditor" class="fixed bg-white bottom-0 w-full max-h-1/2"></div>
         </div>
       </div>
-      <script>
+      <script type="module">
         ${developmentSource}
         const pagePath = "${pagePath}";
         const data = ${JSON.stringify(page, null, 2)};
@@ -127,11 +127,7 @@ async function htmlTemplate(
     </div>`
       : `<main>${bodyMarkup || ""}</main>` || ""
   }
-  ${
-    pageSource
-      ? `<script type="text/javascript" src="./index.js"></script>`
-      : ""
-  }
+  ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
   </body>
 </html>`;
 
