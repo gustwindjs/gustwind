@@ -1,4 +1,5 @@
 import { ensureDir } from "fs";
+import { stop } from "esbuild";
 import { join } from "path";
 import { getComponents, getJson } from "./utils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
@@ -32,12 +33,14 @@ async function build(projectMeta: ProjectMeta) {
   const outputDirectory = "./build";
 
   ensureDir(outputDirectory).then(async () => {
-    writeScripts(projectMeta.paths.scripts, outputDirectory);
+    await writeScripts(projectMeta.paths.scripts, outputDirectory);
 
     const transformDirectory = join(outputDirectory, "transforms");
-    ensureDir(transformDirectory).then(() =>
-      writeScripts(projectMeta.paths.transforms, transformDirectory)
-    );
+    ensureDir(transformDirectory).then(async () => {
+      await writeScripts(projectMeta.paths.transforms, transformDirectory);
+
+      stop();
+    });
 
     Deno.writeTextFile(
       join(outputDirectory, "components.json"),
@@ -85,11 +88,15 @@ async function build(projectMeta: ProjectMeta) {
 async function writeScripts(scriptsPath: string, outputPath: string) {
   const scriptsWithFiles = await compileScripts(scriptsPath);
 
-  scriptsWithFiles.forEach(({ name, content }) =>
-    content && Deno.writeTextFile(
-      join(outputPath, name.replace("ts", "js")),
-      content,
-    )
+  return Promise.all(
+    scriptsWithFiles.map(({ name, content }) =>
+      content
+        ? Deno.writeTextFile(
+          join(outputPath, name.replace("ts", "js")),
+          content,
+        )
+        : Promise.resolve()
+    ),
   );
 }
 
