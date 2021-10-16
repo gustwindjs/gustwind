@@ -71,7 +71,10 @@ async function htmlTemplate(
   let developmentSource = developmentSourceCache;
 
   if (mode === "development" && !developmentSourceCache) {
-    developmentSource = await compileTypeScript("./src/developmentShim.ts");
+    developmentSource = await compileTypeScript(
+      "./src/developmentShim.ts",
+      mode,
+    );
     developmentSourceCache = developmentSource;
   }
 
@@ -81,8 +84,7 @@ async function htmlTemplate(
   let pageSource;
 
   if (await exists(scriptPath)) {
-    // TODO: Minify in production
-    pageSource = await compileTypeScript(scriptPath);
+    pageSource = await compileTypeScript(scriptPath, mode);
   }
 
   const html = `<!DOCTYPE html>

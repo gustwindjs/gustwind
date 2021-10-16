@@ -86,7 +86,7 @@ async function build(projectMeta: ProjectMeta) {
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {
-  const scriptsWithFiles = await compileScripts(scriptsPath);
+  const scriptsWithFiles = await compileScripts(scriptsPath, "production");
 
   return Promise.all(
     scriptsWithFiles.map(({ name, content }) =>

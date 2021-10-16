@@ -199,7 +199,7 @@ async function serve(
 }
 
 async function serveScripts(router: Router, scriptsPath: string, prefix = "") {
-  const scriptsWithFiles = await compileScripts(scriptsPath);
+  const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {

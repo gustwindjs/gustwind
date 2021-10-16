@@ -1,6 +1,7 @@
 import { build } from "esbuild";
 import { getJson } from "./utils.ts";
 import * as importMapPlugin from "./esbuildImportMapPlugin.ts";
+import type { Mode } from "../types.ts";
 
 const importMapName = "import_map.json";
 const importMap = await getJson<{ imports: Record<string, string> }>(
@@ -9,12 +10,13 @@ const importMap = await getJson<{ imports: Record<string, string> }>(
 
 importMapPlugin.load(importMap);
 
-async function compileTypeScript(path: string) {
+async function compileTypeScript(path: string, mode: Mode) {
   // Reference: https://esbuild.github.io/api/
   const result = await build({
     entryPoints: [path],
-    sourcemap: false, // TODO: generate for production
-    minify: false, // TODO: set for production
+    // TODO: Add source maps for production?
+    // sourcemap: mode === "production",
+    minify: mode === "production",
     bundle: true,
     format: "esm",
     target: ["esnext"],
@@ -26,7 +28,7 @@ async function compileTypeScript(path: string) {
   if (output.length < 1) {
     console.error("esbuild didn't output anything!");
 
-    return;
+    return "";
   }
 
   return output[0].text;
