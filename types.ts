@@ -64,6 +64,7 @@ type Page = {
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
+type ImportMap = { imports: Record<string, string> };
 
 export type {
   Attributes,
@@ -72,6 +73,7 @@ export type {
   Component,
   Components,
   DataContext,
+  ImportMap,
   Library,
   Meta,
   Mode,

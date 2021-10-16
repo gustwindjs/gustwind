@@ -1,16 +1,14 @@
 import { build } from "esbuild";
-import { getJson } from "./fsUtils.ts";
 import * as importMapPlugin from "./esbuildImportMapPlugin.ts";
-import type { Mode } from "../types.ts";
+import type { ImportMap, Mode } from "../types.ts";
 
-const importMapName = "import_map.json";
-const importMap = await getJson<{ imports: Record<string, string> }>(
-  importMapName,
-);
+async function compileTypeScript(
+  path: string,
+  mode: Mode,
+  importMap: ImportMap,
+) {
+  importMapPlugin.load(importMap);
 
-importMapPlugin.load(importMap);
-
-async function compileTypeScript(path: string, mode: Mode) {
   // Reference: https://esbuild.github.io/api/
   const result = await build({
     entryPoints: [path],

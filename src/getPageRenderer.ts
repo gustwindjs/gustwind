@@ -1,15 +1,23 @@
 import { getStyleTag } from "twind-sheets";
 import { exists } from "fs";
 import { basename, dirname, extname, join } from "path";
-import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
+import type {
+  Components,
+  DataContext,
+  ImportMap,
+  Meta,
+  Mode,
+  Page,
+} from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 import { compileTypeScript } from "./compileTypeScript.ts";
 
 function getPageRenderer(
-  { components, mode }: {
+  { components, mode, importMap }: {
     components: Components;
     mode: Mode;
+    importMap: ImportMap;
   },
 ) {
   const stylesheet = getStyleSheet(mode);
@@ -36,6 +44,7 @@ function getPageRenderer(
       bodyMarkup,
       mode,
       page,
+      importMap,
     });
   };
 }
@@ -59,13 +68,14 @@ function renderMetaMarkup(meta?: Meta) {
 let developmentSourceCache: string;
 
 async function htmlTemplate(
-  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, page }: {
+  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, page, importMap }: {
     pagePath: string;
     metaMarkup?: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
     page: Page;
+    importMap: ImportMap;
   },
 ): Promise<[string, string?]> {
   let developmentSource = developmentSourceCache;
@@ -74,6 +84,7 @@ async function htmlTemplate(
     developmentSource = await compileTypeScript(
       "./src/developmentShim.ts",
       mode,
+      importMap,
     );
     developmentSourceCache = developmentSource;
   }
@@ -84,7 +95,7 @@ async function htmlTemplate(
   let pageSource;
 
   if (await exists(scriptPath)) {
-    pageSource = await compileTypeScript(scriptPath, mode);
+    pageSource = await compileTypeScript(scriptPath, mode, importMap);
   }
 
   const html = `<!DOCTYPE html>

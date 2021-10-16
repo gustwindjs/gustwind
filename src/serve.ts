@@ -7,7 +7,7 @@ import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { compileScripts } from "./compileScripts.ts";
-import type { Components, Page, ProjectMeta } from "../types.ts";
+import type { Components, ImportMap, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
@@ -28,6 +28,11 @@ async function serve(
 ) {
   console.log(`Serving at ${developmentPort}`);
 
+  const importMapName = "import_map.json";
+  const importMap = await getJson<ImportMap>(
+    importMapName,
+  );
+
   let components: Components;
   try {
     components = await getComponents(componentsPath);
@@ -40,12 +45,13 @@ async function serve(
   const router = new Router();
   const wss = getWebsocketServer();
 
-  serveScripts(router, scriptsPath);
-  serveScripts(router, transformsPath, "transforms/");
+  serveScripts(router, scriptsPath, importMap);
+  serveScripts(router, transformsPath, importMap, "transforms/");
 
   const renderPage = getPageRenderer({
     components,
     mode: "development",
+    importMap,
   });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {
@@ -199,8 +205,17 @@ async function serve(
   await app.listen({ port: developmentPort });
 }
 
-async function serveScripts(router: Router, scriptsPath: string, prefix = "") {
-  const scriptsWithFiles = await compileScripts(scriptsPath, "development");
+async function serveScripts(
+  router: Router,
+  scriptsPath: string,
+  importMap: ImportMap,
+  prefix = "",
+) {
+  const scriptsWithFiles = await compileScripts(
+    scriptsPath,
+    "development",
+    importMap,
+  );
 
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
