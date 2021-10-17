@@ -16,7 +16,7 @@
     "twind": "https://unpkg.com/twind@0.16.16/twind.js",
     "twind-colors": "https://unpkg.com/twind@0.16.16/colors/colors.js",
     "twind-sheets": "https://unpkg.com/twind@0.16.16/sheets/sheets.js",
-    "twind-shim": "https://cdn.skypack.dev/twind/shim?min",
+    "twind-shim": "https://cdn.skypack.dev/twind@0.16.16/shim?min",
     "twind-typography": "https://unpkg.com/@twind/typography@0.0.2/typography.js",
     "websockets": "https://deno.land/x/websocket@v0.1.3/mod.ts",
     "yaml": "https://esm.sh/yaml@1.10.2"
