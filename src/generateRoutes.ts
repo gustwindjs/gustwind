@@ -61,7 +61,7 @@ async function generateRoutes(
 
             const property = matchBy.property;
             Object.values(dataSource).forEach((v) => {
-              const route = `/${routerPath}/${get(v, property)}`;
+              const route = `/${routerPath}/${get(v, property)}/`;
               const context = { ...pageData, match: v };
 
               renderPage(
@@ -82,7 +82,7 @@ async function generateRoutes(
             console.warn(`Path ${rootPath} is missing a matchBy`);
           }
         } else {
-          const route = `/${rootPath}`;
+          const route = `/${rootPath}/`;
 
           renderPage(route, path, pageData, page);
 
@@ -95,7 +95,7 @@ async function generateRoutes(
         }
       });
     } else {
-      const route = `/${rootPath}`;
+      const route = `/${rootPath}/`;
       const pageData = {};
 
       renderPage(route, path, {}, page);

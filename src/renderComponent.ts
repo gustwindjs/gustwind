@@ -102,7 +102,7 @@ function resolveClass(component: Component, context: DataContext) {
           context,
         })
       ) {
-        classes.push(klass);
+        classes.push(tw(klass));
       }
     });
   }
