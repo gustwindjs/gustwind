@@ -1,0 +1,5 @@
+{
+  "element": "div",
+  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 bg-white",
+  "children": "document tree goes here"
+}

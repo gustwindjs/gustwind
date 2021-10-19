@@ -1,10 +1,11 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
-import { tw } from "twind";
+// import { tw } from "twind";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
+import { renderComponent } from "../src/renderComponent.ts";
 // import updateMeta from "../src/updateMeta.ts";
 // import { renderBody } from "../src/renderBody.ts";
-import type { Page } from "../types.ts";
+import type { Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -13,9 +14,9 @@ setup({
   ...sharedTwindSetup("development"),
 });
 
-const pageEditorId = "pageEditor";
+// const pageEditorId = "pageEditor";
 
-function createPlaygroundEditor() {
+async function createPlaygroundEditor() {
   const stylesheet = document.createElement("link");
   stylesheet.setAttribute("rel", "stylesheet");
   stylesheet.setAttribute("type", "text/css");
@@ -34,7 +35,7 @@ function createPlaygroundEditor() {
     return;
   }
 
-  const pageEditorElement = document.createElement("div");
+  /*const pageEditorElement = document.createElement("div");
   pageEditorElement.setAttribute("id", pageEditorId);
   pageEditorElement.setAttribute(
     "class",
@@ -44,10 +45,14 @@ function createPlaygroundEditor() {
   mainElement.parentNode?.insertBefore(
     pageEditorElement,
     mainElement.nextSibling,
-  );
+  );*/
 
-  // const components = await fetch("/components.json").then((res) => res.json());
-  // const context = await fetch("./context.json").then((res) => res.json());
+  const components: Components = await fetch("/components.json").then((res) =>
+    res.json()
+  );
+  const context: DataContext = await fetch("./context.json").then((res) =>
+    res.json()
+  );
 
   /*
   const editor = new JSONEditor(pageEditorElement, {
@@ -70,45 +75,39 @@ function createPlaygroundEditor() {
   console.log("Set up the page editor");
 
   fetch("./definition.json").then((res) => res.json()).then(
-    (pageDefinition) => {
-      document.body.appendChild(renderTree(pageDefinition));
-      document.body.appendChild(renderControls());
+    async (pageDefinition) => {
+      document.body.appendChild(
+        await renderTree(components, context, pageDefinition),
+      );
+      document.body.appendChild(await renderControls(components, context));
     },
   );
 }
 
-function renderTree(pageDefinition: Page) {
+async function renderTree(
+  components: Components,
+  context: DataContext,
+  pageDefinition: Page,
+) {
   const treeElement = document.createElement("div");
-  treeElement.className = tw([
-    "fixed",
-    "top-0",
-    "left-0",
-    "ml-4",
-    "mt-16",
-    "p-4",
-    "bg-white",
-  ]);
-  treeElement.innerHTML = "hello from tree structure";
-
-  // TODO: Render tree structure based on page definition
-  // dataSources, meta, page
-  console.log(pageDefinition);
+  treeElement.innerHTML = await renderComponent(
+    components.documentTree,
+    components,
+    context,
+  );
 
   return treeElement;
 }
 
-function renderControls() {
+async function renderControls(components: Components, context: DataContext) {
   const controlsElement = document.createElement("div");
-  controlsElement.className = tw([
-    "fixed",
-    "top-0",
-    "right-0",
-    "mr-4",
-    "mt-16",
-    "p-4",
-    "bg-white",
-  ]);
-  controlsElement.innerHTML = "hello from controls";
+  controlsElement.innerHTML = await renderComponent(
+    components.elementControls,
+    components,
+    context,
+  );
+
+  return controlsElement;
 
   // TODO: Gradient syntax
   // bg-gradient-to-br
@@ -160,8 +159,6 @@ function renderControls() {
   // TODO: Visibility
   // hidden
   // lg-inline
-
-  return controlsElement;
 }
 
 createPlaygroundEditor();
