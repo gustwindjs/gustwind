@@ -1,10 +1,9 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
 import { tw } from "twind";
-import JSONEditor from "jsoneditor";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
-import updateMeta from "../src/updateMeta.ts";
-import { renderBody } from "../src/renderBody.ts";
+// import updateMeta from "../src/updateMeta.ts";
+// import { renderBody } from "../src/renderBody.ts";
 import type { Page } from "../types.ts";
 
 console.log("Hello from the page editor");
@@ -16,7 +15,7 @@ setup({
 
 const pageEditorId = "pageEditor";
 
-async function createPlaygroundEditor() {
+function createPlaygroundEditor() {
   const stylesheet = document.createElement("link");
   stylesheet.setAttribute("rel", "stylesheet");
   stylesheet.setAttribute("type", "text/css");
@@ -47,9 +46,10 @@ async function createPlaygroundEditor() {
     mainElement.nextSibling,
   );
 
-  const components = await fetch("/components.json").then((res) => res.json());
-  const context = await fetch("./context.json").then((res) => res.json());
+  // const components = await fetch("/components.json").then((res) => res.json());
+  // const context = await fetch("./context.json").then((res) => res.json());
 
+  /*
   const editor = new JSONEditor(pageEditorElement, {
     onChangeJSON: async (pageJson: Page) => {
       updateMeta(pageJson.meta);
@@ -65,15 +65,52 @@ async function createPlaygroundEditor() {
 
       mainElement.innerHTML = bodyMarkup;
     },
-  });
+  });*/
 
   console.log("Set up the page editor");
 
-  fetch("./definition.json").then((res) => res.json()).then((d) => {
-    console.log("Loaded page definition to the editor");
+  fetch("./definition.json").then((res) => res.json()).then(
+    (pageDefinition) => {
+      document.body.appendChild(renderTree(pageDefinition));
+      document.body.appendChild(renderControls());
+    },
+  );
+}
 
-    editor.set(d);
-  });
+function renderTree(pageDefinition: Page) {
+  const treeElement = document.createElement("div");
+  treeElement.className = tw([
+    "fixed",
+    "top-0",
+    "left-0",
+    "ml-4",
+    "mt-16",
+    "p-4",
+    "bg-white",
+  ]);
+  treeElement.innerHTML = "hello from tree structure";
+
+  // TODO: Render tree structure based on page definition
+  // dataSources, meta, page
+  console.log(pageDefinition);
+
+  return treeElement;
+}
+
+function renderControls() {
+  const controlsElement = document.createElement("div");
+  controlsElement.className = tw([
+    "fixed",
+    "top-0",
+    "right-0",
+    "mr-4",
+    "mt-16",
+    "p-4",
+    "bg-white",
+  ]);
+  controlsElement.innerHTML = "hello from controls";
+
+  return controlsElement;
 }
 
 createPlaygroundEditor();
