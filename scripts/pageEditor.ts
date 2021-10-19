@@ -5,7 +5,7 @@ import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 // import updateMeta from "../src/updateMeta.ts";
 // import { renderBody } from "../src/renderBody.ts";
-import type { Components, DataContext, Page } from "../types.ts";
+import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -108,6 +108,7 @@ async function renderTree(
       }),
     ),
   }));
+  const page = flattenPage(pageDefinition.page);
   treeElement.setAttribute(
     "x-state",
     `{
@@ -116,6 +117,8 @@ async function renderTree(
   }`,
   );
   parent.appendChild(treeElement);
+
+  console.log("page", page);
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
@@ -187,6 +190,51 @@ async function renderControls(
   // TODO: Visibility
   // hidden
   // lg-inline
+}
+
+enum Type {
+  Component = "component",
+  Element = "element",
+  String = "string",
+}
+type PageItem = ({
+  level: number;
+  type: Type;
+} & Component);
+
+function flattenPage(
+  component: Component | Component[],
+  level = -1,
+): PageItem | PageItem[] {
+  if (Array.isArray(component)) {
+    return component.flatMap((c) => flattenPage(c, level + 1));
+  }
+  if (component.children) {
+    const ret = [{
+      ...component,
+      type: getType(component),
+      level,
+    }];
+
+    if (typeof component.children === "string") {
+      return ret;
+    }
+
+    return ret.concat(flattenPage(component.children, level + 1));
+  }
+
+  return { ...component, type: getType(component), level };
+}
+
+function getType(component: Component) {
+  if (component.component) {
+    return Type["Component"];
+  }
+  if (component.element) {
+    return Type["Element"];
+  }
+
+  return Type["String"];
 }
 
 createPlaygroundEditor();
