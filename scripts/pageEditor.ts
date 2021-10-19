@@ -98,13 +98,26 @@ async function renderTree(
     field,
     value,
   }));
+  const dataSources = pageDefinition.dataSources?.map((dataSource) => ({
+    state: Object.entries(dataSource).map(
+      (
+        [field, value],
+      ) => ({
+        field,
+        value,
+      }),
+    ),
+  }));
   treeElement.setAttribute(
     "x-state",
     `{
-    meta: ${JSON.stringify(meta)}
+    meta: ${JSON.stringify(meta)},
+    dataSources: ${JSON.stringify(dataSources)}
   }`,
   );
   parent.appendChild(treeElement);
+
+  console.log(dataSources);
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();

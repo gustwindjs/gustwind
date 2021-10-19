@@ -24,7 +24,7 @@
                   "class": "flex gap-2",
                   "children": [
                     {
-                      "element": "div",
+                      "element": "label",
                       "attributes": {
                         "x": "state.field"
                       }
@@ -55,7 +55,49 @@
         },
         {
           "element": "div",
-          "children": "Data sources go here"
+          "children": [
+            {
+              "element": "template",
+              "attributes": {
+                "x-each": "dataSources"
+              },
+              "children": [
+                {
+                  "element": "ul",
+                  "children": [
+                    {
+                      "element": "template",
+                      "attributes": {
+                        "x-each": "state"
+                      },
+                      "children": [
+                        {
+                          "element": "li",
+                          "class": "flex gap-2",
+                          "children": [
+                            {
+                              "element": "label",
+                              "attributes": {
+                                "x": "state.field"
+                              }
+                            },
+                            {
+                              "element": "input",
+                              "class": "border flex-grow",
+                              "attributes": {
+                                "type": "text",
+                                "x": "state.value"
+                              }
+                            }
+                          ]
+                        } 
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
