@@ -113,7 +113,8 @@ async function renderTree(
     "x-state",
     `{
     meta: ${JSON.stringify(meta)},
-    dataSources: ${JSON.stringify(dataSources)}
+    dataSources: ${JSON.stringify(dataSources)},
+    page: ${JSON.stringify(page)}
   }`,
   );
   parent.appendChild(treeElement);

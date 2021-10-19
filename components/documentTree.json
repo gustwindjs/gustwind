@@ -56,8 +56,30 @@
           "children": "Page"
         },
         {
-          "element": "div",
-          "children": "Page fields go here"
+          "element": "ul",
+          "children": [
+            {
+              "element": "template",
+              "attributes": {
+                "x-each": "page"
+              },
+              "children": [
+                {
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "children": [
+                    {
+                      "element": "label",
+                      "attributes": {
+                        "x": "state.type",
+                        "x-class": "['ml-' + state.level]"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
