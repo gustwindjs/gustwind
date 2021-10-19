@@ -1,18 +1,22 @@
 import { Application, Router } from "oak";
 import { getComponent, getComponents } from "./getComponents.ts";
 import { getJson, watch } from "./fsUtils.ts";
-import { basename, join } from "path";
+import { basename, extname, join } from "path";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { compileScripts } from "./compileScripts.ts";
+import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Components, ImportMap, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.
 const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
+
+// The cache is populated if and when scripts are changed.
+const cachedScripts: Record<string, string> = {};
 
 async function serve(
   {
@@ -48,9 +52,10 @@ async function serve(
   serveScripts(router, scriptsPath, importMap);
   serveScripts(router, transformsPath, importMap, "transforms/");
 
+  const mode = "development";
   const renderPage = getPageRenderer({
     components,
-    mode: "development",
+    mode,
     importMap,
   });
   const { paths } = await generateRoutes({
@@ -118,6 +123,30 @@ async function serve(
 
   app.use(router.routes());
   app.use(router.allowedMethods());
+
+  watch(scriptsPath, ".ts", async (matchedPath) => {
+    const scriptName = basename(matchedPath, extname(matchedPath));
+
+    console.log("Changed script", matchedPath);
+
+    cachedScripts[scriptName + ".ts"] = await compileTypeScript(
+      matchedPath,
+      mode,
+      importMap,
+    );
+
+    wss.clients.forEach((socket) => {
+      // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+      if (socket.state === 1) {
+        socket.send(
+          JSON.stringify({
+            type: "replaceScript",
+            payload: { name: "/" + scriptName + ".js" },
+          }),
+        );
+      }
+    });
+  });
 
   watch(
     ".",
@@ -221,7 +250,9 @@ async function serveScripts(
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
       ctx.response.headers.set("Content-Type", "text/javascript");
-      ctx.response.body = new TextEncoder().encode(content);
+      ctx.response.body = new TextEncoder().encode(
+        cachedScripts[name] || content,
+      );
     });
   });
 }

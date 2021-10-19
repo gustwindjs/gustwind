@@ -1,5 +1,6 @@
 {
   "imports": {
+    "async": "https://deno.land/std@0.107.0/async/mod.ts",
     "esbuild": "https://deno.land/x/esbuild@v0.13.7/mod.js",
     "frontmatter": "https://deno.land/x/frontmatter/mod.ts",
     "fs": "https://deno.land/std@0.107.0/fs/mod.ts",

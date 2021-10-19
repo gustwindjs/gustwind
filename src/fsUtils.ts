@@ -1,3 +1,4 @@
+import { debounce } from "async";
 import { extname, join } from "path";
 
 function getJson<R>(filePath: string): Promise<R> {
@@ -47,12 +48,19 @@ function dirSync(p: string, extension?: string) {
 async function watch(
   directory: string,
   extension: string,
-  handler: (path: string) => void,
+  handler: (path: string, event: Deno.FsEvent) => void,
+  debounceDelay = 200, // in ms
 ) {
   const watcher = Deno.watchFs(directory);
 
+  const trigger = debounce(
+    (event: Deno.FsEvent) =>
+      event.paths.forEach((p) => p.endsWith(extension) && handler(p, event)),
+    debounceDelay,
+  );
+
   for await (const event of watcher) {
-    event.paths.forEach((p) => p.endsWith(extension) && handler(p));
+    trigger(event);
   }
 }
 
