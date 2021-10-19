@@ -110,6 +110,57 @@ function renderControls() {
   ]);
   controlsElement.innerHTML = "hello from controls";
 
+  // TODO: Gradient syntax
+  // bg-gradient-to-br
+  // from-purple-200
+  // to-emerald-100
+
+  // TODO: Padding
+  // py-8
+  // px-4
+  // pr-4
+  // sm:py-8
+
+  // TODO: Margin
+  // sm:mx-auto
+
+  // TODO: Max width
+  // max-w-3xl
+
+  // TODO: Width
+  // w-full
+
+  // TODO: Flex
+  // flex
+  // flex-col
+  // gap-8
+
+  // TODO: Text size
+  // text-4xl
+  // text-xl
+  // md:text-4xl
+  // md:text-8xl
+
+  // TODO: Wrapping
+  // whitespace-nowrap
+
+  // TODO: Font weight
+  // font-extralight
+
+  // TODO: Prose
+  // prose
+  // lg:prose-xl
+
+  // TODO: Orientation
+  // fixed
+
+  // TODO: Position
+  // top-16
+
+  // TODO: Visibility
+  // hidden
+  // lg-inline
+
   return controlsElement;
 }
 
