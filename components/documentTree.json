@@ -1,5 +1,48 @@
 {
   "element": "div",
-  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 bg-white",
-  "children": "document tree goes here"
+  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 bg-white rounded drop-shadow-sm flex flex-col gap-4",
+  "children": [
+    {
+      "element": "div",
+      "children": [
+        {
+          "element": "h2",
+          "class": "font-bold",
+          "children": "Meta"
+        },
+        {
+          "element": "div",
+          "children": "meta fields go here"
+        }
+      ]
+    },
+    {
+      "element": "div",
+      "children": [
+        {
+          "element": "h2",
+          "class": "font-bold",
+          "children": "Data sources"
+        },
+        {
+          "element": "div",
+          "children": "Data sources go here"
+        }
+      ]
+    },
+    {
+      "element": "div",
+      "children": [
+        {
+          "element": "h2",
+          "class": "font-bold",
+          "children": "Page"
+        },
+        {
+          "element": "div",
+          "children": "Page fields go here"
+        }
+      ]
+    }
+  ]
 }
