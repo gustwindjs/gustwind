@@ -1,6 +1,6 @@
 {
   "element": "div",
-  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 bg-white rounded drop-shadow-sm flex flex-col gap-4",
+  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded drop-shadow-sm flex flex-col gap-4",
   "children": [
     {
       "element": "div",
@@ -11,8 +11,37 @@
           "children": "Meta"
         },
         {
-          "element": "div",
-          "children": "meta fields go here"
+          "element": "ul",
+          "children": [
+            {
+              "element": "template",
+              "attributes": {
+                "x-each": "meta"
+              },
+              "children": [
+                {
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "children": [
+                    {
+                      "element": "div",
+                      "attributes": {
+                        "x": "state.field"
+                      }
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "state.value"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },

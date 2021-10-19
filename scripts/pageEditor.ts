@@ -75,16 +75,15 @@ async function createPlaygroundEditor() {
   console.log("Set up the page editor");
 
   fetch("./definition.json").then((res) => res.json()).then(
-    async (pageDefinition) => {
-      document.body.appendChild(
-        await renderTree(components, context, pageDefinition),
-      );
-      document.body.appendChild(await renderControls(components, context));
+    (pageDefinition) => {
+      renderTree(document.body, components, context, pageDefinition);
+      renderControls(document.body, components, context);
     },
   );
 }
 
 async function renderTree(
+  parent: HTMLElement,
   components: Components,
   context: DataContext,
   pageDefinition: Page,
@@ -95,17 +94,35 @@ async function renderTree(
     components,
     context,
   );
+  const meta = Object.entries(pageDefinition.meta).map(([field, value]) => ({
+    field,
+    value,
+  }));
+  treeElement.setAttribute(
+    "x-state",
+    `{
+    meta: ${JSON.stringify(meta)}
+  }`,
+  );
+  parent.appendChild(treeElement);
 
-  return treeElement;
+  // @ts-ignore This is from sidewind
+  window.evaluateAllDirectives();
 }
 
-async function renderControls(components: Components, context: DataContext) {
+async function renderControls(
+  parent: HTMLElement,
+  components: Components,
+  context: DataContext,
+) {
   const controlsElement = document.createElement("div");
   controlsElement.innerHTML = await renderComponent(
     components.elementControls,
     components,
     context,
   );
+
+  parent.appendChild(controlsElement);
 
   return controlsElement;
 
