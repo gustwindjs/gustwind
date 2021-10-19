@@ -1,6 +1,6 @@
 {
   "element": "div",
-  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded filter drop-shadow flex flex-col gap-4",
+  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded filter drop-shadow bg-opacity-90 flex flex-col gap-4",
   "children": [
     {
       "element": "div",
@@ -12,6 +12,7 @@
         },
         {
           "component": "dynamicList",
+          "class": "flex flex-col gap-2",
           "__bind": {
             "dataSource": "meta"
           }
@@ -37,6 +38,7 @@
               "children": [
                 {
                   "component": "dynamicList",
+                  "class": "flex flex-col gap-2",
                   "__bind": {
                     "dataSource": "state"
                   }
@@ -52,11 +54,12 @@
       "children": [
         {
           "element": "h2",
-          "class": "font-bold",
+          "class": "font-bold mb-2",
           "children": "Page"
         },
         {
           "element": "ul",
+          "class": "flex flex-col gap-2",
           "children": [
             {
               "element": "template",
@@ -66,13 +69,12 @@
               "children": [
                 {
                   "element": "li",
-                  "class": "flex gap-2",
                   "children": [
                     {
                       "element": "label",
                       "attributes": {
                         "x": "state.type",
-                        "x-class": "['ml-' + state.level]"
+                        "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
                       }
                     }
                   ]
