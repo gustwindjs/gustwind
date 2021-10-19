@@ -117,8 +117,6 @@ async function renderTree(
   );
   parent.appendChild(treeElement);
 
-  console.log(dataSources);
-
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
 }

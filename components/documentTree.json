@@ -11,37 +11,10 @@
           "children": "Meta"
         },
         {
-          "element": "ul",
-          "children": [
-            {
-              "element": "template",
-              "attributes": {
-                "x-each": "meta"
-              },
-              "children": [
-                {
-                  "element": "li",
-                  "class": "flex gap-2",
-                  "children": [
-                    {
-                      "element": "label",
-                      "attributes": {
-                        "x": "state.field"
-                      }
-                    },
-                    {
-                      "element": "input",
-                      "class": "border flex-grow",
-                      "attributes": {
-                        "type": "text",
-                        "x": "state.value"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "component": "dynamicList",
+          "__bind": {
+            "dataSource": "meta"
+          }
         }
       ]
     },
@@ -63,37 +36,10 @@
               },
               "children": [
                 {
-                  "element": "ul",
-                  "children": [
-                    {
-                      "element": "template",
-                      "attributes": {
-                        "x-each": "state"
-                      },
-                      "children": [
-                        {
-                          "element": "li",
-                          "class": "flex gap-2",
-                          "children": [
-                            {
-                              "element": "label",
-                              "attributes": {
-                                "x": "state.field"
-                              }
-                            },
-                            {
-                              "element": "input",
-                              "class": "border flex-grow",
-                              "attributes": {
-                                "type": "text",
-                                "x": "state.value"
-                              }
-                            }
-                          ]
-                        } 
-                      ]
-                    }
-                  ]
+                  "component": "dynamicList",
+                  "__bind": {
+                    "dataSource": "state"
+                  }
                 }
               ]
             }
