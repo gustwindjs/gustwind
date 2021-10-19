@@ -1,6 +1,6 @@
 {
   "element": "div",
-  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded drop-shadow-sm flex flex-col gap-4",
+  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded filter drop-shadow flex flex-col gap-4",
   "children": [
     {
       "element": "div",

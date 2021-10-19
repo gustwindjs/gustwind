@@ -1,5 +1,5 @@
 {
   "element": "div",
-  "class": "fixed top-0 right-0 mr-4 mt-16 p-4 bg-white rounded drop-shadow-sm",
+  "class": "fixed top-0 right-0 mr-4 mt-16 p-4 bg-white rounded filter drop-shadow",
   "children": "element controls go here"
 }
