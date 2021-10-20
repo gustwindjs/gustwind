@@ -31,6 +31,27 @@
                   }
                 }
               ]
+            },
+            {
+              "element": "li",
+              "class": "flex gap-2",
+              "attributes": {
+                "x-class": "[editorContainer.selectedElement ? typeof editorContainer.selectedElement.children !== 'string' && 'hidden' : 'hidden']"
+              },
+              "children": [
+                {
+                  "element": "label",
+                  "children": "Content"
+                },
+                {
+                  "element": "input",
+                  "class": "border flex-grow",
+                  "attributes": {
+                    "type": "text",
+                    "x": "editorContainer.selectedElement ? editorContainer.selectedElement.children : ''"
+                  }
+                }
+              ]
             }
           ]
         }
