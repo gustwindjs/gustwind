@@ -293,12 +293,14 @@ function findElement(
 
       const matchedPageItem = page[currentIndex];
 
-      // TODO: Add handling for components and elements with __bind
+      // TODO: Add handling for components
       if (matchedPageItem.type === "element") {
-        const ret = traverse(child as HTMLElement);
+        if (!matchedPageItem.__bind) {
+          const ret = traverse(child as HTMLElement);
 
-        if (ret) {
-          return ret;
+          if (ret) {
+            return ret;
+          }
         }
       }
     }
