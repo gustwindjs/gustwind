@@ -27,10 +27,9 @@ async function toggleEditor() {
   editorsElement = document.createElement("div");
   editorsElement.id = editorsId;
   editorsElement.style.visibility = "visible";
-  // TODO: Push pages state here as well
   editorsElement.setAttribute(
     "x-state",
-    "{ selected: undefined }",
+    "{ selected: undefined, meta: [], dataSources: [], pageElements: [] }",
   );
   editorsElement.setAttribute("x-label", "editorContainer");
 

@@ -61,16 +61,14 @@ async function renderTree(
   pageElements = addIndices<PageItem>(
     flattenPage(components, pageDefinition.page),
   );
-  treeElement.setAttribute(
-    "x-state",
-    `{
-    meta: ${JSON.stringify(meta)},
-    dataSources: ${JSON.stringify(dataSources)},
-    pageElements: ${JSON.stringify(pageElements)}
-  }`,
-  );
   treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
+
+  // @ts-ignore Improve type
+  setState({ meta, dataSources, pageElements }, {
+    element: treeElement,
+    parent: "editorContainer",
+  });
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
