@@ -165,11 +165,10 @@ async function renderControls(
 enum Type {
   Component = "component",
   Element = "element",
-  String = "string",
 }
 type PageItem = ({
   level: number;
-  type: Type;
+  type?: Type;
 } & Component);
 
 function flattenPage(
@@ -180,17 +179,17 @@ function flattenPage(
     return component.flatMap((c) => flattenPage(c, level + 1));
   }
   if (component.children) {
-    const ret = [{
+    if (typeof component.children === "string") {
+      return [{ ...component, type: getType(component), level }];
+    }
+
+    return [{
       ...component,
       type: getType(component),
       level,
-    }];
-
-    if (typeof component.children === "string") {
-      return ret;
-    }
-
-    return ret.concat(flattenPage(component.children, level + 1));
+    } as PageItem].concat(
+      flattenPage(component.children, level + 1).filter(Boolean),
+    );
   }
 
   return [{ ...component, type: getType(component), level }];
@@ -209,8 +208,6 @@ function getType(component: Component) {
   if (component.element) {
     return Type["Element"];
   }
-
-  return Type["String"];
 }
 
 type State = Record<string, unknown>;
@@ -278,7 +275,6 @@ function findElement(
   let currentIndex = -1;
 
   function traverse(parent: HTMLElement): HTMLElement | undefined {
-    // TODO: Traverse elements and match (component, element, string)
     for (const child of Array.from(parent.children)) {
       currentIndex++;
 
@@ -297,12 +293,13 @@ function findElement(
 
       const matchedPageItem = page[currentIndex];
 
+      // TODO: Add handling for components and elements with __bind
       if (matchedPageItem.type === "element") {
-        return traverse(child as HTMLElement);
-      } else if (matchedPageItem.type === "string") {
-        console.log("found string");
+        const ret = traverse(child as HTMLElement);
 
-        return child as HTMLElement;
+        if (ret) {
+          return ret;
+        }
       }
     }
   }
