@@ -2,14 +2,7 @@
 import { setup } from "twind-shim";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-import type {
-  Component,
-  Components,
-  DataContext,
-  DataSources,
-  Meta,
-  Page,
-} from "../types.ts";
+import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -38,9 +31,6 @@ async function createEditor(parent: HTMLElement) {
 
 type PageElements = (PageItem & Index)[];
 
-// TODO: Consider eliminating this global
-let pageElements: PageElements = [];
-
 async function renderTree(
   parent: HTMLElement,
   components: Components,
@@ -67,7 +57,7 @@ async function renderTree(
       }),
     ),
   }));
-  pageElements = addIndices<PageItem>(
+  const pageElements = addIndices<PageItem>(
     flattenPage(components, pageDefinition.page),
   );
   treeElement.setAttribute("x-label", "parent");
@@ -229,26 +219,29 @@ const hoveredElements: Element[] = [];
 
 function elementHovered(
   pageItem: PageItem & Index,
-  setState: setState<unknown>,
+  setState: setState<{
+    pageElements: PageElements;
+  }>,
 ) {
-  const body = document.getElementById("pagebody");
-  const element = findElement(body, pageItem);
+  setState(({ pageElements }) => {
+    const body = document.getElementById("pagebody");
+    const element = findElement(body, pageItem, pageElements);
 
-  hoveredElements.forEach((element) => {
-    element.classList.remove("border");
-    element.classList.remove("border-red-800");
-  });
+    hoveredElements.forEach((element) => {
+      element.classList.remove("border");
+      element.classList.remove("border-red-800");
+    });
 
-  if (element) {
-    element.classList.add("border");
-    element.classList.add("border-red-800");
+    if (element) {
+      element.classList.add("border");
+      element.classList.add("border-red-800");
 
-    hoveredElements.push(element);
-  }
+      hoveredElements.push(element);
+    }
 
-  // TODO: Rewrite this setState in setState(() => ...) to access pageElements
-  // @ts-ignore Improve type
-  setState({ selected: pageItem }, { parent: "editorContainer" });
+    return { selected: pageItem };
+    // @ts-ignore Improve type
+  }, { parent: "editorContainer" });
 }
 
 function contentChanged(
@@ -257,15 +250,13 @@ function contentChanged(
     {
       selected: PageItem & Index;
       pageElements: PageElements;
-      meta: Meta;
-      dataSources: DataSources;
     }
   >,
 ) {
   setState(
-    ({ selected, pageElements, meta, dataSources }) => {
+    ({ selected, pageElements }) => {
       const body = document.getElementById("pagebody");
-      const element = findElement(body, selected);
+      const element = findElement(body, selected, pageElements);
 
       if (element) {
         element.innerHTML = value;
@@ -281,8 +272,6 @@ function contentChanged(
             ? { ...element, children: value }
             : element
         ),
-        meta,
-        dataSources,
       };
     },
   );
@@ -291,6 +280,7 @@ function contentChanged(
 function findElement(
   parent: HTMLElement | null,
   pageItem: PageItem & Index,
+  pageElements: PageElements,
 ): HTMLElement | undefined {
   if (!parent) {
     return;
@@ -307,7 +297,6 @@ function findElement(
         return child as HTMLElement;
       }
 
-      // TODO: Get rid of this global
       const matchedPageItem = pageElements[currentIndex];
 
       if (!matchedPageItem.isComponent) {
