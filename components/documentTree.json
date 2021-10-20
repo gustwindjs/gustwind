@@ -74,7 +74,7 @@
                     {
                       "element": "label",
                       "attributes": {
-                        "x": "state.type",
+                        "x": "state.type + ': ' + (state.component || state.element || state.children)",
                         "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
                       }
                     }
