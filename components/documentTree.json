@@ -77,7 +77,7 @@
                     {
                       "element": "label",
                       "attributes": {
-                        "x": "state.element",
+                        "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
                         "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
                       }
                     }
