@@ -190,10 +190,9 @@ function addIndices<A>(arr: A[]): (A & Index)[] {
   return arr.map((o, index) => ({ ...o, index }));
 }
 
-type State<V> = Record<string, V>;
-type setState<V> = (fn: (state: State<V>) => State<V>) => void;
+type setState<V> = (fn: (state: V) => V) => void;
 
-function metaChanged(value: string, setState: setState) {
+function metaChanged(value: string, setState: setState<{ field: "title" }>) {
   setState(({ field }) => {
     if (field === "title") {
       const titleElement = document.querySelector("title");
@@ -241,7 +240,31 @@ function elementHovered(
   }
 
   // @ts-ignore Improve type
-  setState({ selected: pageItem, element }, { parent: "editorContainer" });
+  setState({ selected: pageItem }, { parent: "editorContainer" });
+}
+
+function contentChanged(
+  value: string,
+  setState: setState<{ selected: PageItem & Index }>,
+) {
+  setState(
+    ({ selected }) => {
+      const body = document.getElementById("pagebody");
+      const element = findElement(body, selected);
+
+      if (element) {
+        element.innerHTML = value;
+      }
+
+      // TODO: Update content at the pages structure (sidewind)
+      return {
+        selected: {
+          ...selected,
+          children: value,
+        },
+      };
+    },
+  );
 }
 
 function findElement(
@@ -278,28 +301,6 @@ function findElement(
   }
 
   return traverse(parent);
-}
-
-// TODO: The problem is that there's no access to labels from oninput
-// That would need an evaluation (x-oninput) of some kind or another solution
-function contentChanged(
-  value: string,
-  setState: setState<{ element: HTMLElement; selected: PageItem & Index }>,
-) {
-  console.log("new content", value);
-
-  setState(
-    ({ element, selected }) => {
-      // TODO: Update content at the pages structure (sidewind) and the DOM
-      return {
-        element,
-        selected: {
-          ...selected,
-          children: value,
-        },
-      };
-    },
-  );
 }
 
 // TODO: Figure out what the error means
