@@ -221,7 +221,7 @@ function metaChanged(value: string, setState: setState) {
 
 const hoveredElements: Element[] = [];
 
-function elementHovered(pageItem: PageItem & Index) {
+function elementHovered(pageItem: PageItem & Index, setState: setState) {
   const body = document.getElementById("pagebody");
   const element = findElement(body, pageItem);
 
@@ -236,6 +236,9 @@ function elementHovered(pageItem: PageItem & Index) {
 
     hoveredElements.push(element);
   }
+
+  // @ts-ignore Improve type
+  setState({ selectedElement: pageItem }, { parent: "editorContainer" });
 }
 
 function findElement(

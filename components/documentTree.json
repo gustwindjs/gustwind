@@ -71,7 +71,7 @@
                 {
                   "element": "li",
                   "attributes": {
-                    "onmouseover": "elementHovered(this.state)"
+                    "onmouseover": "elementHovered(this.state, setState)"
                   },
                   "children": [
                     {
