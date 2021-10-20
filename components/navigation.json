@@ -1,20 +1,20 @@
 [
   {
-    "component": "link",
+    "element": "link",
     "children": "Modes",
     "attributes": {
       "href": "/modes/"
     }
   },
   {
-    "component": "link",
+    "element": "link",
     "children": "Configuration",
     "attributes": {
       "href": "/configuration/"
     }
   },
   {
-    "component": "link",
+    "element": "link",
     "children": "Concepts",
     "attributes": {
       "href": "/concepts/"

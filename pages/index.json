@@ -13,7 +13,7 @@
   ],
   "page": [
     {
-      "component": "mainNavigation"
+      "element": "mainNavigation"
     },
     {
       "element": "header",
@@ -60,7 +60,7 @@
       "__children": "content"
     },
     {
-      "component": "mainFooter"
+      "element": "mainFooter"
     }
   ]
 }

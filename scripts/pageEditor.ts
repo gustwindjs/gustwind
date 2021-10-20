@@ -58,7 +58,7 @@ async function renderTree(
       }),
     ),
   }));
-  page = addIndices<PageItem>(flattenPage(pageDefinition.page));
+  page = addIndices<PageItem>(flattenPage(components, pageDefinition.page));
   treeElement.setAttribute(
     "x-state",
     `{
@@ -144,52 +144,50 @@ async function renderControls(
   // lg-inline
 }
 
-enum Type {
-  Component = "component",
-  Element = "element",
-}
 type PageItem = ({
+  isComponent: boolean;
   level: number;
-  type?: Type;
 } & Component);
 
 function flattenPage(
+  components: Components,
   component: Component | Component[],
   level = -1,
 ): PageItem[] {
   if (Array.isArray(component)) {
-    return component.flatMap((c) => flattenPage(c, level + 1));
+    return component.flatMap((c) => flattenPage(components, c, level + 1));
   }
   if (component.children) {
     if (typeof component.children === "string") {
-      return [{ ...component, type: getType(component), level }];
+      return [{
+        ...component,
+        isComponent: !!components[component.element],
+        level,
+      }];
     }
 
-    return [{
-      ...component,
-      type: getType(component),
-      level,
-    } as PageItem].concat(
-      flattenPage(component.children, level + 1).filter(Boolean),
+    return [
+      {
+        ...component,
+        isComponent: !!components[component.element],
+        level,
+      },
+    ].concat(
+      flattenPage(components, component.children, level + 1).filter(Boolean),
     );
   }
 
-  return [{ ...component, type: getType(component), level }];
+  return [{
+    ...component,
+    isComponent: !!components[component.element],
+    level,
+  }];
 }
 
 type Index = { index: number };
 
 function addIndices<A>(arr: A[]): (A & Index)[] {
   return arr.map((o, index) => ({ ...o, index }));
-}
-
-function getType(component: Component) {
-  if (component.component) {
-    return Type["Component"];
-  }
-  if (component.element) {
-    return Type["Element"];
-  }
 }
 
 type State = Record<string, unknown>;
@@ -261,7 +259,7 @@ function findElement(
 
       const matchedPageItem = page[currentIndex];
 
-      if (matchedPageItem.type === "element") {
+      if (!matchedPageItem.isComponent) {
         if (!matchedPageItem.__bind) {
           const ret = traverse(child as HTMLElement);
 
