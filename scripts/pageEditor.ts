@@ -206,11 +206,31 @@ function getType(component: Component) {
   return Type["String"];
 }
 
+type State = Record<string, unknown>;
+type setState = (fn: (state: State) => State) => void;
+
+function metaChanged(value: string, setState: setState) {
+  setState(({ field }) => {
+    if (field === "title") {
+      const titleElement = document.querySelector("title");
+
+      if (titleElement) {
+        titleElement.innerHTML = value || "";
+      }
+    }
+    // TODO: Handle the other cases
+
+    return { field, value };
+  });
+}
+
 // TODO: Figure out what the error means
 declare global {
   interface Window {
     createEditor: typeof createEditor;
+    metaChanged: typeof metaChanged;
   }
 }
 
 window.createEditor = createEditor;
+window.metaChanged = metaChanged;

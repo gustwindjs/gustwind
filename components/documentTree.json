@@ -14,7 +14,8 @@
           "component": "dynamicList",
           "class": "flex flex-col gap-2",
           "__bind": {
-            "dataSource": "meta"
+            "dataSource": "meta",
+            "oninput": "window.metaChanged(this.value, setState)"
           }
         }
       ]

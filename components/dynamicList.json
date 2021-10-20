@@ -22,7 +22,8 @@
               "class": "border flex-grow",
               "attributes": {
                 "type": "text",
-                "x": "state.value"
+                "x": "state.value",
+                "__oninput": "oninput"
               }
             }
           ]
