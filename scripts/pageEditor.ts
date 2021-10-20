@@ -246,7 +246,10 @@ const hoveredElements: Element[] = [];
 
 function elementHovered(pageItem: PageItem & Index) {
   const body = document.getElementById("pagebody");
-  const element = findElement(body, pageItem.index);
+
+  console.log("FINDING", pageItem.index);
+
+  const element = findElement(body, pageItem);
 
   hoveredElements.forEach((element) => {
     element.classList.remove("border");
@@ -263,15 +266,48 @@ function elementHovered(pageItem: PageItem & Index) {
   }
 }
 
-function findElement(parent: HTMLElement | null, index: number) {
+function findElement(
+  parent: HTMLElement | null,
+  pageItem: PageItem & Index,
+): HTMLElement | undefined {
   if (!parent) {
     return;
   }
 
-  // TODO: Traverse elements and match (component, element, string)
-  if (index === 0 && parent.children[0]) {
-    return parent.children[0];
+  const { index } = pageItem;
+  let currentIndex = -1;
+
+  function traverse(parent: HTMLElement): HTMLElement | undefined {
+    // TODO: Traverse elements and match (component, element, string)
+    for (const child of Array.from(parent.children)) {
+      currentIndex++;
+
+      console.log(
+        "page item index",
+        index,
+        "current index",
+        currentIndex,
+        "child",
+        child,
+      );
+
+      if (index === currentIndex) {
+        return child as HTMLElement;
+      }
+
+      const matchedPageItem = page[currentIndex];
+
+      if (matchedPageItem.type === "element") {
+        return traverse(child as HTMLElement);
+      } else if (matchedPageItem.type === "string") {
+        console.log("found string");
+
+        return child as HTMLElement;
+      }
+    }
   }
+
+  return traverse(parent);
 }
 
 // TODO: Figure out what the error means
