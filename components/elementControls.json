@@ -27,7 +27,7 @@
                   "class": "border flex-grow",
                   "attributes": {
                     "type": "text",
-                    "x": "editorContainer.selectedElement ? editorContainer.selectedElement.element : 'No selected element'"
+                    "x": "editorContainer.selected ? editorContainer.selected.element : 'No selected element'"
                   }
                 }
               ]
@@ -36,7 +36,7 @@
               "element": "li",
               "class": "flex gap-2",
               "attributes": {
-                "x-class": "[editorContainer.selectedElement ? typeof editorContainer.selectedElement.children !== 'string' && 'hidden' : 'hidden']"
+                "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
               },
               "children": [
                 {
@@ -48,7 +48,8 @@
                   "class": "border flex-grow",
                   "attributes": {
                     "type": "text",
-                    "x": "editorContainer.selectedElement ? editorContainer.selectedElement.children : ''"
+                    "x": "editorContainer.selected ? editorContainer.selected.children : ''",
+                    "oninput": "contentChanged(this.value, setState, this)"
                   }
                 }
               ]

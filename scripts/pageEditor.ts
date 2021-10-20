@@ -190,8 +190,8 @@ function addIndices<A>(arr: A[]): (A & Index)[] {
   return arr.map((o, index) => ({ ...o, index }));
 }
 
-type State = Record<string, unknown>;
-type setState = (fn: (state: State) => State) => void;
+type State<V> = Record<string, V>;
+type setState<V> = (fn: (state: State<V>) => State<V>) => void;
 
 function metaChanged(value: string, setState: setState) {
   setState(({ field }) => {
@@ -221,7 +221,10 @@ function metaChanged(value: string, setState: setState) {
 
 const hoveredElements: Element[] = [];
 
-function elementHovered(pageItem: PageItem & Index, setState: setState) {
+function elementHovered(
+  pageItem: PageItem & Index,
+  setState: setState<unknown>,
+) {
   const body = document.getElementById("pagebody");
   const element = findElement(body, pageItem);
 
@@ -238,7 +241,7 @@ function elementHovered(pageItem: PageItem & Index, setState: setState) {
   }
 
   // @ts-ignore Improve type
-  setState({ selectedElement: pageItem }, { parent: "editorContainer" });
+  setState({ selected: pageItem, element }, { parent: "editorContainer" });
 }
 
 function findElement(
@@ -277,15 +280,39 @@ function findElement(
   return traverse(parent);
 }
 
+// TODO: The problem is that there's no access to labels from oninput
+// That would need an evaluation (x-oninput) of some kind or another solution
+function contentChanged(
+  value: string,
+  setState: setState<{ element: HTMLElement; selected: PageItem & Index }>,
+) {
+  console.log("new content", value);
+
+  setState(
+    ({ element, selected }) => {
+      // TODO: Update content at the pages structure (sidewind) and the DOM
+      return {
+        element,
+        selected: {
+          ...selected,
+          children: value,
+        },
+      };
+    },
+  );
+}
+
 // TODO: Figure out what the error means
 declare global {
   interface Window {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
     elementHovered: typeof elementHovered;
+    contentChanged: typeof contentChanged;
   }
 }
 
 window.createEditor = createEditor;
 window.metaChanged = metaChanged;
 window.elementHovered = elementHovered;
+window.contentChanged = contentChanged;
