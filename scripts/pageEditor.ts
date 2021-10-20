@@ -2,7 +2,14 @@
 import { setup } from "twind-shim";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-import type { Component, Components, DataContext, Page } from "../types.ts";
+import type {
+  Component,
+  Components,
+  DataContext,
+  DataSources,
+  Meta,
+  Page,
+} from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -29,8 +36,10 @@ async function createEditor(parent: HTMLElement) {
   );
 }
 
+type PageElements = (PageItem & Index)[];
+
 // TODO: Consider eliminating this global
-let pageElements: (PageItem & Index)[] = [];
+let pageElements: PageElements = [];
 
 async function renderTree(
   parent: HTMLElement,
@@ -237,16 +246,24 @@ function elementHovered(
     hoveredElements.push(element);
   }
 
+  // TODO: Rewrite this setState in setState(() => ...) to access pageElements
   // @ts-ignore Improve type
   setState({ selected: pageItem }, { parent: "editorContainer" });
 }
 
 function contentChanged(
   value: string,
-  setState: setState<{ selected: PageItem & Index }>,
+  setState: setState<
+    {
+      selected: PageItem & Index;
+      pageElements: PageElements;
+      meta: Meta;
+      dataSources: DataSources;
+    }
+  >,
 ) {
   setState(
-    ({ selected }) => {
+    ({ selected, pageElements, meta, dataSources }) => {
       const body = document.getElementById("pagebody");
       const element = findElement(body, selected);
 
@@ -254,12 +271,18 @@ function contentChanged(
         element.innerHTML = value;
       }
 
-      // TODO: Update content at the pages structure (sidewind)
       return {
         selected: {
           ...selected,
           children: value,
         },
+        pageElements: pageElements.map((element) =>
+          selected.index === element.index
+            ? { ...element, children: value }
+            : element
+        ),
+        meta,
+        dataSources,
       };
     },
   );

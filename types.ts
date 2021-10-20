@@ -50,16 +50,17 @@ type ProjectMeta = {
     transforms: string;
   };
 };
+type DataSources = {
+  id: string;
+  operation: string;
+  input: string;
+  transformWith: string;
+}[];
 type Page = {
   meta: Meta;
   page: Component | Component[];
   matchBy?: { dataSource: string; property: string };
-  dataSources?: {
-    id: string;
-    operation: string;
-    input: string;
-    transformWith: string;
-  }[];
+  dataSources?: DataSources;
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
@@ -72,6 +73,7 @@ export type {
   Component,
   Components,
   DataContext,
+  DataSources,
   ImportMap,
   Library,
   Meta,
