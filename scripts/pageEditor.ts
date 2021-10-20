@@ -14,39 +14,7 @@ setup({
   ...sharedTwindSetup("development"),
 });
 
-// const pageEditorId = "pageEditor";
-
-async function createPlaygroundEditor() {
-  const stylesheet = document.createElement("link");
-  stylesheet.setAttribute("rel", "stylesheet");
-  stylesheet.setAttribute("type", "text/css");
-  stylesheet.setAttribute(
-    "href",
-    "https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css",
-  );
-
-  document.body.appendChild(stylesheet);
-
-  const mainElement = document.querySelector("main");
-
-  if (!mainElement) {
-    console.error("Failed to find body element");
-
-    return;
-  }
-
-  /*const pageEditorElement = document.createElement("div");
-  pageEditorElement.setAttribute("id", pageEditorId);
-  pageEditorElement.setAttribute(
-    "class",
-    tw`fixed bg-white bottom-0 w-full max-h-1/2`,
-  );
-
-  mainElement.parentNode?.insertBefore(
-    pageEditorElement,
-    mainElement.nextSibling,
-  );*/
-
+async function createEditor(parent: HTMLElement) {
   const components: Components = await fetch("/components.json").then((res) =>
     res.json()
   );
@@ -76,8 +44,8 @@ async function createPlaygroundEditor() {
 
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
-      renderTree(document.body, components, context, pageDefinition);
-      renderControls(document.body, components, context);
+      renderTree(parent, components, context, pageDefinition);
+      renderControls(parent, components, context);
     },
   );
 }
@@ -238,4 +206,11 @@ function getType(component: Component) {
   return Type["String"];
 }
 
-createPlaygroundEditor();
+// TODO: Figure out what the error means
+declare global {
+  interface Window {
+    createEditor: typeof createEditor;
+  }
+}
+
+window.createEditor = createEditor;

@@ -1,10 +1,7 @@
 /// <reference lib="dom" />
 import { importScript } from "../src/importScript.ts";
 
-// TODO: Share this with the page editor in a nice way
-const pageEditorId = "pageEditor";
-
-let tries = 0;
+const editorsId = "editors";
 
 async function toggleEditor() {
   const mainElement = document.querySelector("main");
@@ -15,36 +12,31 @@ async function toggleEditor() {
     return;
   }
 
-  if (tries > 5) {
-    console.error("Failed to load page editor script");
+  let editorsElement = document.getElementById(editorsId);
 
-    return;
-  }
-
-  mainElement.dataset.visible = mainElement.dataset.visible === "true"
-    ? "false"
-    : "true";
-
-  const pageEditorElement = document.getElementById(pageEditorId);
-
-  if (!pageEditorElement) {
-    try {
-      await importScript("/pageEditor.js");
-
-      tries++;
-
-      toggleEditor();
-    } catch (err) {
-      console.error(err);
+  if (editorsElement) {
+    if (editorsElement.style.visibility === "visible") {
+      editorsElement.style.visibility = "hidden";
+    } else {
+      editorsElement.style.visibility = "visible";
     }
 
     return;
   }
 
-  if (mainElement.dataset.visible === "true") {
-    pageEditorElement.style.visibility = "hidden";
-  } else {
-    pageEditorElement.style.visibility = "visible";
+  editorsElement = document.createElement("div");
+  editorsElement.id = editorsId;
+  editorsElement.style.visibility = "visible";
+
+  document.body.appendChild(editorsElement);
+
+  try {
+    await importScript("/pageEditor.js");
+
+    // @ts-ignore TODO: Share window type better
+    window.createEditor(editorsElement);
+  } catch (err) {
+    console.error(err);
   }
 }
 
