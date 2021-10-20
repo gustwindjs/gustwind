@@ -73,7 +73,7 @@ async function renderTree(
       }),
     ),
   }));
-  const page = flattenPage(pageDefinition.page);
+  const page = addIndices<PageItem>(flattenPage(pageDefinition.page));
   treeElement.setAttribute(
     "x-state",
     `{
@@ -171,7 +171,7 @@ type PageItem = ({
 function flattenPage(
   component: Component | Component[],
   level = -1,
-): PageItem | PageItem[] {
+): PageItem[] {
   if (Array.isArray(component)) {
     return component.flatMap((c) => flattenPage(c, level + 1));
   }
@@ -189,7 +189,13 @@ function flattenPage(
     return ret.concat(flattenPage(component.children, level + 1));
   }
 
-  return { ...component, type: getType(component), level };
+  return [{ ...component, type: getType(component), level }];
+}
+
+type Index = { index: number };
+
+function addIndices<A>(arr: A[]): (A & Index)[] {
+  return arr.map((o, index) => ({ ...o, index }));
 }
 
 function getType(component: Component) {
@@ -232,7 +238,7 @@ function metaChanged(value: string, setState: setState) {
   });
 }
 
-function elementHovered(pageItem: PageItem) {
+function elementHovered(pageItem: PageItem & Index) {
   console.log("hover value", pageItem);
 }
 
