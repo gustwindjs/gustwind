@@ -1,9 +1,7 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
-// import { tw } from "twind";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-// import { renderBody } from "../src/renderBody.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
@@ -20,22 +18,6 @@ async function createEditor(parent: HTMLElement) {
   const context: DataContext = await fetch("./context.json").then((res) =>
     res.json()
   );
-
-  /*
-  const editor = new JSONEditor(pageEditorElement, {
-    onChangeJSON: async (pageJson: Page) => {
-      // TODO: Figure out how to handle transforms (disallow?)
-      const bodyMarkup = await renderBody(
-        pageJson,
-        pageJson.page,
-        components,
-        context,
-        location.pathname,
-      );
-
-      mainElement.innerHTML = bodyMarkup;
-    },
-  });*/
 
   console.log("Set up the page editor");
 
@@ -243,9 +225,6 @@ const hoveredElements: Element[] = [];
 
 function elementHovered(pageItem: PageItem & Index) {
   const body = document.getElementById("pagebody");
-
-  console.log("FINDING", pageItem.index);
-
   const element = findElement(body, pageItem);
 
   hoveredElements.forEach((element) => {
@@ -254,8 +233,6 @@ function elementHovered(pageItem: PageItem & Index) {
   });
 
   if (element) {
-    console.log("found element", element);
-
     element.classList.add("border");
     element.classList.add("border-red-800");
 
@@ -278,22 +255,12 @@ function findElement(
     for (const child of Array.from(parent.children)) {
       currentIndex++;
 
-      console.log(
-        "page item index",
-        index,
-        "current index",
-        currentIndex,
-        "child",
-        child,
-      );
-
       if (index === currentIndex) {
         return child as HTMLElement;
       }
 
       const matchedPageItem = page[currentIndex];
 
-      // TODO: Add handling for components
       if (matchedPageItem.type === "element") {
         if (!matchedPageItem.__bind) {
           const ret = traverse(child as HTMLElement);
