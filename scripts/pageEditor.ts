@@ -238,8 +238,26 @@ function metaChanged(value: string, setState: setState) {
   });
 }
 
+// TODO: What's a good way to get page here? global for now?
 function elementHovered(pageItem: PageItem & Index) {
-  console.log("hover value", pageItem);
+  const body = document.getElementById("pagebody");
+
+  console.log("hover value");
+
+  const element = findElement(body, pageItem.index);
+
+  if (element) {
+    console.log("found element", element);
+  }
+}
+
+function findElement(parent: HTMLElement | null, index: number) {
+  if (!parent) {
+    return;
+  }
+
+  // TODO: Traverse elements and match (component, element, string)
+  return "got it";
 }
 
 // TODO: Figure out what the error means
