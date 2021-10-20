@@ -47,6 +47,9 @@ async function createEditor(parent: HTMLElement) {
   );
 }
 
+// TODO: Consider eliminating this global
+let page: (PageItem & Index)[] = [];
+
 async function renderTree(
   parent: HTMLElement,
   components: Components,
@@ -73,7 +76,7 @@ async function renderTree(
       }),
     ),
   }));
-  const page = addIndices<PageItem>(flattenPage(pageDefinition.page));
+  page = addIndices<PageItem>(flattenPage(pageDefinition.page));
   treeElement.setAttribute(
     "x-state",
     `{
@@ -82,6 +85,7 @@ async function renderTree(
     page: ${JSON.stringify(page)}
   }`,
   );
+  treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
 
   console.log("page", page);
@@ -238,16 +242,24 @@ function metaChanged(value: string, setState: setState) {
   });
 }
 
-// TODO: What's a good way to get page here? global for now?
+const hoveredElements: Element[] = [];
+
 function elementHovered(pageItem: PageItem & Index) {
   const body = document.getElementById("pagebody");
-
-  console.log("hover value");
-
   const element = findElement(body, pageItem.index);
+
+  hoveredElements.forEach((element) => {
+    element.classList.remove("border");
+    element.classList.remove("border-red-800");
+  });
 
   if (element) {
     console.log("found element", element);
+
+    element.classList.add("border");
+    element.classList.add("border-red-800");
+
+    hoveredElements.push(element);
   }
 }
 
@@ -257,7 +269,9 @@ function findElement(parent: HTMLElement | null, index: number) {
   }
 
   // TODO: Traverse elements and match (component, element, string)
-  return "got it";
+  if (index === 0 && parent.children[0]) {
+    return parent.children[0];
+  }
 }
 
 // TODO: Figure out what the error means
