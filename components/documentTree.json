@@ -15,7 +15,7 @@
           "class": "flex flex-col gap-2",
           "__bind": {
             "dataSource": "meta",
-            "oninput": "window.metaChanged(this.value, setState)"
+            "oninput": "metaChanged(this.value, setState)"
           }
         }
       ]
@@ -70,6 +70,9 @@
               "children": [
                 {
                   "element": "li",
+                  "attributes": {
+                    "onmouseover": "elementHovered(this.state)"
+                  },
                   "children": [
                     {
                       "element": "label",

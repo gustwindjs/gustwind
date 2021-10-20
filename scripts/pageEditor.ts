@@ -84,6 +84,8 @@ async function renderTree(
   );
   parent.appendChild(treeElement);
 
+  console.log("page", page);
+
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
 }
@@ -230,13 +232,19 @@ function metaChanged(value: string, setState: setState) {
   });
 }
 
+function elementHovered(pageItem: PageItem) {
+  console.log("hover value", pageItem);
+}
+
 // TODO: Figure out what the error means
 declare global {
   interface Window {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
+    elementHovered: typeof elementHovered;
   }
 }
 
 window.createEditor = createEditor;
 window.metaChanged = metaChanged;
+window.elementHovered = elementHovered;
