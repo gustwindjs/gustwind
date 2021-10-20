@@ -65,7 +65,7 @@
             {
               "element": "template",
               "attributes": {
-                "x-each": "page"
+                "x-each": "pageElements"
               },
               "children": [
                 {

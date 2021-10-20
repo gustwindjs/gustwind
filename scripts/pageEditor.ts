@@ -30,7 +30,7 @@ async function createEditor(parent: HTMLElement) {
 }
 
 // TODO: Consider eliminating this global
-let page: (PageItem & Index)[] = [];
+let pageElements: (PageItem & Index)[] = [];
 
 async function renderTree(
   parent: HTMLElement,
@@ -58,19 +58,19 @@ async function renderTree(
       }),
     ),
   }));
-  page = addIndices<PageItem>(flattenPage(components, pageDefinition.page));
+  pageElements = addIndices<PageItem>(
+    flattenPage(components, pageDefinition.page),
+  );
   treeElement.setAttribute(
     "x-state",
     `{
     meta: ${JSON.stringify(meta)},
     dataSources: ${JSON.stringify(dataSources)},
-    page: ${JSON.stringify(page)}
+    pageElements: ${JSON.stringify(pageElements)}
   }`,
   );
   treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
-
-  console.log("page", page);
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
@@ -286,7 +286,8 @@ function findElement(
         return child as HTMLElement;
       }
 
-      const matchedPageItem = page[currentIndex];
+      // TODO: Get rid of this global
+      const matchedPageItem = pageElements[currentIndex];
 
       if (!matchedPageItem.isComponent) {
         if (!matchedPageItem.__bind) {
