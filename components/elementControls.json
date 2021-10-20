@@ -1,7 +1,41 @@
 {
   "element": "div",
   "class": "fixed top-0 right-0 mr-4 mt-16 p-4 bg-white rounded filter drop-shadow bg-opacity-90 gap-8",
-  "attributes": {
-    "x": "editorContainer.selectedElement ? editorContainer.selectedElement.element : 'No selected element'"
-  }
+  "children": [
+    {
+      "element": "div",
+      "children": [
+        {
+          "element": "h2",
+          "class": "font-bold",
+          "children": "Content"
+        },
+        {
+          "element": "ul",
+          "class": "flex flex-col gap-2",
+          "children": [
+            {
+              "element": "li",
+              "class": "flex gap-2",
+              "children": [
+                {
+                  "element": "label",
+                  "children": "Element"
+                },
+                {
+                  "element": "input",
+                  "class": "border flex-grow",
+                  "attributes": {
+                    "type": "text",
+                    "x": "editorContainer.selectedElement ? editorContainer.selectedElement.element : 'No selected element'"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+
 }
