@@ -3,7 +3,6 @@ import { setup } from "twind-shim";
 // import { tw } from "twind";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-// import updateMeta from "../src/updateMeta.ts";
 // import { renderBody } from "../src/renderBody.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
@@ -25,8 +24,6 @@ async function createEditor(parent: HTMLElement) {
   /*
   const editor = new JSONEditor(pageEditorElement, {
     onChangeJSON: async (pageJson: Page) => {
-      updateMeta(pageJson.meta);
-
       // TODO: Figure out how to handle transforms (disallow?)
       const bodyMarkup = await renderBody(
         pageJson,
@@ -86,8 +83,6 @@ async function renderTree(
   }`,
   );
   parent.appendChild(treeElement);
-
-  console.log("page", page);
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
@@ -216,9 +211,20 @@ function metaChanged(value: string, setState: setState) {
 
       if (titleElement) {
         titleElement.innerHTML = value || "";
+      } else {
+        console.warn("The page doesn't have a <title>!");
+      }
+    } else {
+      const metaElement = document.head.querySelector(
+        "meta[name='" + field + "']",
+      );
+
+      if (metaElement) {
+        metaElement.setAttribute("content", value);
+      } else {
+        console.warn(`The page doesn't have a ${field} meta element!`);
       }
     }
-    // TODO: Handle the other cases
 
     return { field, value };
   });
