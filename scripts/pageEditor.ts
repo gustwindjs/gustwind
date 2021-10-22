@@ -19,8 +19,6 @@ async function createEditor(parent: HTMLElement) {
     res.json()
   );
 
-  console.log("Set up the page editor");
-
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
       renderTree(parent, components, context, pageDefinition);
