@@ -1,85 +1,101 @@
 {
-  "element": "div",
-  "class": "fixed top-0 left-0 ml-4 mt-16 p-4 max-w-sm bg-white rounded filter drop-shadow bg-opacity-90 flex flex-col gap-4",
+  "element": "aside",
+  "class": "mt-16 ml-4 fixed top-0 left-0 max-w-sm rounded filter drop-shadow bg-opacity-90",
   "children": [
     {
-      "element": "div",
+      "element": "header",
       "children": [
         {
           "element": "h2",
-          "class": "font-bold",
-          "children": "Meta"
-        },
-        {
-          "element": "dynamicList",
-          "class": "flex flex-col gap-2",
-          "__bind": {
-            "dataSource": "meta",
-            "oninput": "metaChanged(this.value, setState)"
-          }
+          "class": "p-4 font-bold bg-gray-800 text-white",
+          "children": "Page Editor"
         }
       ]
     },
     {
-      "element": "div",
+      "element": "section",
+      "class": "p-4 gap-4 flex flex-col bg-white",
       "children": [
         {
-          "element": "h2",
-          "class": "font-bold",
-          "children": "Data sources"
+          "element": "div",
+          "children": [
+            {
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Meta"
+            },
+            {
+              "element": "dynamicList",
+              "class": "flex flex-col gap-2",
+              "__bind": {
+                "dataSource": "meta",
+                "oninput": "metaChanged(this.value, setState)"
+              }
+            }
+          ]
         },
         {
           "element": "div",
           "children": [
             {
-              "element": "template",
-              "attributes": {
-                "x-each": "dataSources"
-              },
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Data sources"
+            },
+            {
+              "element": "div",
               "children": [
                 {
-                  "element": "dynamicList",
-                  "class": "flex flex-col gap-2",
-                  "__bind": {
-                    "dataSource": "state"
-                  }
+                  "element": "template",
+                  "attributes": {
+                    "x-each": "dataSources"
+                  },
+                  "children": [
+                    {
+                      "element": "dynamicList",
+                      "class": "flex flex-col gap-2",
+                      "__bind": {
+                        "dataSource": "state"
+                      }
+                    }
+                  ]
                 }
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "element": "div",
-      "children": [
-        {
-          "element": "h2",
-          "class": "font-bold mb-2",
-          "children": "Page"
         },
         {
-          "element": "ul",
-          "class": "flex flex-col gap-2",
+          "element": "div",
           "children": [
             {
-              "element": "template",
-              "attributes": {
-                "x-each": "pageElements"
-              },
+              "element": "h2",
+              "class": "font-bold mb-2",
+              "children": "Page"
+            },
+            {
+              "element": "ul",
+              "class": "flex flex-col gap-2",
               "children": [
                 {
-                  "element": "li",
+                  "element": "template",
                   "attributes": {
-                    "onclick": "elementClicked(this.state, setState)"
+                    "x-each": "pageElements"
                   },
                   "children": [
                     {
-                      "element": "label",
+                      "element": "li",
                       "attributes": {
-                        "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
-                        "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
-                      }
+                        "onclick": "elementClicked(this.state, setState)"
+                      },
+                      "children": [
+                        {
+                          "element": "label",
+                          "attributes": {
+                            "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
