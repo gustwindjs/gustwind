@@ -93,7 +93,7 @@ async function renderPageEditor(
   parent.appendChild(treeElement);
 
   // @ts-ignore Improve type
-  setState({ meta, dataSources, pageElements }, {
+  setState({ meta, dataSources, pageElements, page: pageDefinition.page }, {
     element: treeElement,
     parent: "editorContainer",
   });
@@ -275,6 +275,41 @@ function elementClicked(
   }, { parent: "editorContainer" });
 }
 
+function elementChanged(
+  value: string,
+  setState: setState<
+    {
+      selected: PageItem & Index;
+      pageElements: PageElements;
+    }
+  >,
+) {
+  setState(
+    ({ selected, pageElements }) => {
+      const body = document.getElementById("pagebody");
+      const element = findElement(body, selected, pageElements);
+
+      if (element) {
+        // TODO: Update element type
+        // https://stackoverflow.com/a/59147202/228885
+      }
+
+      // TODO: Update match at the page object
+      return {
+        selected: {
+          ...selected,
+          element: value,
+        },
+        pageElements: pageElements.map((element) =>
+          selected.index === element.index
+            ? { ...element, element: value }
+            : element
+        ),
+      };
+    },
+  );
+}
+
 function contentChanged(
   value: string,
   setState: setState<
@@ -293,6 +328,7 @@ function contentChanged(
         element.innerHTML = value;
       }
 
+      // TODO: Update match at the page object
       return {
         selected: {
           ...selected,
@@ -330,6 +366,7 @@ function classChanged(
         element.classList.add("border-red-800");
       }
 
+      // TODO: Update match at the page object
       return {
         selected: {
           ...selected,
@@ -390,6 +427,7 @@ declare global {
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
+    elementChanged: typeof elementChanged;
     contentChanged: typeof contentChanged;
   }
 }
@@ -399,4 +437,5 @@ window.recreateEditor = recreateEditor;
 window.metaChanged = metaChanged;
 window.classChanged = classChanged;
 window.elementClicked = elementClicked;
+window.elementChanged = elementChanged;
 window.contentChanged = contentChanged;

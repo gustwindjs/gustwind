@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { importScript } from "../src/importScript.ts";
 import { zipToObject } from "../src/utils.ts";
-import type { Component, Index, PageItem } from "../types.ts";
+import type { Page } from "../types.ts";
 
 const editorsId = "editors";
 
@@ -34,7 +34,7 @@ async function toggleEditor() {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    "{ selected: undefined, meta: [], dataSources: [], pageElements: [] }",
+    "{ selected: undefined, meta: [], dataSources: [], pageElements: [], page: [] }",
   );
   editorsElement.setAttribute("x-label", "editorContainer");
 
@@ -80,7 +80,7 @@ function updateFileSystem(state: {
   dataSources: {
     state: { field: string; value: string }[];
   }[];
-  pageElements: (PageItem & Index)[];
+  page: Page["page"];
 }) {
   console.log("update file system", state, socket, pagePath);
   const meta = zipToObject(
@@ -89,7 +89,7 @@ function updateFileSystem(state: {
   const dataSources = state.dataSources.map(({ state }) =>
     zipToObject(state.map(({ field, value }) => [field, value]))
   );
-  const page = serializePage(state.pageElements);
+  const page = state.page;
 
   console.log(meta, dataSources, page);
 
@@ -103,40 +103,6 @@ function updateFileSystem(state: {
     },
   }));
   */
-}
-
-// TODO: Find a good algorithm for this
-function serializePage(elements: (PageItem & Index)[]): Component[] {
-  // const simplified = elements.map(({ isComponent, index, ...rest }) => rest);
-  const ret: Component[] = [];
-
-  // TODO: Handle siblings + string children
-  // TODO: Instead of previous element, track previous parent!
-  let previousElement: PageItem | null = null;
-  for (const element of elements) {
-    if (previousElement) {
-      if (previousElement.level === element.level) {
-        previousElement = { ...element, children: [] };
-
-        ret.push(previousElement);
-      } else {
-        const cleanedElement = { ...element, children: [] } as PageItem;
-
-        if (Array.isArray(previousElement.children)) {
-          previousElement.children?.push(cleanedElement);
-
-          previousElement = cleanedElement;
-        }
-      }
-    } else {
-      previousElement = { ...element, children: [] };
-
-      ret.push(previousElement);
-    }
-  }
-  // TODO: Omit level from each
-
-  return ret;
 }
 
 // TODO: Figure out what the error means
