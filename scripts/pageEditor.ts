@@ -286,11 +286,13 @@ function elementChanged(
     {
       selected: PageItem & Index;
       pageElements: PageElements;
+      page: Page["page"];
     }
   >,
 ) {
   setState(
-    ({ selected, pageElements }) => {
+    // @ts-ignore How to type this?
+    ({ selected, pageElements, page }) => {
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -304,7 +306,12 @@ function elementChanged(
         // https://stackoverflow.com/a/59147202/228885
       }
 
-      // TODO: Update match at the page object
+      traverse(page, (p, i) => {
+        if (selected.index === i) {
+          p.element = value;
+        }
+      });
+
       return {
         selected: {
           ...selected,
@@ -326,11 +333,13 @@ function contentChanged(
     {
       selected: PageItem & Index;
       pageElements: PageElements;
+      page: Page["page"];
     }
   >,
 ) {
   setState(
-    ({ selected, pageElements }) => {
+    // @ts-ignore How to type this?
+    ({ selected, pageElements, page }) => {
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -343,7 +352,12 @@ function contentChanged(
         element.innerHTML = value;
       }
 
-      // TODO: Update match at the page object
+      traverse(page, (p, i) => {
+        if (selected.index === i) {
+          p.children = value;
+        }
+      });
+
       return {
         selected: {
           ...selected,
@@ -365,11 +379,13 @@ function classChanged(
     {
       selected: PageItem & Index;
       pageElements: PageElements;
+      page: Page["page"];
     }
   >,
 ) {
   setState(
-    ({ selected, pageElements }) => {
+    // @ts-ignore How to type this?
+    ({ selected, pageElements, page }) => {
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -386,7 +402,12 @@ function classChanged(
         element.classList.add("border-red-800");
       }
 
-      // TODO: Update match at the page object
+      traverse(page, (p, i) => {
+        if (selected.index === i) {
+          p.class = value;
+        }
+      });
+
       return {
         selected: {
           ...selected,
@@ -397,9 +418,35 @@ function classChanged(
             ? { ...element, class: value }
             : element
         ),
+        page,
       };
     },
   );
+}
+
+function traverse(
+  page: Page["page"],
+  operation: (c: Component, index: number) => void,
+) {
+  let i = 0;
+
+  function recurse(
+    page: Page["page"],
+    operation: (c: Component, index: number) => void,
+  ) {
+    if (Array.isArray(page)) {
+      page.forEach((p) => recurse(p, operation));
+    } else {
+      operation(page, i);
+      i++;
+
+      if (Array.isArray(page.children)) {
+        recurse(page.children, operation);
+      }
+    }
+  }
+
+  recurse(page, operation);
 }
 
 type Node = {
