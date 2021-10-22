@@ -59,12 +59,6 @@
           "children": "Page"
         },
         {
-          "element": "div",
-          "attributes": {
-            "x": "editorContainer.pageElements.length"
-          }
-        },
-        {
           "element": "ul",
           "class": "flex flex-col gap-2",
           "children": [
@@ -77,7 +71,7 @@
                 {
                   "element": "li",
                   "attributes": {
-                    "onmouseover": "elementHovered(this.state, setState)"
+                    "onclick": "elementClicked(this.state, setState)"
                   },
                   "children": [
                     {

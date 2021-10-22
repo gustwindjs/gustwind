@@ -213,9 +213,9 @@ function metaChanged(value: string, setState: setState<{ field: "title" }>) {
   });
 }
 
-const hoveredElements: Element[] = [];
+const hoveredElements = new Set<HTMLElement>();
 
-function elementHovered(
+function elementClicked(
   pageItem: PageItem & Index,
   setState: setState<{
     pageElements: PageElements;
@@ -225,16 +225,18 @@ function elementHovered(
     const body = document.getElementById("pagebody");
     const element = findElement(body, pageItem, pageElements);
 
-    hoveredElements.forEach((element) => {
+    for (const element of hoveredElements.values()) {
       element.classList.remove("border");
       element.classList.remove("border-red-800");
-    });
+
+      hoveredElements.delete(element);
+    }
 
     if (element) {
       element.classList.add("border");
       element.classList.add("border-red-800");
 
-      hoveredElements.push(element);
+      hoveredElements.add(element);
     }
 
     return { selected: pageItem };
@@ -355,7 +357,7 @@ declare global {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
-    elementHovered: typeof elementHovered;
+    elementClicked: typeof elementClicked;
     contentChanged: typeof contentChanged;
   }
 }
@@ -363,5 +365,5 @@ declare global {
 window.createEditor = createEditor;
 window.metaChanged = metaChanged;
 window.classChanged = classChanged;
-window.elementHovered = elementHovered;
+window.elementClicked = elementClicked;
 window.contentChanged = contentChanged;
