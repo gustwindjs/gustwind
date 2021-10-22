@@ -31,6 +31,7 @@ function createWebSocket(pagePath: string) {
         return;
       }
 
+      // TODO: Restore selection as well?
       container.innerHTML = payload.bodyMarkup;
 
       updateMeta(payload.meta);

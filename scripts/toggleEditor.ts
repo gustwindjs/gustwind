@@ -82,7 +82,6 @@ function updateFileSystem(state: {
   }[];
   page: Page["page"];
 }) {
-  console.log("update file system", state, socket, pagePath);
   const meta = zipToObject(
     state.meta.map(({ field, value }) => [field, value]),
   );
@@ -91,18 +90,14 @@ function updateFileSystem(state: {
   );
   const page = state.page;
 
-  console.log(meta, dataSources, page);
-
-  // TODO: Trigger this through sidewind when data changes
-  /*
-    socket.send(JSON.stringify({
+  // TODO: Don't send if payload didn't change
+  socket.send(JSON.stringify({
     type: "update",
     payload: {
       path: pagePath,
-      data,
+      data: { meta, dataSources, page },
     },
   }));
-  */
 }
 
 // TODO: Figure out what the error means

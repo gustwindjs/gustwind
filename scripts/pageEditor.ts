@@ -44,6 +44,12 @@ async function createEditor(parent: HTMLElement) {
 
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
+      // const selectionContainer = document.createElement("div");
+      // TODO: Should this capture pageElements as well?
+      // selectionContainer.setAttribute("x-state", "{ selected: undefined }");
+      // selectionContainer.setAttribute("x-label", "selectionContainer");
+
+      // TODO: Set up an intermediate container here to capture selected state
       renderPageEditor(parent, components, context, pageDefinition);
       renderComponentEditor(parent, components, context);
     },
