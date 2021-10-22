@@ -254,7 +254,12 @@ function elementClicked(
 ) {
   setState(({ pageElements }) => {
     const body = document.getElementById("pagebody");
-    const element = findElement(body, pageItem, pageElements);
+    const element = findElement<HTMLElement | null>(
+      body,
+      pageItem.index,
+      pageElements,
+      getHTMLElementChildren,
+    );
 
     for (const element of hoveredElements.values()) {
       element.classList.remove("border");
@@ -287,7 +292,12 @@ function elementChanged(
   setState(
     ({ selected, pageElements }) => {
       const body = document.getElementById("pagebody");
-      const element = findElement(body, selected, pageElements);
+      const element = findElement<HTMLElement | null>(
+        body,
+        selected.index,
+        pageElements,
+        getHTMLElementChildren,
+      );
 
       if (element) {
         // TODO: Update element type
@@ -322,7 +332,12 @@ function contentChanged(
   setState(
     ({ selected, pageElements }) => {
       const body = document.getElementById("pagebody");
-      const element = findElement(body, selected, pageElements);
+      const element = findElement<HTMLElement | null>(
+        body,
+        selected.index,
+        pageElements,
+        getHTMLElementChildren,
+      );
 
       if (element) {
         element.innerHTML = value;
@@ -356,7 +371,12 @@ function classChanged(
   setState(
     ({ selected, pageElements }) => {
       const body = document.getElementById("pagebody");
-      const element = findElement(body, selected, pageElements);
+      const element = findElement<HTMLElement | null>(
+        body,
+        selected.index,
+        pageElements,
+        getHTMLElementChildren,
+      );
 
       if (element) {
         element.setAttribute("class", value);
@@ -382,31 +402,50 @@ function classChanged(
   );
 }
 
-function findElement(
-  parent: HTMLElement | null,
-  pageItem: PageItem & Index,
+type Node = {
+  children: Node[];
+};
+
+function getHTMLElementChildren(node: HTMLElement | null) {
+  if (!node) {
+    return [];
+  }
+
+  return Array.from(node.children) as HTMLElement[];
+}
+
+/*
+function getNodeChildren(node: Node) {
+  return node.children;
+}
+*/
+
+function findElement<N = Node>(
+  parent: N,
+  index: number,
   pageElements: PageElements,
-): HTMLElement | undefined {
+  getChildren: (node: N | null) => N[] | null,
+) {
   if (!parent) {
     return;
   }
 
-  const { index } = pageItem;
   let currentIndex = -1;
 
-  function traverse(parent: HTMLElement): HTMLElement | undefined {
-    for (const child of Array.from(parent.children)) {
+  function traverse(parent: N): N | undefined {
+    // @ts-ignore How to type the generic here?
+    for (const child of getChildren<N>(parent)) {
       currentIndex++;
 
       if (index === currentIndex) {
-        return child as HTMLElement;
+        return child;
       }
 
       const matchedPageItem = pageElements[currentIndex];
 
       if (!matchedPageItem.isComponent) {
         if (!matchedPageItem.__bind) {
-          const ret = traverse(child as HTMLElement);
+          const ret = traverse(child);
 
           if (ret) {
             return ret;
