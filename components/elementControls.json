@@ -53,6 +53,28 @@
                   }
                 }
               ]
+            },
+            {
+              "element": "li",
+              "class": "flex gap-2",
+              "attributes": {
+                "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
+              },
+              "children": [
+                {
+                  "element": "label",
+                  "children": "Class"
+                },
+                {
+                  "element": "input",
+                  "class": "border flex-grow",
+                  "attributes": {
+                    "type": "text",
+                    "x": "editorContainer.selected && editorContainer.selected.class || ''",
+                    "oninput": "classChanged(this.value, setState, this)"
+                  }
+                }
+              ]
             }
           ]
         }

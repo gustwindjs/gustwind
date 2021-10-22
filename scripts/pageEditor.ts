@@ -275,6 +275,43 @@ function contentChanged(
   );
 }
 
+function classChanged(
+  value: string,
+  setState: setState<
+    {
+      selected: PageItem & Index;
+      pageElements: PageElements;
+    }
+  >,
+) {
+  setState(
+    ({ selected, pageElements }) => {
+      const body = document.getElementById("pagebody");
+      const element = findElement(body, selected, pageElements);
+
+      if (element) {
+        element.setAttribute("class", value);
+
+        // TODO: Is there a nicer way to retain selection?
+        element.classList.add("border");
+        element.classList.add("border-red-800");
+      }
+
+      return {
+        selected: {
+          ...selected,
+          class: value,
+        },
+        pageElements: pageElements.map((element) =>
+          selected.index === element.index
+            ? { ...element, class: value }
+            : element
+        ),
+      };
+    },
+  );
+}
+
 function findElement(
   parent: HTMLElement | null,
   pageItem: PageItem & Index,
@@ -317,6 +354,7 @@ declare global {
   interface Window {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
+    classChanged: typeof classChanged;
     elementHovered: typeof elementHovered;
     contentChanged: typeof contentChanged;
   }
@@ -324,5 +362,6 @@ declare global {
 
 window.createEditor = createEditor;
 window.metaChanged = metaChanged;
+window.classChanged = classChanged;
 window.elementHovered = elementHovered;
 window.contentChanged = contentChanged;
