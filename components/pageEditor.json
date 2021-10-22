@@ -4,6 +4,7 @@
   "children": [
     {
       "element": "header",
+      "class": "cursor-move",
       "children": [
         {
           "element": "h2",
