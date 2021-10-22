@@ -1,6 +1,6 @@
 {
   "element": "aside",
-  "class": "mt-16 mr-4 fixed top-0 right-0 rounded filter drop-shadow bg-opacity-90",
+  "class": "mt-16 mr-4 fixed top-0 right-0 max-w-sm overflow-auto rounded filter drop-shadow bg-opacity-90",
   "children": [
     {
       "element": "header",
