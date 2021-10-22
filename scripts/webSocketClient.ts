@@ -1,16 +1,7 @@
 /// <reference lib="dom" />
-import { setup } from "twind-shim";
-import JSONEditor from "jsoneditor";
-import sharedTwindSetup from "./sharedTwindSetup.ts";
-import updateMeta from "./updateMeta.ts";
-import type { Page } from "../types.ts";
+import updateMeta from "../src/updateMeta.ts";
 
-setup({
-  target: document.body,
-  ...sharedTwindSetup("development"),
-});
-
-function createWebSocket(path: string) {
+function createWebSocket(pagePath: string) {
   const socket = new WebSocket("ws://localhost:8080");
 
   socket.addEventListener("message", (event) => {
@@ -46,10 +37,18 @@ function createWebSocket(path: string) {
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 
+      const path = document.getElementById("pagepath");
+
+      if (!path) {
+        console.error("#pagepath was not found!");
+
+        return;
+      }
+
       socket.send(JSON.stringify({
         type: "reload",
         payload: {
-          path,
+          path: pagePath,
         },
       }));
     } else if (type === "replaceScript") {
@@ -83,33 +82,10 @@ function createWebSocket(path: string) {
   return socket;
 }
 
-function createJSONEditor(
-  socket: WebSocket,
-  element: HTMLElement,
-  path: string,
-  data: string,
-) {
-  const editor = new JSONEditor(element, {
-    onChangeJSON(data: Page) {
-      socket.send(JSON.stringify({
-        type: "update",
-        payload: {
-          path,
-          data,
-        },
-      }));
-    },
-  });
-
-  editor.set(data);
-}
-
 declare global {
   interface Window {
-    createJSONEditor: typeof createJSONEditor;
     createWebSocket: typeof createWebSocket;
   }
 }
 
-window.createJSONEditor = createJSONEditor;
 window.createWebSocket = createWebSocket;

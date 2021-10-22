@@ -43,7 +43,6 @@ function getPageRenderer(
       headMarkup: getStyleTag(stylesheet),
       bodyMarkup,
       mode,
-      page,
       importMap,
     });
   };
@@ -65,30 +64,16 @@ function renderMetaMarkup(meta?: Meta) {
   return ret.join("\n");
 }
 
-let developmentSourceCache: string;
-
 async function htmlTemplate(
-  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, page, importMap }: {
+  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, importMap }: {
     pagePath: string;
     metaMarkup?: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
-    page: Page;
     importMap: ImportMap;
   },
 ): Promise<[string, string?]> {
-  let developmentSource = developmentSourceCache;
-
-  if (mode === "development" && !developmentSourceCache) {
-    developmentSource = await compileTypeScript(
-      "./src/developmentShim.ts",
-      mode,
-      importMap,
-    );
-    developmentSourceCache = developmentSource;
-  }
-
   const scriptName = basename(pagePath, extname(pagePath));
   const scriptPath = join(dirname(pagePath), scriptName) + ".ts";
 
@@ -107,11 +92,6 @@ async function htmlTemplate(
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
     <script type="importmap">${JSON.stringify(importMap)}</script>
-    ${
-    mode === "development"
-      ? `<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/josdejong/jsoneditor/dist/jsoneditor.min.css">`
-      : ""
-  }
     ${metaMarkup || ""}
     ${headMarkup || ""}
   </head>
@@ -119,22 +99,7 @@ async function htmlTemplate(
     ${
     mode === "development"
       ? `<div>
-      <div hidden x-cloak x-state="{ showEditor: false }">
-        <button type="button" class="fixed bottom-0 right-0 m-2 z-50" onclick="setState(({ showEditor }) => ({ showEditor: !showEditor }))">
-          <div x-class="state.showEditor && 'hidden'">Show editor</div>
-          <div x-class="!state.showEditor && 'hidden'">Hide editor</div>
-        </button>
-        <div x-class="!state.showEditor && 'hidden'">
-          <div id="jsoneditor" class="fixed bg-white bottom-0 w-full max-h-1/2"></div>
-        </div>
-      </div>
-      <script type="module">
-        ${developmentSource}
-        const pagePath = "${pagePath}";
-        const data = ${JSON.stringify(page, null, 2)};
-        const socket = window.createWebSocket(pagePath);
-        window.createJSONEditor(socket, document.getElementById("jsoneditor"), pagePath, data);
-      </script>
+      <div id="pagepath" data-pagepath="${pagePath}" />
       <main id="pagebody">
         ${bodyMarkup || ""}
       </main>
