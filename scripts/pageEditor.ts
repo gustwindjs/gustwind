@@ -94,9 +94,9 @@ async function renderPageEditor(
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
 
-  console.log(treeElement.children[0]);
-
-  draggable(treeElement.children[0] as HTMLElement);
+  const aside = treeElement.children[0] as HTMLElement;
+  const handle = aside.children[0] as HTMLElement;
+  draggable({ element: aside, handle });
 }
 
 async function renderComponentEditor(
@@ -114,7 +114,9 @@ async function renderComponentEditor(
 
   parent.appendChild(controlsElement);
 
-  draggable(controlsElement.children[0] as HTMLElement);
+  const aside = controlsElement.children[0] as HTMLElement;
+  const handle = aside.children[0] as HTMLElement;
+  draggable({ element: aside, handle });
 
   // TODO: Gradient syntax
   // bg-gradient-to-br

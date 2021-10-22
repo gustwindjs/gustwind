@@ -12,14 +12,17 @@ type Callbacks = {
   end: Callback;
 };
 
-function draggable(elem: HTMLElement, cbs?: Callbacks) {
-  if (!elem) {
+function draggable(
+  { element, handle }: { element: HTMLElement; handle?: HTMLElement },
+  cbs?: Callbacks,
+) {
+  if (!element) {
     console.warn("drag is missing elem!");
     return;
   }
 
-  dragTemplate(elem, "touchstart", "touchmove", "touchend", cbs);
-  dragTemplate(elem, "mousedown", "mousemove", "mouseup", cbs);
+  dragTemplate(element, "touchstart", "touchmove", "touchend", cbs, handle);
+  dragTemplate(element, "mousedown", "mousemove", "mouseup", cbs, handle);
 }
 
 function xyslider(o: { parent: HTMLElement; class: string; cbs: Callbacks }) {
@@ -31,7 +34,7 @@ function xyslider(o: { parent: HTMLElement; class: string; cbs: Callbacks }) {
   div("bg bg1", twod);
   div("bg bg2", twod);
 
-  draggable(twod, attachPointer(o.cbs, pointer));
+  draggable({ element: twod }, attachPointer(o.cbs, pointer));
 
   return {
     background: twod,
@@ -46,7 +49,7 @@ function slider(o: { parent: HTMLElement; class: string; cbs: Callbacks }) {
   div("shape", pointer);
   div("bg", oned);
 
-  draggable(oned, attachPointer(o.cbs, pointer));
+  draggable({ element: oned }, attachPointer(o.cbs, pointer));
 
   return {
     background: oned,
@@ -88,6 +91,7 @@ function dragTemplate(
   move: string,
   up: string,
   cbs?: Callbacks,
+  handle?: HTMLElement,
 ) {
   cbs = getCbs(cbs);
 
@@ -95,7 +99,7 @@ function dragTemplate(
   const changeCb = cbs.change;
   const endCb = cbs.end;
 
-  on(elem, down, (e) => {
+  on(handle || elem, down, (e) => {
     // @ts-ignore Figure out how to type this
     const moveHandler = (e: Event) => callCb(changeCb, elem, e);
 
