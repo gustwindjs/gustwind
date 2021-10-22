@@ -1,78 +1,94 @@
 {
-  "element": "div",
-  "class": "fixed top-0 right-0 mr-4 mt-16 p-4 bg-white rounded filter drop-shadow bg-opacity-90 gap-8",
+  "element": "aside",
+  "class": "mt-16 mr-4 fixed top-0 right-0 rounded filter drop-shadow bg-opacity-90",
   "children": [
     {
-      "element": "div",
+      "element": "header",
       "children": [
         {
           "element": "h2",
-          "class": "font-bold",
-          "children": "Content"
-        },
+          "class": "p-4 font-bold bg-gray-800 text-white",
+          "children": "Component Editor"
+        }
+      ]
+    },
+    {
+      "element": "section",
+      "class": "p-4 gap-4 flex flex-col bg-white",
+      "children": [
         {
-          "element": "ul",
-          "class": "flex flex-col gap-2",
+          "element": "div",
           "children": [
             {
-              "element": "li",
-              "class": "flex gap-2",
-              "children": [
-                {
-                  "element": "label",
-                  "children": "Element"
-                },
-                {
-                  "element": "input",
-                  "class": "border flex-grow",
-                  "attributes": {
-                    "type": "text",
-                    "x": "editorContainer.selected ? editorContainer.selected.element : 'No selected element'"
-                  }
-                }
-              ]
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Content"
             },
             {
-              "element": "li",
-              "class": "flex gap-2",
-              "attributes": {
-                "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
-              },
+              "element": "ul",
+              "class": "flex flex-col gap-2",
               "children": [
                 {
-                  "element": "label",
-                  "children": "Content"
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Element"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "editorContainer.selected ? editorContainer.selected.element : 'No selected element'"
+                      }
+                    }
+                  ]
                 },
                 {
-                  "element": "input",
-                  "class": "border flex-grow",
+                  "element": "li",
+                  "class": "flex gap-2",
                   "attributes": {
-                    "type": "text",
-                    "x": "editorContainer.selected ? editorContainer.selected.children : ''",
-                    "oninput": "contentChanged(this.value, setState, this)"
-                  }
-                }
-              ]
-            },
-            {
-              "element": "li",
-              "class": "flex gap-2",
-              "attributes": {
-                "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
-              },
-              "children": [
-                {
-                  "element": "label",
-                  "children": "Class"
+                    "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
+                  },
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Content"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "editorContainer.selected ? editorContainer.selected.children : ''",
+                        "oninput": "contentChanged(this.value, setState, this)"
+                      }
+                    }
+                  ]
                 },
                 {
-                  "element": "input",
-                  "class": "border flex-grow",
+                  "element": "li",
+                  "class": "flex gap-2",
                   "attributes": {
-                    "type": "text",
-                    "x": "editorContainer.selected && editorContainer.selected.class || ''",
-                    "oninput": "classChanged(this.value, setState, this)"
-                  }
+                    "x-class": "[editorContainer.selected ? typeof editorContainer.selected.children !== 'string' && 'hidden' : 'hidden']"
+                  },
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Class"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "editorContainer.selected && editorContainer.selected.class || ''",
+                        "oninput": "classChanged(this.value, setState, this)"
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -81,5 +97,4 @@
       ]
     }
   ]
-
 }
