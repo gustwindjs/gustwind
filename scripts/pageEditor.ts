@@ -36,8 +36,8 @@ async function createEditor(parent: HTMLElement) {
 
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
-      renderTree(parent, components, context, pageDefinition);
-      renderControls(parent, components, context);
+      renderPageEditor(parent, components, context, pageDefinition);
+      renderComponentEditor(parent, components, context);
     },
   );
 }
@@ -51,7 +51,7 @@ function deleteEditor() {
 
 type PageElements = (PageItem & Index)[];
 
-async function renderTree(
+async function renderPageEditor(
   parent: HTMLElement,
   components: Components,
   context: DataContext,
@@ -60,7 +60,7 @@ async function renderTree(
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
   treeElement.innerHTML = await renderComponent(
-    components.documentTree,
+    components.pageEditor,
     components,
     context,
   );
@@ -94,7 +94,7 @@ async function renderTree(
   window.evaluateAllDirectives();
 }
 
-async function renderControls(
+async function renderComponentEditor(
   parent: HTMLElement,
   components: Components,
   context: DataContext,
@@ -102,7 +102,7 @@ async function renderControls(
   const controlsElement = document.createElement("div");
   controlsElement.id = controlsElementId;
   controlsElement.innerHTML = await renderComponent(
-    components.elementControls,
+    components.componentEditor,
     components,
     context,
   );
