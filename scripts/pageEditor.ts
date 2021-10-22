@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
+import { draggable } from "../src/draggable.ts";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
@@ -92,6 +93,10 @@ async function renderPageEditor(
 
   // @ts-ignore This is from sidewind
   window.evaluateAllDirectives();
+
+  console.log(treeElement.children[0]);
+
+  draggable(treeElement.children[0] as HTMLElement);
 }
 
 async function renderComponentEditor(
@@ -109,7 +114,7 @@ async function renderComponentEditor(
 
   parent.appendChild(controlsElement);
 
-  return controlsElement;
+  draggable(controlsElement.children[0] as HTMLElement);
 
   // TODO: Gradient syntax
   // bg-gradient-to-br
