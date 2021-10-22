@@ -414,12 +414,6 @@ function getHTMLElementChildren(node: HTMLElement | null) {
   return Array.from(node.children) as HTMLElement[];
 }
 
-/*
-function getNodeChildren(node: Node) {
-  return node.children;
-}
-*/
-
 function findElement<N = Node>(
   parent: N,
   index: number,
