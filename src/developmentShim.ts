@@ -54,16 +54,24 @@ function createWebSocket(path: string) {
       }));
     } else if (type === "replaceScript") {
       const { name } = payload;
+      const existingScript = document.querySelector(
+        `script[src="${name}"]`,
+      ) || document.querySelector(
+        `script[data-script="${name}"]`,
+      );
 
-      const existingScript = document.querySelector(`script[src="${name}"]`);
+      console.log("Websocket", "replacing script");
 
       if (existingScript) {
         existingScript.remove();
 
         const script = document.createElement("script");
 
+        window.recreateEditor();
+
         script.setAttribute("src", name + "?cache=" + new Date().getTime());
         script.setAttribute("type", "module");
+        script.dataset.script = name;
 
         document.body.appendChild(script);
       }

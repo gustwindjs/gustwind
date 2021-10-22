@@ -6,10 +6,25 @@ import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
 
+const documentTreeElementId = "document-tree-element";
+const controlsElementId = "controls-element";
+
 setup({
   target: document.body,
   ...sharedTwindSetup("development"),
 });
+
+function recreateEditor() {
+  deleteEditor();
+
+  const editorsElement = document.getElementById("editors");
+
+  if (editorsElement) {
+    createEditor(editorsElement);
+  } else {
+    console.error("Failed to find editors element", editorsElement);
+  }
+}
 
 async function createEditor(parent: HTMLElement) {
   const components: Components = await fetch("/components.json").then((res) =>
@@ -27,6 +42,13 @@ async function createEditor(parent: HTMLElement) {
   );
 }
 
+function deleteEditor() {
+  console.log("Deleting editor");
+
+  document.getElementById(documentTreeElementId)?.remove();
+  document.getElementById(controlsElementId)?.remove();
+}
+
 type PageElements = (PageItem & Index)[];
 
 async function renderTree(
@@ -36,6 +58,7 @@ async function renderTree(
   pageDefinition: Page,
 ) {
   const treeElement = document.createElement("div");
+  treeElement.id = documentTreeElementId;
   treeElement.innerHTML = await renderComponent(
     components.documentTree,
     components,
@@ -77,6 +100,7 @@ async function renderControls(
   context: DataContext,
 ) {
   const controlsElement = document.createElement("div");
+  controlsElement.id = controlsElementId;
   controlsElement.innerHTML = await renderComponent(
     components.elementControls,
     components,
@@ -355,6 +379,7 @@ function findElement(
 declare global {
   interface Window {
     createEditor: typeof createEditor;
+    recreateEditor: typeof recreateEditor;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
@@ -363,6 +388,7 @@ declare global {
 }
 
 window.createEditor = createEditor;
+window.recreateEditor = recreateEditor;
 window.metaChanged = metaChanged;
 window.classChanged = classChanged;
 window.elementClicked = elementClicked;
