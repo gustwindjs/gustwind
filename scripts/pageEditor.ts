@@ -3,7 +3,14 @@ import { setup } from "twind-shim";
 import { draggable } from "../src/draggable.ts";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-import type { Component, Components, DataContext, Page } from "../types.ts";
+import type {
+  Component,
+  Components,
+  DataContext,
+  Index,
+  Page,
+  PageItem,
+} from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -170,11 +177,6 @@ async function renderComponentEditor(
   // lg-inline
 }
 
-type PageItem = ({
-  isComponent: boolean;
-  level: number;
-} & Component);
-
 function flattenPage(
   components: Components,
   component: Component | Component[],
@@ -209,8 +211,6 @@ function flattenPage(
     level,
   }];
 }
-
-type Index = { index: number };
 
 function addIndices<A>(arr: A[]): (A & Index)[] {
   return arr.map((o, index) => ({ ...o, index }));

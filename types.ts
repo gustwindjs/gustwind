@@ -65,6 +65,11 @@ type Page = {
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type ImportMap = { imports: Record<string, string> };
+type PageItem = ({
+  isComponent: boolean;
+  level: number;
+} & Component);
+type Index = { index: number };
 
 export type {
   Attributes,
@@ -75,10 +80,12 @@ export type {
   DataContext,
   DataSources,
   ImportMap,
+  Index,
   Library,
   Meta,
   Mode,
   Page,
+  PageItem,
   ParentCategory,
   ProjectMeta,
   Props,
