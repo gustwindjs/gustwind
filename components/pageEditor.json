@@ -29,7 +29,7 @@
               "element": "dynamicList",
               "class": "flex flex-col gap-2",
               "__bind": {
-                "dataSource": "meta",
+                "dataSource": "state.meta",
                 "oninput": "metaChanged(this.value, setState)"
               }
             }
@@ -49,14 +49,14 @@
                 {
                   "element": "template",
                   "attributes": {
-                    "x-each": "dataSources"
+                    "x-each": "state.dataSources"
                   },
                   "children": [
                     {
                       "element": "dynamicList",
                       "class": "flex flex-col gap-2",
                       "__bind": {
-                        "dataSource": "state"
+                        "dataSource": "state.state"
                       }
                     }
                   ]
@@ -80,7 +80,7 @@
                 {
                   "element": "template",
                   "attributes": {
-                    "x-each": "pageElements"
+                    "x-each": "state.pageElements"
                   },
                   "children": [
                     {
