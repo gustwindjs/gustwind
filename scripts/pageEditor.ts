@@ -217,9 +217,6 @@ function elementClicked(
 
     traverse(page, (p, i) => {
       if (p === pageItem) {
-        console.log("found component", p);
-        //p.element = value;
-
         const element = findElement(
           document.getElementById("pagebody"),
           i,
@@ -234,15 +231,6 @@ function elementClicked(
         }
       }
     });
-
-    /*
-    if (element) {
-      element.classList.add("border");
-      element.classList.add("border-red-800");
-
-      hoveredElements.add(element);
-    }
-    */
 
     return { selected: pageItem };
     // @ts-ignore Improve type
