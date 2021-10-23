@@ -249,24 +249,19 @@ function elementChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
-      // TODO: Restore
-      /*
-      const body = document.getElementById("pagebody");
-      const element = findElement<HTMLElement | null>(
-        body,
-        selected.index,
-        pageElements,
-        getHTMLElementChildren,
-      );
-
-      if (element) {
-        // TODO: Update element type
-        // https://stackoverflow.com/a/59147202/228885
-      }
-      */
-
-      traverse(page, (p) => {
+      traverse(page, (p, i) => {
         if (p === selected) {
+          const element = findElement(
+            document.getElementById("pagebody"),
+            i,
+            page,
+          ) as HTMLElement;
+
+          if (element) {
+            // TODO: Update element type
+            // https://stackoverflow.com/a/59147202/228885
+          }
+
           p.element = value;
         }
       });
@@ -294,23 +289,18 @@ function contentChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
-      // TODO: Restore
-      /*
-      const body = document.getElementById("pagebody");
-      const element = findElement<HTMLElement | null>(
-        body,
-        selected.index,
-        pageElements,
-        getHTMLElementChildren,
-      );
-
-      if (element) {
-        element.innerHTML = value;
-      }
-      */
-
-      traverse(page, (p) => {
+      traverse(page, (p, i) => {
         if (p === selected) {
+          const element = findElement(
+            document.getElementById("pagebody"),
+            i,
+            page,
+          ) as HTMLElement;
+
+          if (element) {
+            element.innerHTML = value;
+          }
+
           p.children = value;
         }
       });
@@ -338,27 +328,22 @@ function classChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
-      // TODO: Restore
-      /*
-      const body = document.getElementById("pagebody");
-      const element = findElement<HTMLElement | null>(
-        body,
-        selected.index,
-        pageElements,
-        getHTMLElementChildren,
-      );
-
-      if (element) {
-        element.setAttribute("class", value);
-
-        // TODO: Is there a nicer way to retain selection?
-        element.classList.add("border");
-        element.classList.add("border-red-800");
-      }
-      */
-
-      traverse(page, (p) => {
+      traverse(page, (p, i) => {
         if (p === selected) {
+          const element = findElement(
+            document.getElementById("pagebody"),
+            i,
+            page,
+          ) as HTMLElement;
+
+          if (element) {
+            element.setAttribute("class", value);
+
+            // TODO: Is there a nicer way to retain selection?
+            element.classList.add("border");
+            element.classList.add("border-red-800");
+          }
+
           p.class = value;
         }
       });
