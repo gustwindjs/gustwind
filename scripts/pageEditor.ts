@@ -249,6 +249,8 @@ function elementChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
+      let newSelected;
+
       traverse(page, (p, i) => {
         if (p === selected) {
           const element = findElement(
@@ -263,14 +265,13 @@ function elementChanged(
           }
 
           p.element = value;
+
+          newSelected = p;
         }
       });
 
       return {
-        selected: {
-          ...selected,
-          element: value,
-        },
+        selected: newSelected,
         page,
       };
     },
@@ -289,6 +290,8 @@ function contentChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
+      let newSelected;
+
       traverse(page, (p, i) => {
         if (p === selected) {
           const element = findElement(
@@ -302,14 +305,13 @@ function contentChanged(
           }
 
           p.children = value;
+
+          newSelected = p;
         }
       });
 
       return {
-        selected: {
-          ...selected,
-          children: value,
-        },
+        selected: newSelected,
         page,
       };
     },
@@ -328,6 +330,8 @@ function classChanged(
   setState(
     // @ts-ignore How to type this?
     ({ selected, page }) => {
+      let newSelected;
+
       traverse(page, (p, i) => {
         if (p === selected) {
           const element = findElement(
@@ -345,14 +349,13 @@ function classChanged(
           }
 
           p.class = value;
+
+          newSelected = p;
         }
       });
 
       return {
-        selected: {
-          ...selected,
-          class: value,
-        },
+        selected: newSelected,
         page,
       };
     },
