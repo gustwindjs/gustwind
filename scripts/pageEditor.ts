@@ -199,7 +199,7 @@ function metaChanged(value: string, setState: setState<{ field: "title" }>) {
   });
 }
 
-// const hoveredElements = new Set<HTMLElement>();
+const hoveredElements = new Set<HTMLElement>();
 
 function elementClicked(
   pageItem: Component,
@@ -208,17 +208,6 @@ function elementClicked(
   }>,
 ) {
   setState(({ page }) => {
-    // const body = document.getElementById("pagebody");
-
-    // TODO: Restore
-    /*
-    const element = findElement<HTMLElement | null>(
-      body,
-      pageItem.index,
-      pageElements,
-      getHTMLElementChildren,
-    );
-
     for (const element of hoveredElements.values()) {
       element.classList.remove("border");
       element.classList.remove("border-red-800");
@@ -226,6 +215,27 @@ function elementClicked(
       hoveredElements.delete(element);
     }
 
+    traverse(page, (p, i) => {
+      if (p === pageItem) {
+        console.log("found component", p);
+        //p.element = value;
+
+        const element = findElement(
+          document.getElementById("pagebody"),
+          i,
+          page,
+        ) as HTMLElement;
+
+        if (element) {
+          element.classList.add("border");
+          element.classList.add("border-red-800");
+
+          hoveredElements.add(element);
+        }
+      }
+    });
+
+    /*
     if (element) {
       element.classList.add("border");
       element.classList.add("border-red-800");
@@ -374,6 +384,55 @@ function classChanged(
       };
     },
   );
+}
+
+function findElement(
+  element: Element | null,
+  index: number,
+  page: Page["page"],
+): Element | null {
+  let i = 0;
+
+  function recurse(
+    element: Element | null | undefined,
+    page: Page["page"],
+  ): Element | null {
+    if (!element) {
+      return null;
+    }
+
+    if (Array.isArray(page)) {
+      let elem: Element | null | undefined = element;
+
+      for (const p of page) {
+        const match = recurse(elem, p);
+
+        if (match) {
+          return match;
+        }
+
+        elem = elem?.nextElementSibling;
+      }
+    } else {
+      if (index === i) {
+        return element;
+      }
+
+      i++;
+
+      if (Array.isArray(page.children)) {
+        const match = recurse(element.firstElementChild, page.children);
+
+        if (match) {
+          return match;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  return recurse(element?.firstElementChild, page);
 }
 
 function traverse(
