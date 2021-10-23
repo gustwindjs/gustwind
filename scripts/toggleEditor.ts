@@ -77,16 +77,14 @@ async function toggleEditor() {
 
 function updateFileSystem(state: {
   meta: { field: string; value: string }[];
-  dataSources: {
-    state: { field: string; value: string }[];
-  }[];
+  dataSources: { field: string; value: string }[][];
   page: Page["page"];
 }) {
   const meta = zipToObject(
     state.meta.map(({ field, value }) => [field, value]),
   );
-  const dataSources = state.dataSources.map(({ state }) =>
-    zipToObject(state.map(({ field, value }) => [field, value]))
+  const dataSources = state.dataSources.map((dataSource) =>
+    zipToObject(dataSource.map(({ field, value }) => [field, value]))
   );
   const page = state.page;
 

@@ -56,7 +56,7 @@
                       "element": "dynamicList",
                       "class": "flex flex-col gap-2",
                       "__bind": {
-                        "dataSource": "state.state"
+                        "dataSource": "state"
                       }
                     }
                   ]

@@ -82,16 +82,17 @@ async function renderPageEditor(
     field,
     value,
   }));
-  const dataSources = pageDefinition.dataSources?.map((dataSource) => ({
-    state: Object.entries(dataSource).map(
+  const dataSources = pageDefinition.dataSources?.map((dataSource) => (
+    Object.entries(dataSource).map(
       (
         [field, value],
       ) => ({
         field,
         value,
       }),
-    ),
-  }));
+    )
+  ));
+
   const pageElements = addIndices<PageItem>(
     flattenPage(components, pageDefinition.page),
   );
