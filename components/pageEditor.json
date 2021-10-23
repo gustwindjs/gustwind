@@ -80,23 +80,31 @@
                 {
                   "element": "template",
                   "attributes": {
-                    "x-each": "state.pageElements"
+                    "x-each": "state.page"
                   },
                   "children": [
                     {
                       "element": "li",
                       "attributes": {
-                        "onclick": "elementClicked(this.state, setState)"
+                        "onclick": "elementClicked(this.state, setState)",
+                        "x-class": "'ml-' + (state._level * 4)"
                       },
                       "children": [
                         {
                           "element": "label",
                           "attributes": {
                             "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
-                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', 'ml-' + state.level * 2]"
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2']"
                           }
                         }
                       ]
+                    },
+                    {
+                      "element": "ul",
+                      "class": "flex flex-col gap-2 my-1",
+                      "attributes": {
+                        "x-recurse": "state.children"
+                      }
                     }
                   ]
                 }

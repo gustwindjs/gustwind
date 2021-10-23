@@ -34,7 +34,7 @@ async function toggleEditor() {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    "{ selected: undefined, meta: [], dataSources: [], pageElements: [], page: [] }",
+    "{ selected: undefined, meta: [], dataSources: [], page: [] }",
   );
   editorsElement.setAttribute("x-label", "editorContainer");
 

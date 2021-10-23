@@ -3,14 +3,7 @@ import { setup } from "twind-shim";
 import { draggable } from "../src/draggable.ts";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-import type {
-  Component,
-  Components,
-  DataContext,
-  Index,
-  Page,
-  PageItem,
-} from "../types.ts";
+import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
 
@@ -45,7 +38,6 @@ async function createEditor(parent: HTMLElement) {
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
       // const selectionContainer = document.createElement("div");
-      // TODO: Should this capture pageElements as well?
       // selectionContainer.setAttribute("x-state", "{ selected: undefined }");
       // selectionContainer.setAttribute("x-label", "selectionContainer");
 
@@ -62,8 +54,6 @@ function deleteEditor() {
   document.getElementById(documentTreeElementId)?.remove();
   document.getElementById(controlsElementId)?.remove();
 }
-
-type PageElements = (PageItem & Index)[];
 
 async function renderPageEditor(
   parent: HTMLElement,
@@ -93,14 +83,11 @@ async function renderPageEditor(
     )
   ));
 
-  const pageElements = addIndices<PageItem>(
-    flattenPage(components, pageDefinition.page),
-  );
   treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
 
   // @ts-ignore Improve type
-  setState({ meta, dataSources, pageElements, page: pageDefinition.page }, {
+  setState({ meta, dataSources, page: pageDefinition.page }, {
     element: treeElement,
     parent: "editorContainer",
   });
@@ -184,45 +171,6 @@ async function renderComponentEditor(
   // lg-inline
 }
 
-function flattenPage(
-  components: Components,
-  component: Component | Component[],
-  level = -1,
-): PageItem[] {
-  if (Array.isArray(component)) {
-    return component.flatMap((c) => flattenPage(components, c, level + 1));
-  }
-  if (component.children) {
-    if (typeof component.children === "string") {
-      return [{
-        ...component,
-        isComponent: !!components[component.element],
-        level,
-      }];
-    }
-
-    return [
-      {
-        ...component,
-        isComponent: !!components[component.element],
-        level,
-      },
-    ].concat(
-      flattenPage(components, component.children, level + 1).filter(Boolean),
-    );
-  }
-
-  return [{
-    ...component,
-    isComponent: !!components[component.element],
-    level,
-  }];
-}
-
-function addIndices<A>(arr: A[]): (A & Index)[] {
-  return arr.map((o, index) => ({ ...o, index }));
-}
-
 type setState<V> = (fn: (state: V) => V) => void;
 
 function metaChanged(value: string, setState: setState<{ field: "title" }>) {
@@ -251,16 +199,19 @@ function metaChanged(value: string, setState: setState<{ field: "title" }>) {
   });
 }
 
-const hoveredElements = new Set<HTMLElement>();
+// const hoveredElements = new Set<HTMLElement>();
 
 function elementClicked(
-  pageItem: PageItem & Index,
+  pageItem: Component,
   setState: setState<{
-    pageElements: PageElements;
+    page: Page["page"];
   }>,
 ) {
-  setState(({ pageElements }) => {
-    const body = document.getElementById("pagebody");
+  setState(({ page }) => {
+    // const body = document.getElementById("pagebody");
+
+    // TODO: Restore
+    /*
     const element = findElement<HTMLElement | null>(
       body,
       pageItem.index,
@@ -281,6 +232,7 @@ function elementClicked(
 
       hoveredElements.add(element);
     }
+    */
 
     return { selected: pageItem };
     // @ts-ignore Improve type
@@ -291,15 +243,16 @@ function elementChanged(
   value: string,
   setState: setState<
     {
-      selected: PageItem & Index;
-      pageElements: PageElements;
+      selected: Component;
       page: Page["page"];
     }
   >,
 ) {
   setState(
     // @ts-ignore How to type this?
-    ({ selected, pageElements, page }) => {
+    ({ selected, page }) => {
+      // TODO: Restore
+      /*
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -312,9 +265,10 @@ function elementChanged(
         // TODO: Update element type
         // https://stackoverflow.com/a/59147202/228885
       }
+      */
 
-      traverse(page, (p, i) => {
-        if (selected.index === i) {
+      traverse(page, (p) => {
+        if (p === selected) {
           p.element = value;
         }
       });
@@ -324,11 +278,7 @@ function elementChanged(
           ...selected,
           element: value,
         },
-        pageElements: pageElements.map((element) =>
-          selected.index === element.index
-            ? { ...element, element: value }
-            : element
-        ),
+        page,
       };
     },
   );
@@ -338,15 +288,16 @@ function contentChanged(
   value: string,
   setState: setState<
     {
-      selected: PageItem & Index;
-      pageElements: PageElements;
+      selected: Component;
       page: Page["page"];
     }
   >,
 ) {
   setState(
     // @ts-ignore How to type this?
-    ({ selected, pageElements, page }) => {
+    ({ selected, page }) => {
+      // TODO: Restore
+      /*
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -358,9 +309,10 @@ function contentChanged(
       if (element) {
         element.innerHTML = value;
       }
+      */
 
-      traverse(page, (p, i) => {
-        if (selected.index === i) {
+      traverse(page, (p) => {
+        if (p === selected) {
           p.children = value;
         }
       });
@@ -370,11 +322,7 @@ function contentChanged(
           ...selected,
           children: value,
         },
-        pageElements: pageElements.map((element) =>
-          selected.index === element.index
-            ? { ...element, children: value }
-            : element
-        ),
+        page,
       };
     },
   );
@@ -384,15 +332,16 @@ function classChanged(
   value: string,
   setState: setState<
     {
-      selected: PageItem & Index;
-      pageElements: PageElements;
+      selected: Component;
       page: Page["page"];
     }
   >,
 ) {
   setState(
     // @ts-ignore How to type this?
-    ({ selected, pageElements, page }) => {
+    ({ selected, page }) => {
+      // TODO: Restore
+      /*
       const body = document.getElementById("pagebody");
       const element = findElement<HTMLElement | null>(
         body,
@@ -408,9 +357,10 @@ function classChanged(
         element.classList.add("border");
         element.classList.add("border-red-800");
       }
+      */
 
-      traverse(page, (p, i) => {
-        if (selected.index === i) {
+      traverse(page, (p) => {
+        if (p === selected) {
           p.class = value;
         }
       });
@@ -420,11 +370,6 @@ function classChanged(
           ...selected,
           class: value,
         },
-        pageElements: pageElements.map((element) =>
-          selected.index === element.index
-            ? { ...element, class: value }
-            : element
-        ),
         page,
       };
     },
@@ -454,56 +399,6 @@ function traverse(
   }
 
   recurse(page, operation);
-}
-
-type Node = {
-  children: Node[];
-};
-
-function getHTMLElementChildren(node: HTMLElement | null) {
-  if (!node) {
-    return [];
-  }
-
-  return Array.from(node.children) as HTMLElement[];
-}
-
-function findElement<N = Node>(
-  parent: N,
-  index: number,
-  pageElements: PageElements,
-  getChildren: (node: N | null) => N[] | null,
-) {
-  if (!parent) {
-    return;
-  }
-
-  let currentIndex = -1;
-
-  function traverse(parent: N): N | undefined {
-    // @ts-ignore How to type the generic here?
-    for (const child of getChildren<N>(parent)) {
-      currentIndex++;
-
-      if (index === currentIndex) {
-        return child;
-      }
-
-      const matchedPageItem = pageElements[currentIndex];
-
-      if (!matchedPageItem.isComponent) {
-        if (!matchedPageItem.__bind) {
-          const ret = traverse(child);
-
-          if (ret) {
-            return ret;
-          }
-        }
-      }
-    }
-  }
-
-  return traverse(parent);
 }
 
 // TODO: Figure out what the error means

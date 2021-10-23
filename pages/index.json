@@ -13,7 +13,8 @@
   ],
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "mainNavigation",
+      "_level": 0
     },
     {
       "element": "header",
@@ -34,33 +35,42 @@
                     {
                       "element": "span",
                       "class": "whitespace-nowrap pr-4",
-                      "children": "🐳💨"
+                      "children": "🐳💨",
+                      "_level": 4
                     },
                     {
                       "element": "span",
-                      "children": "Gustwind"
+                      "children": "Gustwind",
+                      "_level": 4
                     }
-                  ]
+                  ],
+                  "_level": 3
                 },
                 {
                   "element": "h2",
                   "class": "text-xl md:text-4xl font-extralight",
-                  "children": "Deno powered JSON oriented site generator"
+                  "children": "Deno powered JSON oriented site generator",
+                  "_level": 3
                 }
-              ]
+              ],
+              "_level": 2
             }
-          ]
+          ],
+          "_level": 1
         }
-      ]
+      ],
+      "_level": 0
     },
     {
       "element": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "readme",
-      "__children": "content"
+      "__children": "content",
+      "_level": 0
     },
     {
-      "element": "mainFooter"
+      "element": "mainFooter",
+      "_level": 0
     }
   ]
 }
