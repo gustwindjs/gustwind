@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
+import { deepEqual } from "../src/deepEqual.ts";
 import { draggable } from "../src/draggable.ts";
 import sharedTwindSetup from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
@@ -37,13 +38,17 @@ async function createEditor(parent: HTMLElement) {
 
   fetch("./definition.json").then((res) => res.json()).then(
     (pageDefinition) => {
-      // const selectionContainer = document.createElement("div");
-      // selectionContainer.setAttribute("x-state", "{ selected: undefined }");
-      // selectionContainer.setAttribute("x-label", "selectionContainer");
+      const selectionContainer = document.createElement("div");
+      selectionContainer.setAttribute(
+        "x-state",
+        "{ component: undefined }",
+      );
+      selectionContainer.setAttribute("x-label", "selected");
 
-      // TODO: Set up an intermediate container here to capture selected state
-      renderPageEditor(parent, components, context, pageDefinition);
-      renderComponentEditor(parent, components, context);
+      renderPageEditor(selectionContainer, components, context, pageDefinition);
+      renderComponentEditor(selectionContainer, components, context);
+
+      parent.appendChild(selectionContainer);
     },
   );
 }
@@ -89,7 +94,7 @@ async function renderPageEditor(
   // @ts-ignore Improve type
   setState({ meta, dataSources, page: pageDefinition.page }, {
     element: treeElement,
-    parent: "editorContainer",
+    parent: "editor",
   });
 
   // @ts-ignore This is from sidewind
@@ -173,7 +178,12 @@ async function renderComponentEditor(
 
 type setState<V> = (fn: (state: V) => V) => void;
 
-function metaChanged(value: string, setState: setState<{ field: "title" }>) {
+// TODO: Update editor.meta when this changes
+function metaChanged(
+  _element: HTMLElement,
+  value: string,
+  setState: setState<{ field: "title" }>,
+) {
   setState(({ field }) => {
     if (field === "title") {
       const titleElement = document.querySelector("title");
@@ -201,165 +211,134 @@ function metaChanged(value: string, setState: setState<{ field: "title" }>) {
 
 const hoveredElements = new Set<HTMLElement>();
 
-function elementClicked(
-  pageItem: Component,
-  setState: setState<{
-    page: Page["page"];
-  }>,
-) {
-  setState(({ page }) => {
-    for (const element of hoveredElements.values()) {
-      element.classList.remove("border");
-      element.classList.remove("border-red-800");
+function elementClicked(element: HTMLElement, pageItem: Component) {
+  // @ts-ignore This comes from sidewind
+  const { editor: { page } } = getState(element);
 
-      hoveredElements.delete(element);
-    }
+  for (const element of hoveredElements.values()) {
+    element.classList.remove("border");
+    element.classList.remove("border-red-800");
 
-    traverse(page, (p, i) => {
-      if (p === pageItem) {
-        const element = findElement(
-          document.getElementById("pagebody"),
-          i,
-          page,
-        ) as HTMLElement;
+    hoveredElements.delete(element);
+  }
 
-        if (element) {
-          element.classList.add("border");
-          element.classList.add("border-red-800");
+  traverse(page, (p, i) => {
+    if (p === pageItem) {
+      const element = findElement(
+        document.getElementById("pagebody"),
+        i,
+        page,
+      ) as HTMLElement;
 
-          hoveredElements.add(element);
-        }
+      if (element) {
+        element.classList.add("border");
+        element.classList.add("border-red-800");
+
+        hoveredElements.add(element);
       }
-    });
+    }
+  });
 
-    return { selected: pageItem };
-    // @ts-ignore Improve type
-  }, { parent: "editorContainer" });
+  // @ts-ignore Improve type
+  setState({ component: pageItem }, { parent: "selected" });
 }
 
 function elementChanged(
+  element: HTMLElement,
   value: string,
-  setState: setState<
-    {
-      selected: Component;
-      page: Page["page"];
-    }
-  >,
+  setState: setState<unknown>,
 ) {
-  setState(
-    // @ts-ignore How to type this?
-    ({ selected, page }) => {
-      let newSelected;
+  // @ts-ignore This comes from sidewind
+  const { editor: { page }, selected: { component } } = getState(element);
 
-      traverse(page, (p, i) => {
-        if (p === selected) {
-          const element = findElement(
-            document.getElementById("pagebody"),
-            i,
-            page,
-          ) as HTMLElement;
-
-          if (element) {
-            // TODO: Update element type
-            // https://stackoverflow.com/a/59147202/228885
-          }
-
-          p.element = value;
-
-          newSelected = p;
-        }
-      });
-
-      return {
-        selected: newSelected,
+  traverse(page, (p, i) => {
+    if (deepEqual(p, component)) {
+      const element = findElement(
+        document.getElementById("pagebody"),
+        i,
         page,
-      };
-    },
-  );
+      ) as HTMLElement;
+
+      if (element) {
+        // TODO: Update element type
+        // https://stackoverflow.com/a/59147202/228885
+      }
+
+      p.element = value;
+
+      // @ts-ignore Improve type
+      setState({ component: p }, { parent: "selected" });
+    }
+  });
+
+  // @ts-ignore Improve type
+  setState({ page }, { parent: "editor" });
 }
 
 function contentChanged(
+  element: HTMLElement,
   value: string,
-  setState: setState<
-    {
-      selected: Component;
-      page: Page["page"];
-    }
-  >,
+  setState: setState<unknown>,
 ) {
-  setState(
-    // @ts-ignore How to type this?
-    ({ selected, page }) => {
-      let newSelected;
+  // @ts-ignore This comes from sidewind
+  const { editor: { page }, selected: { component } } = getState(element);
 
-      traverse(page, (p, i) => {
-        if (p === selected) {
-          const element = findElement(
-            document.getElementById("pagebody"),
-            i,
-            page,
-          ) as HTMLElement;
-
-          if (element) {
-            element.innerHTML = value;
-          }
-
-          p.children = value;
-
-          newSelected = p;
-        }
-      });
-
-      return {
-        selected: newSelected,
+  traverse(page, (p, i) => {
+    if (deepEqual(p, component)) {
+      const element = findElement(
+        document.getElementById("pagebody"),
+        i,
         page,
-      };
-    },
-  );
+      ) as HTMLElement;
+
+      if (element) {
+        element.innerHTML = value;
+      }
+
+      p.children = value;
+
+      // @ts-ignore Improve type
+      setState({ component: p }, { parent: "selected" });
+    }
+  });
+
+  // @ts-ignore Improve type
+  setState({ page }, { parent: "editor" });
 }
 
 function classChanged(
+  element: HTMLElement,
   value: string,
-  setState: setState<
-    {
-      selected: Component;
-      page: Page["page"];
-    }
-  >,
+  setState: setState<unknown>,
 ) {
-  setState(
-    // @ts-ignore How to type this?
-    ({ selected, page }) => {
-      let newSelected;
+  // @ts-ignore This comes from sidewind
+  const { editor: { page }, selected: { component } } = getState(element);
 
-      traverse(page, (p, i) => {
-        if (p === selected) {
-          const element = findElement(
-            document.getElementById("pagebody"),
-            i,
-            page,
-          ) as HTMLElement;
-
-          if (element) {
-            element.setAttribute("class", value);
-
-            // TODO: Is there a nicer way to retain selection?
-            element.classList.add("border");
-            element.classList.add("border-red-800");
-          }
-
-          p.class = value;
-
-          newSelected = p;
-        }
-      });
-
-      return {
-        selected: newSelected,
+  traverse(page, (p, i) => {
+    if (deepEqual(p, component)) {
+      const element = findElement(
+        document.getElementById("pagebody"),
+        i,
         page,
-      };
-    },
-  );
+      ) as HTMLElement;
+
+      if (element) {
+        element.setAttribute("class", value);
+
+        // TODO: Is there a nicer way to retain selection?
+        element.classList.add("border");
+        element.classList.add("border-red-800");
+      }
+
+      p.class = value;
+
+      // @ts-ignore Improve type
+      setState({ component: p }, { parent: "selected" });
+    }
+  });
+
+  // @ts-ignore Improve type
+  setState({ page }, { parent: "editor" });
 }
 
 function findElement(

@@ -34,9 +34,9 @@ async function toggleEditor() {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    "{ selected: undefined, meta: [], dataSources: [], page: [] }",
+    "{ meta: [], dataSources: [], page: [] }",
   );
-  editorsElement.setAttribute("x-label", "editorContainer");
+  editorsElement.setAttribute("x-label", "editor");
 
   document.body.appendChild(editorsElement);
 
@@ -57,8 +57,6 @@ async function toggleEditor() {
 
     // @ts-ignore Fix the type
     socket = window.createWebSocket(pagePath);
-
-    console.log(socket, pagePath);
 
     const updateElement = document.createElement("div");
     updateElement.setAttribute("x", "updateFileSystem(state)");
