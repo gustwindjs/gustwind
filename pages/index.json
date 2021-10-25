@@ -61,6 +61,12 @@
     },
     {
       "element": "mainFooter"
+    },
+    {
+      "element": "loadScript",
+      "__bind": {
+        "source": "/toggleEditor.js"
+      }
     }
   ]
 }

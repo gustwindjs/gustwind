@@ -1,9 +1,7 @@
 /// <reference lib="dom" />
-import { setup } from "twind-shim";
 import produce, { setAutoFreeze } from "immer";
 import { v4 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
-import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../src/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
@@ -16,11 +14,6 @@ console.log("Hello from the page editor");
 
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
-
-setup({
-  target: document.body,
-  ...sharedTwindSetup("development"),
-});
 
 function recreateEditor() {
   deleteEditor();

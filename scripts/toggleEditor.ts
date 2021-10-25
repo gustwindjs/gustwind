@@ -1,13 +1,34 @@
 /// <reference lib="dom" />
+import { setup } from "twind-shim";
+import { tw } from "twind";
 import produce from "immer";
+import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../src/importScript.ts";
 import { zipToObject } from "../src/utils.ts";
 import { traversePage } from "../src/traversePage.ts";
 import type { Page } from "../types.ts";
 
+setup({
+  target: document.body,
+  ...sharedTwindSetup("development"),
+});
+
 const editorsId = "editors";
 
 let socket: WebSocket;
+
+function init() {
+  console.log("hello from toggle editor");
+
+  const toggleButton = document.createElement("button");
+  toggleButton.className = tw(
+    "fixed right-4 bottom-4 whitespace-nowrap text-lg",
+  );
+  toggleButton.innerText = "🐳💨";
+  toggleButton.onclick = toggleEditor;
+
+  document.body.appendChild(toggleButton);
+}
 
 async function toggleEditor() {
   const mainElement = document.querySelector("main");
@@ -120,13 +141,13 @@ function getPagePath() {
   return pagePath;
 }
 
+init();
+
 // TODO: Figure out what the error means
 declare global {
   interface Window {
-    toggleEditor: typeof toggleEditor;
     updateFileSystem: typeof updateFileSystem;
   }
 }
 
-window.toggleEditor = toggleEditor;
 window.updateFileSystem = updateFileSystem;

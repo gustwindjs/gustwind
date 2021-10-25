@@ -24,19 +24,6 @@
       "class": "flex gap-4 ml-auto sm:ml-0",
       "children": [
         {
-          "element": "button",
-          "class": "font-thin",
-          "children": [
-            {
-              "element": "link",
-              "children": "Edit page",
-              "attributes": {
-                "onclick": "window.toggleEditor()"
-              }
-            }
-          ]
-        },
-        {
           "element": "link",
           "children": "Blog",
           "attributes": {
@@ -51,13 +38,6 @@
           }
         }
       ]
-    },
-    {
-      "element": "script",
-      "attributes": {
-        "type": "module",
-        "src": "/toggleEditor.js"
-      }
     }
   ]
 }
