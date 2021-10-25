@@ -13,6 +13,7 @@ type Component = {
   __class?: string;
   __children?: string | Component[];
   // Page editor - TODO: Consider decoupling this somehow
+  _id?: string;
   _level?: boolean;
   _selected?: boolean;
 };

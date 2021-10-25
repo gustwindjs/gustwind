@@ -81,6 +81,7 @@ function updateFileSystem(state: {
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
+      delete p._id;
       delete p._level;
       delete p._selected;
     });

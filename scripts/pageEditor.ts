@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
 import produce, { setAutoFreeze } from "immer";
-import { deepEqual } from "../src/deepEqual.ts";
+import { v1 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
@@ -98,7 +98,7 @@ async function renderPageEditor(
   parent.appendChild(treeElement);
 
   // @ts-ignore Improve type
-  setState({ meta, dataSources, page: pageDefinition.page }, {
+  setState({ meta, dataSources, page: initializePage(pageDefinition.page) }, {
     element: treeElement,
     parent: "editor",
   });
@@ -109,6 +109,14 @@ async function renderPageEditor(
   const aside = treeElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
   draggable({ element: aside, handle });
+}
+
+function initializePage(page: Page["page"]) {
+  return produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p) => {
+      p._id = uuid();
+    });
+  });
 }
 
 async function renderComponentEditor(
@@ -230,7 +238,7 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
 
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
-      if (deepEqual(p, pageItem)) {
+      if (p._id === pageItem._id) {
         const element = findElement(
           document.getElementById("pagebody"),
           i,
@@ -268,7 +276,7 @@ function elementChanged(
 
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
-      if (deepEqual(p, component)) {
+      if (p._id === component._id) {
         const element = findElement(
           document.getElementById("pagebody"),
           i,
@@ -302,7 +310,7 @@ function contentChanged(
 
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
-      if (deepEqual(p, component)) {
+      if (p._id === component._id) {
         const element = findElement(
           document.getElementById("pagebody"),
           i,
@@ -335,7 +343,7 @@ function classChanged(
 
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
-      if (deepEqual(p, component)) {
+      if (p._id === component._id) {
         const element = findElement(
           document.getElementById("pagebody"),
           i,
