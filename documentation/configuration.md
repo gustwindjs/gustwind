@@ -10,6 +10,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
   "siteName": "Gustwind",
   "paths": {
     "components": "./components",
+    "importMap": "./import_map.json",
     "output": "./build",
     "pages": "./pages",
     "scripts": "./scripts",

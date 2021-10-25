@@ -31,11 +31,8 @@ async function build(projectMeta: ProjectMeta) {
     );
   };
 
-  const importMapName = "import_map.json";
   const [importMap, components] = await Promise.all([
-    getJson<ImportMap>(
-      importMapName,
-    ),
+    getJson<ImportMap>(projectMeta.paths.importMap),
     getComponents("./components"),
   ]);
 

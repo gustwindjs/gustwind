@@ -5,6 +5,7 @@
   },
   "paths": {
     "components": "./components",
+    "importMap": "./import_map.json",
     "output": "./build",
     "pages": "./pages",
     "scripts": "./scripts",

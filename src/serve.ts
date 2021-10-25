@@ -9,7 +9,7 @@ import { getWebsocketServer } from "./webSockets.ts";
 import { compileScripts } from "./compileScripts.ts";
 import { getBrowserImportMap } from "./getBrowserImportMap.ts";
 import { compileTypeScript } from "./compileTypeScript.ts";
-import type { Components, ImportMap, Page, ProjectMeta } from "../types.ts";
+import type { ImportMap, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
@@ -25,6 +25,7 @@ async function serve(
     meta: siteMeta,
     paths: {
       components: componentsPath,
+      importMap: importMapPath,
       pages: pagesPath,
       scripts: scriptsPath,
       transforms: transformsPath,
@@ -34,11 +35,8 @@ async function serve(
 ) {
   console.log(`Serving at ${developmentPort}`);
 
-  const importMapName = "import_map.json";
   const [importMap, components] = await Promise.all([
-    getJson<ImportMap>(
-      importMapName,
-    ),
+    getJson<ImportMap>(importMapPath),
     getComponents("./components"),
   ]);
   const browserImportMap = getBrowserImportMap(
