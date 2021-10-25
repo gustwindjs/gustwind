@@ -13,10 +13,7 @@
   ],
   "page": [
     {
-      "element": "mainNavigation",
-      "_level": 0,
-      "test": "foobar",
-      "__selected": false
+      "element": "mainNavigation"
     },
     {
       "element": "header",
@@ -37,60 +34,33 @@
                     {
                       "element": "span",
                       "class": "whitespace-nowrap pr-4",
-                      "children": "🐳💨",
-                      "_level": 4,
-                      "test": "foobar",
-                      "__selected": false
+                      "children": "🐳💨"
                     },
                     {
                       "element": "span",
-                      "children": "Gustwind",
-                      "_level": 4,
-                      "test": "foobar",
-                      "__selected": false
+                      "children": "Gustwind"
                     }
-                  ],
-                  "_level": 3,
-                  "test": "foobar",
-                  "__selected": false
+                  ]
                 },
                 {
                   "element": "h2",
                   "class": "text-xl md:text-4xl font-extralight",
-                  "children": "Deno powered JSON oriented site generator",
-                  "_level": 3,
-                  "test": "foobar",
-                  "__selected": false
+                  "children": "Deno powered JSON oriented site generator"
                 }
-              ],
-              "_level": 2,
-              "test": "foobar",
-              "__selected": false
+              ]
             }
-          ],
-          "_level": 1,
-          "test": "foobar",
-          "__selected": true
+          ]
         }
-      ],
-      "_level": 0,
-      "test": "foobar",
-      "__selected": false
+      ]
     },
     {
       "element": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "__bind": "readme",
-      "__children": "content",
-      "_level": 0,
-      "test": "foobar",
-      "__selected": false
+      "__children": "content"
     },
     {
-      "element": "mainFooter",
-      "_level": 0,
-      "test": "foobar",
-      "__selected": false
+      "element": "mainFooter"
     }
   ]
 }

@@ -7,7 +7,6 @@ import type { Page } from "../types.ts";
 const editorsId = "editors";
 
 let socket: WebSocket;
-let pagePath: string;
 
 async function toggleEditor() {
   const mainElement = document.querySelector("main");
@@ -42,22 +41,12 @@ async function toggleEditor() {
   document.body.appendChild(editorsElement);
 
   if (location.hostname === "localhost") {
-    const pagepathElement = document.getElementById("pagepath");
-
-    if (!pagepathElement) {
-      console.error("#pagepath was not found!");
-
-      return;
-    }
-
-    pagePath = pagepathElement.dataset.pagepath as string;
-
     console.log("Loading web socket client");
 
     await importScript("./webSocketClient.js");
 
     // @ts-ignore Fix the type
-    socket = window.createWebSocket(pagePath);
+    socket = window.createWebSocket(getPagePath());
 
     const updateElement = document.createElement("div");
     updateElement.setAttribute("x", "updateFileSystem(state)");
@@ -89,17 +78,36 @@ function updateFileSystem(state: {
 
   // Erase possible selection state
   traversePage(page, (p) => {
-    delete p._selected;
+    delete p.__selected;
   });
 
+  const payload = {
+    path: getPagePath(),
+    data: { meta, dataSources, page },
+  };
+
   // TODO: Don't send if payload didn't change
-  socket.send(JSON.stringify({
-    type: "update",
-    payload: {
-      path: pagePath,
-      data: { meta, dataSources, page },
-    },
-  }));
+  socket.send(JSON.stringify({ type: "update", payload }));
+}
+
+function getPagePath() {
+  const pathElement = document.querySelector('meta[name="pagepath"]');
+
+  if (!pathElement) {
+    console.error("path element was not found!");
+
+    return;
+  }
+
+  const pagePath = pathElement.getAttribute("content");
+
+  if (!pagePath) {
+    console.log("pagePath was not foundin path element");
+
+    return;
+  }
+
+  return pagePath;
 }
 
 // TODO: Figure out what the error means

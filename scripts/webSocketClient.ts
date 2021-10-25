@@ -38,19 +38,9 @@ function createWebSocket(pagePath: string) {
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 
-      const path = document.getElementById("pagepath");
-
-      if (!path) {
-        console.error("#pagepath was not found!");
-
-        return;
-      }
-
       socket.send(JSON.stringify({
         type: "reload",
-        payload: {
-          path: pagePath,
-        },
+        payload: { path: pagePath },
       }));
     } else if (type === "replaceScript") {
       const { name } = payload;
