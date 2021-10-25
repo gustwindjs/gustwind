@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
 import produce, { setAutoFreeze } from "immer";
-import { v1 as uuid } from "uuid";
+import { v4 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
