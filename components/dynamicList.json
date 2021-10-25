@@ -1,0 +1,34 @@
+{
+  "element": "ul",
+  "children": [
+    {
+      "element": "template",
+      "attributes": {
+        "__x-each": "dataSource"
+      },
+      "children": [
+        {
+          "element": "li",
+          "class": "flex gap-2",
+          "children": [
+            {
+              "element": "label",
+              "attributes": {
+                "x": "state.field"
+              }
+            },
+            {
+              "element": "input",
+              "class": "border flex-grow",
+              "attributes": {
+                "type": "text",
+                "x": "state.value",
+                "__oninput": "oninput"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

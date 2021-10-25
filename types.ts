@@ -2,8 +2,7 @@ type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
 type Component = {
-  component?: string;
-  element?: string; // TODO: Only valid DOM element names
+  element: string; // TODO: Only valid DOM element names + components
   children?: string | Component[];
   class?: string;
   attributes?: Attributes;
@@ -13,6 +12,10 @@ type Component = {
   __bind?: string;
   __class?: string;
   __children?: string | Component[];
+  // Page editor - TODO: Consider decoupling this somehow
+  _id?: string;
+  _level?: boolean;
+  _selected?: boolean;
 };
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
@@ -51,16 +54,17 @@ type ProjectMeta = {
     transforms: string;
   };
 };
+type DataSources = {
+  id: string;
+  operation: string;
+  input: string;
+  transformWith: string;
+}[];
 type Page = {
   meta: Meta;
   page: Component | Component[];
   matchBy?: { dataSource: string; property: string };
-  dataSources?: {
-    id: string;
-    operation: string;
-    input: string;
-    transformWith: string;
-  }[];
+  dataSources?: DataSources;
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
@@ -73,6 +77,7 @@ export type {
   Component,
   Components,
   DataContext,
+  DataSources,
   ImportMap,
   Library,
   Meta,

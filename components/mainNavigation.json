@@ -15,7 +15,7 @@
           }
         },
         {
-          "component": "navigation"
+          "element": "navigation"
         }
       ]
     },
@@ -28,7 +28,7 @@
           "class": "font-thin",
           "children": [
             {
-              "component": "link",
+              "element": "link",
               "children": "Edit page",
               "attributes": {
                 "onclick": "window.toggleEditor()"
@@ -37,14 +37,14 @@
           ]
         },
         {
-          "component": "link",
+          "element": "link",
           "children": "Blog",
           "attributes": {
             "href": "/blog/"
           }
         },
         {
-          "component": "link",
+          "element": "link",
           "children": "GitHub",
           "attributes": {
             "href": "https://github.com/survivejs/gustwind"
@@ -55,7 +55,7 @@
     {
       "element": "script",
       "attributes": {
-        "type": "text/javascript",
+        "type": "module",
         "src": "/toggleEditor.js"
       }
     }

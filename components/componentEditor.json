@@ -1,0 +1,102 @@
+{
+  "element": "aside",
+  "class": "fixed top-16 right-2 max-w-sm overflow-auto rounded filter drop-shadow",
+  "children": [
+    {
+      "element": "header",
+      "class": "cursor-move",
+      "children": [
+        {
+          "element": "h2",
+          "class": "p-4 font-bold bg-gray-800 text-white",
+          "children": "Component Editor"
+        }
+      ]
+    },
+    {
+      "element": "section",
+      "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
+      "children": [
+        {
+          "element": "div",
+          "children": [
+            {
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Content"
+            },
+            {
+              "element": "ul",
+              "class": "flex flex-col gap-2",
+              "children": [
+                {
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Element"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "selected.component ? selected.component.element : 'No selected element'",
+                        "oninput": "elementChanged(this, this.value, setState)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "attributes": {
+                    "x-class": "[selected.component ? typeof selected.component.children !== 'string' && 'hidden' : 'hidden']"
+                  },
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Content"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "selected.component ? selected.component.children : ''",
+                        "oninput": "contentChanged(this, this.value, setState)"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "element": "li",
+                  "class": "flex gap-2",
+                  "attributes": {
+                    "x-class": "[selected.component ? typeof selected.component.children !== 'string' && 'hidden' : 'hidden']"
+                  },
+                  "children": [
+                    {
+                      "element": "label",
+                      "children": "Class"
+                    },
+                    {
+                      "element": "input",
+                      "class": "border flex-grow",
+                      "attributes": {
+                        "type": "text",
+                        "x": "selected.component && selected.component.class || ''",
+                        "oninput": "classChanged(this, this.value, setState, this)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

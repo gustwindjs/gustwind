@@ -12,7 +12,7 @@
         {
           "element": "template",
           "attributes": {
-            "x-each": "headings"
+            "x-each": "state.headings"
           },
           "children": [
             {

@@ -31,7 +31,8 @@ async function generateRoutes(
     let rootPath = name.split(".").slice(0, -1).join(".");
     rootPath = rootPath === "index" ? "" : rootPath;
 
-    if (dataSources) {
+    // TODO: If data sources are defined but not an array, give a nice error
+    if (dataSources && Array.isArray(dataSources)) {
       await Promise.all(
         // @ts-ignore: Figure out how the type
         dataSources.map(({ id, operation, input, transformWith }) =>

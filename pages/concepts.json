@@ -13,14 +13,14 @@
   ],
   "page": [
     {
-      "component": "mainNavigation"
+      "element": "mainNavigation"
     },
     {
       "element": "aside",
       "class": "fixed top-16 pl-4 hidden lg:inline",
       "children": [
         {
-          "component": "tableOfContents"
+          "element": "tableOfContents"
         }
       ]
     },
@@ -34,7 +34,7 @@
       }
     },
     {
-      "component": "mainFooter"
+      "element": "mainFooter"
     }
   ]
 }

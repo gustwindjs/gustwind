@@ -1,16 +1,7 @@
 /// <reference lib="dom" />
-import { setup } from "twind-shim";
-import JSONEditor from "jsoneditor";
-import sharedTwindSetup from "./sharedTwindSetup.ts";
-import updateMeta from "./updateMeta.ts";
-import type { Page } from "../types.ts";
+import updateMeta from "../src/updateMeta.ts";
 
-setup({
-  target: document.body,
-  ...sharedTwindSetup("development"),
-});
-
-function createWebSocket(path: string) {
+function createWebSocket(pagePath: string) {
   const socket = new WebSocket("ws://localhost:8080");
 
   socket.addEventListener("message", (event) => {
@@ -32,14 +23,15 @@ function createWebSocket(path: string) {
     } else if (type === "refresh") {
       console.log("WebSocket", "refreshing");
 
-      const container = document.getElementById("pagebody");
+      const container = document.querySelector("main");
 
       if (!container) {
-        console.error("Failed to find #pagebody");
+        console.error("Failed to find main");
 
         return;
       }
 
+      // TODO: Restore selection as well?
       container.innerHTML = payload.bodyMarkup;
 
       updateMeta(payload.meta);
@@ -48,22 +40,28 @@ function createWebSocket(path: string) {
 
       socket.send(JSON.stringify({
         type: "reload",
-        payload: {
-          path,
-        },
+        payload: { path: pagePath },
       }));
     } else if (type === "replaceScript") {
       const { name } = payload;
+      const existingScript = document.querySelector(
+        `script[src="${name}"]`,
+      ) || document.querySelector(
+        `script[data-script="${name}"]`,
+      );
 
-      const existingScript = document.querySelector(`script[src="${name}"]`);
+      console.log("Websocket", "replacing script");
 
       if (existingScript) {
         existingScript.remove();
 
         const script = document.createElement("script");
 
+        window.recreateEditor();
+
         script.setAttribute("src", name + "?cache=" + new Date().getTime());
         script.setAttribute("type", "module");
+        script.dataset.script = name;
 
         document.body.appendChild(script);
       }
@@ -75,33 +73,10 @@ function createWebSocket(path: string) {
   return socket;
 }
 
-function createJSONEditor(
-  socket: WebSocket,
-  element: HTMLElement,
-  path: string,
-  data: string,
-) {
-  const editor = new JSONEditor(element, {
-    onChangeJSON(data: Page) {
-      socket.send(JSON.stringify({
-        type: "update",
-        payload: {
-          path,
-          data,
-        },
-      }));
-    },
-  });
-
-  editor.set(data);
-}
-
 declare global {
   interface Window {
-    createJSONEditor: typeof createJSONEditor;
     createWebSocket: typeof createWebSocket;
   }
 }
 
-window.createJSONEditor = createJSONEditor;
 window.createWebSocket = createWebSocket;

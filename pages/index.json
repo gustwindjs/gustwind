@@ -13,7 +13,7 @@
   ],
   "page": [
     {
-      "component": "mainNavigation"
+      "element": "mainNavigation"
     },
     {
       "element": "header",
@@ -37,6 +37,7 @@
                       "children": "🐳💨"
                     },
                     {
+                      "element": "span",
                       "children": "Gustwind"
                     }
                   ]
@@ -59,7 +60,7 @@
       "__children": "content"
     },
     {
-      "component": "mainFooter"
+      "element": "mainFooter"
     }
   ]
 }

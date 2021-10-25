@@ -1,0 +1,118 @@
+{
+  "element": "aside",
+  "class": "fixed top-16 left-2 max-w-sm max-h-full overflow-auto rounded filter drop-shadow",
+  "children": [
+    {
+      "element": "header",
+      "class": "cursor-move",
+      "children": [
+        {
+          "element": "h2",
+          "class": "p-4 font-bold bg-gray-800 text-white",
+          "children": "Page Editor"
+        }
+      ]
+    },
+    {
+      "element": "section",
+      "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
+      "children": [
+        {
+          "element": "div",
+          "children": [
+            {
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Meta"
+            },
+            {
+              "element": "dynamicList",
+              "class": "flex flex-col gap-2",
+              "__bind": {
+                "dataSource": "editor.meta",
+                "oninput": "metaChanged(this, this.value, setState)"
+              }
+            }
+          ]
+        },
+        {
+          "element": "div",
+          "children": [
+            {
+              "element": "h2",
+              "class": "font-bold",
+              "children": "Data sources"
+            },
+            {
+              "element": "div",
+              "children": [
+                {
+                  "element": "template",
+                  "attributes": {
+                    "x-each": "editor.dataSources"
+                  },
+                  "children": [
+                    {
+                      "element": "dynamicList",
+                      "class": "flex flex-col gap-2",
+                      "__bind": {
+                        "dataSource": "state"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "element": "div",
+          "children": [
+            {
+              "element": "h2",
+              "class": "font-bold mb-2",
+              "children": "Page"
+            },
+            {
+              "element": "ul",
+              "class": "flex flex-col gap-2",
+              "children": [
+                {
+                  "element": "template",
+                  "attributes": {
+                    "x-each": "editor.page"
+                  },
+                  "children": [
+                    {
+                      "element": "li",
+                      "attributes": {
+                        "onclick": "elementClicked(this, this.state)",
+                        "x-class": "'ml-' + (state._level * 4)"
+                      },
+                      "children": [
+                        {
+                          "element": "label",
+                          "attributes": {
+                            "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state._selected && 'font-bold']"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "element": "ul",
+                      "class": "flex flex-col gap-2 my-1",
+                      "attributes": {
+                        "x-recurse": "state.children"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

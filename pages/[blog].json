@@ -13,14 +13,14 @@
   "matchBy": { "dataSource": "blogPosts", "property": "data.slug" },
   "page": [
     {
-      "component": "mainNavigation"
+      "element": "mainNavigation"
     },
     {
       "element": "div",
       "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
       "children": [
         {
-          "component": "h1",
+          "element": "h1",
           "__children": "match.title"
         },
         {
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "component": "mainFooter"
+      "element": "mainFooter"
     }
   ]
 }

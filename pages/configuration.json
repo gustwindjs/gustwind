@@ -13,7 +13,7 @@
   ],
   "page": [
     {
-      "component": "mainNavigation"
+      "element": "mainNavigation"
     },
     {
       "element": "div",
@@ -22,7 +22,7 @@
       "__children": "content"
     },
     {
-      "component": "mainFooter"
+      "element": "mainFooter"
     }
   ]
 }

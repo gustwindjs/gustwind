@@ -17,7 +17,7 @@ async function renderComponent(
     return component;
   }
 
-  const foundComponent = components[component.component!];
+  const foundComponent = components[component.element];
 
   if (component.__bind) {
     if (isObject(component.__bind)) {
@@ -30,6 +30,7 @@ async function renderComponent(
   if (foundComponent) {
     return await renderComponent(
       {
+        element: "",
         children: Array.isArray(foundComponent) ? foundComponent : [{
           ...component,
           ...foundComponent,
@@ -37,7 +38,6 @@ async function renderComponent(
             component.class as string,
             foundComponent.class as string,
           ),
-          component: "",
         }],
       },
       components,
