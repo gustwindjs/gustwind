@@ -14,4 +14,4 @@ const sharedTwindSetup = (mode: Mode) => ({
   },
 });
 
-export default sharedTwindSetup;
+export { sharedTwindSetup };

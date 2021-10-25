@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 import { importScript } from "../src/importScript.ts";
 import { zipToObject } from "../src/utils.ts";
+import { traversePage } from "../src/traversePage.ts";
 import type { Page } from "../types.ts";
 
 const editorsId = "editors";
@@ -85,6 +86,12 @@ function updateFileSystem(state: {
     zipToObject(dataSource.map(({ field, value }) => [field, value]))
   );
   const page = state.page;
+
+  // Erase possible selection state
+  traversePage(page, (p) => {
+    // @ts-ignore What's the correct way to do this?
+    delete p._selected;
+  });
 
   // TODO: Don't send if payload didn't change
   socket.send(JSON.stringify({

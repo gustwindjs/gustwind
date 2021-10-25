@@ -2,8 +2,9 @@
 import { setup } from "twind-shim";
 import { deepEqual } from "../src/deepEqual.ts";
 import { draggable } from "../src/draggable.ts";
-import sharedTwindSetup from "../src/sharedTwindSetup.ts";
+import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
+import { traversePage } from "../src/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
@@ -222,8 +223,8 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     hoveredElements.delete(element);
   }
 
-  traverse(page, (p, i) => {
-    if (p === pageItem) {
+  traversePage(page, (p, i) => {
+    if (deepEqual(p, pageItem)) {
       const element = findElement(
         document.getElementById("pagebody"),
         i,
@@ -235,12 +236,19 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
         element.classList.add("border-red-800");
 
         hoveredElements.add(element);
+
+        p._selected = true;
       }
+    } else {
+      p._selected = false;
     }
   });
 
   // @ts-ignore Improve type
   setState({ component: pageItem }, { parent: "selected" });
+
+  // @ts-ignore Improve type
+  setState({ page }, { parent: "editor" });
 }
 
 function elementChanged(
@@ -251,7 +259,7 @@ function elementChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traverse(page, (p, i) => {
+  traversePage(page, (p, i) => {
     if (deepEqual(p, component)) {
       const element = findElement(
         document.getElementById("pagebody"),
@@ -283,7 +291,7 @@ function contentChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traverse(page, (p, i) => {
+  traversePage(page, (p, i) => {
     if (deepEqual(p, component)) {
       const element = findElement(
         document.getElementById("pagebody"),
@@ -314,7 +322,7 @@ function classChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traverse(page, (p, i) => {
+  traversePage(page, (p, i) => {
     if (deepEqual(p, component)) {
       const element = findElement(
         document.getElementById("pagebody"),
@@ -388,31 +396,6 @@ function findElement(
   }
 
   return recurse(element?.firstElementChild, page);
-}
-
-function traverse(
-  page: Page["page"],
-  operation: (c: Component, index: number) => void,
-) {
-  let i = 0;
-
-  function recurse(
-    page: Page["page"],
-    operation: (c: Component, index: number) => void,
-  ) {
-    if (Array.isArray(page)) {
-      page.forEach((p) => recurse(p, operation));
-    } else {
-      operation(page, i);
-      i++;
-
-      if (Array.isArray(page.children)) {
-        recurse(page.children, operation);
-      }
-    }
-  }
-
-  recurse(page, operation);
 }
 
 // TODO: Figure out what the error means

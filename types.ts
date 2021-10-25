@@ -12,6 +12,8 @@ type Component = {
   __bind?: string;
   __class?: string;
   __children?: string | Component[];
+  // page editor
+  _selected?: boolean;
 };
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };

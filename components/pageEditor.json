@@ -1,6 +1,6 @@
 {
   "element": "aside",
-  "class": "fixed top-16 left-0 max-w-sm overflow-auto rounded filter drop-shadow",
+  "class": "fixed top-16 left-0 max-w-sm max-h-full overflow-auto rounded filter drop-shadow",
   "children": [
     {
       "element": "header",
@@ -94,7 +94,7 @@
                           "element": "label",
                           "attributes": {
                             "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
-                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2']"
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state._selected && 'font-bold']"
                           }
                         }
                       ]
