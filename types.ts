@@ -53,6 +53,7 @@ type ProjectMeta = {
     scripts: string;
     transforms: string;
   };
+  browserDependencies?: string[];
 };
 type DataSources = {
   id: string;

@@ -6,6 +6,7 @@ import { getJson } from "./fsUtils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { compileScripts } from "./compileScripts.ts";
+import { getBrowserImportMap } from "./getBrowserImportMap.ts";
 import type { ImportMap, ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
@@ -34,9 +35,13 @@ async function build(projectMeta: ProjectMeta) {
   const importMap = await getJson<ImportMap>(
     importMapName,
   );
-
   const components = await getComponents("./components");
   const outputDirectory = "./build";
+
+  const browserImportMap = getBrowserImportMap(
+    projectMeta.browserDependencies,
+    importMap,
+  );
 
   ensureDir(outputDirectory).then(async () => {
     await writeScripts(projectMeta.paths.scripts, outputDirectory, importMap);
@@ -60,7 +65,7 @@ async function build(projectMeta: ProjectMeta) {
     const renderPage = getPageRenderer({
       components,
       mode: "production",
-      importMap,
+      importMap: browserImportMap,
     });
     const ret = await generateRoutes({
       renderPage: async (route, path, context, page) => {

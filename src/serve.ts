@@ -7,6 +7,7 @@ import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { compileScripts } from "./compileScripts.ts";
+import { getBrowserImportMap } from "./getBrowserImportMap.ts";
 import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Components, ImportMap, Page, ProjectMeta } from "../types.ts";
 
@@ -28,6 +29,7 @@ async function serve(
       scripts: scriptsPath,
       transforms: transformsPath,
     },
+    browserDependencies,
   }: ProjectMeta,
 ) {
   console.log(`Serving at ${developmentPort}`);
@@ -45,6 +47,12 @@ async function serve(
 
     return;
   }
+
+  const browserImportMap = getBrowserImportMap(
+    browserDependencies,
+    importMap,
+  );
+
   const app = new Application();
   const router = new Router();
   const wss = getWebsocketServer();
@@ -56,7 +64,7 @@ async function serve(
   const renderPage = getPageRenderer({
     components,
     mode,
-    importMap,
+    importMap: browserImportMap,
   });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {

@@ -21,11 +21,13 @@ function get<O = Record<string, unknown>>(dataContext: O, key: string): string {
   return value as unknown as string;
 }
 
-function zipToObject<R>(arr: [string, R][]) {
+function zipToObject<R>(arr: [unknown, R][]) {
   const ret: Record<string, R> = {};
 
   arr.forEach(([k, v]) => {
-    ret[k] = v;
+    if (typeof k === "string") {
+      ret[k] = v;
+    }
   });
 
   return ret;

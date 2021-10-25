@@ -13,7 +13,18 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "pages": "./pages",
     "scripts": "./scripts",
     "transforms": "./transforms"
-  }
+  },
+  "browserDependencies": [
+    "immer",
+    "sidewind",
+    "style-vendorizer",
+    "twind",
+    "twind-colors",
+    "twind-sheets",
+    "twind-shim",
+    "twind-typography",
+    "uuid"
+  ]
 }
 ```
 
