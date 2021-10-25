@@ -89,7 +89,6 @@ function updateFileSystem(state: {
 
   // Erase possible selection state
   traversePage(page, (p) => {
-    // @ts-ignore What's the correct way to do this?
     delete p._selected;
   });
 

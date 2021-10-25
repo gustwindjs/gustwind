@@ -1,11 +1,16 @@
 /// <reference lib="dom" />
 import { setup } from "twind-shim";
+import produce, { setAutoFreeze } from "immer";
 import { deepEqual } from "../src/deepEqual.ts";
 import { draggable } from "../src/draggable.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../src/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
+
+// Disable automatic freezing to allow Sidewind _level to be injected.
+// Maybe it would be better to fix that at Sidewind to avoid a side effect.
+setAutoFreeze(false);
 
 console.log("Hello from the page editor");
 
@@ -223,32 +228,36 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     hoveredElements.delete(element);
   }
 
-  traversePage(page, (p, i) => {
-    if (deepEqual(p, pageItem)) {
-      const element = findElement(
-        document.getElementById("pagebody"),
-        i,
-        page,
-      ) as HTMLElement;
+  const nextPage = produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p, i) => {
+      if (deepEqual(p, pageItem)) {
+        const element = findElement(
+          document.getElementById("pagebody"),
+          i,
+          page,
+        ) as HTMLElement;
 
-      if (element) {
-        element.classList.add("border");
-        element.classList.add("border-red-800");
+        if (element) {
+          element.classList.add("border");
+          element.classList.add("border-red-800");
 
-        hoveredElements.add(element);
+          hoveredElements.add(element);
 
-        p._selected = true;
+          p._selected = true;
+        }
+      } else {
+        p._selected = false;
       }
-    } else {
-      p._selected = false;
-    }
+    });
   });
 
   // @ts-ignore Improve type
   setState({ component: pageItem }, { parent: "selected" });
 
+  console.log("next page", nextPage);
+
   // @ts-ignore Improve type
-  setState({ page }, { parent: "editor" });
+  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function elementChanged(
@@ -259,28 +268,30 @@ function elementChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traversePage(page, (p, i) => {
-    if (deepEqual(p, component)) {
-      const element = findElement(
-        document.getElementById("pagebody"),
-        i,
-        page,
-      ) as HTMLElement;
+  const nextPage = produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p, i) => {
+      if (deepEqual(p, component)) {
+        const element = findElement(
+          document.getElementById("pagebody"),
+          i,
+          page,
+        ) as HTMLElement;
 
-      if (element) {
-        // TODO: Update element type
-        // https://stackoverflow.com/a/59147202/228885
+        if (element) {
+          // TODO: Update element type
+          // https://stackoverflow.com/a/59147202/228885
+        }
+
+        p.element = value;
+
+        // @ts-ignore Improve type
+        setState({ component: p }, { parent: "selected" });
       }
-
-      p.element = value;
-
-      // @ts-ignore Improve type
-      setState({ component: p }, { parent: "selected" });
-    }
+    });
   });
 
   // @ts-ignore Improve type
-  setState({ page }, { parent: "editor" });
+  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function contentChanged(
@@ -291,27 +302,29 @@ function contentChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traversePage(page, (p, i) => {
-    if (deepEqual(p, component)) {
-      const element = findElement(
-        document.getElementById("pagebody"),
-        i,
-        page,
-      ) as HTMLElement;
+  const nextPage = produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p, i) => {
+      if (deepEqual(p, component)) {
+        const element = findElement(
+          document.getElementById("pagebody"),
+          i,
+          page,
+        ) as HTMLElement;
 
-      if (element) {
-        element.innerHTML = value;
+        if (element) {
+          element.innerHTML = value;
+        }
+
+        p.children = value;
+
+        // @ts-ignore Improve type
+        setState({ component: p }, { parent: "selected" });
       }
-
-      p.children = value;
-
-      // @ts-ignore Improve type
-      setState({ component: p }, { parent: "selected" });
-    }
+    });
   });
 
   // @ts-ignore Improve type
-  setState({ page }, { parent: "editor" });
+  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function classChanged(
@@ -322,31 +335,33 @@ function classChanged(
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
 
-  traversePage(page, (p, i) => {
-    if (deepEqual(p, component)) {
-      const element = findElement(
-        document.getElementById("pagebody"),
-        i,
-        page,
-      ) as HTMLElement;
+  const nextPage = produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p, i) => {
+      if (deepEqual(p, component)) {
+        const element = findElement(
+          document.getElementById("pagebody"),
+          i,
+          page,
+        ) as HTMLElement;
 
-      if (element) {
-        element.setAttribute("class", value);
+        if (element) {
+          element.setAttribute("class", value);
 
-        // TODO: Is there a nicer way to retain selection?
-        element.classList.add("border");
-        element.classList.add("border-red-800");
+          // TODO: Is there a nicer way to retain selection?
+          element.classList.add("border");
+          element.classList.add("border-red-800");
+        }
+
+        p.class = value;
+
+        // @ts-ignore Improve type
+        setState({ component: p }, { parent: "selected" });
       }
-
-      p.class = value;
-
-      // @ts-ignore Improve type
-      setState({ component: p }, { parent: "selected" });
-    }
+    });
   });
 
   // @ts-ignore Improve type
-  setState({ page }, { parent: "editor" });
+  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function findElement(
