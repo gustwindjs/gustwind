@@ -13,7 +13,8 @@ type Component = {
   __class?: string;
   __children?: string | Component[];
   // Page editor - TODO: Consider decoupling this somehow
-  __selected?: boolean;
+  _level?: boolean;
+  _selected?: boolean;
 };
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };

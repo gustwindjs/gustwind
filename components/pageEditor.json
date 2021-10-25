@@ -94,7 +94,7 @@
                           "element": "label",
                           "attributes": {
                             "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
-                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.__selected && 'font-bold']"
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state._selected && 'font-bold']"
                           }
                         }
                       ]

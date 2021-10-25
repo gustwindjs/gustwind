@@ -55,7 +55,7 @@
     {
       "element": "script",
       "attributes": {
-        "type": "text/javascript",
+        "type": "module",
         "src": "/toggleEditor.js"
       }
     }

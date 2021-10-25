@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+import produce from "immer";
 import { importScript } from "../src/importScript.ts";
 import { zipToObject } from "../src/utils.ts";
 import { traversePage } from "../src/traversePage.ts";
@@ -77,13 +78,17 @@ function updateFileSystem(state: {
   const page = state.page;
 
   // Erase possible selection state
-  traversePage(page, (p) => {
-    delete p.__selected;
+  const nextPage = produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p) => {
+      // TODO: Generalize to erase anything that begins with a single _
+      delete p._level;
+      delete p._selected;
+    });
   });
 
   const payload = {
     path: getPagePath(),
-    data: { meta, dataSources, page },
+    data: { meta, dataSources, page: nextPage },
   };
 
   // TODO: Don't send if payload didn't change

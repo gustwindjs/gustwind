@@ -243,10 +243,10 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
 
           hoveredElements.add(element);
 
-          p.__selected = true;
+          p._selected = true;
         }
       } else {
-        p.__selected = false;
+        p._selected = false;
       }
     });
   });
