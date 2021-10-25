@@ -9,7 +9,7 @@
         {
           "element": "h2",
           "class": "p-4 font-bold bg-gray-800 text-white",
-          "children": "Page Editor"
+          "children": "Page editor"
         }
       ]
     },
