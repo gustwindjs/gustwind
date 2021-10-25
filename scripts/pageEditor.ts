@@ -239,6 +239,7 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
       if (p._id === pageItem._id) {
+        // TODO: Remove hard dependency on #pagebody
         const element = findElement(
           document.getElementById("pagebody"),
           i,
@@ -250,9 +251,9 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
           element.classList.add("border-red-800");
 
           hoveredElements.add(element);
-
-          p._selected = true;
         }
+
+        p._selected = true;
       } else {
         p._selected = false;
       }
