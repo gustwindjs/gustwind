@@ -84,6 +84,10 @@ function updateFileSystem(state: {
       delete p._id;
       delete p._level;
       delete p._selected;
+
+      if (p.class === "") {
+        delete p.class;
+      }
     });
   });
 
