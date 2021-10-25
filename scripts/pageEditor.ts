@@ -239,9 +239,8 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
   const nextPage = produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
       if (p._id === pageItem._id) {
-        // TODO: Remove hard dependency on #pagebody
         const element = findElement(
-          document.getElementById("pagebody"),
+          document.querySelector("main"),
           i,
           page,
         ) as HTMLElement;
@@ -279,7 +278,7 @@ function elementChanged(
     traversePage(draftPage, (p, i) => {
       if (p._id === component._id) {
         const element = findElement(
-          document.getElementById("pagebody"),
+          document.querySelector("main"),
           i,
           page,
         ) as HTMLElement;
@@ -313,7 +312,7 @@ function contentChanged(
     traversePage(draftPage, (p, i) => {
       if (p._id === component._id) {
         const element = findElement(
-          document.getElementById("pagebody"),
+          document.querySelector("main"),
           i,
           page,
         ) as HTMLElement;
@@ -346,7 +345,7 @@ function classChanged(
     traversePage(draftPage, (p, i) => {
       if (p._id === component._id) {
         const element = findElement(
-          document.getElementById("pagebody"),
+          document.querySelector("main"),
           i,
           page,
         ) as HTMLElement;

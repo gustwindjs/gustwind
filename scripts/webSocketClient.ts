@@ -23,10 +23,10 @@ function createWebSocket(pagePath: string) {
     } else if (type === "refresh") {
       console.log("WebSocket", "refreshing");
 
-      const container = document.getElementById("pagebody");
+      const container = document.querySelector("main");
 
       if (!container) {
-        console.error("Failed to find #pagebody");
+        console.error("Failed to find main");
 
         return;
       }

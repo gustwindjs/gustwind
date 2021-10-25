@@ -97,16 +97,8 @@ async function htmlTemplate(
     ${headMarkup || ""}
   </head>
   <body>
-    ${
-    mode === "development"
-      ? `<div>
-      <main id="pagebody">
-        ${bodyMarkup || ""}
-      </main>
-    </div>`
-      : `<main>${bodyMarkup || ""}</main>` || ""
-  }
-  ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
+    <main>${bodyMarkup || ""}</main>
+    ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
   </body>
 </html>`;
 
