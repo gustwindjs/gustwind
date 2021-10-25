@@ -1,5 +1,4 @@
 /// <reference lib="dom" />
-import "sidewind";
 import produce, { setAutoFreeze } from "immer";
 import { v4 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
