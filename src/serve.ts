@@ -35,19 +35,12 @@ async function serve(
   console.log(`Serving at ${developmentPort}`);
 
   const importMapName = "import_map.json";
-  const importMap = await getJson<ImportMap>(
-    importMapName,
-  );
-
-  let components: Components;
-  try {
-    components = await getComponents(componentsPath);
-  } catch (error) {
-    console.error(error);
-
-    return;
-  }
-
+  const [importMap, components] = await Promise.all([
+    getJson<ImportMap>(
+      importMapName,
+    ),
+    getComponents("./components"),
+  ]);
   const browserImportMap = getBrowserImportMap(
     browserDependencies,
     importMap,
