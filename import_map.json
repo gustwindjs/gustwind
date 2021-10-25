@@ -8,7 +8,7 @@
     "highlight-js": "https://unpkg.com/highlight.js@11.2.0/es/languages/javascript",
     "highlight-json": "https://unpkg.com/highlight.js@11.2.0/es/languages/json",
     "highlight-ts": "https://unpkg.com/highlight.js@11.2.0/es/languages/typescript",
-    "immer": "https://cdn.skypack.dev/immer@9.0.6",
+    "immer": "https://cdn.skypack.dev/immer@9.0.6?min",
     "oak": "https://deno.land/x/oak@v9.0.1/mod.ts",
     "markdown": "https://esm.sh/marked@3.0.7",
     "path": "https://deno.land/std@0.107.0/path/mod.ts",
