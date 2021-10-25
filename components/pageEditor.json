@@ -75,7 +75,6 @@
             },
             {
               "element": "ul",
-              "class": "flex flex-col gap-2",
               "children": [
                 {
                   "element": "template",
@@ -101,7 +100,7 @@
                     },
                     {
                       "element": "ul",
-                      "class": "flex flex-col gap-2 my-1",
+                      "class": "my-2",
                       "attributes": {
                         "x-recurse": "state.children"
                       }

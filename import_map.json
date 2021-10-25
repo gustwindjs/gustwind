@@ -12,7 +12,7 @@
     "oak": "https://deno.land/x/oak@v9.0.1/mod.ts",
     "markdown": "https://esm.sh/marked@3.0.7",
     "path": "https://deno.land/std@0.107.0/path/mod.ts",
-    "sidewind": "https://unpkg.com/sidewind@4.1.0/dist/sidewind.umd.production.min.js",
+    "sidewind": "https://unpkg.com/sidewind@4.1.1/dist/sidewind.umd.production.min.js",
     "style-vendorizer": "https://unpkg.com/style-vendorizer@2.1.1/dist/esm/bundle.min.mjs",
     "twind": "https://cdn.skypack.dev/twind@0.16.16?min",
     "twind-colors": "https://cdn.skypack.dev/twind@0.16.16/colors?min",
