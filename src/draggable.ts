@@ -13,7 +13,11 @@ type Callbacks = {
 };
 
 function draggable(
-  { element, handle }: { element: HTMLElement; handle?: HTMLElement },
+  { element, handle, xPosition }: {
+    element: HTMLElement;
+    handle?: HTMLElement;
+    xPosition?: string;
+  },
   cbs?: Callbacks,
 ) {
   if (!element) {
@@ -21,8 +25,24 @@ function draggable(
     return;
   }
 
-  dragTemplate(element, "touchstart", "touchmove", "touchend", cbs, handle);
-  dragTemplate(element, "mousedown", "mousemove", "mouseup", cbs, handle);
+  dragTemplate(
+    element,
+    "touchstart",
+    "touchmove",
+    "touchend",
+    cbs,
+    handle,
+    xPosition,
+  );
+  dragTemplate(
+    element,
+    "mousedown",
+    "mousemove",
+    "mouseup",
+    cbs,
+    handle,
+    xPosition,
+  );
 }
 
 function xyslider(o: { parent: HTMLElement; class: string; cbs: Callbacks }) {
@@ -92,8 +112,9 @@ function dragTemplate(
   up: string,
   cbs?: Callbacks,
   handle?: HTMLElement,
+  xPosition?: string,
 ) {
-  cbs = getCbs(cbs);
+  cbs = getCbs(cbs, xPosition);
 
   const beginCb = cbs.begin;
   const changeCb = cbs.change;
@@ -158,7 +179,10 @@ function off(
 
 type Coordinate = { x: number; y: number };
 
-function getCbs(cbs?: Callbacks): Callbacks {
+function getCbs(
+  cbs?: Callbacks,
+  xPosition: "left" | "right" = "left",
+): Callbacks {
   if (cbs) {
     return {
       begin: cbs.begin || noop,
@@ -172,8 +196,17 @@ function getCbs(cbs?: Callbacks): Callbacks {
 
   return {
     begin: function (c) {
-      initialOffset = { x: c.elem.offsetLeft, y: c.elem.offsetTop };
-      initialPos = c.cursor;
+      const bodyWidth = document.body.clientWidth;
+
+      initialOffset = {
+        x: xPosition === "left"
+          ? c.elem.offsetLeft
+          : bodyWidth - c.elem.offsetLeft - c.elem.clientWidth,
+        y: c.elem.offsetTop,
+      };
+      initialPos = xPosition === "left"
+        ? c.cursor
+        : { x: bodyWidth - c.cursor.x, y: c.cursor.y };
     },
     change: function (c) {
       if (
@@ -183,10 +216,14 @@ function getCbs(cbs?: Callbacks): Callbacks {
         return;
       }
 
+      const bodyWidth = document.body.clientWidth;
+
       style(
         c.elem,
-        "left",
-        (initialOffset.x + c.cursor.x - initialPos.x) + "px",
+        xPosition,
+        xPosition === "left"
+          ? (initialOffset.x + c.cursor.x - initialPos.x) + "px"
+          : (initialOffset.x + (bodyWidth - c.cursor.x) - initialPos.x) + "px",
       );
 
       if (
@@ -204,10 +241,6 @@ function getCbs(cbs?: Callbacks): Callbacks {
     },
     end: noop,
   };
-}
-
-function isValidNumber(c: Record<string, unknown>, v: keyof Coordinate) {
-  return c[v] && typeof c[v] === "number";
 }
 
 // TODO: set draggable class (handy for fx)

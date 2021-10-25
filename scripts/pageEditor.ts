@@ -128,7 +128,7 @@ async function renderComponentEditor(
 
   const aside = controlsElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
-  draggable({ element: aside, handle });
+  draggable({ element: aside, handle, xPosition: "right" });
 
   // TODO: Gradient syntax
   // bg-gradient-to-br
