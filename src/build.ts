@@ -39,8 +39,7 @@ async function build(projectMeta: ProjectMeta) {
     getComponents("./components"),
   ]);
 
-  const outputDirectory = "./build";
-
+  const outputDirectory = projectMeta.paths.output;
   const browserImportMap = getBrowserImportMap(
     projectMeta.browserDependencies,
     importMap,

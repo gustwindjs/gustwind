@@ -49,6 +49,7 @@ type ProjectMeta = {
   meta: SiteMeta;
   paths: {
     components: string;
+    output: string;
     pages: string;
     scripts: string;
     transforms: string;
