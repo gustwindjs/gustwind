@@ -18,8 +18,6 @@ const editorsId = "editors";
 let socket: WebSocket;
 
 function init() {
-  console.log("hello from toggle editor");
-
   const toggleButton = document.createElement("button");
   toggleButton.className = tw(
     "fixed right-4 bottom-4 whitespace-nowrap text-lg",

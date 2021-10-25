@@ -28,28 +28,24 @@ function recreateEditor() {
 }
 
 async function createEditor(parent: HTMLElement) {
-  const components: Components = await fetch("/components.json").then((res) =>
-    res.json()
-  );
-  const context: DataContext = await fetch("./context.json").then((res) =>
-    res.json()
-  );
+  const [components, context, pageDefinition]: [Components, DataContext, Page] =
+    await Promise.all([
+      fetch("/components.json").then((res) => res.json()),
+      fetch("/context.json").then((res) => res.json()),
+      fetch("/definition.json").then((res) => res.json()),
+    ]);
 
-  fetch("./definition.json").then((res) => res.json()).then(
-    (pageDefinition) => {
-      const selectionContainer = document.createElement("div");
-      selectionContainer.setAttribute(
-        "x-state",
-        "{ component: undefined }",
-      );
-      selectionContainer.setAttribute("x-label", "selected");
-
-      renderPageEditor(selectionContainer, components, context, pageDefinition);
-      renderComponentEditor(selectionContainer, components, context);
-
-      parent.appendChild(selectionContainer);
-    },
+  const selectionContainer = document.createElement("div");
+  selectionContainer.setAttribute(
+    "x-state",
+    "{ component: undefined }",
   );
+  selectionContainer.setAttribute("x-label", "selected");
+
+  renderPageEditor(selectionContainer, components, context, pageDefinition);
+  renderComponentEditor(selectionContainer, components, context);
+
+  parent.appendChild(selectionContainer);
 }
 
 function deleteEditor() {
