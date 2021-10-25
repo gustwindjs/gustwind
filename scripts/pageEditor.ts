@@ -243,18 +243,16 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
 
           hoveredElements.add(element);
 
-          p._selected = true;
+          p.__selected = true;
         }
       } else {
-        p._selected = false;
+        p.__selected = false;
       }
     });
   });
 
   // @ts-ignore Improve type
   setState({ component: pageItem }, { parent: "selected" });
-
-  console.log("next page", nextPage);
 
   // @ts-ignore Improve type
   setState({ page: nextPage }, { parent: "editor" });
