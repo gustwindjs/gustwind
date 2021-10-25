@@ -114,7 +114,7 @@ function dragTemplate(
   handle?: HTMLElement,
   xPosition?: string,
 ) {
-  cbs = getCbs(cbs, xPosition);
+  cbs = getCbs(cbs, xPosition = "left");
 
   const beginCb = cbs.begin;
   const changeCb = cbs.change;
