@@ -4,7 +4,6 @@ import { tw } from "twind";
 import produce from "immer";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../src/importScript.ts";
-import { zipToObject } from "../src/utils.ts";
 import { traversePage } from "../src/traversePage.ts";
 import type { Page } from "../types.ts";
 
@@ -54,12 +53,13 @@ async function toggleEditor() {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    "{ meta: [], dataSources: [], page: [] }",
+    "{ meta: [], dataSources: [], page: [], matchBy: {} }",
   );
   editorsElement.setAttribute("x-label", "editor");
 
   document.body.appendChild(editorsElement);
 
+  // TODO: Push this logic inside pageEditor
   if (location.hostname === "localhost") {
     console.log("Loading web socket client");
 
@@ -68,9 +68,9 @@ async function toggleEditor() {
     // @ts-ignore Fix the type
     socket = window.createWebSocket(getPagePath());
 
-    const updateElement = document.createElement("div");
-    updateElement.setAttribute("x", "updateFileSystem(state)");
-    editorsElement.appendChild(updateElement);
+    //const updateElement = document.createElement("div");
+    //updateElement.setAttribute("x", "updateFileSystem(state)");
+    //editorsElement.appendChild(updateElement);
   }
 
   try {
@@ -88,20 +88,10 @@ function updateFileSystem(state: {
   dataSources: { field: string; value: string }[][];
   page: Page["page"];
 }) {
-  const meta = zipToObject(
-    state.meta.map(({ field, value }) => [field, value]),
-  );
-  const dataSources = state.dataSources.map((dataSource) =>
-    zipToObject(dataSource.map(({ field, value }) => [field, value]))
-  );
-  const page = state.page;
-
-  // Erase possible selection state
-  const nextPage = produce(page, (draftPage: Page["page"]) => {
+  const nextPage = produce(state.page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
-      delete p._level;
       delete p._selected;
 
       if (p.class === "") {
@@ -112,7 +102,7 @@ function updateFileSystem(state: {
 
   const payload = {
     path: getPagePath(),
-    data: { meta, dataSources, page: nextPage },
+    data: { ...state, page: nextPage },
   };
 
   // TODO: Don't send if payload didn't change

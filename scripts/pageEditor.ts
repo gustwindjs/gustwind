@@ -1,14 +1,10 @@
 /// <reference lib="dom" />
-import produce, { setAutoFreeze } from "immer";
+import produce from "immer";
 import { v4 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../src/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
-
-// Disable automatic freezing to allow Sidewind _level to be injected.
-// Maybe it would be better to fix that at Sidewind to avoid a side effect.
-setAutoFreeze(false);
 
 console.log("Hello from the page editor");
 
@@ -42,8 +38,8 @@ async function createEditor(parent: HTMLElement) {
   );
   selectionContainer.setAttribute("x-label", "selected");
 
-  renderPageEditor(selectionContainer, components, context, pageDefinition);
-  renderComponentEditor(selectionContainer, components, context);
+  createPageEditor(selectionContainer, components, context, pageDefinition);
+  createComponentEditor(selectionContainer, components, context);
 
   parent.appendChild(selectionContainer);
 }
@@ -55,12 +51,14 @@ function deleteEditor() {
   document.getElementById(controlsElementId)?.remove();
 }
 
-async function renderPageEditor(
+async function createPageEditor(
   parent: HTMLElement,
   components: Components,
   context: DataContext,
   pageDefinition: Page,
 ) {
+  console.log("Creating page editor");
+
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
   treeElement.innerHTML = await renderComponent(
@@ -68,26 +66,14 @@ async function renderPageEditor(
     components,
     context,
   );
-  const meta = Object.entries(pageDefinition.meta).map(([field, value]) => ({
-    field,
-    value,
-  }));
-  const dataSources = pageDefinition.dataSources?.map((dataSource) => (
-    Object.entries(dataSource).map(
-      (
-        [field, value],
-      ) => ({
-        field,
-        value,
-      }),
-    )
-  ));
-
   treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
 
   // @ts-ignore Improve type
-  setState({ meta, dataSources, page: initializePage(pageDefinition.page) }, {
+  setState({
+    ...pageDefinition,
+    page: initializePage(pageDefinition.page),
+  }, {
     element: treeElement,
     parent: "editor",
   });
@@ -108,7 +94,7 @@ function initializePage(page: Page["page"]) {
   });
 }
 
-async function renderComponentEditor(
+async function createComponentEditor(
   parent: HTMLElement,
   components: Components,
   context: DataContext,
@@ -181,35 +167,37 @@ async function renderComponentEditor(
 
 type setState<V> = (fn: (state: V) => V) => void;
 
-// TODO: Update editor.meta when this changes
 function metaChanged(
-  _element: HTMLElement,
+  element: HTMLElement,
   value: string,
-  setState: setState<{ field: "title" }>,
+  setState: setState<[string, string]>,
 ) {
-  setState(({ field }) => {
-    if (field === "title") {
-      const titleElement = document.querySelector("title");
+  // @ts-ignore This comes from sidewind
+  const { editor: { meta } } = getState(element);
+  const field = element.dataset.field as string;
 
-      if (titleElement) {
-        titleElement.innerHTML = value || "";
-      } else {
-        console.warn("The page doesn't have a <title>!");
-      }
+  if (field === "title") {
+    const titleElement = document.querySelector("title");
+
+    if (titleElement) {
+      titleElement.innerHTML = value || "";
     } else {
-      const metaElement = document.head.querySelector(
-        "meta[name='" + field + "']",
-      );
-
-      if (metaElement) {
-        metaElement.setAttribute("content", value);
-      } else {
-        console.warn(`The page doesn't have a ${field} meta element!`);
-      }
+      console.warn("The page doesn't have a <title>!");
     }
+  } else {
+    const metaElement = document.head.querySelector(
+      "meta[name='" + field + "']",
+    );
 
-    return { field, value };
-  });
+    if (metaElement) {
+      metaElement.setAttribute("content", value);
+    } else {
+      console.warn(`The page doesn't have a ${field} meta element!`);
+    }
+  }
+
+  // @ts-ignore Improve type
+  setState({ meta: { ...meta, [field]: value } }, { parent: "editor" });
 }
 
 const hoveredElements = new Set<HTMLElement>();
@@ -217,6 +205,8 @@ const hoveredElements = new Set<HTMLElement>();
 function elementClicked(element: HTMLElement, pageItem: Component) {
   // @ts-ignore This comes from sidewind
   const { editor: { page } } = getState(element);
+
+  console.log("clicked element", element, pageItem);
 
   for (const element of hoveredElements.values()) {
     element.classList.remove("border");
@@ -248,8 +238,10 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     });
   });
 
+  // TODO: If a value of x-each changes, trigger evaluation on it
+
   // @ts-ignore Improve type
-  setState({ component: pageItem }, { parent: "selected" });
+  // setState({ component: pageItem }, { parent: "selected" });
 
   // @ts-ignore Improve type
   setState({ page: nextPage }, { parent: "editor" });
@@ -349,8 +341,10 @@ function classChanged(
 
         p.class = value;
 
+        // TODO: Find a better way to deal with selections -
+        // maybe track just id and resolve later?
         // @ts-ignore Improve type
-        setState({ component: p }, { parent: "selected" });
+        // setState({ component: p }, { parent: "selected" });
       }
     });
   });

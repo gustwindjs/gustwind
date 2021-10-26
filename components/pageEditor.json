@@ -29,7 +29,7 @@
               "element": "dynamicList",
               "class": "flex flex-col gap-2",
               "__bind": {
-                "dataSource": "editor.meta",
+                "dataSource": "Object.entries(editor.meta)",
                 "oninput": "metaChanged(this, this.value, setState)"
               }
             }
@@ -56,7 +56,7 @@
                       "element": "dynamicList",
                       "class": "flex flex-col gap-2",
                       "__bind": {
-                        "dataSource": "state"
+                        "dataSource": "Object.entries(state.value)"
                       }
                     }
                   ]
@@ -85,25 +85,37 @@
                     {
                       "element": "li",
                       "attributes": {
-                        "onclick": "elementClicked(this, this.state)",
-                        "x-class": "'ml-' + (state._level * 4)"
+                        "onclick": "elementClicked(this, this.state.value)",
+                        "x-class": "'ml-' + (state.level * 4)"
                       },
                       "children": [
                         {
                           "element": "label",
                           "attributes": {
-                            "x": "state.element + ((typeof state.children === 'string') ? ' : ' + state.children : '')",
-                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state._selected && 'font-bold']"
+                            "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')",
+                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._selected && 'font-bold']"
                           }
+                        },
+                        {
+                          "element": "ul",
+                          "children": [
+                            {
+                              "element": "template",
+                              "attributes": {
+                                "x-each": "state.value.children"
+                              },
+                              "children": [
+                                {
+                                  "element": "li",
+                                  "attributes": {
+                                    "x": "JSON.stringify(state.value, null, 2)"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
-                    },
-                    {
-                      "element": "ul",
-                      "class": "my-2",
-                      "attributes": {
-                        "x-recurse": "state.children"
-                      }
                     }
                   ]
                 }

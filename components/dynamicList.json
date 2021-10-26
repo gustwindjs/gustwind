@@ -15,7 +15,7 @@
             {
               "element": "label",
               "attributes": {
-                "x": "state.field"
+                "x": "state.value[0]"
               }
             },
             {
@@ -23,7 +23,8 @@
               "class": "border flex-grow",
               "attributes": {
                 "type": "text",
-                "x": "state.value",
+                "x": "state.value[1]",
+                "x-data-field": "state.value[0]",
                 "__oninput": "oninput"
               }
             }

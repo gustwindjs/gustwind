@@ -13,8 +13,8 @@ type Component = {
   __class?: string;
   __children?: string | Component[];
   // Page editor - TODO: Consider decoupling this somehow
+  // maybe there can be an "enhanced" structure that's adding this stuff
   _id?: string;
-  _level?: boolean;
   _selected?: boolean;
 };
 type Components = Record<string, Component>;

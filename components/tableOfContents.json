@@ -21,9 +21,9 @@
                 {
                   "element": "a",
                   "attributes": {
-                    "x-href": "state.parentElement.attributes.href.value",
-                    "x": "state.textContent",
-                    "x-class": "[state.textContent === parent.closest.textContent && 'underline', state.tagName === 'H3' && 'ml-2']"
+                    "x-href": "state.value.parentElement?.attributes.href.value",
+                    "x": "state.value.textContent",
+                    "x-class": "[state.value.textContent === parent.closest.textContent && 'underline', state.tagName === 'H3' && 'ml-2']"
                   }
                 }
               ]
