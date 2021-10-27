@@ -243,8 +243,9 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
   // @ts-ignore Improve type
   // setState({ component: pageItem }, { parent: "selected" });
 
+  // TODO: Why does this get stuck?
   // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
+  // setState({ page: nextPage }, { parent: "editor" });
 }
 
 function elementChanged(

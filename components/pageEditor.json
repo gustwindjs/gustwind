@@ -86,7 +86,7 @@
                       "element": "li",
                       "attributes": {
                         "onclick": "elementClicked(this, this.state.value)",
-                        "x-class": "'ml-' + (state.level * 4)"
+                        "x-class": "'ml-' + state.level"
                       },
                       "children": [
                         {
@@ -98,22 +98,9 @@
                         },
                         {
                           "element": "ul",
-                          "children": [
-                            {
-                              "element": "template",
-                              "attributes": {
-                                "x-each": "state.value.children"
-                              },
-                              "children": [
-                                {
-                                  "element": "li",
-                                  "attributes": {
-                                    "x": "JSON.stringify(state.value, null, 2)"
-                                  }
-                                }
-                              ]
-                            }
-                          ]
+                          "attributes": {
+                            "x-recurse": "state.value.children"
+                          }
                         }
                       ]
                     }
