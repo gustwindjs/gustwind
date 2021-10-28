@@ -202,6 +202,9 @@ function metaChanged(
 const hoveredElements = new Set<HTMLElement>();
 
 function elementClicked(element: HTMLElement, pageItem: Component) {
+  // Stop bubbling as we're within a recursive HTML structure
+  event?.stopPropagation();
+
   // @ts-ignore This comes from sidewind
   const { editor: { page } } = getState(element);
 
