@@ -66,7 +66,6 @@ async function createPageEditor(
     components,
     context,
   );
-  treeElement.setAttribute("x-label", "parent");
   parent.appendChild(treeElement);
 
   // @ts-ignore Improve type
@@ -238,14 +237,11 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     });
   });
 
-  // TODO: If a value of x-each changes, trigger evaluation on it
+  // @ts-ignore Improve type
+  setState({ component: pageItem }, { parent: "selected" });
 
   // @ts-ignore Improve type
-  // setState({ component: pageItem }, { parent: "selected" });
-
-  // TODO: Why does this get stuck?
-  // @ts-ignore Improve type
-  // setState({ page: nextPage }, { parent: "editor" });
+  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function elementChanged(
