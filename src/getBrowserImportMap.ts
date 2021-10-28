@@ -1,4 +1,3 @@
-import { zipToObject } from "./utils.ts";
 import type { ImportMap, ProjectMeta } from "../types.ts";
 
 function getBrowserImportMap(
@@ -10,7 +9,7 @@ function getBrowserImportMap(
   }
 
   return {
-    imports: zipToObject(
+    imports: Object.fromEntries(
       Object.entries(importMap.imports).map(([k, v]) =>
         browserDependencies.includes(k) ? [k, v] : [false, v]
       ),

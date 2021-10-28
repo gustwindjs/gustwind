@@ -1,6 +1,5 @@
 import { basename, extname } from "path";
 import { dir, getJson } from "./fsUtils.ts";
-import { zipToObject } from "./utils.ts";
 import type { Component } from "../types.ts";
 
 async function getComponents(directoryPath: string) {
@@ -11,7 +10,7 @@ async function getComponents(directoryPath: string) {
   );
 
   // @ts-ignore How to type this
-  return zipToObject<Component>(o);
+  return Object.fromEntries<Component>(o);
 }
 
 async function getComponent(path: string): Promise<[string?, Component?]> {

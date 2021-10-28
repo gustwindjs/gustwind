@@ -1,5 +1,5 @@
 import { dir, getJsonSync } from "./fsUtils.ts";
-import { get, zipToObject } from "./utils.ts";
+import { get } from "./utils.ts";
 import type { DataContext, Meta, Page, SiteMeta } from "../types.ts";
 import transform from "./transform.ts";
 
@@ -43,7 +43,7 @@ async function generateRoutes(
       ).then((
         dataSources,
       ) => {
-        const pageData = zipToObject<{ dataSource: { id: string } }>(
+        const pageData = Object.fromEntries<{ dataSource: { id: string } }>(
           // @ts-ignore Figure out the type
           dataSources,
         );
