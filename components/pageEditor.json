@@ -84,6 +84,7 @@
                   "children": [
                     {
                       "element": "li",
+                      "class": "my-2",
                       "attributes": {
                         "onclick": "elementClicked(this, this.state.value)",
                         "x-class": "state.level > 0 && 'ml-2'"
