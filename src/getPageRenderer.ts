@@ -89,7 +89,7 @@ async function htmlTemplate(
     <meta charset="UTF-8"
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="pagepath" content="${pagePath}" />
-    <script type="text/javascript" src="https://unpkg.com/sidewind@5.3.0/dist/sidewind.umd.production.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/sidewind@5.4.1/dist/sidewind.umd.production.min.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
     <script type="importmap">${JSON.stringify(importMap)}</script>
