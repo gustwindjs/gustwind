@@ -252,8 +252,9 @@ function elementChanged(
 
     p.element = value;
 
+    // TODO: Refactor this logic - there has to be a better way to retain a reference
     // @ts-ignore Improve type
-    setState({ component: p }, { parent: "selected" });
+    // setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -274,8 +275,38 @@ function contentChanged(
 
     p.children = value;
 
+    // TODO: Refactor this logic - there has to be a better way to retain a reference
     // @ts-ignore Improve type
-    setState({ component: p }, { parent: "selected" });
+    // setState({ component: p }, { parent: "selected" });
+  });
+
+  // @ts-ignore Improve type
+  setState({ page: nextPage }, { parent: "editor" });
+}
+
+function classChanged(
+  element: HTMLElement,
+  value: string,
+  setState: setState<unknown>,
+) {
+  // @ts-ignore This comes from sidewind
+  const { editor: { page }, selected: { component } } = getState(element);
+
+  const nextPage = produceNextPage(page, component, (p, element) => {
+    if (element) {
+      element.setAttribute("class", value);
+
+      // TODO: Is there a nicer way to retain selection?
+      element.classList.add("border");
+      element.classList.add("border-red-800");
+    }
+
+    p.class = value;
+
+    // TODO: Find a better way to deal with selections -
+    // maybe track just id and resolve later?
+    // @ts-ignore Improve type
+    // setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -304,45 +335,6 @@ function produceNextPage(
       }
     });
   });
-}
-
-function classChanged(
-  element: HTMLElement,
-  value: string,
-  setState: setState<unknown>,
-) {
-  // @ts-ignore This comes from sidewind
-  const { editor: { page }, selected: { component } } = getState(element);
-
-  const nextPage = produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p, i) => {
-      if (p._id === component._id) {
-        const element = findElement(
-          document.querySelector("main"),
-          i,
-          page,
-        ) as HTMLElement;
-
-        if (element) {
-          element.setAttribute("class", value);
-
-          // TODO: Is there a nicer way to retain selection?
-          element.classList.add("border");
-          element.classList.add("border-red-800");
-        }
-
-        p.class = value;
-
-        // TODO: Find a better way to deal with selections -
-        // maybe track just id and resolve later?
-        // @ts-ignore Improve type
-        // setState({ component: p }, { parent: "selected" });
-      }
-    });
-  });
-
-  // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
 }
 
 function findElement(
