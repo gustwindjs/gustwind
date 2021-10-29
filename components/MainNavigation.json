@@ -15,7 +15,7 @@
           }
         },
         {
-          "element": "navigation"
+          "element": "Navigation"
         }
       ]
     },
@@ -24,14 +24,14 @@
       "class": "flex gap-4 ml-auto sm:ml-0",
       "children": [
         {
-          "element": "link",
+          "element": "Link",
           "children": "Blog",
           "attributes": {
             "href": "/blog/"
           }
         },
         {
-          "element": "link",
+          "element": "Link",
           "children": "GitHub",
           "attributes": {
             "href": "https://github.com/survivejs/gustwind"

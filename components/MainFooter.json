@@ -38,7 +38,7 @@
                   "class": "flex flex-col gap-2 font-thin",
                   "children": [
                     {
-                      "element": "navigation"
+                      "element": "Navigation"
                     }
                   ]
                 }

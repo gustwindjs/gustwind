@@ -13,7 +13,7 @@
   ],
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "MainNavigation"
     },
     {
       "element": "header",
@@ -60,10 +60,10 @@
       "__children": "content"
     },
     {
-      "element": "mainFooter"
+      "element": "MainFooter"
     },
     {
-      "element": "loadScript",
+      "element": "LoadScript",
       "__bind": {
         "source": "/toggleEditor.js"
       }

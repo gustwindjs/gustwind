@@ -14,7 +14,7 @@ To give you a simple example of a component, consider the following example for
 a link that is able to bold itself if it's matching to the path of the current
 page:
 
-**components/link.json**
+**components/Link.json**
 
 ```json
 {
@@ -34,19 +34,19 @@ would bold the the link to signify it's the current page.
 
 A navigation component built on top of `link` could look like this:
 
-**components/navigation.json**
+**components/Navigation.json**
 
 ```json
 [
   {
-    "element": "link",
+    "element": "Link",
     "children": "Blog",
     "attributes": {
       "href": "/blog/"
     }
   },
   {
-    "element": "link",
+    "element": "Link",
     "children": "About",
     "attributes": {
       "href": "/about/"
@@ -57,7 +57,7 @@ A navigation component built on top of `link` could look like this:
 
 To build a subscription widget, you would do something along this:
 
-**components/subscribe.json**
+**components/Subscribe.json**
 
 ```json
 {
@@ -70,10 +70,10 @@ To build a subscription widget, you would do something along this:
 ```
 
 The same idea of binding works for `children`. You can bind to the children of
-an element using `__children`. I.e. `"__children": "link"` would bind the value
+an element using `__children`. I.e. `"__children": "Link"` would bind the value
 of the `link` property to `children`. Consider the example below:
 
-**components/libraries.json**
+**components/Libraries.json**
 
 ```json
 {
@@ -85,7 +85,7 @@ of the `link` property to `children`. Consider the example below:
       "class": "my-4",
       "children": [
         {
-          "element": "link",
+          "element": "Link",
           "class": "w-full bg-gray-200 text-gray-800 p-4",
           "__children": "title",
           "attributes": {
@@ -103,7 +103,7 @@ component above, you could do the following:
 
 ```json
 {
-  "element": "allLibraries",
+  "element": "AllLibraries",
   "__bind": "libraries"
 }
 ```
@@ -113,7 +113,7 @@ data to components:
 
 ```json
 {
-  "element": "githubCorner",
+  "element": "GitHubCorner",
   "__bind": {
     "url": "https://github.com/survivejs/gustwind"
   }
@@ -228,7 +228,7 @@ handled as follows:
   "matchBy": { "dataSource": "blogIndex", "property": "slug" },
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "MainNavigation"
     },
     {
       "element": "main",
@@ -247,7 +247,7 @@ handled as follows:
       ]
     },
     {
-      "element": "mainFooter"
+      "element": "MainFooter"
     }
   ]
 }
@@ -292,7 +292,7 @@ We can apply the same idea for generating a reversed blog index:
   }],
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "MainNavigation"
     },
     {
       "element": "main",
@@ -309,7 +309,7 @@ We can apply the same idea for generating a reversed blog index:
       ]
     },
     {
-      "element": "mainFooter"
+      "element": "MainFooter"
     }
   ]
 }

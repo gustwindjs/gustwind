@@ -12,7 +12,7 @@
   ],
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "MainNavigation"
     },
     {
       "element": "div",
@@ -28,7 +28,7 @@
               "class": "inline",
               "children": [
                 {
-                  "element": "link",
+                  "element": "Link",
                   "__children": "data.title",
                   "attributes": {
                     "__href": "data.slug"
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "element": "mainFooter"
+      "element": "MainFooter"
     }
   ]
 }

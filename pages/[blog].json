@@ -13,7 +13,7 @@
   "matchBy": { "dataSource": "blogPosts", "property": "data.slug" },
   "page": [
     {
-      "element": "mainNavigation"
+      "element": "MainNavigation"
     },
     {
       "element": "div",
@@ -31,7 +31,7 @@
       ]
     },
     {
-      "element": "mainFooter"
+      "element": "MainFooter"
     }
   ]
 }
