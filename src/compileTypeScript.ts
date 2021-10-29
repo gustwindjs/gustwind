@@ -20,7 +20,12 @@ async function compileTypeScript(
     target: ["esnext"],
     plugins: [importMapPlugin.plugin()],
     write: false,
-  });
+  }).catch((err) => console.error(err));
+
+  if (!result) {
+    return "";
+  }
+
   const output = result.outputFiles;
 
   if (output.length < 1) {
