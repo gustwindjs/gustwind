@@ -217,27 +217,17 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     hoveredElements.delete(element);
   }
 
-  const nextPage = produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p, i) => {
-      if (p._id === pageItem._id) {
-        const element = findElement(
-          document.querySelector("main"),
-          i,
-          page,
-        ) as HTMLElement;
+  const nextPage = produceNextPage(page, pageItem, (p, element) => {
+    if (element) {
+      element.classList.add("border");
+      element.classList.add("border-red-800");
 
-        if (element) {
-          element.classList.add("border");
-          element.classList.add("border-red-800");
+      hoveredElements.add(element);
+    }
 
-          hoveredElements.add(element);
-        }
-
-        p._selected = true;
-      } else {
-        p._selected = false;
-      }
-    });
+    p._selected = true;
+  }, (p) => {
+    p._selected = false;
   });
 
   // @ts-ignore Improve type
@@ -254,27 +244,16 @@ function elementChanged(
 ) {
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
+  const nextPage = produceNextPage(page, component, (p, element) => {
+    if (element) {
+      // TODO: Update element type
+      // https://stackoverflow.com/a/59147202/228885
+    }
 
-  const nextPage = produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p, i) => {
-      if (p._id === component._id) {
-        const element = findElement(
-          document.querySelector("main"),
-          i,
-          page,
-        ) as HTMLElement;
+    p.element = value;
 
-        if (element) {
-          // TODO: Update element type
-          // https://stackoverflow.com/a/59147202/228885
-        }
-
-        p.element = value;
-
-        // @ts-ignore Improve type
-        setState({ component: p }, { parent: "selected" });
-      }
-    });
+    // @ts-ignore Improve type
+    setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -288,30 +267,43 @@ function contentChanged(
 ) {
   // @ts-ignore This comes from sidewind
   const { editor: { page }, selected: { component } } = getState(element);
+  const nextPage = produceNextPage(page, component, (p, element) => {
+    if (element) {
+      element.innerHTML = value;
+    }
 
-  const nextPage = produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p, i) => {
-      if (p._id === component._id) {
-        const element = findElement(
-          document.querySelector("main"),
-          i,
-          page,
-        ) as HTMLElement;
+    p.children = value;
 
-        if (element) {
-          element.innerHTML = value;
-        }
-
-        p.children = value;
-
-        // @ts-ignore Improve type
-        setState({ component: p }, { parent: "selected" });
-      }
-    });
+    // @ts-ignore Improve type
+    setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
   setState({ page: nextPage }, { parent: "editor" });
+}
+
+function produceNextPage(
+  page: Page["page"],
+  component: Component,
+  matched: (p: Component, element: HTMLElement) => void,
+  notMatched: (p: Component) => void = () => {},
+) {
+  return produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p, i) => {
+      if (p._id === component._id) {
+        matched(
+          p,
+          findElement(
+            document.querySelector("main"),
+            i,
+            page,
+          ) as HTMLElement,
+        );
+      } else {
+        notMatched(p);
+      }
+    });
+  });
 }
 
 function classChanged(
