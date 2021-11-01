@@ -47,7 +47,7 @@
                       "attributes": {
                         "type": "text",
                         "x": "selectedComponent ? selectedComponent.element : 'No selected element'",
-                        "oninput": "elementChanged(this, this.value, setState)"
+                        "oninput": "elementChanged(this, this.value)"
                       }
                     }
                   ]
@@ -69,7 +69,7 @@
                       "attributes": {
                         "type": "text",
                         "x": "typeof selectedComponent.children === 'string' ? selectedComponent.children : ''",
-                        "oninput": "contentChanged(this, this.value, setState)"
+                        "oninput": "contentChanged(this, this.value)"
                       }
                     }
                   ]
@@ -88,7 +88,7 @@
                       "attributes": {
                         "type": "text",
                         "x": "selectedComponent.class || ''",
-                        "oninput": "classChanged(this, this.value, setState, this)"
+                        "oninput": "classChanged(this, this.value)"
                       }
                     }
                   ]

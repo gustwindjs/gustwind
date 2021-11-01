@@ -11,8 +11,23 @@ console.log("Hello from the page editor");
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
+type StateName = "editor" | "selected";
+
+// TODO: Push these types to sidewind
+declare global {
+  function getState<T>(element: HTMLElement): T;
+  function setState<T>(
+    state: T,
+    { element, parent }: { element: HTMLElement; parent: StateName },
+  ): void;
+}
+
 type EditorState = Page;
 type SelectedState = { componentId?: string };
+type PageState = {
+  editor: EditorState;
+  selected: SelectedState;
+};
 
 function recreateEditor() {
   deleteEditor();
@@ -68,7 +83,6 @@ async function createPageEditor(
   );
   parent.appendChild(treeElement);
 
-  // @ts-ignore Improve type
   setState({
     ...pageDefinition,
     page: initializePage(pageDefinition.page),
@@ -164,15 +178,11 @@ async function createComponentEditor(
   // lg-inline
 }
 
-type setState<V> = (fn: (state: V) => V) => void;
-
 function metaChanged(
   element: HTMLElement,
   value: string,
-  setState: setState<[string, string]>,
 ) {
-  // @ts-ignore This comes from sidewind
-  const { editor: { meta } } = getState(element);
+  const { editor: { meta } } = getState<PageState>(element);
   const field = element.dataset.field as string;
 
   if (field === "title") {
@@ -195,20 +205,21 @@ function metaChanged(
     }
   }
 
-  // @ts-ignore Improve type
-  setState({ meta: { ...meta, [field]: value } }, { parent: "editor" });
+  setState({ meta: { ...meta, [field]: value } }, {
+    element,
+    parent: "editor",
+  });
 }
 
 const hoveredElements = new Set<HTMLElement>();
 
-function elementClicked(element: HTMLElement, pageItem: Component) {
+function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
   // Stop bubbling as we're within a recursive HTML structure
   event?.stopPropagation();
 
-  // @ts-ignore This comes from sidewind
-  const { editor: { page } } = getState(element);
+  const { editor: { page } } = getState<PageState>(element);
 
-  console.log("clicked element", element, pageItem);
+  console.log("clicked element", element, componentId);
 
   for (const element of hoveredElements.values()) {
     element.classList.remove("border");
@@ -217,7 +228,7 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     hoveredElements.delete(element);
   }
 
-  const nextPage = produceNextPage(page, pageItem, (p, element) => {
+  const nextPage = produceNextPage(page, componentId, (_p, element) => {
     if (element) {
       element.classList.add("border");
       element.classList.add("border-red-800");
@@ -226,21 +237,18 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
     }
   });
 
-  // @ts-ignore Improve type
-  setState({ componentId: pageItem._id }, { parent: "selected" });
-
-  // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
+  setState({ componentId }, { element, parent: "selected" });
+  setState({ page: nextPage }, { element, parent: "editor" });
 }
 
 function elementChanged(
   element: HTMLElement,
   value: string,
-  setState: setState<unknown>,
 ) {
-  // @ts-ignore This comes from sidewind
-  const { editor: { page }, selected: { component } } = getState(element);
-  const nextPage = produceNextPage(page, component, (p, element) => {
+  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+    element,
+  );
+  const nextPage = produceNextPage(page, componentId, (p, element) => {
     if (element) {
       // TODO: Update element type
       // https://stackoverflow.com/a/59147202/228885
@@ -249,18 +257,17 @@ function elementChanged(
     p.element = value;
   });
 
-  // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
+  setState({ page: nextPage }, { element, parent: "editor" });
 }
 
 function contentChanged(
   element: HTMLElement,
   value: string,
-  setState: setState<unknown>,
 ) {
-  // @ts-ignore This comes from sidewind
-  const { editor: { page }, selected: { component } } = getState(element);
-  const nextPage = produceNextPage(page, component, (p, element) => {
+  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+    element,
+  );
+  const nextPage = produceNextPage(page, componentId, (p, element) => {
     if (element) {
       element.innerHTML = value;
     }
@@ -268,19 +275,18 @@ function contentChanged(
     p.children = value;
   });
 
-  // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
+  setState({ page: nextPage }, { element, parent: "editor" });
 }
 
 function classChanged(
   element: HTMLElement,
   value: string,
-  setState: setState<unknown>,
 ) {
-  // @ts-ignore This comes from sidewind
-  const { editor: { page }, selected: { component } } = getState(element);
+  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+    element,
+  );
 
-  const nextPage = produceNextPage(page, component, (p, element) => {
+  const nextPage = produceNextPage(page, componentId, (p, element) => {
     if (element) {
       element.setAttribute("class", value);
 
@@ -292,18 +298,17 @@ function classChanged(
     p.class = value;
   });
 
-  // @ts-ignore Improve type
-  setState({ page: nextPage }, { parent: "editor" });
+  setState({ page: nextPage }, { element, parent: "editor" });
 }
 
 function produceNextPage(
   page: Page["page"],
-  component: Component,
+  componentId: Component["_id"],
   matched: (p: Component, element: HTMLElement) => void,
 ) {
   return produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
-      if (p._id === component._id) {
+      if (p._id === componentId) {
         matched(
           p,
           findElement(

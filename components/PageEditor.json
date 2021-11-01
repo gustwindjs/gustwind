@@ -30,7 +30,7 @@
               "class": "flex flex-col gap-2",
               "__bind": {
                 "dataSource": "Object.entries(editor.meta)",
-                "oninput": "metaChanged(this, this.value, setState)"
+                "oninput": "metaChanged(this, this.value)"
               }
             }
           ]
@@ -86,7 +86,7 @@
                       "element": "li",
                       "class": "my-2",
                       "attributes": {
-                        "onclick": "elementClicked(this, this.state.value)",
+                        "onclick": "elementClicked(this, this.state.value._id)",
                         "x-class": "state.level > 0 && 'ml-2'"
                       },
                       "children": [
