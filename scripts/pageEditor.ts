@@ -285,9 +285,25 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
 
   const { editor: { page } } = getState<PageState>(element);
 
+  const focusOutListener = (e: Event) => {
+    const inputElement = (e.target as HTMLElement);
+
+    if (!inputElement) {
+      console.warn("inputListener - No element found");
+
+      return;
+    }
+
+    e.preventDefault();
+
+    contentChanged(element, inputElement.textContent as string);
+  };
+
   for (const element of hoveredElements.values()) {
     element.classList.remove("border");
     element.classList.remove("border-red-800");
+    element.removeAttribute("contenteditable");
+    element.removeEventListener("focusout", focusOutListener);
 
     hoveredElements.delete(element);
   }
@@ -302,6 +318,8 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
 
       matchedElement.classList.add("border");
       matchedElement.classList.add("border-red-800");
+      matchedElement.setAttribute("contenteditable", "true");
+      matchedElement.addEventListener("focusout", focusOutListener);
 
       hoveredElements.add(matchedElement);
     }
