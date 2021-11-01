@@ -18,6 +18,7 @@ async function compileTypeScript(
     bundle: true,
     format: "esm",
     target: ["esnext"],
+    treeShaking: true,
     plugins: [importMapPlugin.plugin()],
     write: false,
   }).catch((err) => console.error(err));
