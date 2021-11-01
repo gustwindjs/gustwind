@@ -294,10 +294,16 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
 
   traversePage(page, (p, i) => {
     if (p._id === componentId) {
-      element.classList.add("border");
-      element.classList.add("border-red-800");
+      const matchedElement = findElement(
+        document.querySelector("main"),
+        i,
+        page,
+      ) as HTMLElement;
 
-      hoveredElements.add(element);
+      matchedElement.classList.add("border");
+      matchedElement.classList.add("border-red-800");
+
+      hoveredElements.add(matchedElement);
     }
   });
 
