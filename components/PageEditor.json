@@ -14,12 +14,6 @@
       ]
     },
     {
-      "element": "div",
-      "attributes": {
-        "x": "'selected id: ' + JSON.stringify(selected)"
-      }
-    },
-    {
       "element": "section",
       "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
       "children": [
@@ -62,7 +56,7 @@
                       "element": "DynamicList",
                       "class": "flex flex-col gap-2",
                       "__bind": {
-                        "dataSource": "Object.entries(state.value)"
+                        "dataSource": "state.value ? Object.entries(state.value) : []"
                       }
                     }
                   ]

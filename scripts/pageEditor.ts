@@ -32,6 +32,8 @@ type PageState = {
 };
 
 async function createEditor() {
+  console.log("create editor");
+
   const [components, context, pageDefinition]: [Components, DataContext, Page] =
     await Promise.all([
       fetch("/components.json").then((res) => res.json()),
@@ -54,8 +56,6 @@ async function createEditor() {
 
   const componentEditor = await createComponentEditor(components, context);
   selectionContainer.append(componentEditor);
-
-  await createWebSocketConnection();
 
   // TODO: Re-enable the side effect to update FS
   //const updateElement = document.createElement("div");
@@ -97,6 +97,7 @@ function initializePage(page: Page["page"]) {
   });
 }
 
+// TODO: Push the web socket bits to a separate module that's handled separately
 // TODO: Eliminate global
 let socket: WebSocket;
 
@@ -284,8 +285,6 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
 
   const { editor: { page } } = getState<PageState>(element);
 
-  console.log("clicked element", element, componentId);
-
   for (const element of hoveredElements.values()) {
     element.classList.remove("border");
     element.classList.remove("border-red-800");
@@ -293,8 +292,8 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
     hoveredElements.delete(element);
   }
 
-  const nextPage = produceNextPage(page, componentId, (_p, element) => {
-    if (element) {
+  traversePage(page, (p, i) => {
+    if (p._id === componentId) {
       element.classList.add("border");
       element.classList.add("border-red-800");
 
@@ -302,10 +301,7 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
     }
   });
 
-  console.log("selecting", componentId);
-
   setState({ componentId }, { element, parent: "selected" });
-  setState({ page: nextPage }, { element, parent: "editor" });
 }
 
 function elementChanged(
@@ -443,8 +439,6 @@ function getSelectedComponent(
   selectedState: SelectedState,
 ) {
   let match = {};
-  console.log("state", editorState, selectedState);
-
   const { componentId } = selectedState;
 
   traversePage(editorState.page, (p) => {
@@ -453,14 +447,13 @@ function getSelectedComponent(
     }
   });
 
-  console.log("found match", match);
-
   return match;
 }
 
 declare global {
   interface Window {
     createEditor: typeof createEditor;
+    createWebSocketConnection: typeof createWebSocketConnection;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
@@ -472,6 +465,7 @@ declare global {
 }
 
 window.createEditor = createEditor;
+window.createWebSocketConnection = createWebSocketConnection;
 window.metaChanged = metaChanged;
 window.classChanged = classChanged;
 window.elementClicked = elementClicked;

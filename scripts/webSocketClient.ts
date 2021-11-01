@@ -35,6 +35,8 @@ function createWebSocket(pagePath: string) {
       container.innerHTML = payload.bodyMarkup;
 
       updateMeta(payload.meta);
+
+      window.createEditor();
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 
@@ -57,13 +59,13 @@ function createWebSocket(pagePath: string) {
 
         const script = document.createElement("script");
 
-        window.createEditor();
-
         script.setAttribute("src", name + "?cache=" + new Date().getTime());
         script.setAttribute("type", "module");
         script.dataset.script = name;
 
         document.body.appendChild(script);
+
+        window.createEditor();
       }
     } else {
       console.log("WebSocket", "unknown event", event);

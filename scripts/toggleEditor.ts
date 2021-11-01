@@ -15,20 +15,14 @@ function init() {
     "fixed right-4 bottom-4 whitespace-nowrap text-lg",
   );
   toggleButton.innerText = "🐳💨";
-  toggleButton.onclick = toggleEditor;
+  toggleButton.onclick = () => {
+    importScript("/pageEditor.js").then(() => {
+      window.createEditor();
+      window.createWebSocketConnection();
+    });
+  };
 
   document.body.appendChild(toggleButton);
-}
-
-async function toggleEditor() {
-  try {
-    await importScript("/pageEditor.js");
-
-    // @ts-ignore TODO: Share window type better
-    window.createEditor();
-  } catch (err) {
-    console.error(err);
-  }
 }
 
 init();
