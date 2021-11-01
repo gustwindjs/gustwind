@@ -57,7 +57,7 @@ function createWebSocket(pagePath: string) {
 
         const script = document.createElement("script");
 
-        window.recreateEditor();
+        window.createEditor();
 
         script.setAttribute("src", name + "?cache=" + new Date().getTime());
         script.setAttribute("type", "module");
