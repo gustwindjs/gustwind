@@ -375,16 +375,22 @@ function getSelectedComponent(
   editorState: EditorState,
   selectedState: SelectedState,
 ) {
+  let match = {};
   console.log("state", editorState, selectedState);
 
-  // @ts-ignore This comes from sidewind
-  // const { editor: { page }, selected: { component } } = getState(element);
+  const { componentId } = selectedState;
 
-  // TODO: Find matching component based on componentId and return it
-  return {};
+  traversePage(editorState.page, (p) => {
+    if (p._id === componentId) {
+      match = p;
+    }
+  });
+
+  console.log("found match", match);
+
+  return match;
 }
 
-// TODO: Figure out what the error means
 declare global {
   interface Window {
     createEditor: typeof createEditor;
