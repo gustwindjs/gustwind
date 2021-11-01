@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 import { draggable } from "../src/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../src/traversePage.ts";
+import { importScript } from "../src/importScript.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
@@ -29,25 +30,16 @@ type PageState = {
   selected: SelectedState;
 };
 
-function recreateEditor() {
-  deleteEditor();
-
-  const editorsElement = document.getElementById("editors");
-
-  if (editorsElement) {
-    createEditor(editorsElement);
-  } else {
-    console.error("Failed to find editors element", editorsElement);
-  }
-}
-
-async function createEditor(parent: HTMLElement) {
+async function createEditor() {
   const [components, context, pageDefinition]: [Components, DataContext, Page] =
     await Promise.all([
       fetch("/components.json").then((res) => res.json()),
       fetch("/context.json").then((res) => res.json()),
       fetch("/definition.json").then((res) => res.json()),
     ]);
+
+  const editorContainer = createEditorContainer();
+  document.body.appendChild(editorContainer);
 
   const selectionContainer = document.createElement("div");
   selectionContainer.setAttribute("x-label", "selected");
@@ -56,14 +48,88 @@ async function createEditor(parent: HTMLElement) {
   createPageEditor(selectionContainer, components, context, pageDefinition);
   createComponentEditor(selectionContainer, components, context);
 
-  parent.appendChild(selectionContainer);
+  await createWebSocketConnection();
+
+  // TODO: Re-enable side effect to update FS
+  //const updateElement = document.createElement("div");
+  //updateElement.setAttribute("x", "updateFileSystem(state)");
+  //editorsElement.appendChild(updateElement);
+
+  editorContainer.appendChild(selectionContainer);
 }
 
-function deleteEditor() {
-  console.log("Deleting editor");
+const editorsId = "editors";
 
-  document.getElementById(documentTreeElementId)?.remove();
-  document.getElementById(controlsElementId)?.remove();
+function createEditorContainer() {
+  let editorsElement = document.getElementById(editorsId);
+
+  editorsElement?.remove();
+
+  editorsElement = document.createElement("div");
+  editorsElement.id = editorsId;
+  editorsElement.style.visibility = "visible";
+  editorsElement.setAttribute(
+    "x-state",
+    "{ meta: [], dataSources: [], page: [], matchBy: {} }",
+  );
+  editorsElement.setAttribute("x-label", "editor");
+
+  return editorsElement;
+}
+
+// TODO: Eliminate global
+let socket: WebSocket;
+
+async function createWebSocketConnection() {
+  if (location.hostname === "localhost") {
+    console.log("Loading web socket client");
+
+    await importScript("./webSocketClient.js");
+
+    // @ts-ignore Fix the type
+    socket = window.createWebSocket(getPagePath());
+  }
+}
+
+function updateFileSystem(state: Page) {
+  const nextPage = produce(state.page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p) => {
+      // TODO: Generalize to erase anything that begins with a single _
+      delete p._id;
+
+      if (p.class === "") {
+        delete p.class;
+      }
+    });
+  });
+
+  const payload = {
+    path: getPagePath(),
+    data: { ...state, page: nextPage },
+  };
+
+  // TODO: Don't send if payload didn't change
+  socket.send(JSON.stringify({ type: "update", payload }));
+}
+
+function getPagePath() {
+  const pathElement = document.querySelector('meta[name="pagepath"]');
+
+  if (!pathElement) {
+    console.error("path element was not found!");
+
+    return;
+  }
+
+  const pagePath = pathElement.getAttribute("content");
+
+  if (!pagePath) {
+    console.log("pagePath was not foundin path element");
+
+    return;
+  }
+
+  return pagePath;
 }
 
 async function createPageEditor(
@@ -394,21 +460,21 @@ function getSelectedComponent(
 declare global {
   interface Window {
     createEditor: typeof createEditor;
-    recreateEditor: typeof recreateEditor;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
     elementChanged: typeof elementChanged;
     contentChanged: typeof contentChanged;
     getSelectedComponent: typeof getSelectedComponent;
+    updateFileSystem: typeof updateFileSystem;
   }
 }
 
 window.createEditor = createEditor;
-window.recreateEditor = recreateEditor;
 window.metaChanged = metaChanged;
 window.classChanged = classChanged;
 window.elementClicked = elementClicked;
 window.elementChanged = elementChanged;
 window.contentChanged = contentChanged;
 window.getSelectedComponent = getSelectedComponent;
+window.updateFileSystem = updateFileSystem;
