@@ -10,6 +10,7 @@
     "highlight-ts": "https://unpkg.com/highlight.js@11.2.0/es/languages/typescript",
     "immer": "https://cdn.skypack.dev/immer@9.0.6?min",
     "oak": "https://deno.land/x/oak@v9.0.1/mod.ts",
+    "nanoid": "https://cdn.skypack.dev/nanoid@3.1.30?min",
     "markdown": "https://esm.sh/marked@3.0.7",
     "path": "https://deno.land/std@0.107.0/path/mod.ts",
     "sidewind": "https://unpkg.com/sidewind@5.4.5/dist/sidewind.umd.production.min.js",
@@ -19,7 +20,6 @@
     "twind-sheets": "https://cdn.skypack.dev/twind@0.16.16/sheets?min",
     "twind-shim": "https://cdn.skypack.dev/twind@0.16.16/shim?min",
     "twind-typography": "https://cdn.skypack.dev/@twind/typography@0.0.2?min",
-    "uuid": "https://cdn.skypack.dev/uuid@8.3.2?min",
     "websockets": "https://deno.land/x/websocket@v0.1.3/mod.ts",
     "yaml": "https://esm.sh/yaml@1.10.2"
   }

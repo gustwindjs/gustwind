@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import produce from "immer";
-import { v4 as uuid } from "uuid";
+import { nanoid } from "nanoid";
 import { draggable } from "../src/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../src/traversePage.ts";
@@ -92,7 +92,7 @@ function createEditorContainer(pageDefinition: Page) {
 function initializePage(page: Page["page"]) {
   return produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
-      p._id = uuid();
+      p._id = nanoid();
     });
   });
 }
