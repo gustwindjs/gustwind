@@ -470,6 +470,19 @@ window.metaChanged = metaChanged;
 window.classChanged = classChanged;
 window.elementClicked = elementClicked;
 window.elementChanged = elementChanged;
-window.contentChanged = contentChanged;
+window.contentChanged = debounce<typeof contentChanged>(contentChanged);
 window.getSelectedComponent = getSelectedComponent;
 window.updateFileSystem = updateFileSystem;
+
+// https://www.freecodecamp.org/news/javascript-debounce-example/
+function debounce<F>(func: F, timeout = 100) {
+  let timer: ReturnType<typeof setTimeout>;
+
+  return (...args: unknown[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      // @ts-ignore How to type this
+      func.apply(this, args);
+    }, timeout);
+  };
+}
