@@ -38,29 +38,38 @@ async function createEditor() {
       fetch("/definition.json").then((res) => res.json()),
     ]);
 
-  const editorContainer = createEditorContainer();
-  document.body.appendChild(editorContainer);
+  const editorContainer = createEditorContainer(pageDefinition);
 
   const selectionContainer = document.createElement("div");
   selectionContainer.setAttribute("x-label", "selected");
   selectionContainer.setAttribute("x-state", "{ componentId: undefined }");
+  editorContainer.appendChild(selectionContainer);
 
-  createPageEditor(selectionContainer, components, context, pageDefinition);
-  createComponentEditor(selectionContainer, components, context);
+  const pageEditor = await createPageEditor(
+    components,
+    context,
+  );
+  selectionContainer.append(pageEditor);
+
+  const componentEditor = await createComponentEditor(components, context);
+  selectionContainer.append(componentEditor);
 
   await createWebSocketConnection();
 
-  // TODO: Re-enable side effect to update FS
+  // TODO: Re-enable the side effect to update FS
   //const updateElement = document.createElement("div");
   //updateElement.setAttribute("x", "updateFileSystem(state)");
   //editorsElement.appendChild(updateElement);
 
-  editorContainer.appendChild(selectionContainer);
+  document.body.appendChild(editorContainer);
+
+  // @ts-ignore This is from sidewind
+  window.evaluateAllDirectives();
 }
 
 const editorsId = "editors";
 
-function createEditorContainer() {
+function createEditorContainer(pageDefinition: Page) {
   let editorsElement = document.getElementById(editorsId);
 
   editorsElement?.remove();
@@ -70,11 +79,22 @@ function createEditorContainer() {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    "{ meta: [], dataSources: [], page: [], matchBy: {} }",
+    JSON.stringify({
+      ...pageDefinition,
+      page: initializePage(pageDefinition.page),
+    }),
   );
   editorsElement.setAttribute("x-label", "editor");
 
   return editorsElement;
+}
+
+function initializePage(page: Page["page"]) {
+  return produce(page, (draftPage: Page["page"]) => {
+    traversePage(draftPage, (p) => {
+      p._id = uuid();
+    });
+  });
 }
 
 // TODO: Eliminate global
@@ -124,7 +144,7 @@ function getPagePath() {
   const pagePath = pathElement.getAttribute("content");
 
   if (!pagePath) {
-    console.log("pagePath was not foundin path element");
+    console.log("pagePath was not found in path element");
 
     return;
   }
@@ -133,10 +153,8 @@ function getPagePath() {
 }
 
 async function createPageEditor(
-  parent: HTMLElement,
   components: Components,
   context: DataContext,
-  pageDefinition: Page,
 ) {
   console.log("Creating page editor");
 
@@ -147,34 +165,15 @@ async function createPageEditor(
     components,
     context,
   );
-  parent.appendChild(treeElement);
-
-  setState({
-    ...pageDefinition,
-    page: initializePage(pageDefinition.page),
-  }, {
-    element: treeElement,
-    parent: "editor",
-  });
-
-  // @ts-ignore This is from sidewind
-  window.evaluateAllDirectives();
 
   const aside = treeElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
   draggable({ element: aside, handle });
-}
 
-function initializePage(page: Page["page"]) {
-  return produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p) => {
-      p._id = uuid();
-    });
-  });
+  return treeElement;
 }
 
 async function createComponentEditor(
-  parent: HTMLElement,
   components: Components,
   context: DataContext,
 ) {
@@ -186,11 +185,11 @@ async function createComponentEditor(
     context,
   );
 
-  parent.appendChild(controlsElement);
-
   const aside = controlsElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
   draggable({ element: aside, handle, xPosition: "right" });
+
+  return controlsElement;
 
   // TODO: Gradient syntax
   // bg-gradient-to-br
