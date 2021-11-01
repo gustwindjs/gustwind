@@ -302,6 +302,8 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
     }
   });
 
+  console.log("selecting", componentId);
+
   setState({ componentId }, { element, parent: "selected" });
   setState({ page: nextPage }, { element, parent: "editor" });
 }

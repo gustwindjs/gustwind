@@ -14,6 +14,12 @@
       ]
     },
     {
+      "element": "div",
+      "attributes": {
+        "x": "'selected id: ' + JSON.stringify(selected)"
+      }
+    },
+    {
       "element": "section",
       "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
       "children": [
