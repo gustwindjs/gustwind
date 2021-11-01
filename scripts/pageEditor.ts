@@ -21,6 +21,7 @@ declare global {
     state: T,
     { element, parent }: { element: HTMLElement; parent: StateName },
   ): void;
+  function evaluateAllDirectives(): void;
 }
 
 type EditorState = Page;
@@ -63,8 +64,7 @@ async function createEditor() {
 
   document.body.appendChild(editorContainer);
 
-  // @ts-ignore This is from sidewind
-  window.evaluateAllDirectives();
+  evaluateAllDirectives();
 }
 
 const editorsId = "editors";
