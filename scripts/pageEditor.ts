@@ -11,6 +11,9 @@ console.log("Hello from the page editor");
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
+type EditorState = Page;
+type SelectedState = { componentId?: string };
+
 function recreateEditor() {
   deleteEditor();
 
@@ -32,11 +35,8 @@ async function createEditor(parent: HTMLElement) {
     ]);
 
   const selectionContainer = document.createElement("div");
-  selectionContainer.setAttribute(
-    "x-state",
-    "{ component: undefined }",
-  );
   selectionContainer.setAttribute("x-label", "selected");
+  selectionContainer.setAttribute("x-state", "{ componentId: undefined }");
 
   createPageEditor(selectionContainer, components, context, pageDefinition);
   createComponentEditor(selectionContainer, components, context);
@@ -224,14 +224,10 @@ function elementClicked(element: HTMLElement, pageItem: Component) {
 
       hoveredElements.add(element);
     }
-
-    p._selected = true;
-  }, (p) => {
-    p._selected = false;
   });
 
   // @ts-ignore Improve type
-  setState({ component: pageItem }, { parent: "selected" });
+  setState({ componentId: pageItem._id }, { parent: "selected" });
 
   // @ts-ignore Improve type
   setState({ page: nextPage }, { parent: "editor" });
@@ -251,10 +247,6 @@ function elementChanged(
     }
 
     p.element = value;
-
-    // TODO: Refactor this logic - there has to be a better way to retain a reference
-    // @ts-ignore Improve type
-    // setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -274,10 +266,6 @@ function contentChanged(
     }
 
     p.children = value;
-
-    // TODO: Refactor this logic - there has to be a better way to retain a reference
-    // @ts-ignore Improve type
-    // setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -302,11 +290,6 @@ function classChanged(
     }
 
     p.class = value;
-
-    // TODO: Find a better way to deal with selections -
-    // maybe track just id and resolve later?
-    // @ts-ignore Improve type
-    // setState({ component: p }, { parent: "selected" });
   });
 
   // @ts-ignore Improve type
@@ -317,7 +300,6 @@ function produceNextPage(
   page: Page["page"],
   component: Component,
   matched: (p: Component, element: HTMLElement) => void,
-  notMatched: (p: Component) => void = () => {},
 ) {
   return produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
@@ -330,8 +312,6 @@ function produceNextPage(
             page,
           ) as HTMLElement,
         );
-      } else {
-        notMatched(p);
       }
     });
   });
@@ -386,6 +366,19 @@ function findElement(
   return recurse(element?.firstElementChild, page);
 }
 
+function getSelectedComponent(
+  editorState: EditorState,
+  selectedState: SelectedState,
+) {
+  console.log("state", editorState, selectedState);
+
+  // @ts-ignore This comes from sidewind
+  // const { editor: { page }, selected: { component } } = getState(element);
+
+  // TODO: Find matching component based on componentId and return it
+  return {};
+}
+
 // TODO: Figure out what the error means
 declare global {
   interface Window {
@@ -396,6 +389,7 @@ declare global {
     elementClicked: typeof elementClicked;
     elementChanged: typeof elementChanged;
     contentChanged: typeof contentChanged;
+    getSelectedComponent: typeof getSelectedComponent;
   }
 }
 
@@ -406,3 +400,4 @@ window.classChanged = classChanged;
 window.elementClicked = elementClicked;
 window.elementChanged = elementChanged;
 window.contentChanged = contentChanged;
+window.getSelectedComponent = getSelectedComponent;

@@ -13,9 +13,8 @@ type Component = {
   __class?: string;
   __children?: string | Component[];
   // Page editor - TODO: Consider decoupling this somehow
-  // maybe there can be an "enhanced" structure that's adding this stuff
+  // maybe there can be an "enhanced" structure that's adding the id?
   _id?: string;
-  _selected?: boolean;
 };
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };

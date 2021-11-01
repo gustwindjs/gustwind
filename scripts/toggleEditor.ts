@@ -83,16 +83,11 @@ async function toggleEditor() {
   }
 }
 
-function updateFileSystem(state: {
-  meta: { field: string; value: string }[];
-  dataSources: { field: string; value: string }[][];
-  page: Page["page"];
-}) {
+function updateFileSystem(state: Page) {
   const nextPage = produce(state.page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
-      delete p._selected;
 
       if (p.class === "") {
         delete p.class;

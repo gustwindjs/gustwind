@@ -1,6 +1,10 @@
 {
   "element": "aside",
   "class": "fixed top-16 right-2 max-w-sm overflow-auto rounded filter drop-shadow",
+  "attributes": {
+    "x-state": "getSelectedComponent(editor, selected)",
+    "x-label": "selectedComponent"
+  },
   "children": [
     {
       "element": "header",
@@ -42,7 +46,7 @@
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
-                        "x": "selected.component ? selected.component.element : 'No selected element'",
+                        "x": "selectedComponent ? selectedComponent.element : 'No selected element'",
                         "oninput": "elementChanged(this, this.value, setState)"
                       }
                     }
@@ -52,7 +56,7 @@
                   "element": "li",
                   "class": "flex gap-2",
                   "attributes": {
-                    "x-class": "[selected.component ? typeof selected.component.children !== 'string' && 'hidden' : 'hidden']"
+                    "x-class": "[typeof selectedComponent.children !== 'string' && 'hidden']"
                   },
                   "children": [
                     {
@@ -64,7 +68,7 @@
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
-                        "x": "selected.component ? selected.component.children : ''",
+                        "x": "typeof selectedComponent.children === 'string' ? selectedComponent.children : ''",
                         "oninput": "contentChanged(this, this.value, setState)"
                       }
                     }
@@ -83,7 +87,7 @@
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
-                        "x": "selected.component && selected.component.class || ''",
+                        "x": "selectedComponent.class || ''",
                         "oninput": "classChanged(this, this.value, setState, this)"
                       }
                     }
