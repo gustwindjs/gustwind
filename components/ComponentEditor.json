@@ -46,7 +46,7 @@
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
-                        "x": "selectedComponent ? selectedComponent.element : 'No selected element'",
+                        "x": "selectedComponent.element || 'No selected element'",
                         "oninput": "elementChanged(this, this.value)"
                       }
                     }
