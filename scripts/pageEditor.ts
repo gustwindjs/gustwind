@@ -467,7 +467,7 @@ declare global {
 window.createEditor = createEditor;
 window.createWebSocketConnection = createWebSocketConnection;
 window.metaChanged = metaChanged;
-window.classChanged = classChanged;
+window.classChanged = debounce<typeof classChanged>(classChanged);
 window.elementClicked = elementClicked;
 window.elementChanged = elementChanged;
 window.contentChanged = debounce<typeof contentChanged>(contentChanged);
