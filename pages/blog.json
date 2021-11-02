@@ -30,7 +30,7 @@
                   "element": "Link",
                   "__children": "data.title",
                   "attributes": {
-                    "__href": "data.slug"
+                    "__href": "data.slug + '/'"
                   }
                 }
               ]

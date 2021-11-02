@@ -127,21 +127,6 @@ function resolveClass(component: Component, context: DataContext) {
   return tw(classes.concat(component.class.split(" ")).join(" "));
 }
 
-// From Sidewind
-function evaluateExpression(
-  expression: string,
-  value: Record<string, unknown> = {},
-) {
-  try {
-    return Function.apply(
-      null,
-      Object.keys(value).concat(`return ${expression}`),
-    )(...Object.values(value));
-  } catch (err) {
-    console.error("Failed to evaluate", expression, value, err);
-  }
-}
-
 function joinClasses(a?: string, b?: string) {
   if (a) {
     if (b) {
@@ -170,14 +155,11 @@ function generateAttributes(attributes: Attributes, context: DataContext) {
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
       return `${k.slice(2)}="${
-        // TODO: Figure out the correct way to apply JSON.stringify as that's
-        // probably not the right default behavior here.
-        // @ts-ignore: TODO: How to type this?
-        context.__bound
+        evaluateExpression(
+          v,
           // @ts-ignore: TODO: How to type this?
-          ? get(context.__bound, v)
-          : // @ts-ignore: TODO: How to type this?
-            encodeURIComponent(JSON.stringify(context[v]))
+          context.__bound,
+        )
       }"`;
     }
 
@@ -188,6 +170,21 @@ function generateAttributes(attributes: Attributes, context: DataContext) {
     );
 
   return ret.length > 0 ? " " + ret : "";
+}
+
+// From Sidewind
+function evaluateExpression(
+  expression: string,
+  value: Record<string, unknown> = {},
+) {
+  try {
+    return Function.apply(
+      null,
+      Object.keys(value).concat(`return ${expression}`),
+    )(...Object.values(value));
+  } catch (err) {
+    console.error("Failed to evaluate", expression, value, err);
+  }
 }
 
 export { renderComponent };
