@@ -2,7 +2,7 @@
 import { setup } from "twind-shim";
 import { tw } from "twind";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
-import { importScript } from "../src/importScript.ts";
+import { importScript } from "../utils/importScript.ts";
 
 setup({
   target: document.body,

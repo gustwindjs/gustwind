@@ -1,4 +1,4 @@
-import { importScript } from "./importScript.ts";
+import { importScript } from "../utils/importScript.ts";
 
 function transform(name?: string | unknown, input?: unknown): Promise<unknown> {
   if (!name) {

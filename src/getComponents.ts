@@ -1,5 +1,5 @@
 import { basename, extname } from "path";
-import { dir, getJson } from "./fsUtils.ts";
+import { dir, getJson } from "../utils/fs.ts";
 import type { Component } from "../types.ts";
 
 async function getComponents(directoryPath: string) {

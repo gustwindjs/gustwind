@@ -3,8 +3,8 @@ import produce from "immer";
 import { nanoid } from "nanoid";
 import { draggable } from "../src/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
-import { traversePage } from "../src/traversePage.ts";
-import { importScript } from "../src/importScript.ts";
+import { traversePage } from "../utils/traversePage.ts";
+import { importScript } from "../utils/importScript.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");

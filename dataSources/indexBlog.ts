@@ -1,5 +1,5 @@
 import { parse } from "frontmatter";
-import { dir } from "../src/fsUtils.ts";
+import { dir } from "../utils/fs.ts";
 import type { BlogPost } from "../types.ts";
 
 async function indexBlog(directory: string) {

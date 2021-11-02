@@ -1,8 +1,8 @@
 import { ensureDir } from "fs";
 import { stop } from "esbuild";
 import { join } from "path";
+import { getJson } from "../utils/fs.ts";
 import { getComponents } from "./getComponents.ts";
-import { getJson } from "./fsUtils.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { compileScripts } from "./compileScripts.ts";

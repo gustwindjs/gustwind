@@ -1,5 +1,5 @@
-import { dir, getJsonSync } from "./fsUtils.ts";
-import { get } from "./utils.ts";
+import { dir, getJsonSync } from "../utils/fs.ts";
+import { get } from "../utils/functional.ts";
 import type { DataContext, Meta, Page, SiteMeta } from "../types.ts";
 import transform from "./transform.ts";
 

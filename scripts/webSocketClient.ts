@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import updateMeta from "../src/updateMeta.ts";
+import updateMeta from "../utils/updateMeta.ts";
 
 function createWebSocket(pagePath: string) {
   const socket = new WebSocket("ws://localhost:8080");
