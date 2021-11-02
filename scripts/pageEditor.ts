@@ -337,14 +337,33 @@ function elementChanged(
   );
   const nextPage = produceNextPage(page, componentId, (p, element) => {
     if (element) {
-      // TODO: Update element type
-      // https://stackoverflow.com/a/59147202/228885
+      // https://stackoverflow.com/a/843681/228885
+      element.parentNode?.replaceChild(changeTag(element, value), element);
     }
 
     p.element = value;
   });
 
   setState({ page: nextPage }, { element, parent: "editor" });
+}
+
+// https://stackoverflow.com/questions/2206892/jquery-convert-dom-element-to-different-type/59147202#59147202
+function changeTag(element: HTMLElement, tag: string) {
+  // prepare the elements
+  const newElem = document.createElement(tag);
+  const clone = element.cloneNode(true);
+
+  // move the children from the clone to the new element
+  while (clone.firstChild) {
+    newElem.appendChild(clone.firstChild);
+  }
+
+  // copy the attributes
+  // @ts-ignore Fine like this
+  for (const attr of clone.attributes) {
+    newElem.setAttribute(attr.name, attr.value);
+  }
+  return newElem;
 }
 
 function contentChanged(
