@@ -1,6 +1,7 @@
 import { getStyleTag } from "twind-sheets";
 import { exists } from "fs";
 import { basename, dirname, extname, join } from "path";
+import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import type {
   Components,
   DataContext,
@@ -11,7 +12,6 @@ import type {
 } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
-import { compileTypeScript } from "./compileTypeScript.ts";
 
 function getPageRenderer(
   { components, mode, importMap }: {

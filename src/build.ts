@@ -2,10 +2,10 @@ import { ensureDir } from "fs";
 import { stop } from "esbuild";
 import { join } from "path";
 import { getJson } from "../utils/fs.ts";
+import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
-import { compileScripts } from "./compileScripts.ts";
 import { getBrowserImportMap } from "./getBrowserImportMap.ts";
 import type { ImportMap, ProjectMeta } from "../types.ts";
 

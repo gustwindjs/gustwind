@@ -1,14 +1,14 @@
 import { Application, Router } from "oak";
 import { basename, extname, join } from "path";
-import { getComponent, getComponents } from "./getComponents.ts";
+import { compileScripts } from "../utils/compileScripts.ts";
+import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, watch } from "../utils/fs.ts";
+import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import { compileScripts } from "./compileScripts.ts";
 import { getBrowserImportMap } from "./getBrowserImportMap.ts";
-import { compileTypeScript } from "./compileTypeScript.ts";
 import type { ImportMap, Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
