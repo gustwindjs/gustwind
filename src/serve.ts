@@ -59,8 +59,6 @@ async function serve(
   });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {
-      console.log("rendering page", route, path);
-
       router.get(
         route === "/" ? "/context.json" : `${route}/context.json`,
         (ctx) => {
