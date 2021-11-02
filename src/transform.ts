@@ -4,9 +4,9 @@ import type { Transform } from "../types.ts";
 async function transform(
   transformNames?: Transform[],
   input?: unknown,
-): Promise<unknown> {
+): Promise<Record<string, unknown>> {
   if (!transformNames) {
-    return Promise.resolve(input);
+    return Promise.resolve({ content: input });
   }
 
   if ("Deno" in window) {
@@ -16,11 +16,12 @@ async function transform(
 
     return transforms.reduce(
       (input, current) => current.default(input),
-      transforms[0].default(input),
+      input,
     );
   }
 
   // In the browser now
+  // @ts-ignore How to type the browser version?
   return Promise.all(
     transformNames.map((name) => importScript(`/transforms/${name}.js`)),
   );

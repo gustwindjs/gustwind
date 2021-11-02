@@ -8,9 +8,10 @@ type Component = {
   element: string; // TODO: Only valid DOM element names + components
   children?: string | Component[];
   class?: string;
+  inputProperty?: string;
+  inputText?: string;
   attributes?: Attributes;
   transformWith?: Transform[];
-  selectProperty?: string;
   // Data bindings
   __bind?: string;
   __class?: string;
@@ -68,7 +69,7 @@ type DataSources = {
 type Page = {
   meta: Meta;
   page: Component | Component[];
-  matchBy?: { dataSource: string; property: string };
+  matchBy?: { dataSource: string; collection: string; property: string };
   dataSources?: DataSources;
 };
 type Meta = Record<string, string>;

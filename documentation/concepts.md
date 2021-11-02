@@ -207,7 +207,11 @@ The `[blog].json` case is more complicated as there we'll have to define the map
       "input": "./blogPosts"
     }
   ],
-  "matchBy": { "dataSource": "blogIndex", "property": "slug" },
+  "matchBy": {
+    "dataSource": "blogPosts",
+    "collection": "content",
+    "property": "data.slug"
+  },
   "page": [
     {
       "element": "MainNavigation"
@@ -222,9 +226,9 @@ The `[blog].json` case is more complicated as there we'll have to define the map
         },
         {
           "element": "p",
+          "inputProperty": "match.content",
           "transformWith": ["markdown"],
-          "selectProperty": "content",
-          "__children": "match.body"
+          "__children": "content"
         }
       ]
     },

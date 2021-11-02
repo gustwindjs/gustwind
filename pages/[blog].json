@@ -10,7 +10,11 @@
       "input": "./blogPosts"
     }
   ],
-  "matchBy": { "dataSource": "blogPosts", "property": "data.slug" },
+  "matchBy": {
+    "dataSource": "blogPosts",
+    "collection": "content",
+    "property": "data.slug"
+  },
   "page": [
     {
       "element": "MainNavigation"
@@ -25,8 +29,9 @@
         },
         {
           "element": "p",
+          "inputProperty": "match.content",
           "transformWith": ["markdown"],
-          "__children": "match.content"
+          "__children": "content"
         }
       ]
     },

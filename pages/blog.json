@@ -17,11 +17,10 @@
     {
       "element": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-      "__bind": "blogPosts",
+      "__bind": "blogPosts.content",
       "children": [
         {
           "element": "ul",
-          "class": "",
           "__children": [
             {
               "element": "li",
@@ -31,7 +30,7 @@
                   "element": "Link",
                   "__children": "data.title",
                   "attributes": {
-                    "__href": "data.slug"
+                    "__href": "data.slug + '/'"
                   }
                 }
               ]
