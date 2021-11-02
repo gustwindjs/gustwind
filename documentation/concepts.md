@@ -223,8 +223,7 @@ The `[blog].json` case is more complicated as there we'll have to define the map
         {
           "element": "p",
           "transformWith": ["markdown"],
-          "selectProperty": "content",
-          "__children": "match.body"
+          "__children": "content"
         }
       ]
     },

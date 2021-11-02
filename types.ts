@@ -10,7 +10,6 @@ type Component = {
   class?: string;
   attributes?: Attributes;
   transformWith?: Transform[];
-  selectProperty?: string;
   // Data bindings
   __bind?: string;
   __class?: string;

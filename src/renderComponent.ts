@@ -84,10 +84,7 @@ async function renderComponent(
       ...component.attributes,
       class: resolveClass(component, context),
     }, context),
-    component?.selectProperty && isObject(content)
-      // @ts-ignore: Rework how transformed values are selected
-      ? content[component.selectProperty]
-      : content,
+    content,
   );
 }
 

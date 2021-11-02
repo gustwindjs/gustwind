@@ -56,7 +56,6 @@
                   "element": "div",
                   "class": "font-thin",
                   "transformWith": ["markdown"],
-                  "selectProperty": "content",
                   "children": "Gustwind was developed by [Juho Vepsäläinen](https://github.com/bebraw)."
                 }
               ]

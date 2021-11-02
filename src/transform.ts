@@ -16,7 +16,7 @@ async function transform(
 
     return transforms.reduce(
       (input, current) => current.default(input),
-      transforms[0].default(input),
+      input,
     );
   }
 
