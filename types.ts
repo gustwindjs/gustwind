@@ -69,7 +69,7 @@ type DataSources = {
 type Page = {
   meta: Meta;
   page: Component | Component[];
-  matchBy?: { dataSource: string; property: string };
+  matchBy?: { dataSource: string; collection: string; property: string };
   dataSources?: DataSources;
 };
 type Meta = Record<string, string>;

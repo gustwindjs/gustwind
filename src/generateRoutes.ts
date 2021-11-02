@@ -43,7 +43,7 @@ async function generateRoutes(
       ).then((
         dataSources,
       ) => {
-        const pageData = Object.fromEntries<{ dataSource: { id: string } }>(
+        const pageData = Object.fromEntries<Record<string, unknown[]>>(
           // @ts-ignore Figure out the type
           dataSources,
         );
@@ -61,8 +61,8 @@ async function generateRoutes(
             }
 
             const property = matchBy.property;
-            Object.values(dataSource).forEach((v) => {
-              const route = `/${routerPath ? "/" + routerPath : ""}/${
+            Object.values(dataSource[matchBy.collection]).forEach((v) => {
+              const route = `${routerPath ? "/" + routerPath : ""}/${
                 get(v, property)
               }/`;
               const context = { ...pageData, match: v };
