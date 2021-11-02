@@ -45,6 +45,24 @@ async function renderComponent(
     );
   }
 
+  if (component?.transformWith) {
+    let transformedContext;
+
+    if (typeof component.inputText === "string") {
+      transformedContext = await transform(
+        component?.transformWith,
+        component.inputText,
+      );
+    } else if (typeof component.inputProperty === "string") {
+      transformedContext = await transform(
+        component?.transformWith,
+        get(context, component.inputProperty as string),
+      );
+    }
+
+    context = { ...context, ...transformedContext };
+  }
+
   let children: string | undefined;
 
   if (component.__children) {
@@ -76,15 +94,13 @@ async function renderComponent(
       : component.children;
   }
 
-  const content = await transform(component?.transformWith, children);
-
   return wrapInElement(
     component.element,
     generateAttributes({
       ...component.attributes,
       class: resolveClass(component, context),
     }, context),
-    content,
+    children,
   );
 }
 

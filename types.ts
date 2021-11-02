@@ -8,6 +8,8 @@ type Component = {
   element: string; // TODO: Only valid DOM element names + components
   children?: string | Component[];
   class?: string;
+  inputProperty?: string;
+  inputText?: string;
   attributes?: Attributes;
   transformWith?: Transform[];
   // Data bindings

@@ -25,8 +25,9 @@
         },
         {
           "element": "p",
+          "inputProperty": "match.content",
           "transformWith": ["markdown"],
-          "__children": "match.content"
+          "__children": "content"
         }
       ]
     },
