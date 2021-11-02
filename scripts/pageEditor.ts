@@ -336,9 +336,7 @@ function elementChanged(
     element,
   );
   const nextPage = produceNextPage(page, componentId, (p, element) => {
-    if (element) {
-      element.replaceWith(changeTag(element, value));
-    }
+    element?.replaceWith(changeTag(element, value));
 
     p.element = value;
   });
