@@ -1,18 +1,12 @@
 # Concepts
 
-You'll learn how different concepts of Gustwind go together on this page. It's
-self-similar in many ways and if you are familiar with technologies such as
-HTML, Tailwind, or React, likely you'll get used to it fast.
+You'll learn how different concepts of Gustwind go together on this page. It's self-similar in many ways and if you are familiar with technologies such as HTML, Tailwind, or React, likely you'll get used to it fast.
 
-At its core, the page engine is an interpolating template interpreter that
-allows data binding. That means there's special syntax for connecting data with
-your pages and components.
+At its core, the page engine is an interpolating template interpreter that allows data binding. That means there's special syntax for connecting data with your pages and components.
 
 ## Components
 
-To give you a simple example of a component, consider the following example for
-a link that is able to bold itself if it's matching to the path of the current
-page:
+To give you a simple example of a component, consider the following example for a link that is able to bold itself if it's matching to the path of the current page:
 
 **components/Link.json**
 
@@ -26,11 +20,7 @@ page:
 }
 ```
 
-The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you
-can see there's also data binding going on at `__class`. That `__` means the
-field should be evaluated and in this case we'll check if the `href` attribute
-passed to the link is matching to the current path. In short, this is how you
-would bold the the link to signify it's the current page.
+The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `__class`. That `__` means the field should be evaluated and in this case we'll check if the `href` attribute passed to the link is matching to the current path. In short, this is how you would bold the the link to signify it's the current page.
 
 A navigation component built on top of `link` could look like this:
 
@@ -69,9 +59,7 @@ To build a subscription widget, you would do something along this:
 }
 ```
 
-The same idea of binding works for `children`. You can bind to the children of
-an element using `__children`. I.e. `"__children": "Link"` would bind the value
-of the `link` property to `children`. Consider the example below:
+The same idea of binding works for `children`. You can bind to the children of an element using `__children`. I.e. `"__children": "Link"` would bind the value of the `link` property to `children`. Consider the example below:
 
 **components/Libraries.json**
 
@@ -98,8 +86,7 @@ of the `link` property to `children`. Consider the example below:
 }
 ```
 
-In order to bind data, `__bind` has to be used. To bind `libraries` to the
-component above, you could do the following:
+In order to bind data, `__bind` has to be used. To bind `libraries` to the component above, you could do the following:
 
 ```json
 {
@@ -108,8 +95,7 @@ component above, you could do the following:
 }
 ```
 
-In addition to binding data from a source, you can do static bindings to pass
-data to components:
+In addition to binding data from a source, you can do static bindings to pass data to components:
 
 ```json
 {
@@ -122,8 +108,7 @@ data to components:
 
 ## Data sources
 
-In the examples above, data coming from **data sources** has been connected, or
-bound, to the visible structure. Data sources are defined as below:
+In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
 
 **dataSources/indexBlog.ts**
 
@@ -180,7 +165,7 @@ The first two cases can be defined with the following syntax:
       "id": "readme",
       "operation": "file",
       "input": "./README.md",
-      "transformWith": "markdown"
+      "transformWith": ["markdown"]
     }
   ],
   "page": [
@@ -203,12 +188,9 @@ Note the `meta`, `dataSources`, and `page` portions of the configuration:
   spot where it's good to leverage the power of components and connect data with
   them.
 
-For the about page, you would do something similar and perhaps bind to another
-Markdown file somewhere in the system.
+For the about page, you would do something similar and perhaps bind to another Markdown file somewhere in the system.
 
-The `[blog].json` case is more complicated as there we'll have to define the
-mapping between the entry data (blog pages) and pages to be generated. That's
-handled as follows:
+The `[blog].json` case is more complicated as there we'll have to define the mapping between the entry data (blog pages) and pages to be generated. That's handled as follows:
 
 **pages/[blog].json**
 
@@ -240,7 +222,7 @@ handled as follows:
         },
         {
           "element": "p",
-          "transformWith": "markdown",
+          "transformWith": ["markdown"],
           "selectProperty": "content",
           "__children": "match.body"
         }
@@ -253,26 +235,17 @@ handled as follows:
 }
 ```
 
-In this example, we're defining the mapping between the data and the pages to
-generate using the `matchBy` field. There we tell the system that you should
-generate a page per each of the `blogPosts` based on their `id` which will
-happen to be the slug as well (this might change later to be more configurable).
+In this example, we're defining the mapping between the data and the pages to generate using the `matchBy` field. There we tell the system that you should generate a page per each of the `blogPosts` based on their `id` which will happen to be the slug as well (this might change later to be more configurable).
 
-Another thing we're doing here is binding data to the `meta` of the page. That
-`match` property contains the data of the currently matched blog post and we can
-use it where we need it.
+Another thing we're doing here is binding data to the `meta` of the page. That `match` property contains the data of the currently matched blog post and we can use it where we need it.
 
 ## Loading scripts
 
-If a script that has the same name as a page exists, then Deno will compile it
-and include the result to the static page. I.e. if a `blog.json` and `blog.ts`
-files existed, the latter would get compiled and included to the resulting HTML
-file.
+If a script that has the same name as a page exists, then Deno will compile it and include the result to the static page. I.e. if a `blog.json` and `blog.ts` files existed, the latter would get compiled and included to the resulting HTML file.
 
 ## Transforms
 
-Note also the `transformWith` property we use against the match body. Using it
-we tell the system to use the `markdown` transform to compile.
+Note also the `transformWith` property we use against the match body. Using it we tell the system to use the `markdown` transform to compile.
 
 We can apply the same idea for generating a reversed blog index:
 
@@ -287,7 +260,7 @@ We can apply the same idea for generating a reversed blog index:
   "dataSources": [{
     "id": "blogPosts",
     "operation": "index",
-    "transformWith": "reversed",
+    "transformWith": ["reverse"],
     "input": "./content/blogPosts"
   }],
   "page": [
@@ -315,5 +288,4 @@ We can apply the same idea for generating a reversed blog index:
 }
 ```
 
-Transforms are powerful as they let you shape the data to fit specific needs
-within different parts of the system.
+Transforms are powerful as they let you shape the data to fit specific needs within different parts of the system.

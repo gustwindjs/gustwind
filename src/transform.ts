@@ -1,18 +1,29 @@
 import { importScript } from "../utils/importScript.ts";
+import type { Transform } from "../types.ts";
 
-function transform(name?: string | unknown, input?: unknown): Promise<unknown> {
-  if (!name) {
+async function transform(
+  transformNames?: Transform[],
+  input?: unknown,
+): Promise<unknown> {
+  if (!transformNames) {
     return Promise.resolve(input);
   }
 
   if ("Deno" in window) {
-    return import(`../transforms/${name}.ts`).then((o) =>
-      o.default(input) || ""
+    const transforms = await Promise.all(
+      transformNames.map((name) => import(`../transforms/${name}.ts`)),
+    );
+
+    return transforms.reduce(
+      (input, current) => current.default(input),
+      transforms[0].default(input),
     );
   }
 
   // In the browser now
-  return importScript(`/transforms/${name}.js`);
+  return Promise.all(
+    transformNames.map((name) => importScript(`/transforms/${name}.js`)),
+  );
 }
 
 export default transform;

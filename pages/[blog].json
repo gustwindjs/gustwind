@@ -25,7 +25,7 @@
         },
         {
           "element": "p",
-          "transformWith": "markdown",
+          "transformWith": ["markdown"],
           "__children": "match.content"
         }
       ]

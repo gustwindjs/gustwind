@@ -8,7 +8,7 @@
       "id": "readme",
       "operation": "file",
       "input": "./README.md",
-      "transformWith": "markdown"
+      "transformWith": ["markdown"]
     }
   ],
   "page": [

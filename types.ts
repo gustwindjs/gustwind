@@ -1,3 +1,6 @@
+// This should match with ./transforms
+type Transform = "markdown" | "reverse";
+
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
@@ -6,7 +9,7 @@ type Component = {
   children?: string | Component[];
   class?: string;
   attributes?: Attributes;
-  transformWith?: "markdown";
+  transformWith?: Transform[];
   selectProperty?: string;
   // Data bindings
   __bind?: string;
@@ -60,7 +63,7 @@ type DataSources = {
   id: string;
   operation: string;
   input: string;
-  transformWith: string;
+  transformWith: Transform[];
 }[];
 type Page = {
   meta: Meta;
@@ -89,4 +92,5 @@ export type {
   ProjectMeta,
   Props,
   SiteMeta,
+  Transform,
 };

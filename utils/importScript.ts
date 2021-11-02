@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 const loadedScripts: Record<string, boolean> = {};
 
 function importScript(src: string): Promise<void> {

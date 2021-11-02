@@ -8,7 +8,7 @@
       "id": "configuration",
       "operation": "file",
       "input": "./documentation/configuration.md",
-      "transformWith": "markdown"
+      "transformWith": ["markdown"]
     }
   ],
   "page": [
