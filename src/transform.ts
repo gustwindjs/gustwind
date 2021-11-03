@@ -13,9 +13,19 @@ async function transform(
   if ("Deno" in window) {
     const path = await import("https://deno.land/std@0.107.0/path/mod.ts");
     const transforms = await Promise.all(
-      transformNames.map((name) =>
-        import(path.join(transformsPath, `${name}.ts`))
-      ),
+      transformNames.map((name) => {
+        const transformPath = path.join(transformsPath, `${name}.ts`);
+
+        Deno.env.get("DEBUG") &&
+          console.log(
+            "importing transform",
+            transformPath,
+            transformsPath,
+            name,
+          );
+
+        return import(transformPath);
+      }),
     );
 
     return transforms.reduce(
