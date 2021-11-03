@@ -1,15 +1,23 @@
 import { twindSheets } from "../browserDeps.ts";
 import { fs, path } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
+import type {
+  Components,
+  DataContext,
+  Meta,
+  Mode,
+  Page,
+  ProjectMeta,
+} from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { transformsPath, components, mode }: {
+  { transformsPath, components, mode, features }: {
     transformsPath: string;
     components: Components;
     mode: Mode;
+    features: ProjectMeta["features"];
   },
 ) {
   const stylesheet = getStyleSheet(mode);
@@ -36,6 +44,7 @@ function getPageRenderer(
       headMarkup: twindSheets.getStyleTag(stylesheet),
       bodyMarkup,
       mode,
+      features,
     });
   };
 }
@@ -57,12 +66,13 @@ function renderMetaMarkup(meta?: Meta) {
 }
 
 async function htmlTemplate(
-  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode }: {
+  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, features }: {
     pagePath: string;
     metaMarkup?: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
+    features: ProjectMeta["features"];
   },
 ): Promise<[string, string?]> {
   const scriptName = path.basename(pagePath, path.extname(pagePath));
@@ -90,7 +100,12 @@ async function htmlTemplate(
     ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
     ${
     mode === "development"
-      ? '<script type="module" src="./_webSocketClient.js"></script>'
+      ? '<script type="module" src="/_webSocketClient.js"></script>'
+      : ""
+  }
+    ${
+    mode === "development" || features?.showEditorAlways
+      ? '<script type="module" src="/_toggleEditor.js"></script>'
       : ""
   }
   </body>

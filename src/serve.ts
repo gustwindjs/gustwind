@@ -23,6 +23,7 @@ async function serve(
     developmentPort,
     meta: siteMeta,
     paths,
+    features,
   }: ProjectMeta,
 ) {
   const projectPaths = resolvePaths(projectRoot, paths);
@@ -45,6 +46,7 @@ async function serve(
     transformsPath: projectPaths.transforms,
     components,
     mode,
+    features,
   });
   const { paths: routePaths } = await generateRoutes({
     transformsPath: projectPaths.transforms,

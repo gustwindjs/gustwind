@@ -9,5 +9,8 @@
     "output": "./build",
     "pages": "./pages",
     "transforms": "./transforms"
+  },
+  "features": {
+    "showEditorAlways": true
   }
 }

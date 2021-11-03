@@ -52,6 +52,7 @@ async function build(projectMeta: ProjectMeta) {
       transformsPath: projectPaths.transforms,
       components,
       mode: "production",
+      features: projectMeta.features,
     });
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,

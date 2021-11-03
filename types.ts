@@ -58,6 +58,9 @@ type ProjectMeta = {
     scripts: string;
     transforms: string;
   };
+  features?: {
+    showEditorAlways?: boolean;
+  };
 };
 type DataSources = {
   id: string;
