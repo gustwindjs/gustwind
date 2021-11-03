@@ -24,7 +24,7 @@ async function transform(
             name,
           );
 
-        return import(transformPath);
+        return import("file://" + transformPath);
       }),
     );
 
