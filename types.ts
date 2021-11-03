@@ -48,6 +48,7 @@ type SiteMeta = {
   siteName: string;
 };
 type ProjectMeta = {
+  projectRoot?: string;
   developmentPort: number;
   meta: SiteMeta;
   paths: {

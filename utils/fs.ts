@@ -1,7 +1,7 @@
 import { async, path } from "../deps.ts";
 import type { ProjectMeta } from "../types.ts";
 
-function resolvePaths(rootPath: string, paths: ProjectMeta["paths"]) {
+function resolvePaths(rootPath = Deno.cwd(), paths: ProjectMeta["paths"]) {
   return Object.fromEntries(
     Object.entries(paths).map(([k, p]) => [k, path.join(rootPath, p)]),
   );

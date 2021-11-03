@@ -19,12 +19,13 @@ const cachedScripts: Record<string, string> = {};
 
 async function serve(
   {
+    projectRoot,
     developmentPort,
     meta: siteMeta,
     paths,
   }: ProjectMeta,
 ) {
-  const projectPaths = resolvePaths(Deno.cwd(), paths);
+  const projectPaths = resolvePaths(projectRoot, paths);
 
   console.log(`Serving at ${developmentPort}`);
 

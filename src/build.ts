@@ -9,7 +9,7 @@ import type { ProjectMeta } from "../types.ts";
 async function build(projectMeta: ProjectMeta) {
   console.log("Building to static");
 
-  const projectPaths = resolvePaths(Deno.cwd(), projectMeta.paths);
+  const projectPaths = resolvePaths(projectMeta.projectRoot, projectMeta.paths);
   let routes: string[] = [];
 
   // TODO: Maybe generateRoutes should become awaitable
