@@ -135,7 +135,7 @@ async function serve(
   });
 
   watch(
-    ".",
+    projectRoot || ".",
     ".json",
     (matchedPath) => {
       wss.clients.forEach(async (socket) => {
