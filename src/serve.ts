@@ -221,16 +221,20 @@ async function serveScripts(
   scriptsPath: string,
   prefix = "",
 ) {
-  const scriptsWithFiles = await compileScripts(scriptsPath, "development");
+  try {
+    const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
-  scriptsWithFiles.forEach(({ name, content }) => {
-    router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
-      ctx.response.headers.set("Content-Type", "text/javascript");
-      ctx.response.body = new TextEncoder().encode(
-        cachedScripts[name] || content,
-      );
+    scriptsWithFiles.forEach(({ name, content }) => {
+      router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
+        ctx.response.headers.set("Content-Type", "text/javascript");
+        ctx.response.body = new TextEncoder().encode(
+          cachedScripts[name] || content,
+        );
+      });
     });
-  });
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 if (import.meta.main) {
