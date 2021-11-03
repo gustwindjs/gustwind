@@ -4,7 +4,6 @@ import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
 import { traversePage } from "../utils/traversePage.ts";
-import { importScript } from "../utils/importScript.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 console.log("Hello from the page editor");
@@ -37,8 +36,8 @@ async function createEditor() {
   const [components, context, pageDefinition]: [Components, DataContext, Page] =
     await Promise.all([
       fetch("/components.json").then((res) => res.json()),
-      fetch("/context.json").then((res) => res.json()),
-      fetch("/definition.json").then((res) => res.json()),
+      fetch("./context.json").then((res) => res.json()),
+      fetch("./definition.json").then((res) => res.json()),
     ]);
 
   const editorContainer = createEditorContainer(pageDefinition);

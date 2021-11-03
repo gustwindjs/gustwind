@@ -52,7 +52,7 @@ async function serve(
     transformsPath: projectPaths.transforms,
     renderPage(route, path, context, page) {
       router.get(
-        route === "/" ? "/context.json" : `${route}/context.json`,
+        route === "/" ? "/context.json" : `${route}context.json`,
         (ctx) => {
           ctx.response.body = new TextEncoder().encode(JSON.stringify(context));
         },
@@ -98,7 +98,7 @@ async function serve(
       });
 
       router.get(
-        route === "/" ? "/definition.json" : `${route}/definition.json`,
+        route === "/" ? "/definition.json" : `${route}definition.json`,
         (ctx) => {
           ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
         },
