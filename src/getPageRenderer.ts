@@ -88,6 +88,11 @@ async function htmlTemplate(
   <body>
     <main>${bodyMarkup || ""}</main>
     ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
+    ${
+    mode === "development"
+      ? '<script type="module" src="./_webSocketClient.js"></script>'
+      : ""
+  }
   </body>
 </html>`;
 

@@ -1,7 +1,12 @@
 /// <reference lib="dom" />
-import updateMeta from "../utils/updateMeta.ts";
+import { getPagePath } from "../utils/getPagePath.ts";
+import { updateMeta } from "../utils/updateMeta.ts";
 
-function createWebSocket(pagePath: string) {
+function createWebSocket(pagePath?: string) {
+  if (!pagePath) {
+    return;
+  }
+
   const socket = new WebSocket("ws://localhost:8080");
 
   socket.addEventListener("message", (event) => {
@@ -75,10 +80,12 @@ function createWebSocket(pagePath: string) {
   return socket;
 }
 
+const developmentSocket = createWebSocket(getPagePath());
+
 declare global {
   interface Window {
-    createWebSocket: typeof createWebSocket;
+    developmentSocket: typeof developmentSocket;
   }
 }
 
-window.createWebSocket = createWebSocket;
+window.developmentSocket = developmentSocket;

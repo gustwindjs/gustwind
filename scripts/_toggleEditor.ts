@@ -18,8 +18,6 @@ function init() {
     importScript("/_pageEditor.js").then(() => {
       // @ts-ignore Set up a Window type
       window.createEditor();
-      // @ts-ignore Set up a Window type
-      window.createWebSocketConnection();
     });
   };
 

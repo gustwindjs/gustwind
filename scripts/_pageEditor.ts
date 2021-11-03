@@ -2,6 +2,7 @@
 import { immer, nanoid } from "../browserDeps.ts";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
+import { getPagePath } from "../utils/getPagePath.ts";
 import { traversePage } from "../utils/traversePage.ts";
 import { importScript } from "../utils/importScript.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
@@ -57,6 +58,7 @@ async function createEditor() {
   selectionContainer.append(componentEditor);
 
   // TODO: Re-enable the side effect to update FS
+  // Likely this should send patches, not whole structures
   //const updateElement = document.createElement("div");
   //updateElement.setAttribute("x", "updateFileSystem(state)");
   //editorsElement.appendChild(updateElement);
@@ -96,21 +98,6 @@ function initializePage(page: Page["page"]) {
   });
 }
 
-// TODO: Push the web socket bits to a separate module that's handled separately
-// TODO: Eliminate global
-let socket: WebSocket;
-
-async function createWebSocketConnection() {
-  if (location.hostname === "localhost") {
-    console.log("Loading web socket client");
-
-    await importScript("./_webSocketClient.js");
-
-    // @ts-ignore Fix the type
-    socket = window.createWebSocket(getPagePath());
-  }
-}
-
 function updateFileSystem(state: Page) {
   const nextPage = immer.produce(state.page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
@@ -129,27 +116,8 @@ function updateFileSystem(state: Page) {
   };
 
   // TODO: Don't send if payload didn't change
-  socket.send(JSON.stringify({ type: "update", payload }));
-}
-
-function getPagePath() {
-  const pathElement = document.querySelector('meta[name="pagepath"]');
-
-  if (!pathElement) {
-    console.error("path element was not found!");
-
-    return;
-  }
-
-  const pagePath = pathElement.getAttribute("content");
-
-  if (!pagePath) {
-    console.log("pagePath was not found in path element");
-
-    return;
-  }
-
-  return pagePath;
+  // @ts-ignore Figure out where to declare the global
+  window.developmentSocket.send(JSON.stringify({ type: "update", payload }));
 }
 
 async function createPageEditor(
@@ -494,7 +462,6 @@ function getSelectedComponent(
 declare global {
   interface Window {
     createEditor: typeof createEditor;
-    createWebSocketConnection: typeof createWebSocketConnection;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
@@ -506,7 +473,6 @@ declare global {
 }
 
 window.createEditor = createEditor;
-window.createWebSocketConnection = createWebSocketConnection;
 window.metaChanged = metaChanged;
 window.classChanged = debounce<typeof classChanged>(classChanged);
 window.elementClicked = elementClicked;

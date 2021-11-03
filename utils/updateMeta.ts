@@ -21,4 +21,4 @@ function updateMeta(meta: Meta) {
   });
 }
 
-export default updateMeta;
+export { updateMeta };

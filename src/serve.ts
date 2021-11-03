@@ -34,8 +34,9 @@ async function serve(
   const app = new oak.Application();
   const router = new oak.Router();
   const wss = getWebsocketServer();
+  const gustwindScripts = "./scripts";
 
-  serveScripts(router, "./scripts");
+  serveScripts(router, gustwindScripts);
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
@@ -112,28 +113,8 @@ async function serve(
   app.use(router.routes());
   app.use(router.allowedMethods());
 
-  watch(projectPaths.scripts, ".ts", async (matchedPath) => {
-    const scriptName = path.basename(matchedPath, path.extname(matchedPath));
-
-    console.log("Changed script", matchedPath);
-
-    cachedScripts[scriptName + ".ts"] = await compileTypeScript(
-      matchedPath,
-      mode,
-    );
-
-    wss.clients.forEach((socket) => {
-      // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
-      if (socket.state === 1) {
-        socket.send(
-          JSON.stringify({
-            type: "replaceScript",
-            payload: { name: "/" + scriptName + ".js" },
-          }),
-        );
-      }
-    });
-  });
+  watchScripts(gustwindScripts);
+  watchScripts(projectPaths.scripts);
 
   watch(
     projectRoot || ".",
@@ -219,6 +200,35 @@ async function serve(
       });
     },
   );
+
+  function watchScripts(scripts: string) {
+    scripts &&
+      watch(scripts, ".ts", async (matchedPath) => {
+        const scriptName = path.basename(
+          matchedPath,
+          path.extname(matchedPath),
+        );
+
+        console.log("Changed script", matchedPath);
+
+        cachedScripts[scriptName + ".ts"] = await compileTypeScript(
+          matchedPath,
+          mode,
+        );
+
+        wss.clients.forEach((socket) => {
+          // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
+          if (socket.state === 1) {
+            socket.send(
+              JSON.stringify({
+                type: "replaceScript",
+                payload: { name: "/" + scriptName + ".js" },
+              }),
+            );
+          }
+        });
+      });
+  }
 
   await app.listen({ port: developmentPort });
 }
