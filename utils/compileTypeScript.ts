@@ -1,14 +1,7 @@
 import { esbuild } from "../deps.ts";
-import * as importMapPlugin from "./esbuildImportMapPlugin.ts";
-import type { ImportMap, Mode } from "../types.ts";
+import type { Mode } from "../types.ts";
 
-async function compileTypeScript(
-  path: string,
-  mode: Mode,
-  importMap: ImportMap,
-) {
-  importMapPlugin.load(importMap);
-
+async function compileTypeScript(path: string, mode: Mode) {
   // Reference: https://esbuild.github.io/api/
   const result = await esbuild.build({
     entryPoints: [path],
@@ -19,7 +12,6 @@ async function compileTypeScript(
     format: "esm",
     target: ["esnext"],
     treeShaking: true,
-    plugins: [importMapPlugin.plugin()],
     write: false,
   }).catch((err) => console.error(err));
 

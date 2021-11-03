@@ -7,8 +7,7 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import { getBrowserImportMap } from "./getBrowserImportMap.ts";
-import type { ImportMap, Page, ProjectMeta } from "../types.ts";
+import type { Page, ProjectMeta } from "../types.ts";
 
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
@@ -24,38 +23,25 @@ async function serve(
     meta: siteMeta,
     paths: {
       components: componentsPath,
-      importMap: importMapPath,
       pages: pagesPath,
       scripts: scriptsPath,
       transforms: transformsPath,
     },
-    browserDependencies,
   }: ProjectMeta,
 ) {
   console.log(`Serving at ${developmentPort}`);
 
-  const [importMap, components] = await Promise.all([
-    getJson<ImportMap>(importMapPath),
-    getComponents("./components"),
-  ]);
-  const browserImportMap = getBrowserImportMap(
-    browserDependencies,
-    importMap,
-  );
+  const components = await getComponents("./components");
 
   const app = new oak.Application();
   const router = new oak.Router();
   const wss = getWebsocketServer();
 
-  serveScripts(router, scriptsPath, importMap);
-  serveScripts(router, transformsPath, importMap, "transforms/");
+  serveScripts(router, scriptsPath);
+  serveScripts(router, transformsPath, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({
-    components,
-    mode,
-    importMap: browserImportMap,
-  });
+  const renderPage = getPageRenderer({ components, mode });
   const { paths } = await generateRoutes({
     renderPage(route, path, context, page) {
       router.get(
@@ -130,7 +116,6 @@ async function serve(
     cachedScripts[scriptName + ".ts"] = await compileTypeScript(
       matchedPath,
       mode,
-      importMap,
     );
 
     wss.clients.forEach((socket) => {
@@ -236,14 +221,9 @@ async function serve(
 async function serveScripts(
   router: oak.Router,
   scriptsPath: string,
-  importMap: ImportMap,
   prefix = "",
 ) {
-  const scriptsWithFiles = await compileScripts(
-    scriptsPath,
-    "development",
-    importMap,
-  );
+  const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {

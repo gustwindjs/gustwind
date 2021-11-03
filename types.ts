@@ -52,13 +52,11 @@ type ProjectMeta = {
   meta: SiteMeta;
   paths: {
     components: string;
-    importMap: string;
     output: string;
     pages: string;
     scripts: string;
     transforms: string;
   };
-  browserDependencies?: string[];
 };
 type DataSources = {
   id: string;
@@ -74,7 +72,6 @@ type Page = {
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
-type ImportMap = { imports: Record<string, string> };
 
 export type {
   Attributes,
@@ -84,7 +81,6 @@ export type {
   Components,
   DataContext,
   DataSources,
-  ImportMap,
   Library,
   Meta,
   Mode,

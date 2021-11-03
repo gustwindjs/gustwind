@@ -1,22 +1,14 @@
 import { twindSheets } from "../browserDeps.ts";
 import { fs, path } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import type {
-  Components,
-  DataContext,
-  ImportMap,
-  Meta,
-  Mode,
-  Page,
-} from "../types.ts";
+import type { Components, DataContext, Meta, Mode, Page } from "../types.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { components, mode, importMap }: {
+  { components, mode }: {
     components: Components;
     mode: Mode;
-    importMap: ImportMap;
   },
 ) {
   const stylesheet = getStyleSheet(mode);
@@ -42,7 +34,6 @@ function getPageRenderer(
       headMarkup: twindSheets.getStyleTag(stylesheet),
       bodyMarkup,
       mode,
-      importMap,
     });
   };
 }
@@ -64,13 +55,12 @@ function renderMetaMarkup(meta?: Meta) {
 }
 
 async function htmlTemplate(
-  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, importMap }: {
+  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode }: {
     pagePath: string;
     metaMarkup?: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
-    importMap: ImportMap;
   },
 ): Promise<[string, string?]> {
   const scriptName = path.basename(pagePath, path.extname(pagePath));
@@ -79,7 +69,7 @@ async function htmlTemplate(
   let pageSource;
 
   if (await fs.exists(scriptPath)) {
-    pageSource = await compileTypeScript(scriptPath, mode, importMap);
+    pageSource = await compileTypeScript(scriptPath, mode);
   }
 
   const html = `<!DOCTYPE html>
@@ -91,7 +81,6 @@ async function htmlTemplate(
     <script type="text/javascript" src="https://unpkg.com/sidewind@5.4.6/dist/sidewind.umd.production.min.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
-    <script type="importmap">${JSON.stringify(importMap)}</script>
     ${metaMarkup || ""}
     ${headMarkup || ""}
   </head>

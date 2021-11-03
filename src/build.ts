@@ -4,8 +4,7 @@ import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
-import { getBrowserImportMap } from "./getBrowserImportMap.ts";
-import type { ImportMap, ProjectMeta } from "../types.ts";
+import type { ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta) {
   console.log("Building to static");
@@ -29,27 +28,16 @@ async function build(projectMeta: ProjectMeta) {
     );
   };
 
-  const [importMap, components] = await Promise.all([
-    getJson<ImportMap>(projectMeta.paths.importMap),
-    getComponents("./components"),
-  ]);
+  const components = await getComponents("./components");
 
   const outputDirectory = projectMeta.paths.output;
-  const browserImportMap = getBrowserImportMap(
-    projectMeta.browserDependencies,
-    importMap,
-  );
 
   fs.ensureDir(outputDirectory).then(async () => {
-    await writeScripts(projectMeta.paths.scripts, outputDirectory, importMap);
+    await writeScripts(projectMeta.paths.scripts, outputDirectory);
 
     const transformDirectory = path.join(outputDirectory, "transforms");
     fs.ensureDir(transformDirectory).then(async () => {
-      await writeScripts(
-        projectMeta.paths.transforms,
-        transformDirectory,
-        importMap,
-      );
+      await writeScripts(projectMeta.paths.transforms, transformDirectory);
 
       esbuild.stop();
     });
@@ -59,11 +47,7 @@ async function build(projectMeta: ProjectMeta) {
       JSON.stringify(components),
     );
 
-    const renderPage = getPageRenderer({
-      components,
-      mode: "production",
-      importMap: browserImportMap,
-    });
+    const renderPage = getPageRenderer({ components, mode: "production" });
     const ret = await generateRoutes({
       renderPage: async (route, filePath, context, page) => {
         // TODO: Push this behind a verbose flag
@@ -98,16 +82,8 @@ async function build(projectMeta: ProjectMeta) {
   });
 }
 
-async function writeScripts(
-  scriptsPath: string,
-  outputPath: string,
-  importMap: ImportMap,
-) {
-  const scriptsWithFiles = await compileScripts(
-    scriptsPath,
-    "production",
-    importMap,
-  );
+async function writeScripts(scriptsPath: string, outputPath: string) {
+  const scriptsWithFiles = await compileScripts(scriptsPath, "production");
 
   return Promise.all(
     scriptsWithFiles.map(({ name, content }) =>
