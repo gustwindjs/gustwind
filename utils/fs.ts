@@ -4,7 +4,7 @@ import type { ProjectMeta } from "../types.ts";
 function resolvePaths(rootPath = Deno.cwd(), paths: ProjectMeta["paths"]) {
   return Object.fromEntries(
     Object.entries(paths).map(([k, p]) => [k, path.join(rootPath, p)]),
-  );
+  ) as ProjectMeta["paths"];
 }
 
 function getJson<R>(filePath: string): Promise<R> {

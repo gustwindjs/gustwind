@@ -161,6 +161,7 @@ async function createPageEditor(
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
   treeElement.innerHTML = await renderComponent(
+    "",
     components.PageEditor,
     components,
     context,
@@ -180,6 +181,7 @@ async function createComponentEditor(
   const controlsElement = document.createElement("div");
   controlsElement.id = controlsElementId;
   controlsElement.innerHTML = await renderComponent(
+    "",
     components.ComponentEditor,
     components,
     context,

@@ -9,6 +9,7 @@ import type {
 import transform from "./transform.ts";
 
 async function renderComponent(
+  transformsPath: string,
   component: Component | string,
   components: Components,
   context: DataContext,
@@ -29,6 +30,7 @@ async function renderComponent(
 
   if (foundComponent) {
     return await renderComponent(
+      transformsPath,
       {
         element: "",
         children: Array.isArray(foundComponent) ? foundComponent : [{
@@ -50,11 +52,13 @@ async function renderComponent(
 
     if (typeof component.inputText === "string") {
       transformedContext = await transform(
+        transformsPath,
         component?.transformWith,
         component.inputText,
       );
     } else if (typeof component.inputProperty === "string") {
       transformedContext = await transform(
+        transformsPath,
         component?.transformWith,
         get(context, component.inputProperty as string),
       );
@@ -78,7 +82,10 @@ async function renderComponent(
         await Promise.all(
           (Array.isArray(ctx) ? ctx : [ctx]).flatMap((d) =>
             boundChildren.map((c) =>
-              renderComponent(c, components, { ...context, __bound: d })
+              renderComponent(transformsPath, c, components, {
+                ...context,
+                __bound: d,
+              })
             )
           ),
         )
@@ -88,7 +95,7 @@ async function renderComponent(
     children = Array.isArray(component.children)
       ? (await Promise.all(
         component.children.map(async (component) =>
-          await renderComponent(component, components, context)
+          await renderComponent(transformsPath, component, components, context)
         ),
       )).join("")
       : component.children;

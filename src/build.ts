@@ -48,8 +48,13 @@ async function build(projectMeta: ProjectMeta) {
       JSON.stringify(components),
     );
 
-    const renderPage = getPageRenderer({ components, mode: "production" });
+    const renderPage = getPageRenderer({
+      transformsPath: projectPaths.transforms,
+      components,
+      mode: "production",
+    });
     const ret = await generateRoutes({
+      transformsPath: projectPaths.transforms,
       renderPage: async (route, filePath, context, page) => {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);

@@ -4,7 +4,8 @@ import type { DataContext, Meta, Page, SiteMeta } from "../types.ts";
 import transform from "./transform.ts";
 
 async function generateRoutes(
-  { renderPage, pagesPath, siteMeta }: {
+  { transformsPath, renderPage, pagesPath, siteMeta }: {
+    transformsPath: string;
     renderPage: (
       route: string,
       path: string,
@@ -38,7 +39,14 @@ async function generateRoutes(
         dataSources.map(({ id, operation, input, transformWith }) =>
           import(`../dataSources/${operation}.ts`).then(async (
             o,
-          ) => [id, await transform(transformWith, await o.default(input))])
+          ) => [
+            id,
+            await transform(
+              transformsPath,
+              transformWith,
+              await o.default(input),
+            ),
+          ])
         ),
       ).then((
         dataSources,

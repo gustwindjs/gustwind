@@ -6,7 +6,8 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { components, mode }: {
+  { transformsPath, components, mode }: {
+    transformsPath: string;
     components: Components;
     mode: Mode;
   },
@@ -21,6 +22,7 @@ function getPageRenderer(
     initialBodyMarkup?: string,
   ) => {
     const bodyMarkup = initialBodyMarkup || await renderBody(
+      transformsPath,
       page,
       page.page,
       components,

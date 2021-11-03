@@ -39,8 +39,13 @@ async function serve(
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({ components, mode });
+  const renderPage = getPageRenderer({
+    transformsPath: projectPaths.transforms,
+    components,
+    mode,
+  });
   const { paths: routePaths } = await generateRoutes({
+    transformsPath: projectPaths.transforms,
     renderPage(route, path, context, page) {
       router.get(
         route === "/" ? "/context.json" : `${route}/context.json`,
@@ -181,6 +186,7 @@ async function serve(
 
           const { meta, page } = pageJson;
           const bodyMarkup = await renderBody(
+            projectPaths.transforms,
             pageJson,
             page,
             components,
