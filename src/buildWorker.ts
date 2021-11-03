@@ -1,4 +1,16 @@
-self.onmessage = async (e) => {
+// import { fs, path } from "../deps.ts";
+import { getPageRenderer } from "./getPageRenderer.ts";
+import type { Components } from "../types.ts";
+
+self.onmessage = (e) => {
+  const { dir, components }: { dir: string; components: Components } = e.data;
+
+  console.log(dir);
+
+  // ReferenceError: window is not defined
+  // const renderPage = getPageRenderer({ components, mode: "production" });
+
+  /*
   const [html, js] = await renderPage(route, filePath, context, page);
 
   fs.ensureDir(dir).then(() => {
@@ -18,5 +30,6 @@ self.onmessage = async (e) => {
       Deno.writeTextFile(path.join(dir, "index.js"), js);
     }
   });
+  */
   self.close();
 };

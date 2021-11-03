@@ -6,6 +6,8 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { ProjectMeta } from "../types.ts";
 
+const amountOfWorkers = navigator.hardwareConcurrency - 1;
+
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
   console.log("Building to static");
 
@@ -44,6 +46,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);
 
+        const worker = createWorker();
+
         const dir = path.join(outputDirectory, route);
         const [html, js, context] = await renderPage(
           route,
@@ -51,6 +55,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           page,
           extraContext,
         );
+
+        worker.postMessage({ dir, components: components });
 
         fs.ensureDir(dir).then(() => {
           Deno.writeTextFile(
@@ -88,6 +94,19 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           routeAmount * 1000,
       ) / 1000
     } ms per page.`,
+  );
+}
+
+function createWorker() {
+  return new Worker(
+    new URL("./buildWorker.ts", import.meta.url).href,
+    {
+      type: "module",
+      deno: {
+        namespace: true,
+        permissions: "inherit",
+      },
+    },
   );
 }
 
