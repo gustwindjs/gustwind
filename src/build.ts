@@ -30,11 +30,13 @@ async function build(projectMeta: ProjectMeta) {
   };
 
   const components = await getComponents("./components");
-
   const outputDirectory = projectPaths.output;
 
   fs.ensureDir(outputDirectory).then(async () => {
-    await writeScripts(projectPaths.scripts, outputDirectory);
+    await Promise.all([
+      writeScripts("./scripts", outputDirectory),
+      writeScripts(projectPaths.scripts, outputDirectory),
+    ]);
 
     const transformDirectory = path.join(outputDirectory, "transforms");
     fs.ensureDir(transformDirectory).then(async () => {
@@ -90,6 +92,10 @@ async function build(projectMeta: ProjectMeta) {
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {
+  if (!scriptsPath) {
+    return Promise.resolve();
+  }
+
   const scriptsWithFiles = await compileScripts(scriptsPath, "production");
 
   return Promise.all(
