@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { twind, twindShim } from "../deps.ts";
+import { twind, twindShim } from "../browserDeps.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../utils/importScript.ts";
 

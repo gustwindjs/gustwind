@@ -1,4 +1,4 @@
-import { twind, twindSheets } from "../deps.ts";
+import { twind, twindSheets } from "../browserDeps.ts";
 import { sharedTwindSetup } from "./sharedTwindSetup.ts";
 import type { Mode } from "../types.ts";
 

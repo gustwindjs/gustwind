@@ -1,4 +1,5 @@
-import { fs, path, twindSheets } from "../deps.ts";
+import { twindSheets } from "../browserDeps.ts";
+import { fs, path } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import type {
   Components,

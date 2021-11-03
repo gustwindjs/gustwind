@@ -1,10 +1,10 @@
+import { twind } from "../browserDeps.ts";
 import {
   highlight,
   highlightJS,
   highlightJSON,
   highlightTS,
   marked,
-  twind,
 } from "../deps.ts";
 
 highlight.registerLanguage("javascript", highlightJS);

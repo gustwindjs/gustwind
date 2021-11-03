@@ -1,4 +1,4 @@
-import { twind } from "../deps.ts";
+import { twind } from "../browserDeps.ts";
 import { get, isObject } from "../utils/functional.ts";
 import type {
   Attributes,

@@ -1,6 +1,5 @@
 /// <reference lib="dom" />
-import produce from "immer";
-import { nanoid } from "nanoid";
+import { immer, nanoid } from "../browserDeps.ts";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { traversePage } from "../utils/traversePage.ts";
@@ -90,7 +89,7 @@ function createEditorContainer(pageDefinition: Page) {
 }
 
 function initializePage(page: Page["page"]) {
-  return produce(page, (draftPage: Page["page"]) => {
+  return immer.produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       p._id = nanoid();
     });
@@ -113,7 +112,7 @@ async function createWebSocketConnection() {
 }
 
 function updateFileSystem(state: Page) {
-  const nextPage = produce(state.page, (draftPage: Page["page"]) => {
+  const nextPage = immer.produce(state.page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -409,7 +408,7 @@ function produceNextPage(
   componentId: Component["_id"],
   matched: (p: Component, element: HTMLElement) => void,
 ) {
-  return produce(page, (draftPage: Page["page"]) => {
+  return immer.produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
       if (p._id === componentId) {
         matched(

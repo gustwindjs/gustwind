@@ -1,4 +1,4 @@
-import { twindColors, twindTypography } from "../deps.ts";
+import { twindColors, twindTypography } from "../browserDeps.ts";
 import type { Mode } from "../types.ts";
 
 const sharedTwindSetup = (mode: Mode) => ({
