@@ -13,11 +13,11 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { transformsPath, components, mode, features }: {
+  { transformsPath, components, mode, projectMeta }: {
     transformsPath: string;
     components: Components;
     mode: Mode;
-    features: ProjectMeta["features"];
+    projectMeta: ProjectMeta;
   },
 ) {
   const stylesheet = getStyleSheet(mode);
@@ -40,11 +40,11 @@ function getPageRenderer(
 
     return htmlTemplate({
       pagePath,
-      metaMarkup: renderMetaMarkup(page.meta),
+      metaMarkup: renderMetaMarkup({ ...projectMeta.meta, ...page.meta }),
       headMarkup: twindSheets.getStyleTag(stylesheet),
       bodyMarkup,
       mode,
-      features,
+      features: projectMeta.features,
     });
   };
 }
