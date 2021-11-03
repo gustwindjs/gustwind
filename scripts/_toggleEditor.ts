@@ -15,9 +15,13 @@ function init() {
   );
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = () => {
-    importScript("/_pageEditor.js").then(() => {
-      // @ts-ignore Set up a Window type
-      window.createEditor();
+    importScript("/_pageEditor.js").then((status) => {
+      if (status === "loaded") {
+        window.createEditor();
+      }
+      if (status === "loadedAlready") {
+        window.toggleEditorVisibility();
+      }
     });
   };
 

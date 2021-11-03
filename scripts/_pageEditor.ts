@@ -89,6 +89,17 @@ function createEditorContainer(pageDefinition: Page) {
   return editorsElement;
 }
 
+function toggleEditorVisibility() {
+  const editorsElement = document.getElementById(editorsId);
+
+  if (!editorsElement) {
+    return;
+  }
+
+  editorsElement.style.visibility =
+    editorsElement.style.visibility === "visible" ? "hidden" : "visible";
+}
+
 function initializePage(page: Page["page"]) {
   return immer.produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
@@ -461,6 +472,7 @@ function getSelectedComponent(
 declare global {
   interface Window {
     createEditor: typeof createEditor;
+    toggleEditorVisibility: typeof toggleEditorVisibility;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
@@ -472,6 +484,7 @@ declare global {
 }
 
 window.createEditor = createEditor;
+window.toggleEditorVisibility = toggleEditorVisibility;
 window.metaChanged = metaChanged;
 window.classChanged = debounce<typeof classChanged>(classChanged);
 window.elementClicked = elementClicked;
