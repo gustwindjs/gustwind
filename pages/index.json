@@ -65,7 +65,7 @@
     {
       "element": "LoadScript",
       "__bind": {
-        "source": "/toggleEditor.js"
+        "source": "/_toggleEditor.js"
       }
     }
   ]

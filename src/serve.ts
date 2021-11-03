@@ -35,6 +35,7 @@ async function serve(
   const router = new oak.Router();
   const wss = getWebsocketServer();
 
+  serveScripts(router, "./scripts");
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
@@ -224,9 +225,13 @@ async function serve(
 
 async function serveScripts(
   router: oak.Router,
-  scriptsPath: string,
+  scriptsPath?: string,
   prefix = "",
 ) {
+  if (!scriptsPath) {
+    return;
+  }
+
   try {
     const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 

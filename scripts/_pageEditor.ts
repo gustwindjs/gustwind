@@ -104,7 +104,7 @@ async function createWebSocketConnection() {
   if (location.hostname === "localhost") {
     console.log("Loading web socket client");
 
-    await importScript("./webSocketClient.js");
+    await importScript("./_webSocketClient.js");
 
     // @ts-ignore Fix the type
     socket = window.createWebSocket(getPagePath());

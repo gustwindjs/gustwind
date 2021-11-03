@@ -8,7 +8,6 @@
     "components": "./components",
     "output": "./build",
     "pages": "./pages",
-    "scripts": "./scripts",
     "transforms": "./transforms"
   }
 }

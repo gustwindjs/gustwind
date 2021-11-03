@@ -15,7 +15,7 @@ function init() {
   );
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = () => {
-    importScript("/pageEditor.js").then(() => {
+    importScript("/_pageEditor.js").then(() => {
       // @ts-ignore Set up a Window type
       window.createEditor();
       // @ts-ignore Set up a Window type
