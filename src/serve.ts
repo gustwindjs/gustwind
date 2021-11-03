@@ -1,7 +1,7 @@
 import { oak, path } from "../deps.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import { getJson, watch } from "../utils/fs.ts";
+import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
@@ -21,14 +21,11 @@ async function serve(
   {
     developmentPort,
     meta: siteMeta,
-    paths: {
-      components: componentsPath,
-      pages: pagesPath,
-      scripts: scriptsPath,
-      transforms: transformsPath,
-    },
+    paths,
   }: ProjectMeta,
 ) {
+  const projectPaths = resolvePaths(Deno.cwd(), paths);
+
   console.log(`Serving at ${developmentPort}`);
 
   const components = await getComponents("./components");
@@ -37,12 +34,12 @@ async function serve(
   const router = new oak.Router();
   const wss = getWebsocketServer();
 
-  serveScripts(router, scriptsPath);
-  serveScripts(router, transformsPath, "transforms/");
+  serveScripts(router, projectPaths.scripts);
+  serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
   const renderPage = getPageRenderer({ components, mode });
-  const { paths } = await generateRoutes({
+  const { paths: routePaths } = await generateRoutes({
     renderPage(route, path, context, page) {
       router.get(
         route === "/" ? "/context.json" : `${route}/context.json`,
@@ -97,7 +94,7 @@ async function serve(
         },
       );
     },
-    pagesPath,
+    pagesPath: projectPaths.pages,
     siteMeta,
   });
 
@@ -108,7 +105,7 @@ async function serve(
   app.use(router.routes());
   app.use(router.allowedMethods());
 
-  watch(scriptsPath, ".ts", async (matchedPath) => {
+  watch(projectPaths.scripts, ".ts", async (matchedPath) => {
     const scriptName = path.basename(matchedPath, path.extname(matchedPath));
 
     console.log("Changed script", matchedPath);
@@ -141,13 +138,13 @@ async function serve(
           console.log("watch - Refresh ws");
 
           const pagePath = path.join(
-            pagesPath,
+            projectPaths.pages,
             path.basename(matchedPath, import.meta.url),
           );
-          const p = paths[pagePath];
+          const p = routePaths[pagePath];
 
           if (!p) {
-            if (matchedPath.includes(path.basename(componentsPath))) {
+            if (matchedPath.includes(path.basename(projectPaths.components))) {
               const [componentName, componentDefinition] = await getComponent(
                 matchedPath,
               );
@@ -165,7 +162,7 @@ async function serve(
               "Failed to find match for",
               matchedPath,
               "in",
-              Object.keys(paths),
+              Object.keys(routePaths),
             );
 
             return;

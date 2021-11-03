@@ -1,5 +1,5 @@
 import { esbuild, fs, path } from "../deps.ts";
-import { getJson } from "../utils/fs.ts";
+import { getJson, resolvePaths } from "../utils/fs.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
@@ -9,6 +9,7 @@ import type { ProjectMeta } from "../types.ts";
 async function build(projectMeta: ProjectMeta) {
   console.log("Building to static");
 
+  const projectPaths = resolvePaths(Deno.cwd(), projectMeta.paths);
   let routes: string[] = [];
 
   // TODO: Maybe generateRoutes should become awaitable
@@ -30,14 +31,14 @@ async function build(projectMeta: ProjectMeta) {
 
   const components = await getComponents("./components");
 
-  const outputDirectory = projectMeta.paths.output;
+  const outputDirectory = projectPaths.output;
 
   fs.ensureDir(outputDirectory).then(async () => {
-    await writeScripts(projectMeta.paths.scripts, outputDirectory);
+    await writeScripts(projectPaths.scripts, outputDirectory);
 
     const transformDirectory = path.join(outputDirectory, "transforms");
     fs.ensureDir(transformDirectory).then(async () => {
-      await writeScripts(projectMeta.paths.transforms, transformDirectory);
+      await writeScripts(projectPaths.transforms, transformDirectory);
 
       esbuild.stop();
     });
