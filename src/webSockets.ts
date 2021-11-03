@@ -1,4 +1,4 @@
-import { WebSocketServer } from "websockets";
+import { websockets } from "../deps.ts";
 import type { Page } from "../types.ts";
 
 type WebSocketMessage = {
@@ -7,7 +7,7 @@ type WebSocketMessage = {
 };
 
 const getWebsocketServer = (port = 8080) => {
-  const wss = new WebSocketServer(port);
+  const wss = new websockets.WebSocketServer(port);
 
   wss.on("connection", (ws) => {
     console.log("wss - Connected");

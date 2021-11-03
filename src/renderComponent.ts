@@ -1,4 +1,4 @@
-import { tw } from "twind";
+import { twind } from "../deps.ts";
 import { get, isObject } from "../utils/functional.ts";
 import type {
   Attributes,
@@ -17,7 +17,7 @@ async function renderComponent(
     return component;
   }
 
-  const foundComponent = components[component.element];
+  const foundComponent = component.element && components[component.element];
 
   if (component.__bind) {
     if (isObject(component.__bind)) {
@@ -115,7 +115,7 @@ function resolveClass(component: Component, context: DataContext) {
           context,
         })
       ) {
-        classes.push(tw(klass));
+        classes.push(twind.tw(klass));
       }
     });
   }
@@ -124,7 +124,7 @@ function resolveClass(component: Component, context: DataContext) {
     return classes.join(" ");
   }
 
-  return tw(classes.concat(component.class.split(" ")).join(" "));
+  return twind.tw(classes.concat(component.class.split(" ")).join(" "));
 }
 
 function joinClasses(a?: string, b?: string) {

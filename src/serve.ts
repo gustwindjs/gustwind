@@ -1,5 +1,4 @@
-import { Application, Router } from "oak";
-import { basename, extname, join } from "path";
+import { oak, path } from "../deps.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, watch } from "../utils/fs.ts";
@@ -44,8 +43,8 @@ async function serve(
     importMap,
   );
 
-  const app = new Application();
-  const router = new Router();
+  const app = new oak.Application();
+  const router = new oak.Router();
   const wss = getWebsocketServer();
 
   serveScripts(router, scriptsPath, importMap);
@@ -124,7 +123,7 @@ async function serve(
   app.use(router.allowedMethods());
 
   watch(scriptsPath, ".ts", async (matchedPath) => {
-    const scriptName = basename(matchedPath, extname(matchedPath));
+    const scriptName = path.basename(matchedPath, path.extname(matchedPath));
 
     console.log("Changed script", matchedPath);
 
@@ -156,14 +155,14 @@ async function serve(
         if (socket.state === 1) {
           console.log("watch - Refresh ws");
 
-          const pagePath = join(
+          const pagePath = path.join(
             pagesPath,
-            basename(matchedPath, import.meta.url),
+            path.basename(matchedPath, import.meta.url),
           );
-          const path = paths[pagePath];
+          const p = paths[pagePath];
 
-          if (!path) {
-            if (matchedPath.includes(basename(componentsPath))) {
+          if (!p) {
+            if (matchedPath.includes(path.basename(componentsPath))) {
               const [componentName, componentDefinition] = await getComponent(
                 matchedPath,
               );
@@ -204,17 +203,17 @@ async function serve(
             components,
             // TODO: Fix context
             // Resolve against data again if data sources have changes
-            path.context,
-            path.route,
+            p.context,
+            p.route,
           );
 
           // Cache page so that manual refresh at the client side still
           // has access to it.
-          cachedPages[path.route] = {
+          cachedPages[p.route] = {
             bodyMarkup,
             // TODO: Improve naming
             // Update page content.
-            page: { ...path.page, page },
+            page: { ...p.page, page },
           };
 
           socket.send(
@@ -235,7 +234,7 @@ async function serve(
 }
 
 async function serveScripts(
-  router: Router,
+  router: oak.Router,
   scriptsPath: string,
   importMap: ImportMap,
   prefix = "",

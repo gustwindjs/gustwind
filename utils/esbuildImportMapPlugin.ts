@@ -1,4 +1,4 @@
-import { normalize } from "path";
+import { path } from "../deps.ts";
 
 // Ported from https://github.com/trygve-lie/esbuild-plugin-import-map to Deno
 const isBare = (str: string) => {
@@ -28,7 +28,7 @@ const validate = (map: { imports: Record<string, string> }) =>
 
 const fileReader = (pathname = "") =>
   new Promise((resolve, reject) => {
-    const filepath = normalize(pathname);
+    const filepath = path.normalize(pathname);
 
     Deno.readTextFile(filepath).then((file) => {
       try {

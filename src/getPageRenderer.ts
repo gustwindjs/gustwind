@@ -1,6 +1,4 @@
-import { getStyleTag } from "twind-sheets";
-import { exists } from "fs";
-import { basename, dirname, extname, join } from "path";
+import { fs, path, twindSheets } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import type {
   Components,
@@ -40,7 +38,7 @@ function getPageRenderer(
     return htmlTemplate({
       pagePath,
       metaMarkup: renderMetaMarkup(page.meta),
-      headMarkup: getStyleTag(stylesheet),
+      headMarkup: twindSheets.getStyleTag(stylesheet),
       bodyMarkup,
       mode,
       importMap,
@@ -74,12 +72,12 @@ async function htmlTemplate(
     importMap: ImportMap;
   },
 ): Promise<[string, string?]> {
-  const scriptName = basename(pagePath, extname(pagePath));
-  const scriptPath = join(dirname(pagePath), scriptName) + ".ts";
+  const scriptName = path.basename(pagePath, path.extname(pagePath));
+  const scriptPath = path.join(path.dirname(pagePath), scriptName) + ".ts";
 
   let pageSource;
 
-  if (await exists(scriptPath)) {
+  if (await fs.exists(scriptPath)) {
     pageSource = await compileTypeScript(scriptPath, mode, importMap);
   }
 

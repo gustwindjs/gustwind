@@ -1,5 +1,4 @@
-import { debounce } from "async";
-import { extname, join } from "path";
+import { async, path } from "../deps.ts";
 
 function getJson<R>(filePath: string): Promise<R> {
   return Deno.readTextFile(filePath).then((d) => JSON.parse(d));
@@ -18,11 +17,11 @@ async function dir(p: string, extension?: string) {
 
   for await (const { name } of Deno.readDir(p)) {
     if (extension) {
-      if (extname(name) === extension) {
-        ret.push({ path: join(p, name), name });
+      if (path.extname(name) === extension) {
+        ret.push({ path: path.join(p, name), name });
       }
     } else {
-      ret.push({ path: join(p, name), name });
+      ret.push({ path: path.join(p, name), name });
     }
   }
 
@@ -34,11 +33,11 @@ function dirSync(p: string, extension?: string) {
 
   for (const { name } of Deno.readDirSync(p)) {
     if (extension) {
-      if (extname(name) === extension) {
-        ret.push({ path: join(p, name), name });
+      if (path.extname(name) === extension) {
+        ret.push({ path: path.join(p, name), name });
       }
     } else {
-      ret.push({ path: join(p, name), name });
+      ret.push({ path: path.join(p, name), name });
     }
   }
 
@@ -53,7 +52,7 @@ async function watch(
 ) {
   const watcher = Deno.watchFs(directory);
 
-  const trigger = debounce(
+  const trigger = async.debounce(
     (event: Deno.FsEvent) =>
       event.paths.forEach((p) => p.endsWith(extension) && handler(p, event)),
     debounceDelay,

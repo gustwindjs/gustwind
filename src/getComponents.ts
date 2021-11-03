@@ -1,4 +1,4 @@
-import { basename, extname } from "path";
+import { path } from "../deps.ts";
 import { dir, getJson } from "../utils/fs.ts";
 import type { Component } from "../types.ts";
 
@@ -13,11 +13,11 @@ async function getComponents(directoryPath: string) {
   return Object.fromEntries<Component>(o);
 }
 
-async function getComponent(path: string): Promise<[string?, Component?]> {
+async function getComponent(p: string): Promise<[string?, Component?]> {
   try {
-    return [basename(path, extname(path)), await getJson<Component>(path)];
+    return [path.basename(p, path.extname(p)), await getJson<Component>(p)];
   } catch (error) {
-    console.error(`Failed to parse ${path}`, error);
+    console.error(`Failed to parse ${p}`, error);
   }
 
   return [undefined, undefined];

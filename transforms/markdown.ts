@@ -1,16 +1,17 @@
-import marked from "markdown";
-import hljs from "highlight";
-import { tw } from "twind";
+import {
+  highlight,
+  highlightJS,
+  highlightJSON,
+  highlightTS,
+  marked,
+  twind,
+} from "../deps.ts";
 
-import javascript from "highlight-js";
-import json from "highlight-json";
-import typescript from "highlight-ts";
-
-hljs.registerLanguage("javascript", javascript);
-hljs.registerLanguage("js", javascript);
-hljs.registerLanguage("json", json);
-hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("ts", typescript);
+highlight.registerLanguage("javascript", highlightJS);
+highlight.registerLanguage("js", highlightJS);
+highlight.registerLanguage("json", highlightJSON);
+highlight.registerLanguage("typescript", highlightTS);
+highlight.registerLanguage("ts", highlightTS);
 
 marked.setOptions({
   gfm: true,
@@ -20,7 +21,7 @@ marked.setOptions({
   smartLists: true,
   smartypants: true,
   highlight: (code, language) => {
-    return hljs.highlight(code, { language }).value;
+    return highlight.highlight(code, { language }).value;
   },
 });
 
@@ -49,7 +50,7 @@ function transformMarkdown(input: string) {
             "</code></pre>\n";
         }
 
-        return '<pre class="' + tw`overflow-auto` + '"><code class="' +
+        return '<pre class="' + twind.tw`overflow-auto` + '"><code class="' +
           this.options.langPrefix +
           lang +
           '">' +
@@ -63,7 +64,7 @@ function transformMarkdown(input: string) {
 
         return '<a href="#' + slug + '"><h' +
           level +
-          ' class="' + tw`inline` + '"' +
+          ' class="' + twind.tw`inline` + '"' +
           ' id="' +
           slug +
           '">' +
@@ -77,7 +78,7 @@ function transformMarkdown(input: string) {
         if (href === null) {
           return text;
         }
-        let out = '<a class="' + tw`underline` + '" href="' + href + '"';
+        let out = '<a class="' + twind.tw`underline` + '" href="' + href + '"';
         if (title) {
           out += ' title="' + title + '"';
         }
@@ -90,7 +91,8 @@ function transformMarkdown(input: string) {
           klass = ordered
             ? "list-decimal list-inside"
             : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' + body +
+        return "<" + type + startatt + ' class="' + twind.tw(klass) + '">\n' +
+          body +
           "</" +
           type + ">\n";
       },

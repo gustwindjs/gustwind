@@ -1,5 +1,4 @@
-import * as colors from "twind-colors";
-import typography from "twind-typography";
+import { twindColors, twindTypography } from "../deps.ts";
 import type { Mode } from "../types.ts";
 
 const sharedTwindSetup = (mode: Mode) => ({
@@ -7,10 +6,10 @@ const sharedTwindSetup = (mode: Mode) => ({
   mode: "silent",
   // TODO: This messes up Sidewind logic on the playground page
   // hash: mode === "production",
-  theme: { colors },
+  theme: { colors: twindColors },
   plugins: {
     // TODO: How to override blockquote styles?
-    ...typography(),
+    ...twindTypography(),
   },
 });
 

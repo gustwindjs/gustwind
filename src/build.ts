@@ -1,6 +1,4 @@
-import { ensureDir } from "fs";
-import { stop } from "esbuild";
-import { join } from "path";
+import { esbuild, fs, path } from "../deps.ts";
 import { getJson } from "../utils/fs.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
@@ -42,22 +40,22 @@ async function build(projectMeta: ProjectMeta) {
     importMap,
   );
 
-  ensureDir(outputDirectory).then(async () => {
+  fs.ensureDir(outputDirectory).then(async () => {
     await writeScripts(projectMeta.paths.scripts, outputDirectory, importMap);
 
-    const transformDirectory = join(outputDirectory, "transforms");
-    ensureDir(transformDirectory).then(async () => {
+    const transformDirectory = path.join(outputDirectory, "transforms");
+    fs.ensureDir(transformDirectory).then(async () => {
       await writeScripts(
         projectMeta.paths.transforms,
         transformDirectory,
         importMap,
       );
 
-      stop();
+      esbuild.stop();
     });
 
     Deno.writeTextFile(
-      join(outputDirectory, "components.json"),
+      path.join(outputDirectory, "components.json"),
       JSON.stringify(components),
     );
 
@@ -67,28 +65,28 @@ async function build(projectMeta: ProjectMeta) {
       importMap: browserImportMap,
     });
     const ret = await generateRoutes({
-      renderPage: async (route, path, context, page) => {
+      renderPage: async (route, filePath, context, page) => {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);
 
-        const dir = join(outputDirectory, route);
-        const [html, js] = await renderPage(route, path, context, page);
+        const dir = path.join(outputDirectory, route);
+        const [html, js] = await renderPage(route, filePath, context, page);
 
-        ensureDir(dir).then(() => {
+        fs.ensureDir(dir).then(() => {
           Deno.writeTextFile(
-            join(dir, "context.json"),
+            path.join(dir, "context.json"),
             JSON.stringify(context),
           );
           Deno.writeTextFile(
-            join(dir, "definition.json"),
+            path.join(dir, "definition.json"),
             JSON.stringify(page),
           );
           Deno.writeTextFile(
-            join(dir, "index.html"),
+            path.join(dir, "index.html"),
             html,
           );
           if (js) {
-            Deno.writeTextFile(join(dir, "index.js"), js);
+            Deno.writeTextFile(path.join(dir, "index.js"), js);
           }
         });
       },
@@ -115,7 +113,7 @@ async function writeScripts(
     scriptsWithFiles.map(({ name, content }) =>
       content
         ? Deno.writeTextFile(
-          join(outputPath, name.replace("ts", "js")),
+          path.join(outputPath, name.replace("ts", "js")),
           content,
         )
         : Promise.resolve()

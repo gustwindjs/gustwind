@@ -1,13 +1,12 @@
-import { virtualSheet } from "twind-sheets";
-import { setup } from "twind";
+import { twind, twindSheets } from "../deps.ts";
 import { sharedTwindSetup } from "./sharedTwindSetup.ts";
 import type { Mode } from "../types.ts";
 
 // https://twind.dev/handbook/the-shim.html#server
 function getStyleSheet(mode: Mode) {
-  const sheet = virtualSheet();
+  const sheet = twindSheets.virtualSheet();
 
-  setup({
+  twind.setup({
     sheet,
     ...sharedTwindSetup(mode),
   });

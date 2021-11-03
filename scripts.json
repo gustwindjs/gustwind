@@ -15,6 +15,5 @@
       "cmd": "deno run --no-check --unstable src/build.ts",
       "watch": true
     }
-  },
-  "imap": "import_map.json"
+  }
 }

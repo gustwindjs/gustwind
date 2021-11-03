@@ -1,4 +1,4 @@
-import { build } from "esbuild";
+import { esbuild } from "../deps.ts";
 import * as importMapPlugin from "./esbuildImportMapPlugin.ts";
 import type { ImportMap, Mode } from "../types.ts";
 
@@ -10,7 +10,7 @@ async function compileTypeScript(
   importMapPlugin.load(importMap);
 
   // Reference: https://esbuild.github.io/api/
-  const result = await build({
+  const result = await esbuild.build({
     entryPoints: [path],
     // TODO: Add source maps for production?
     // sourcemap: mode === "production",

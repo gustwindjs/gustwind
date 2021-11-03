@@ -5,7 +5,7 @@ type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
 type Component = {
-  element: string; // TODO: Only valid DOM element names + components
+  element?: string; // TODO: Only valid DOM element names + components
   children?: string | Component[];
   class?: string;
   inputProperty?: string;
