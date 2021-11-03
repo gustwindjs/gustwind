@@ -78,7 +78,6 @@ async function htmlTemplate(
 <html lang="en">
   <head>
     <meta charset="UTF-8"
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="pagepath" content="${pagePath}" />
     <script type="text/javascript" src="https://unpkg.com/sidewind@5.4.6/dist/sidewind.umd.production.min.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>">
