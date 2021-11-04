@@ -50,7 +50,9 @@ type SiteMeta = {
 type ProjectMeta = {
   projectRoot?: string;
   developmentPort: number;
-  meta: SiteMeta;
+  head: {
+    meta: SiteMeta;
+  };
   paths: {
     components: string;
     output: string;

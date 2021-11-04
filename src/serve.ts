@@ -20,15 +20,9 @@ const cachedScripts: Record<string, string> = {};
 async function serve(
   projectMeta: ProjectMeta,
 ) {
-  const {
-    projectRoot,
-    developmentPort,
-    meta: siteMeta,
-    paths,
-  } = projectMeta;
-  const projectPaths = resolvePaths(projectRoot, paths);
+  const projectPaths = resolvePaths(projectMeta.projectRoot, projectMeta.paths);
 
-  console.log(`Serving at ${developmentPort}`);
+  console.log(`Serving at ${projectMeta.developmentPort}`);
 
   const components = await getComponents("./components");
 
@@ -105,7 +99,7 @@ async function serve(
       );
     },
     pagesPath: projectPaths.pages,
-    siteMeta,
+    siteMeta: projectMeta.head.meta,
   });
 
   router.get("/components.json", (ctx) => {
@@ -119,7 +113,7 @@ async function serve(
   watchScripts(projectPaths.scripts);
 
   watch(
-    projectRoot || ".",
+    projectMeta.projectRoot || ".",
     ".json",
     (matchedPath) => {
       wss.clients.forEach(async (socket) => {
@@ -232,7 +226,7 @@ async function serve(
       });
   }
 
-  await app.listen({ port: developmentPort });
+  await app.listen({ port: projectMeta.developmentPort });
 }
 
 async function serveScripts(

@@ -7,9 +7,11 @@ Each project built with Gustwind needs minimal configuration to describe where t
 ```json
 {
   "developmentPort": 3000,
-  "meta": {
-    "siteName": "Gustwind",
-    "viewport": "width=device-width, initial-scale=1.0"
+  "head": {
+    "meta": {
+      "siteName": "Gustwind",
+      "viewport": "width=device-width, initial-scale=1.0"
+    }
   },
   "paths": {
     "components": "./components",

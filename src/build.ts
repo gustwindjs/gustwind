@@ -84,7 +84,7 @@ async function build(projectMeta: ProjectMeta) {
         });
       },
       pagesPath: "./pages",
-      siteMeta: projectMeta.meta,
+      siteMeta: projectMeta.head.meta,
     });
 
     routes = ret.routes;

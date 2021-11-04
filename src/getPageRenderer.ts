@@ -40,7 +40,7 @@ function getPageRenderer(
 
     return htmlTemplate({
       pagePath,
-      metaMarkup: renderMetaMarkup({ ...projectMeta.meta, ...page.meta }),
+      metaMarkup: renderMetaMarkup({ ...projectMeta.head.meta, ...page.meta }),
       headMarkup: twindSheets.getStyleTag(stylesheet),
       bodyMarkup,
       mode,
