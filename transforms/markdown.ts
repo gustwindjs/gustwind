@@ -50,7 +50,9 @@ function transformMarkdown(input: string) {
             "</code></pre>\n";
         }
 
-        return '<pre class="' + twind.tw`overflow-auto` + '"><code class="' +
+        return '<pre class="' +
+          twind.tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
+          '"><code class="' +
           this.options.langPrefix +
           lang +
           '">' +
