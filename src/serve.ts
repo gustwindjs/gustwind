@@ -99,7 +99,7 @@ async function serve(
       );
     },
     pagesPath: projectPaths.pages,
-    siteMeta: projectMeta.head.meta,
+    siteName: projectMeta.siteName,
   });
 
   router.get("/components.json", (ctx) => {

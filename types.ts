@@ -44,14 +44,15 @@ type BlogPost = {
   };
   content: string;
 };
-type SiteMeta = {
-  siteName: string;
-};
 type ProjectMeta = {
   projectRoot?: string;
   developmentPort: number;
+  siteName: string;
+  language: string;
   head: {
-    meta: SiteMeta;
+    meta: Record<string, string>[];
+    link?: Record<string, string>[];
+    script?: Record<string, string>[];
   };
   paths: {
     components: string;
@@ -94,6 +95,5 @@ export type {
   ParentCategory,
   ProjectMeta,
   Props,
-  SiteMeta,
   Transform,
 };

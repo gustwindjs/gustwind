@@ -1,10 +1,10 @@
 import { dir, getJsonSync } from "../utils/fs.ts";
 import { get } from "../utils/functional.ts";
-import type { DataContext, Meta, Page, SiteMeta } from "../types.ts";
+import type { DataContext, Meta, Page } from "../types.ts";
 import transform from "./transform.ts";
 
 async function generateRoutes(
-  { transformsPath, renderPage, pagesPath, siteMeta }: {
+  { transformsPath, renderPage, pagesPath, siteName }: {
     transformsPath: string;
     renderPage: (
       route: string,
@@ -13,7 +13,7 @@ async function generateRoutes(
       page: Page,
     ) => void;
     pagesPath: string;
-    siteMeta: SiteMeta;
+    siteName: string;
   },
 ) {
   const pages = (await dir(pagesPath, ".json")).map((meta) => ({
@@ -85,7 +85,7 @@ async function generateRoutes(
               paths[path] = {
                 route,
                 context,
-                page: { ...page, meta: getMeta(pageData, page.meta, siteMeta) },
+                page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
               };
               routes.push(route);
             });
@@ -100,7 +100,7 @@ async function generateRoutes(
           paths[path] = {
             route,
             context: pageData,
-            page: { ...page, meta: getMeta(pageData, page.meta, siteMeta) },
+            page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
           };
           routes.push(route);
         }
@@ -114,7 +114,7 @@ async function generateRoutes(
       paths[path] = {
         route,
         context: pageData,
-        page: { ...page, meta: getMeta(pageData, page.meta, siteMeta) },
+        page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
       };
       routes.push(route);
     }
@@ -126,12 +126,12 @@ async function generateRoutes(
 function getMeta(
   pageData: DataContext,
   meta: Meta,
-  siteMeta: SiteMeta,
+  siteName: string,
 ) {
   return {
     ...applyMeta(meta, pageData),
-    "og:site_name": siteMeta.siteName || "",
-    "twitter:site": siteMeta.siteName || "",
+    "og:site_name": siteName || "",
+    "twitter:site": siteName || "",
     "og:title": meta.title || "",
     "twitter:title": meta.title || "",
     "og:description": meta.description || "",

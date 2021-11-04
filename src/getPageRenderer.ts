@@ -40,16 +40,32 @@ function getPageRenderer(
 
     return htmlTemplate({
       pagePath,
-      metaMarkup: renderMetaMarkup({ ...projectMeta.head.meta, ...page.meta }),
-      headMarkup: twindSheets.getStyleTag(stylesheet),
+      headMarkup: renderHeadMarkup(stylesheet, page, projectMeta.head),
       bodyMarkup,
       mode,
       features: projectMeta.features,
+      language: projectMeta.language,
     });
   };
 }
 
-function renderMetaMarkup(meta?: Meta) {
+function renderHeadMarkup(
+  stylesheet: ReturnType<typeof getStyleSheet>,
+  page: Page,
+  head: ProjectMeta["head"],
+) {
+  return [
+    twindSheets.getStyleTag(stylesheet),
+    toTags("meta", false, head.meta),
+    toTags("link", false, head.link),
+    toTags("script", true, head.script),
+    renderMetaMarkup(page.meta),
+  ].join("");
+}
+
+function renderMetaMarkup(
+  meta?: Meta,
+) {
   if (!meta) {
     return "";
   }
@@ -65,14 +81,30 @@ function renderMetaMarkup(meta?: Meta) {
   return ret.join("\n");
 }
 
+function toTags(
+  tagName: string,
+  generateSuffix: boolean,
+  fields?: Record<string, string>[],
+) {
+  if (!fields) {
+    return "";
+  }
+
+  return `<${tagName} ` +
+    fields.map((o) =>
+      Object.entries(o).map(([k, v]) => `${k}="${v}"`).join(" ")
+    ).join(" ") + ">" +
+    (generateSuffix ? `</${tagName}>` : "");
+}
+
 async function htmlTemplate(
-  { pagePath, metaMarkup, headMarkup, bodyMarkup, mode, features }: {
+  { pagePath, headMarkup, bodyMarkup, mode, features, language }: {
     pagePath: string;
-    metaMarkup?: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
     features: ProjectMeta["features"];
+    language: ProjectMeta["language"];
   },
 ): Promise<[string, string?]> {
   const scriptName = path.basename(pagePath, path.extname(pagePath));
@@ -85,14 +117,9 @@ async function htmlTemplate(
   }
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${language}">
   <head>
-    <meta charset="UTF-8"
     <meta name="pagepath" content="${pagePath}" />
-    <script type="text/javascript" src="https://unpkg.com/sidewind@5.4.6/dist/sidewind.umd.production.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css">
-    ${metaMarkup || ""}
     ${headMarkup || ""}
   </head>
   <body>
