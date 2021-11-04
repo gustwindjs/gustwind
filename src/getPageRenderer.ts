@@ -90,11 +90,13 @@ function toTags(
     return "";
   }
 
-  return `<${tagName} ` +
-    fields.map((o) =>
-      Object.entries(o).map(([k, v]) => `${k}="${v}"`).join(" ")
-    ).join(" ") + ">" +
-    (generateSuffix ? `</${tagName}>` : "");
+  return fields.map((o) =>
+    `<${tagName} ` + Object.entries(o).map(([k, v]) =>
+      `${k}="${v}"`
+    ).join(" ") +
+    ">" +
+    (generateSuffix ? `</${tagName}>` : "")
+  ).join(" ");
 }
 
 async function htmlTemplate(
