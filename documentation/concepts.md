@@ -113,7 +113,7 @@ In the examples above, data coming from **data sources** has been connected, or 
 **dataSources/indexBlog.ts**
 
 ```typescript
-import { frontmatter } from "../deps.ts";
+import { parse } from "../utils/frontmatter.ts";
 import { dir } from "../utils/fs.ts";
 import type { BlogPost } from "../types.ts";
 
@@ -122,7 +122,7 @@ async function indexBlog(directory: string) {
 
   return Promise.all(
     blogFiles.map(({ path }) =>
-      Deno.readTextFile(path).then((d) => frontmatter.parse(d) as BlogPost)
+      Deno.readTextFile(path).then((d) => parse(d) as BlogPost)
     ),
   );
 }

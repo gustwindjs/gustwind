@@ -7,11 +7,11 @@
   },
   "scripts": {
     "develop": {
-      "cmd": "deno run --no-check --unstable src/serve.ts",
+      "cmd": "deno run --unstable src/serve.ts",
       "watch": true
     },
     "build": {
-      "cmd": "deno run --no-check --unstable src/build.ts"
+      "cmd": "deno run --unstable src/build.ts"
     },
     "watch:build": {
       "cmd": "deno run --unstable src/build.ts",
