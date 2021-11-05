@@ -6,7 +6,7 @@ import { HighlightJS } from "https://cdn.skypack.dev/highlight.js@11.3.1?min";
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
 import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
 import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
-import marked from "https://esm.sh/marked@3.0.7";
+import { marked } from "https://esm.sh/marked@4.0.0";
 import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
 import * as path from "https://deno.land/std@0.107.0/path/mod.ts";
 import * as websockets from "https://deno.land/x/websocket@v0.1.3/mod.ts";
