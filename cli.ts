@@ -1,14 +1,12 @@
 // Derived from https://github.com/kt3k/twd
-import { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
+import { flags } from "./deps.ts";
+import { getJsonSync } from "./utils/fs.ts";
 
-const NAME = "Gustwind";
-
-// TODO: Read this from scripts.json
-const VERSION = "x.x.x";
+const META = getJsonSync("./scripts.json");
 
 function usage() {
   console.log(`
-Usage: ${NAME} [-w|-b|-d] [-D]
+Usage: ${META.name} [-w|-b|-d] [-D]
 
 Options:
   -i, --init           Initializes 'twd.ts' config file.
@@ -38,7 +36,7 @@ export function main(cliArgs: string[]): number {
     develop,
     debug,
     init,
-  } = parse(cliArgs, {
+  } = flags.parse(cliArgs, {
     boolean: ["help", "version", "build", "develop", "debug", "init"],
     alias: {
       v: "version",
@@ -52,7 +50,7 @@ export function main(cliArgs: string[]): number {
   }) as CliArgs;
 
   if (version) {
-    console.log(`${NAME}@${VERSION}`);
+    console.log(`${META.name}@${META.version}`);
     return 0;
   }
 

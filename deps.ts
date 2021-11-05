@@ -11,10 +11,12 @@ import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
 import * as path from "https://deno.land/std@0.107.0/path/mod.ts";
 import * as websockets from "https://deno.land/x/websocket@v0.1.3/mod.ts";
 import * as yaml from "https://esm.sh/yaml@1.10.2";
+import * as flags from "https://deno.land/std@0.113.0/flags/mod.ts";
 
 export {
   async,
   esbuild,
+  flags,
   frontmatter,
   fs,
   HighlightJS as highlight,

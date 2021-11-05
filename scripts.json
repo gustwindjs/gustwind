@@ -1,4 +1,6 @@
 {
+  "name": "gustwind",
+  "version": "dev",
   "allow": ["env", "read", "write", "net", "run"],
   "env": {
     "NO_COLOR": 1
