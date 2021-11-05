@@ -17,10 +17,8 @@ const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
 // The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
 
-async function serve(
-  projectMeta: ProjectMeta,
-) {
-  const projectPaths = resolvePaths(projectMeta.projectRoot, projectMeta.paths);
+async function serve(projectMeta: ProjectMeta, projectRoot: string) {
+  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
 
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
@@ -113,7 +111,7 @@ async function serve(
   watchScripts(projectPaths.scripts);
 
   watch(
-    projectMeta.projectRoot || ".",
+    projectRoot,
     ".json",
     (matchedPath) => {
       wss.clients.forEach(async (socket) => {
@@ -257,7 +255,7 @@ async function serveScripts(
 if (import.meta.main) {
   const siteMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serve(siteMeta);
+  serve(siteMeta, Deno.cwd());
 }
 
 export { serve };

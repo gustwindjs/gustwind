@@ -1,6 +1,13 @@
+/// <reference no-default-lib="true"/>
+/// <reference lib="deno.ns" />
+/// <reference lib="dom" />
+/// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags } from "./deps.ts";
-import { getJsonSync } from "./utils/fs.ts";
+import { flags, path } from "./deps.ts";
+import { getJson, getJsonSync } from "./utils/fs.ts";
+import { build as buildProject } from "./src/build.ts";
+import { serve as serveProject } from "./src/serve.ts";
+import type { ProjectMeta } from "./types.ts";
 
 const META = getJsonSync("./scripts.json");
 
@@ -28,7 +35,8 @@ type CliArgs = {
   _: string[];
 };
 
-export function main(cliArgs: string[]): number {
+export async function main(cliArgs: string[]): Promise<number> {
+  const cwd = Deno.cwd();
   const {
     help,
     version,
@@ -49,6 +57,10 @@ export function main(cliArgs: string[]): number {
     },
   }) as CliArgs;
 
+  if (debug) {
+    Deno.env.set("DEBUG", "1");
+  }
+
   if (version) {
     console.log(`${META.name}@${META.version}`);
     return 0;
@@ -66,13 +78,17 @@ export function main(cliArgs: string[]): number {
   }
 
   if (develop) {
-    console.log("TODO: This should trigger development mode");
+    const siteMeta = await getJson<ProjectMeta>(path.join(cwd, "./meta.json"));
+
+    await serveProject(siteMeta, cwd);
 
     return 0;
   }
 
   if (build) {
-    console.log("TODO: This should build the project");
+    const siteMeta = await getJson<ProjectMeta>(path.join(cwd, "./meta.json"));
+
+    await buildProject(siteMeta, cwd);
 
     return 0;
   }

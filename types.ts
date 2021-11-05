@@ -45,7 +45,6 @@ type BlogPost = {
   content: string;
 };
 type ProjectMeta = {
-  projectRoot?: string;
   developmentPort: number;
   siteName: string;
   language: string;

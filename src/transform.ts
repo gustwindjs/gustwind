@@ -16,7 +16,7 @@ async function transform(
       transformNames.map((name) => {
         const transformPath = path.join(transformsPath, `${name}.ts`);
 
-        Deno.env.get("DEBUG") &&
+        Deno.env.get("DEBUG") === "1" &&
           console.log(
             "importing transform",
             transformPath,

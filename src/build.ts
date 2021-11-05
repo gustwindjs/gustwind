@@ -6,10 +6,10 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { ProjectMeta } from "../types.ts";
 
-async function build(projectMeta: ProjectMeta) {
+async function build(projectMeta: ProjectMeta, projectRoot: string) {
   console.log("Building to static");
 
-  const projectPaths = resolvePaths(projectMeta.projectRoot, projectMeta.paths);
+  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
   let routes: string[] = [];
 
   // TODO: Maybe generateRoutes should become awaitable
@@ -113,7 +113,7 @@ async function writeScripts(scriptsPath: string, outputPath: string) {
 if (import.meta.main) {
   const siteMeta = await getJson<ProjectMeta>("./meta.json");
 
-  build(siteMeta);
+  build(siteMeta, Deno.cwd());
 }
 
 export { build };

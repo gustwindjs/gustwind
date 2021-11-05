@@ -6,15 +6,15 @@
     "NO_COLOR": 1
   },
   "scripts": {
-    "start": {
-      "cmd": "deno run --no-check --unstable src/serve.ts",
+    "develop": {
+      "cmd": "deno run --unstable src/serve.ts",
       "watch": true
     },
     "build": {
-      "cmd": "deno run --no-check --unstable src/build.ts"
+      "cmd": "deno run --unstable src/build.ts"
     },
     "watch:build": {
-      "cmd": "deno run --no-check --unstable src/build.ts",
+      "cmd": "deno run --unstable src/build.ts",
       "watch": true
     }
   }
