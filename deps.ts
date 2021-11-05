@@ -1,5 +1,5 @@
 import * as async from "https://deno.land/std@0.113.0/async/mod.ts";
-import * as esbuild from "https://deno.land/x/esbuild@v0.13.7/mod.js";
+import * as esbuild from "https://deno.land/x/esbuild@v0.13.12/mod.js";
 import * as fs from "https://deno.land/std@0.113.0/fs/mod.ts";
 import * as flags from "https://deno.land/std@0.113.0/flags/mod.ts";
 import { HighlightJS } from "https://cdn.skypack.dev/highlight.js@11.3.1?min";
