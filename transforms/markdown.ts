@@ -20,7 +20,7 @@ marked.setOptions({
   sanitize: false,
   smartLists: true,
   smartypants: true,
-  highlight: (code, language) => {
+  highlight: (code: string, language: string) => {
     return highlight.highlight(code, { language }).value;
   },
 });
@@ -33,7 +33,7 @@ function transformMarkdown(input: string) {
   // https://github.com/markedjs/marked/blob/master/src/Renderer.js
   marked.use({
     renderer: {
-      code(code, infostring) {
+      code(code: string, infostring: string) {
         const lang = (infostring || "").match(/\S*/)[0];
         if (this.options.highlight) {
           const out = this.options.highlight(code, lang);
@@ -59,7 +59,12 @@ function transformMarkdown(input: string) {
           code +
           "</code></pre>\n";
       },
-      heading(text, level, raw, slugger) {
+      heading(
+        text: string,
+        level: number,
+        raw: string,
+        slugger: { slug: (s: string) => string },
+      ) {
         const slug = slugger.slug(raw);
 
         tableOfContents.push({ slug, level, text });
@@ -76,7 +81,7 @@ function transformMarkdown(input: string) {
           ">" +
           "</a>\n";
       },
-      link(href, title, text) {
+      link(href: string, title: string, text: string) {
         if (href === null) {
           return text;
         }
@@ -87,7 +92,7 @@ function transformMarkdown(input: string) {
         out += ">" + text + "</a>";
         return out;
       },
-      list(body, ordered, start) {
+      list(body: string, ordered: string, start: number) {
         const type = ordered ? "ol" : "ul",
           startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
           klass = ordered

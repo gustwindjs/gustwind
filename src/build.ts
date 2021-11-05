@@ -6,33 +6,17 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { ProjectMeta } from "../types.ts";
 
-async function build(projectMeta: ProjectMeta) {
+async function build(projectMeta: ProjectMeta, projectRoot: string) {
   console.log("Building to static");
 
-  const projectPaths = resolvePaths(projectMeta.projectRoot, projectMeta.paths);
+  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
   let routes: string[] = [];
 
-  // TODO: Maybe generateRoutes should become awaitable
   const startTime = performance.now();
-  window.onunload = () => {
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-    const routeAmount = routes.length;
-
-    console.log(
-      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-        Math.round(
-          duration /
-            routeAmount * 1000,
-        ) / 1000
-      } ms per page.`,
-    );
-  };
-
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
 
-  fs.ensureDir(outputDirectory).then(async () => {
+  await fs.ensureDir(outputDirectory).then(async () => {
     await Promise.all([
       writeScripts("./scripts", outputDirectory),
       writeScripts(projectPaths.scripts, outputDirectory),
@@ -89,6 +73,19 @@ async function build(projectMeta: ProjectMeta) {
 
     routes = ret.routes;
   });
+
+  const endTime = performance.now();
+  const duration = endTime - startTime;
+  const routeAmount = routes.length;
+
+  console.log(
+    `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+      Math.round(
+        duration /
+          routeAmount * 1000,
+      ) / 1000
+    } ms per page.`,
+  );
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {
@@ -113,7 +110,7 @@ async function writeScripts(scriptsPath: string, outputPath: string) {
 if (import.meta.main) {
   const siteMeta = await getJson<ProjectMeta>("./meta.json");
 
-  build(siteMeta);
+  build(siteMeta, Deno.cwd());
 }
 
 export { build };
