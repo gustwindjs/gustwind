@@ -32,7 +32,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
 
-  fs.ensureDir(outputDirectory).then(async () => {
+  await fs.ensureDir(outputDirectory).then(async () => {
     await Promise.all([
       writeScripts("./scripts", outputDirectory),
       writeScripts(projectPaths.scripts, outputDirectory),
