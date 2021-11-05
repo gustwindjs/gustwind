@@ -12,23 +12,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
   let routes: string[] = [];
 
-  // TODO: Maybe generateRoutes should become awaitable
   const startTime = performance.now();
-  window.onunload = () => {
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-    const routeAmount = routes.length;
-
-    console.log(
-      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-        Math.round(
-          duration /
-            routeAmount * 1000,
-        ) / 1000
-      } ms per page.`,
-    );
-  };
-
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
 
@@ -89,6 +73,19 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
     routes = ret.routes;
   });
+
+  const endTime = performance.now();
+  const duration = endTime - startTime;
+  const routeAmount = routes.length;
+
+  console.log(
+    `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+      Math.round(
+        duration /
+          routeAmount * 1000,
+      ) / 1000
+    } ms per page.`,
+  );
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {
