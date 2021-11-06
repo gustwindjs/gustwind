@@ -33,10 +33,14 @@ function transformMarkdown(input: string) {
   // https://github.com/markedjs/marked/blob/master/src/Renderer.js
   marked.use({
     renderer: {
-      code(code: string, infostring: string) {
-        const lang = (infostring || "").match(/\S*/)[0];
+      code(code: string, infostring: string): string {
+        const lang = ((infostring || "").match(/\S*/) || [])[0];
+
+        // @ts-ignore How to type this?
         if (this.options.highlight) {
+          // @ts-ignore How to type this?
           const out = this.options.highlight(code, lang);
+
           if (out != null && out !== code) {
             code = out;
           }
@@ -53,6 +57,7 @@ function transformMarkdown(input: string) {
         return '<pre class="' +
           twind.tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
           '"><code class="' +
+          // @ts-ignore How to type this?
           this.options.langPrefix +
           lang +
           '">' +
@@ -106,7 +111,7 @@ function transformMarkdown(input: string) {
     },
   });
 
-  return { content: marked(input), tableOfContents };
+  return { content: marked.marked(input), tableOfContents };
 }
 
 export default transformMarkdown;
