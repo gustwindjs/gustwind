@@ -1,4 +1,4 @@
-import { websockets } from "../deps.ts";
+import * as websockets from "https://deno.land/x/websocket@v0.1.3/mod.ts";
 import type { Page } from "../types.ts";
 
 type WebSocketMessage = {

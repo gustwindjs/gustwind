@@ -1,4 +1,5 @@
-import { oak, path } from "../deps.ts";
+import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
+import { path } from "../deps.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
