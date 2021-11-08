@@ -33,7 +33,7 @@ self.onmessage = async (e) => {
 
   const [html, js] = await renderPage(route, filePath, context, page);
 
-  console.log(html, js);
+  //console.log(html, js);
 
   /*
   fs.ensureDir(dir).then(() => {

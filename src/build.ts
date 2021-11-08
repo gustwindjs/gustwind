@@ -3,7 +3,6 @@ import { getJson, resolvePaths } from "../utils/fs.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer } from "./getPageRenderer.ts";
 import type { ProjectMeta } from "../types.ts";
 
 const amountOfWorkers = navigator.hardwareConcurrency - 1;
@@ -36,39 +35,41 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       JSON.stringify(components),
     );
 
-    const renderPage = getPageRenderer({
+    /*const renderPage = getPageRenderer({
       projectPaths,
       transformsPath: projectPaths.transforms,
       components,
       mode: "production",
       projectMeta,
-    });
+    });*/
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,
-      renderPage: async (route, filePath, page, extraContext) => {
+      renderPage: (route, filePath, page, extraContext) => {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);
 
         const worker = createWorker();
 
         const dir = path.join(outputDirectory, route);
-        const [html, js, context] = await renderPage(
+        /*const [html, js, context] = await renderPage(
           route,
           filePath,
           page,
           extraContext,
-        );
+        );*/
 
         worker.postMessage({
           transformsPath: projectPaths.transforms,
           route,
           filePath,
           dir,
+          context: extraContext,
           components: components,
           projectMeta,
           page,
         });
 
+        /*
         fs.ensureDir(dir).then(() => {
           Deno.writeTextFile(
             path.join(dir, "context.json"),
@@ -86,6 +87,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
             Deno.writeTextFile(path.join(dir, "index.js"), js);
           }
         });
+        */
       },
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
