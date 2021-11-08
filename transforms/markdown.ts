@@ -1,11 +1,9 @@
+import { marked } from "https://unpkg.com/marked@4.0.0/lib/marked.esm.js";
 import { twind } from "../browserDeps.ts";
-import {
-  highlight,
-  highlightJS,
-  highlightJSON,
-  highlightTS,
-  marked,
-} from "../deps.ts";
+import { HighlightJS as highlight } from "https://cdn.skypack.dev/highlight.js@11.3.1?min";
+import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
+import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
+import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
 
 highlight.registerLanguage("javascript", highlightJS);
 highlight.registerLanguage("js", highlightJS);
@@ -111,7 +109,7 @@ function transformMarkdown(input: string) {
     },
   });
 
-  return { content: marked.marked(input), tableOfContents };
+  return { content: marked(input), tableOfContents };
 }
 
 export default transformMarkdown;
