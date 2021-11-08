@@ -10,7 +10,7 @@ async function transform(
     return Promise.resolve({ content: input });
   }
 
-  if ("Deno" in window) {
+  if ("Deno" in globalThis) {
     const path = await import("https://deno.land/std@0.107.0/path/mod.ts");
     const transforms = await Promise.all(
       transformNames.map((name) => {

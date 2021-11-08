@@ -59,7 +59,15 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           extraContext,
         );
 
-        worker.postMessage({ dir, components: components });
+        worker.postMessage({
+          transformsPath: projectPaths.transforms,
+          route,
+          filePath,
+          dir,
+          components: components,
+          projectMeta,
+          page,
+        });
 
         fs.ensureDir(dir).then(() => {
           Deno.writeTextFile(

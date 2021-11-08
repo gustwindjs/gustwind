@@ -1,18 +1,41 @@
 // import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
-import type { Components } from "../types.ts";
+import type { Components, DataContext, Page, ProjectMeta } from "../types.ts";
 
-self.onmessage = (e) => {
-  const { dir, components }: { dir: string; components: Components } = e.data;
-
-  console.log(dir);
+self.onmessage = async (e) => {
+  const {
+    transformsPath,
+    route,
+    filePath,
+    dir,
+    components,
+    projectMeta,
+    context,
+    page,
+  }: {
+    transformsPath: string;
+    route: string;
+    filePath: string;
+    dir: string;
+    components: Components;
+    projectMeta: ProjectMeta;
+    context: DataContext;
+    page: Page;
+  } = e.data;
 
   // ReferenceError: window is not defined
-  // const renderPage = getPageRenderer({ components, mode: "production" });
+  const renderPage = getPageRenderer({
+    transformsPath,
+    components,
+    mode: "production",
+    projectMeta,
+  });
 
-  /*
   const [html, js] = await renderPage(route, filePath, context, page);
 
+  console.log(html, js);
+
+  /*
   fs.ensureDir(dir).then(() => {
     Deno.writeTextFile(
       path.join(dir, "context.json"),
