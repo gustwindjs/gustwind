@@ -16,10 +16,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const startTime = performance.now();
   const components = await getComponents("./components");
-  const outputDirectory = projectMeta.paths.output;
+  const outputDirectory = projectPaths.output;
 
-  fs.ensureDir(outputDirectory).then(async () => {
-    await writeScripts(projectMeta.paths.scripts, outputDirectory);
+  await fs.ensureDir(outputDirectory).then(async () => {
+    await Promise.all([
+      writeScripts("./scripts", outputDirectory),
+      writeScripts(projectPaths.scripts, outputDirectory),
+    ]);
 
     const transformDirectory = path.join(outputDirectory, "transforms");
     fs.ensureDir(transformDirectory).then(async () => {
