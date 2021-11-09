@@ -210,7 +210,7 @@ The `[blog].json` case is more complicated as there we'll have to define the map
   "matchBy": {
     "dataSource": "blogPosts",
     "collection": "content",
-    "property": "data.slug"
+    "property": "match.slug"
   },
   "page": [
     {

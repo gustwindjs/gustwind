@@ -35,6 +35,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     );
 
     const renderPage = getPageRenderer({
+      projectPaths,
       transformsPath: projectPaths.transforms,
       components,
       mode: "production",
@@ -42,12 +43,17 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     });
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,
-      renderPage: async (route, filePath, context, page) => {
+      renderPage: async (route, filePath, page, extraContext) => {
         // TODO: Push this behind a verbose flag
         // console.log("Building", route);
 
         const dir = path.join(outputDirectory, route);
-        const [html, js] = await renderPage(route, filePath, context, page);
+        const [html, js, context] = await renderPage(
+          route,
+          filePath,
+          page,
+          extraContext,
+        );
 
         fs.ensureDir(dir).then(() => {
           Deno.writeTextFile(

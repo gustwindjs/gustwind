@@ -1,6 +1,7 @@
 import { twindSheets } from "../browserDeps.ts";
 import { fs, path } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
+import { get } from "../utils/functional.ts";
 import type {
   Components,
   DataContext,
@@ -9,11 +10,13 @@ import type {
   Page,
   ProjectMeta,
 } from "../types.ts";
+import { getContext } from "./getContext.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { transformsPath, components, mode, projectMeta }: {
+  { projectPaths, transformsPath, components, mode, projectMeta }: {
+    projectPaths: ProjectMeta["paths"];
     transformsPath: string;
     components: Components;
     mode: Mode;
@@ -25,41 +28,82 @@ function getPageRenderer(
   return async (
     pathname: string,
     pagePath: string,
-    pageData: DataContext,
     page: Page,
+    extraContext: DataContext,
     initialBodyMarkup?: string,
   ) => {
+    const pageContext: DataContext = await getContext(
+      projectPaths.dataSources,
+      projectPaths.transforms,
+      page.dataSources,
+    );
+    const context = { ...pageContext, ...extraContext };
     const bodyMarkup = initialBodyMarkup || await renderBody(
       transformsPath,
       page,
       page.page,
       components,
-      pageData,
+      context,
       pathname,
     );
 
     return htmlTemplate({
       pagePath,
-      headMarkup: renderHeadMarkup(stylesheet, page, projectMeta.head),
+      headMarkup: renderHeadMarkup(
+        stylesheet,
+        projectMeta.head,
+        getMeta(context, page.meta, projectMeta.siteName),
+      ),
       bodyMarkup,
       mode,
       features: projectMeta.features,
       language: projectMeta.language,
+      context,
     });
   };
 }
 
+function getMeta(
+  pageData: DataContext,
+  meta: Meta,
+  siteName: string,
+) {
+  return {
+    ...applyMeta(meta, pageData),
+    "og:site_name": siteName || "",
+    "twitter:site": siteName || "",
+    "og:title": meta.title || "",
+    "twitter:title": meta.title || "",
+    "og:description": meta.description || "",
+    "twitter:description": meta.description || "",
+  };
+}
+
+function applyMeta(meta: Meta, dataContext?: DataContext) {
+  const ret: Meta = {};
+
+  Object.entries(meta).forEach(([k, v]) => {
+    if (k.startsWith("__") && dataContext) {
+      ret[k.slice(2)] = get<DataContext>(dataContext, v);
+    } else {
+      ret[k] = v;
+    }
+  });
+
+  return ret;
+}
+
 function renderHeadMarkup(
   stylesheet: ReturnType<typeof getStyleSheet>,
-  page: Page,
   head: ProjectMeta["head"],
+  meta: Page["meta"],
 ) {
   return [
     twindSheets.getStyleTag(stylesheet),
     toTags("meta", false, head.meta),
     toTags("link", false, head.link),
     toTags("script", true, head.script),
-    renderMetaMarkup(page.meta),
+    renderMetaMarkup(meta),
   ].join("");
 }
 
@@ -100,19 +144,20 @@ function toTags(
 }
 
 async function htmlTemplate(
-  { pagePath, headMarkup, bodyMarkup, mode, features, language }: {
+  { pagePath, headMarkup, bodyMarkup, mode, features, language, context }: {
     pagePath: string;
     headMarkup?: string;
     bodyMarkup?: string;
     mode: Mode;
     features: ProjectMeta["features"];
     language: ProjectMeta["language"];
+    context: DataContext;
   },
-): Promise<[string, string?]> {
+): Promise<[string, string, DataContext]> {
   const scriptName = path.basename(pagePath, path.extname(pagePath));
   const scriptPath = path.join(path.dirname(pagePath), scriptName) + ".ts";
 
-  let pageSource;
+  let pageSource = "";
 
   if (await fs.exists(scriptPath)) {
     pageSource = await compileTypeScript(scriptPath, mode);
@@ -140,7 +185,7 @@ async function htmlTemplate(
   </body>
 </html>`;
 
-  return [html, pageSource];
+  return [html, pageSource, context];
 }
 
 export { getPageRenderer };

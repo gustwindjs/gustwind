@@ -13,7 +13,7 @@
   "matchBy": {
     "dataSource": "blogPosts",
     "collection": "content",
-    "property": "data.slug"
+    "property": "match.slug"
   },
   "page": [
     {

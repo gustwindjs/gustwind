@@ -7,6 +7,7 @@ import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import { renderBody } from "./renderBody.ts";
+import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
 
@@ -36,6 +37,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   const mode = "development";
   const renderPage = getPageRenderer({
+    projectPaths,
     transformsPath: projectPaths.transforms,
     components,
     mode,
@@ -167,9 +169,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             pageJson,
             page,
             components,
-            // TODO: Fix context
-            // Resolve against data again if data sources have changes
-            p.context,
+            await getContext(
+              projectPaths.dataSources,
+              projectPaths.transforms,
+              pageJson.dataSources,
+            ),
             p.route,
           );
 
