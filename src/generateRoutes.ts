@@ -1,16 +1,16 @@
 import { dir, getJsonSync } from "../utils/fs.ts";
 import { get } from "../utils/functional.ts";
-import type { DataContext, Meta, Page } from "../types.ts";
+import type { DataContext, Page } from "../types.ts";
 import transform from "./transform.ts";
 
 async function generateRoutes(
-  { transformsPath, renderPage, pagesPath, siteName }: {
+  { transformsPath, renderPage, pagesPath }: {
     transformsPath: string;
     renderPage: (
       route: string,
       path: string,
-      data: Record<string, unknown>,
       page: Page,
+      context: DataContext,
     ) => void;
     pagesPath: string;
     siteName: string;
@@ -23,7 +23,7 @@ async function generateRoutes(
   }));
   const paths: Record<
     string,
-    { route: string; context: Record<string, unknown>; page: Page }
+    { route: string; page: Page }
   > = {};
   const routes: string[] = [];
 
@@ -69,24 +69,19 @@ async function generateRoutes(
             }
 
             const property = matchBy.property;
-            Object.values(dataSource[matchBy.collection]).forEach((v) => {
+            Object.values(dataSource[matchBy.collection]).forEach((match) => {
               const route = `${routerPath ? "/" + routerPath : ""}/${
-                get(v, property)
+                get(match, property)
               }/`;
-              const context = { ...pageData, match: v };
 
               renderPage(
                 route,
                 path,
-                context,
                 page,
+                { match },
               );
 
-              paths[path] = {
-                route,
-                context,
-                page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
-              };
+              paths[path] = { route, page };
               routes.push(route);
             });
           } else {
@@ -95,62 +90,23 @@ async function generateRoutes(
         } else {
           const route = `${rootPath ? "/" + rootPath : ""}/`;
 
-          renderPage(route, path, pageData, page);
+          renderPage(route, path, page, {});
 
-          paths[path] = {
-            route,
-            context: pageData,
-            page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
-          };
+          paths[path] = { route, page };
           routes.push(route);
         }
       });
     } else {
       const route = `${rootPath ? "/" + rootPath : ""}/`;
-      const pageData = {};
 
-      renderPage(route, path, {}, page);
+      renderPage(route, path, page, {});
 
-      paths[path] = {
-        route,
-        context: pageData,
-        page: { ...page, meta: getMeta(pageData, page.meta, siteName) },
-      };
+      paths[path] = { route, page };
       routes.push(route);
     }
   }));
 
   return { paths, routes };
-}
-
-function getMeta(
-  pageData: DataContext,
-  meta: Meta,
-  siteName: string,
-) {
-  return {
-    ...applyMeta(meta, pageData),
-    "og:site_name": siteName || "",
-    "twitter:site": siteName || "",
-    "og:title": meta.title || "",
-    "twitter:title": meta.title || "",
-    "og:description": meta.description || "",
-    "twitter:description": meta.description || "",
-  };
-}
-
-function applyMeta(meta: Meta, dataContext?: DataContext) {
-  const ret: Meta = {};
-
-  Object.entries(meta).forEach(([k, v]) => {
-    if (k.startsWith("__") && dataContext) {
-      ret[k.slice(2)] = get<DataContext>(dataContext, v);
-    } else {
-      ret[k] = v;
-    }
-  });
-
-  return ret;
 }
 
 export { generateRoutes };

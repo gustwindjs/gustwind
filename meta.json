@@ -30,6 +30,7 @@
   },
   "paths": {
     "components": "./components",
+    "dataSources": "./dataSources",
     "output": "./build",
     "pages": "./pages",
     "transforms": "./transforms"
