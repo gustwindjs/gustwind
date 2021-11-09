@@ -14,7 +14,11 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const startTime = performance.now();
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
-  const workerPool = createWorkerPool(navigator.hardwareConcurrency - 1, () => {
+
+  // TODO: Don't generate more workers than there are pages to generate
+  // TODO: Maybe there's a good heuristic here re: page and worker amount
+  // amount of threads - navigator.hardwareConcurrency - 1
+  const workerPool = createWorkerPool(1, () => {
     workerPool.terminate();
 
     const endTime = performance.now();
@@ -52,6 +56,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,
       renderPage: (route, filePath, page, extraContext) =>
+        // TODO: Separate tasks from a pool
         workerPool.addTask({
           projectPaths,
           route,
@@ -79,8 +84,6 @@ function createWorkerPool(amount: number, onWorkDone: () => void) {
     workerWrapper.status = "waiting";
 
     if (waitingTasks.length) {
-      console.log("there are tasks waiting", waitingTasks);
-
       const task = waitingTasks.pop();
 
       workerWrapper.status = "processing";
