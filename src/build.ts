@@ -5,6 +5,7 @@ import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import type { ProjectMeta } from "../types.ts";
 
+// TODO: Set up worker pooling
 const amountOfWorkers = navigator.hardwareConcurrency - 1;
 
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
@@ -35,12 +36,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       JSON.stringify(components),
     );
 
-    /*const renderPage = getPageRenderer({
-      projectPaths,
-      components,
-      mode: "production",
-      projectMeta,
-    });*/
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,
       renderPage: (route, filePath, page, extraContext) => {
@@ -48,14 +43,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         // console.log("Building", route);
 
         const worker = createWorker();
-
         const dir = path.join(outputDirectory, route);
-        /*const [html, js, context] = await renderPage(
-          route,
-          filePath,
-          page,
-          extraContext,
-        );*/
 
         worker.postMessage({
           projectPaths,
@@ -67,26 +55,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           projectMeta,
           page,
         });
-
-        /*
-        fs.ensureDir(dir).then(() => {
-          Deno.writeTextFile(
-            path.join(dir, "context.json"),
-            JSON.stringify(context),
-          );
-          Deno.writeTextFile(
-            path.join(dir, "definition.json"),
-            JSON.stringify(page),
-          );
-          Deno.writeTextFile(
-            path.join(dir, "index.html"),
-            html,
-          );
-          if (js) {
-            Deno.writeTextFile(path.join(dir, "index.js"), js);
-          }
-        });
-        */
       },
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
