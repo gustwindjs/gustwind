@@ -5,9 +5,6 @@ import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import type { ProjectMeta } from "../types.ts";
 
-// TODO: Set up worker pooling
-const amountOfWorkers = navigator.hardwareConcurrency - 1;
-
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
   console.log("Building to static");
 
@@ -17,6 +14,22 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const startTime = performance.now();
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
+  const workerPool = createWorkerPool(navigator.hardwareConcurrency - 1, () => {
+    workerPool.terminate();
+
+    const endTime = performance.now();
+    const duration = endTime - startTime;
+    const routeAmount = routes.length;
+
+    console.log(
+      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+        Math.round(
+          duration /
+            routeAmount * 1000,
+        ) / 1000
+      } ms per page.`,
+    );
+  });
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Promise.all([
@@ -38,56 +51,84 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
     const ret = await generateRoutes({
       transformsPath: projectPaths.transforms,
-      renderPage: (route, filePath, page, extraContext) => {
-        // TODO: Push this behind a verbose flag
-        // console.log("Building", route);
-
-        const worker = createWorker();
-        const dir = path.join(outputDirectory, route);
-
-        worker.postMessage({
+      renderPage: (route, filePath, page, extraContext) =>
+        workerPool.addTask({
           projectPaths,
           route,
           filePath,
-          dir,
+          dir: path.join(outputDirectory, route),
           extraContext,
           components: components,
           projectMeta,
           page,
-        });
-      },
+        }),
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
     });
 
     routes = ret.routes;
   });
-
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-  const routeAmount = routes.length;
-
-  console.log(
-    `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-      Math.round(
-        duration /
-          routeAmount * 1000,
-      ) / 1000
-    } ms per page.`,
-  );
 }
 
-function createWorker() {
-  return new Worker(
-    new URL("./buildWorker.ts", import.meta.url).href,
-    {
-      type: "module",
-      deno: {
-        namespace: true,
-        permissions: "inherit",
-      },
-    },
+type Task = Record<string, unknown>;
+type WorkerStatus = "created" | "processing" | "waiting";
+type WorkerWrapper = { status: WorkerStatus; worker: Worker };
+
+function createWorkerPool(amount: number, onWorkDone: () => void) {
+  const onReady = (workerWrapper: WorkerWrapper) => {
+    workerWrapper.status = "waiting";
+
+    if (waitingTasks.length) {
+      console.log("there are tasks waiting", waitingTasks);
+
+      const task = waitingTasks.pop();
+
+      workerWrapper.status = "processing";
+      workerWrapper.worker.postMessage(task);
+    } else if (workers.every(({ status }) => status !== "processing")) {
+      onWorkDone();
+    }
+  };
+  const waitingTasks: Task[] = [];
+  const workers: WorkerWrapper[] = Array.from(
+    { length: amount },
+    () => createWorker(onReady),
   );
+
+  return {
+    addTask: (task: Task) => {
+      const freeWorker = workers.find(({ status }) => status !== "processing");
+
+      if (freeWorker) {
+        freeWorker.status = "processing";
+        freeWorker.worker.postMessage(task);
+      } else {
+        waitingTasks.push(task);
+      }
+    },
+    terminate: () => {
+      workers.forEach(({ worker }) => worker.terminate());
+    },
+  };
+}
+
+function createWorker(onReady: (WorkerWrapper: WorkerWrapper) => void) {
+  const ret: WorkerWrapper = {
+    status: "created",
+    worker: new Worker(
+      new URL("./buildWorker.ts", import.meta.url).href,
+      {
+        type: "module",
+        deno: {
+          namespace: true,
+          permissions: "inherit",
+        },
+      },
+    ),
+  };
+  ret.worker.onmessage = () => onReady(ret);
+
+  return ret;
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {

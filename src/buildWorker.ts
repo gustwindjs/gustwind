@@ -35,7 +35,7 @@ self.onmessage = async (e) => {
     extraContext,
   );
 
-  fs.ensureDir(dir).then(() => {
+  await fs.ensureDir(dir).then(() => {
     Deno.writeTextFile(
       path.join(dir, "context.json"),
       JSON.stringify(context),
@@ -52,5 +52,6 @@ self.onmessage = async (e) => {
       Deno.writeTextFile(path.join(dir, "index.js"), js);
     }
   });
-  self.close();
+
+  self.postMessage({});
 };
