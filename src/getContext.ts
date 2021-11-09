@@ -9,7 +9,7 @@ async function getContext(
 ) {
   // TODO: If data sources are defined but not an array, give a nice error
   if (dataSources && Array.isArray(dataSources)) {
-    await Promise.all(
+    return await Promise.all(
       // @ts-ignore: Figure out how the type
       dataSources.map(({ id, operation, input, transformWith }) => {
         const dataSourcePath = join(dataSourcesPath, `${operation}.ts`);
