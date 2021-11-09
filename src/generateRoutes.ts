@@ -33,7 +33,7 @@ async function generateRoutes(
     rootPath = rootPath === "index" ? "" : rootPath;
 
     // TODO: If data sources are defined but not an array, give a nice error
-    if (dataSources && Array.isArray(dataSources)) {
+    if (dataSources && Array.isArray(dataSources) && matchBy) {
       await Promise.all(
         // @ts-ignore: Figure out how the type
         dataSources.map(({ id, operation, input, transformWith }) =>
@@ -88,12 +88,7 @@ async function generateRoutes(
             console.warn(`Path ${rootPath} is missing a matchBy`);
           }
         } else {
-          const route = `${rootPath ? "/" + rootPath : ""}/`;
-
-          renderPage(route, path, page, {});
-
-          paths[path] = { route, page };
-          routes.push(route);
+          throw new Error("Tried to matchBy a path that is not matchable");
         }
       });
     } else {
