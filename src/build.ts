@@ -50,7 +50,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           route,
           filePath,
           dir,
-          context: extraContext,
+          extraContext,
           components: components,
           projectMeta,
           page,
