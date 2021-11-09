@@ -37,7 +37,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
     /*const renderPage = getPageRenderer({
       projectPaths,
-      transformsPath: projectPaths.transforms,
       components,
       mode: "production",
       projectMeta,
@@ -59,7 +58,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         );*/
 
         worker.postMessage({
-          transformsPath: projectPaths.transforms,
+          projectPaths,
           route,
           filePath,
           dir,

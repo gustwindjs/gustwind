@@ -2,36 +2,43 @@
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { Components, DataContext, Page, ProjectMeta } from "../types.ts";
 
-self.onmessage = async (e) => {
+self.onmessage = (e) => {
   const {
-    transformsPath,
+    projectPaths,
     route,
     filePath,
     dir,
     components,
     projectMeta,
-    context,
+    extraContext,
     page,
   }: {
-    transformsPath: string;
+    projectPaths: ProjectMeta["paths"];
     route: string;
     filePath: string;
     dir: string;
     components: Components;
     projectMeta: ProjectMeta;
-    context: DataContext;
+    extraContext: DataContext;
     page: Page;
   } = e.data;
 
   // ReferenceError: window is not defined
+  /*
   const renderPage = getPageRenderer({
-    transformsPath,
+    projectPaths,
     components,
     mode: "production",
     projectMeta,
   });
 
-  const [html, js] = await renderPage(route, filePath, context, page);
+  const [html, js, context] = await renderPage(
+    route,
+    filePath,
+    page,
+    extraContext,
+  );
+  */
 
   //console.log(html, js);
 

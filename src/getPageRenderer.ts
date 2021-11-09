@@ -15,9 +15,8 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { projectPaths, transformsPath, components, mode, projectMeta }: {
+  { projectPaths, components, mode, projectMeta }: {
     projectPaths: ProjectMeta["paths"];
-    transformsPath: string;
     components: Components;
     mode: Mode;
     projectMeta: ProjectMeta;
@@ -39,7 +38,7 @@ function getPageRenderer(
     );
     const context = { ...pageContext, ...extraContext };
     const bodyMarkup = initialBodyMarkup || await renderBody(
-      transformsPath,
+      projectPaths.transforms,
       page,
       page.page,
       components,

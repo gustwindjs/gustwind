@@ -38,7 +38,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const mode = "development";
   const renderPage = getPageRenderer({
     projectPaths,
-    transformsPath: projectPaths.transforms,
     components,
     mode,
     projectMeta,
