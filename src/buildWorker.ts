@@ -22,15 +22,12 @@ self.onmessage = async (e) => {
     extraContext: DataContext;
     page: Page;
   } = e.data;
-
-  // ReferenceError: window is not defined
   const renderPage = getPageRenderer({
     projectPaths,
     components,
     mode: "production",
     projectMeta,
   });
-
   const [html, js, context] = await renderPage(
     route,
     filePath,
