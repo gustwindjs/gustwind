@@ -4,16 +4,14 @@
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
 import { flags, path } from "./deps.ts";
-import { getJson, getJsonSync } from "./utils/fs.ts";
+import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
 import { serve as serveProject } from "./src/serve.ts";
 import type { ProjectMeta } from "./types.ts";
 
-const META = getJsonSync("./scripts.json");
-
 function usage() {
   console.log(`
-Usage: ${META.name} [-w|-b|-d] [-D]
+Usage: gustwind [-w|-b|-d] [-D]
 
 Options:
   -i, --init           Initializes 'twd.ts' config file.
@@ -62,7 +60,8 @@ export async function main(cliArgs: string[]): Promise<number> {
   }
 
   if (version) {
-    console.log(`${META.name}@${META.version}`);
+    // TODO: Figure out a nice way to get project name and version
+    console.log(`gustwind@dev`);
     return 0;
   }
 
