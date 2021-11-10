@@ -15,23 +15,22 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { projectPaths, transformsPath, components, mode, projectMeta }: {
-    projectPaths: ProjectMeta["paths"];
-    transformsPath: string;
+  { components, mode, projectMeta }: {
     components: Components;
     mode: Mode;
     projectMeta: ProjectMeta;
   },
 ) {
+  const projectPaths = projectMeta.paths;
   const stylesheet = getStyleSheet(mode);
 
-  return async (
-    pathname: string,
-    pagePath: string,
-    page: Page,
-    extraContext: DataContext,
-    initialBodyMarkup?: string,
-  ) => {
+  return async ({ pathname, pagePath, page, extraContext, initialBodyMarkup }: {
+    pathname: string;
+    pagePath: string;
+    page: Page;
+    extraContext: DataContext;
+    initialBodyMarkup?: string;
+  }) => {
     const pageContext: DataContext = await getContext(
       projectPaths.dataSources,
       projectPaths.transforms,
@@ -39,7 +38,7 @@ function getPageRenderer(
     );
     const context = { ...pageContext, ...extraContext };
     const bodyMarkup = initialBodyMarkup || await renderBody(
-      transformsPath,
+      projectPaths.transforms,
       page,
       page.page,
       components,

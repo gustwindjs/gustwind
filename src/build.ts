@@ -3,15 +3,22 @@ import { getJson, resolvePaths } from "../utils/fs.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer } from "./getPageRenderer.ts";
-import type { ProjectMeta } from "../types.ts";
+import { createWorkerPool } from "./createWorkerPool.ts";
+import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
-  console.log("Building to static");
+  const amountOfBuildThreads = getAmountOfThreads(
+    projectMeta.amountOfBuildThreads,
+  );
+  console.log(
+    `Building to static with ${amountOfBuildThreads} thread${
+      amountOfBuildThreads > 1 ? "s" : ""
+    }`,
+  );
 
-  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
-  let routes: string[] = [];
+  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
+  const projectPaths = projectMeta.paths;
   const startTime = performance.now();
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
@@ -29,69 +36,72 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       esbuild.stop();
     });
 
-    Deno.writeTextFile(
-      path.join(outputDirectory, "components.json"),
-      JSON.stringify(components),
-    );
+    if (projectMeta.features?.showEditorAlways) {
+      Deno.writeTextFile(
+        path.join(outputDirectory, "components.json"),
+        JSON.stringify(components),
+      );
+    }
 
-    const renderPage = getPageRenderer({
-      projectPaths,
+    const tasks: BuildWorkerEvent[] = [];
+    const { routes } = await generateRoutes({
+      dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
-      components,
-      mode: "production",
-      projectMeta,
-    });
-    const ret = await generateRoutes({
-      transformsPath: projectPaths.transforms,
-      renderPage: async (route, filePath, page, extraContext) => {
-        // TODO: Push this behind a verbose flag
-        // console.log("Building", route);
-
-        const dir = path.join(outputDirectory, route);
-        const [html, js, context] = await renderPage(
-          route,
-          filePath,
-          page,
-          extraContext,
-        );
-
-        fs.ensureDir(dir).then(() => {
-          Deno.writeTextFile(
-            path.join(dir, "context.json"),
-            JSON.stringify(context),
-          );
-          Deno.writeTextFile(
-            path.join(dir, "definition.json"),
-            JSON.stringify(page),
-          );
-          Deno.writeTextFile(
-            path.join(dir, "index.html"),
-            html,
-          );
-          if (js) {
-            Deno.writeTextFile(path.join(dir, "index.js"), js);
-          }
-        });
-      },
+      renderPage: ({ route, path: filePath, page, context }) =>
+        tasks.push({
+          type: "build",
+          payload: {
+            route,
+            filePath,
+            dir: path.join(outputDirectory, route),
+            extraContext: context,
+            page,
+          },
+        }),
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
     });
+    const workerPool = createWorkerPool<BuildWorkerEvent>(
+      amountOfBuildThreads,
+      () => {
+        workerPool.terminate();
 
-    routes = ret.routes;
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        const routeAmount = routes.length;
+
+        console.log(
+          `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+            Math.round(
+              duration /
+                routeAmount * 1000,
+            ) / 1000
+          } ms per page.`,
+        );
+      },
+    );
+
+    workerPool.addTaskToEach({
+      type: "init",
+      payload: {
+        components,
+        projectMeta,
+      },
+    });
+
+    tasks.forEach((task) => workerPool.addTaskToQueue(task));
   });
+}
 
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-  const routeAmount = routes.length;
+function getAmountOfThreads(
+  amountOfThreads: ProjectMeta["amountOfBuildThreads"],
+) {
+  if (amountOfThreads === "cpuMax") {
+    // -1 since the main thread needs one CPU but at least one
+    return Math.max(navigator.hardwareConcurrency - 1, 1);
+  }
 
-  console.log(
-    `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-      Math.round(
-        duration /
-          routeAmount * 1000,
-      ) / 1000
-    } ms per page.`,
-  );
+  return amountOfThreads;
 }
 
 async function writeScripts(scriptsPath: string, outputPath: string) {

@@ -6,7 +6,7 @@ import type {
   Components,
   DataContext,
 } from "../types.ts";
-import transform from "./transform.ts";
+import { transform } from "./transform.ts";
 
 async function renderComponent(
   transformsPath: string,
@@ -57,10 +57,22 @@ async function renderComponent(
         component.inputText,
       );
     } else if (typeof component.inputProperty === "string") {
+      const input = get(context, component.inputProperty as string);
+
+      if (!input) {
+        console.error(
+          "Missing input",
+          context,
+          component.inputProperty as string,
+        );
+
+        throw new Error("Missing input");
+      }
+
       transformedContext = await transform(
         transformsPath,
         component?.transformWith,
-        get(context, component.inputProperty as string),
+        input,
       );
     }
 

@@ -20,7 +20,9 @@ const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
 const cachedScripts: Record<string, string> = {};
 
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
-  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
+  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
+
+  const projectPaths = projectMeta.paths;
 
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
@@ -36,16 +38,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({
-    projectPaths,
-    transformsPath: projectPaths.transforms,
-    components,
-    mode,
-    projectMeta,
-  });
+  const renderPage = getPageRenderer({ components, mode, projectMeta });
   const { paths: routePaths } = await generateRoutes({
+    dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
-    renderPage(route, path, context, page) {
+    renderPage({ route, path, page, context }) {
       router.get(
         route === "/" ? "/context.json" : `${route}context.json`,
         (ctx) => {
@@ -60,17 +57,17 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             "text/html; charset=UTF-8",
           );
 
-          const [html, js] = await renderPage(
-            ctx.request.url.pathname,
-            path,
-            context,
+          const [html, js] = await renderPage({
+            pathname: ctx.request.url.pathname,
+            pagePath: path,
             // If there's cached data, use it instead. This fixes
             // the case in which there was an update over web socket and
             // also avoids the need to hit the file system for getting
             // the latest data.
-            cachedPages[route]?.page || page,
-            cachedPages[route]?.bodyMarkup,
-          );
+            page: cachedPages[route]?.page || page,
+            extraContext: context,
+            initialBodyMarkup: cachedPages[route]?.bodyMarkup,
+          });
 
           if (js) {
             await router.get(
