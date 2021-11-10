@@ -6,14 +6,18 @@ async function compileScripts(scriptsPath: string, mode: Mode) {
   const scripts = await Promise.all(await dir(scriptsPath, ".ts"));
 
   return Promise.all(scripts.map(
-    async ({ path, name }) => (
-      {
-        path,
-        name,
-        content: await compileTypeScript(path, mode),
-      }
-    ),
+    ({ path, name }) => compileScript({ path, name, mode }),
   ));
 }
 
-export { compileScripts };
+async function compileScript(
+  { path, name, mode }: { path: string; name: string; mode: Mode },
+) {
+  return {
+    path,
+    name,
+    content: await compileTypeScript(path, mode),
+  };
+}
+
+export { compileScript, compileScripts };

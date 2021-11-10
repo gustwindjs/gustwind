@@ -1,6 +1,7 @@
 import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
+import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { path } from "../deps.ts";
-import { compileScripts } from "../utils/compileScripts.ts";
+import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getComponent, getComponents } from "./getComponents.ts";
@@ -35,19 +36,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
   const components = await getComponents("./components");
-
-  Deno.env.get("DEBUG") === "1" && console.log("import url", import.meta.url);
-
   const app = new oak.Application();
   const router = new oak.Router();
   const wss = getWebsocketServer();
-  const gustwindScripts = path.join(
-    path.dirname(path.fromFileUrl(import.meta.url)),
-    "..",
-    "./scripts",
-  );
 
-  serveScripts(router, gustwindScripts);
+  console.log(import.meta.url);
+
+  serveGustwindScripts(router);
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
@@ -121,7 +116,10 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   app.use(router.routes());
   app.use(router.allowedMethods());
 
-  watchScripts(gustwindScripts);
+  // TODO: Watch gustwind scripts only when developing gustwind itself
+  watchScripts("./scripts");
+
+  // Watch project scripts
   watchScripts(projectPaths.scripts);
 
   watch(
@@ -253,6 +251,27 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.developmentPort });
 }
 
+async function serveGustwindScripts(router: oak.Router) {
+  const pageEditor = await cache(
+    "https://deno.land/x/gustwind/scripts/_pageEditor.ts",
+  );
+  const toggleEditor = await cache(
+    "https://deno.land/x/gustwind/scripts/_toggleEditor.ts",
+  );
+  const wsClient = await cache(
+    "https://deno.land/x/gustwind/scripts/_webSocketClient.ts",
+  );
+  const scriptsWithFiles = await Promise.all([
+    { name: "_pageEditor.ts", file: pageEditor },
+    { name: "_toggleEditor.ts", file: toggleEditor },
+    { name: "_webSocketClient.ts", file: wsClient },
+  ].map(({ name, file: { path } }) =>
+    compileScript({ name, path, mode: "development" })
+  ));
+
+  routeScripts(router, scriptsWithFiles);
+}
+
 async function serveScripts(
   router: oak.Router,
   scriptsPath?: string,
@@ -265,17 +284,25 @@ async function serveScripts(
   try {
     const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
-    scriptsWithFiles.forEach(({ name, content }) => {
-      router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
-        ctx.response.headers.set("Content-Type", "text/javascript");
-        ctx.response.body = new TextEncoder().encode(
-          cachedScripts[name] || content,
-        );
-      });
-    });
+    routeScripts(router, scriptsWithFiles, prefix);
   } catch (error) {
     console.error(error);
   }
+}
+
+function routeScripts(
+  router: oak.Router,
+  scriptsWithFiles: { path: string; name: string; content: string }[],
+  prefix = "",
+) {
+  scriptsWithFiles.forEach(({ name, content }) => {
+    router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
+      ctx.response.headers.set("Content-Type", "text/javascript");
+      ctx.response.body = new TextEncoder().encode(
+        cachedScripts[name] || content,
+      );
+    });
+  });
 }
 
 if (import.meta.main) {
