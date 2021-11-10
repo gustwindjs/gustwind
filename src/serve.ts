@@ -40,7 +40,15 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const router = new oak.Router();
   const wss = getWebsocketServer();
 
-  serveGustwindScripts(router);
+  if (import.meta.url.startsWith("file:///")) {
+    Deno.env.get("DEBUG") === "1" && console.log("Serving local scripts");
+
+    serveScripts(router, "./scripts");
+  } else {
+    Deno.env.get("DEBUG") === "1" && console.log("Serving remote scripts");
+
+    serveGustwindScripts(router);
+  }
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
@@ -113,9 +121,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   app.use(router.routes());
   app.use(router.allowedMethods());
-
-  // TODO: Watch gustwind scripts only when developing gustwind itself
-  watchScripts("./scripts");
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
