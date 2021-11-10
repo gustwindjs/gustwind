@@ -1,6 +1,4 @@
 {
-  "name": "gustwind",
-  "version": "dev",
   "allow": ["env", "read", "write", "net", "run"],
   "env": {
     "NO_COLOR": 1
@@ -16,6 +14,9 @@
     "watch:build": {
       "cmd": "deno run --no-check --unstable src/build.ts",
       "watch": true
+    },
+    "compileGustwindScripts": {
+      "cmd": "deno run --unstable compileGustwindScripts.ts"
     }
   }
 }
