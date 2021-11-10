@@ -11,11 +11,11 @@ Please see the documentation to learn more about the concepts.
 
 ## Further development to be done
 
-* Parallelize build process for extra performance (likely needs import maps for Web Workers in Deno)
 * Mark components without data dependencies as pure to allow memoization for faster compilation
 * Set up a [JSON schema](http://json-schema.org/) to define components and pages to allow validation
 * Add a component explorer to allow defining components through the development mode
 * Implement an incremental compiler to detect changes and compile only what has changed instead of compiling the whole site
+* Cache markdown and leverage Netlify caching to avoid compilation
 
 ## Notes
 
