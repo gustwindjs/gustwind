@@ -7,6 +7,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
 ```json
 {
   "developmentPort": 3000,
+  "amountOfBuildThreads": "cpuMax",
   "siteName": "Gustwind",
   "language": "en",
   "head": {

@@ -46,6 +46,7 @@ type BlogPost = {
 };
 type ProjectMeta = {
   developmentPort: number;
+  amountOfBuildThreads: number | "cpuMax";
   siteName: string;
   language: string;
   head: {

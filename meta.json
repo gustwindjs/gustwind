@@ -1,5 +1,6 @@
 {
   "developmentPort": 3000,
+  "amountOfBuildThreads": 1,
   "siteName": "Gustwind",
   "language": "en",
   "head": {

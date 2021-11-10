@@ -11,31 +11,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
-  let routes: string[] = [];
 
   const startTime = performance.now();
   const components = await getComponents("./components");
   const outputDirectory = projectPaths.output;
-
-  // TODO: Don't generate more workers than there are pages to generate
-  // TODO: Maybe there's a good heuristic here re: page and worker amount
-  // amount of threads - navigator.hardwareConcurrency - 1
-  const workerPool = createWorkerPool(1, () => {
-    workerPool.terminate();
-
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-    const routeAmount = routes.length;
-
-    console.log(
-      `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-        Math.round(
-          duration /
-            routeAmount * 1000,
-        ) / 1000
-      } ms per page.`,
-    );
-  });
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Promise.all([
@@ -55,12 +34,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       JSON.stringify(components),
     );
 
-    const ret = await generateRoutes({
+    const tasks: Task[] = [];
+    const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
       renderPage: (route, filePath, page, extraContext) =>
-        // TODO: Separate tasks from a pool
-        workerPool.addTask({
+        tasks.push({
           route,
           filePath,
           dir: path.join(outputDirectory, route),
@@ -72,9 +51,39 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
     });
+    const workerPool = createWorkerPool(
+      getAmountOfThreads(projectMeta.amountOfBuildThreads),
+      () => {
+        workerPool.terminate();
 
-    routes = ret.routes;
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        const routeAmount = routes.length;
+
+        console.log(
+          `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+            Math.round(
+              duration /
+                routeAmount * 1000,
+            ) / 1000
+          } ms per page.`,
+        );
+      },
+    );
+
+    tasks.forEach((task) => workerPool.addTask(task));
   });
+}
+
+function getAmountOfThreads(
+  amountOfThreads: ProjectMeta["amountOfBuildThreads"],
+) {
+  if (amountOfThreads === "cpuMax") {
+    // -1 since the main thread needs one CPU but at least one
+    return Math.max(navigator.hardwareConcurrency - 1, 1);
+  }
+
+  return amountOfThreads;
 }
 
 type Task = Record<string, unknown>;
