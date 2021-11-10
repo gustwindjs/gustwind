@@ -19,7 +19,7 @@ Please see the documentation to learn more about the concepts.
 
 ## Notes
 
-The project needs Deno 1.15.1 or newer to run! I recommend using a tool like [dvm](https://github.com/justjavac/dvm) for managing the version.
+The project needs Deno 1.16.0 or newer to run! I recommend using a tool like [dvm](https://github.com/justjavac/dvm) for managing the version.
 
 ## Earlier related work
 
