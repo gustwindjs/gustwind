@@ -31,6 +31,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   const components = await getComponents("./components");
 
+  Deno.env.get("DEBUG") === "1" && console.log("import url", import.meta.url);
+
   const app = new oak.Application();
   const router = new oak.Router();
   const wss = getWebsocketServer();
