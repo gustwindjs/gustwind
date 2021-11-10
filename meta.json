@@ -34,6 +34,7 @@
     "dataSources": "./dataSources",
     "output": "./build",
     "pages": "./pages",
+    "scripts": "./scripts",
     "transforms": "./transforms"
   },
   "features": {
