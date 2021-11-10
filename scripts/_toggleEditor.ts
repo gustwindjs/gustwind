@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+/// <reference path="./_pageEditor.ts" />
 import { twind, twindShim } from "../browserDeps.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../utils/importScript.ts";

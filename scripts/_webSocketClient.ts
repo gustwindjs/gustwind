@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+/// <reference path="./_pageEditor.ts" />
 import { getPagePath } from "../utils/getPagePath.ts";
 import { updateMeta } from "../utils/updateMeta.ts";
 
@@ -41,7 +42,6 @@ function createWebSocket(pagePath?: string) {
 
       updateMeta(payload.meta);
 
-      // @ts-ignore Figure out how to type Window
       window.createEditor && window.createEditor();
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
@@ -75,7 +75,6 @@ function createWebSocket(pagePath?: string) {
 
         document.body.appendChild(script);
 
-        // @ts-ignore Figure out how to type Window
         window.createEditor && window.createEditor();
       }
     } else {
