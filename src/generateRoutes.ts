@@ -34,43 +34,37 @@ async function generateRoutes(
     rootPath = rootPath === "index" ? "" : rootPath;
 
     if (matchBy) {
-      const pageData = await getContext(
-        dataSourcesPath,
-        transformsPath,
-        dataSources,
-      );
-
       if (rootPath.startsWith("[") && rootPath.endsWith("]")) {
-        const routerPath = rootPath.slice(1, -1);
+        const pageData = await getContext(
+          dataSourcesPath,
+          transformsPath,
+          dataSources,
+        );
+        const dataSource = pageData[matchBy.dataSource];
 
-        if (matchBy) {
-          const dataSource = pageData[matchBy.dataSource];
+        if (!dataSource) {
+          console.error("Missing data source", pageData, matchBy);
 
-          if (!dataSource) {
-            console.error("Missing data source", pageData, matchBy);
-
-            return;
-          }
-
-          const property = matchBy.property;
-          Object.values(dataSource[matchBy.collection]).forEach((match) => {
-            const route = `${routerPath ? "/" + routerPath : ""}/${
-              get(match, property)
-            }/`;
-
-            renderPage(
-              route,
-              path,
-              page,
-              { match },
-            );
-
-            paths[path] = { route, page };
-            routes.push(route);
-          });
-        } else {
-          console.warn(`Path ${rootPath} is missing a matchBy`);
+          return;
         }
+
+        const routerPath = rootPath.slice(1, -1);
+        const property = matchBy.property;
+        Object.values(dataSource[matchBy.collection]).forEach((match) => {
+          const route = `${routerPath ? "/" + routerPath : ""}/${
+            get(match, property)
+          }/`;
+
+          renderPage(
+            route,
+            path,
+            page,
+            { match },
+          );
+
+          paths[path] = { route, page };
+          routes.push(route);
+        });
       } else {
         throw new Error("Tried to matchBy a path that is not matchable");
       }
