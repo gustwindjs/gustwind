@@ -19,6 +19,9 @@ const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
 // The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
 
+// This is replaced when the user changes meta.json
+let cachedProjectMeta: ProjectMeta;
+
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -38,7 +41,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({ components, mode, projectMeta });
+  const renderPage = getPageRenderer({ components, mode });
   const { paths: routePaths } = await generateRoutes({
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
@@ -67,6 +70,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             page: cachedPages[route]?.page || page,
             extraContext: context,
             initialBodyMarkup: cachedPages[route]?.bodyMarkup,
+            projectMeta: cachedProjectMeta || projectMeta,
           });
 
           if (js) {
@@ -97,7 +101,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       );
     },
     pagesPath: projectPaths.pages,
-    siteName: projectMeta.siteName,
   });
 
   router.get("/components.json", (ctx) => {
@@ -124,6 +127,16 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             path.basename(matchedPath, import.meta.url),
           );
           const p = routePaths[pagePath];
+
+          if (pagePath.endsWith("meta.json")) {
+            const projectMeta = await getJson<ProjectMeta>(matchedPath);
+            projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
+            cachedProjectMeta = projectMeta;
+
+            socket.send(JSON.stringify({ type: "reloadPage" }));
+
+            return;
+          }
 
           if (!p) {
             if (matchedPath.includes(path.basename(projectPaths.components))) {

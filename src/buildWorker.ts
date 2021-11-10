@@ -17,11 +17,7 @@ self.onmessage = async (e) => {
     } = e.data;
 
     projectMeta = meta;
-    renderPage = getPageRenderer({
-      components,
-      mode: "production",
-      projectMeta,
-    });
+    renderPage = getPageRenderer({ components, mode: "production" });
   }
   if (type === "build") {
     const {
@@ -38,6 +34,7 @@ self.onmessage = async (e) => {
       pagePath: filePath,
       page,
       extraContext,
+      projectMeta,
     });
 
     await fs.ensureDir(dir).then(() => {
