@@ -9,23 +9,23 @@ Gustwind is an experimental site generator built on top of JSON definitions usin
 
 Please see the documentation to learn more about the concepts.
 
-## Further development to be done
+## Usage
 
-* Mark components without data dependencies as pure to allow memoization for faster compilation
-* Set up a [JSON schema](http://json-schema.org/) to define components and pages to allow validation
-* Add a component explorer to allow defining components through the development mode
-* Implement an incremental compiler to detect changes and compile only what has changed instead of compiling the whole site
-* Cache markdown and leverage Netlify caching to avoid compilation
+The easiest way to consume the project is to use the CLI:
 
-## Notes
+```
+deno install --allow-env --allow-read=. --allow-write=. --allow-net=deno.land,esm.sh,cdn.skypack.dev,registry.npmjs.org --no-check https://deno.land/x/gustwind@v0.7.2/cli.ts
+```
 
-The project needs Deno 1.16.0 or newer to run! I recommend using a tool like [dvm](https://github.com/justjavac/dvm) for managing the version.
+The APIs are also available as modules if you need more control.
+
+It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.16.0 or newer.
 
 ## Earlier related work
 
 * [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.
 * [Antwar](https://antwar.js.org/) was a React based static site generator. The experiences with Antwar over years have been put to good use in this project.
 
-## Usage
+## Development
 
 Run the available commands through [velociraptor](https://github.com/umbopepato/velociraptor) (vr).
