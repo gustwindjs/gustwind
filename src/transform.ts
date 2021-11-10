@@ -41,4 +41,4 @@ async function transform(
   );
 }
 
-export default transform;
+export { transform };

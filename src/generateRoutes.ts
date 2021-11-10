@@ -1,7 +1,7 @@
 import { dir, getJsonSync } from "../utils/fs.ts";
 import { get } from "../utils/functional.ts";
 import type { DataContext, Page } from "../types.ts";
-import transform from "./transform.ts";
+import { transform } from "./transform.ts";
 
 async function generateRoutes(
   { transformsPath, renderPage, pagesPath }: {

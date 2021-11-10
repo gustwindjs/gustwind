@@ -6,7 +6,7 @@ import type {
   Components,
   DataContext,
 } from "../types.ts";
-import transform from "./transform.ts";
+import { transform } from "./transform.ts";
 
 async function renderComponent(
   transformsPath: string,

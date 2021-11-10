@@ -1,6 +1,6 @@
 import { join } from "https://deno.land/std@0.107.0/path/mod.ts";
 import type { Page, ProjectMeta } from "../types.ts";
-import transform from "./transform.ts";
+import { transform } from "./transform.ts";
 
 async function getContext(
   dataSourcesPath: ProjectMeta["paths"]["dataSources"],
