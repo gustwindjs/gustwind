@@ -8,7 +8,9 @@ import type { ProjectMeta } from "../types.ts";
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
   console.log("Building to static");
 
-  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
+  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
+
+  const projectPaths = projectMeta.paths;
   let routes: string[] = [];
 
   const startTime = performance.now();
@@ -58,7 +60,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       renderPage: (route, filePath, page, extraContext) =>
         // TODO: Separate tasks from a pool
         workerPool.addTask({
-          projectPaths,
           route,
           filePath,
           dir: path.join(outputDirectory, route),

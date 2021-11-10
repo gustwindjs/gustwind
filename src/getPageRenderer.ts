@@ -15,13 +15,13 @@ import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
 function getPageRenderer(
-  { projectPaths, components, mode, projectMeta }: {
-    projectPaths: ProjectMeta["paths"];
+  { components, mode, projectMeta }: {
     components: Components;
     mode: Mode;
     projectMeta: ProjectMeta;
   },
 ) {
+  const projectPaths = projectMeta.paths;
   const stylesheet = getStyleSheet(mode);
 
   return async (

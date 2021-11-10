@@ -20,7 +20,9 @@ const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
 const cachedScripts: Record<string, string> = {};
 
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
-  const projectPaths = resolvePaths(projectRoot, projectMeta.paths);
+  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
+
+  const projectPaths = projectMeta.paths;
 
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
@@ -36,12 +38,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({
-    projectPaths,
-    components,
-    mode,
-    projectMeta,
-  });
+  const renderPage = getPageRenderer({ components, mode, projectMeta });
   const { paths: routePaths } = await generateRoutes({
     transformsPath: projectPaths.transforms,
     renderPage(route, path, context, page) {

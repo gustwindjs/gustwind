@@ -4,7 +4,6 @@ import type { Components, DataContext, Page, ProjectMeta } from "../types.ts";
 
 self.onmessage = async (e) => {
   const {
-    projectPaths,
     route,
     filePath,
     dir,
@@ -13,7 +12,6 @@ self.onmessage = async (e) => {
     extraContext,
     page,
   }: {
-    projectPaths: ProjectMeta["paths"];
     route: string;
     filePath: string;
     dir: string;
@@ -23,7 +21,6 @@ self.onmessage = async (e) => {
     page: Page;
   } = e.data;
   const renderPage = getPageRenderer({
-    projectPaths,
     components,
     mode: "production",
     projectMeta,
