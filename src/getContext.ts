@@ -14,7 +14,7 @@ async function getContext(
       dataSources.map(({ id, operation, input, transformWith }) => {
         const dataSourcePath = join(dataSourcesPath, `${operation}.ts`);
 
-        return import(dataSourcePath).then(async (
+        return import("file://" + dataSourcePath).then(async (
           o,
         ) => [
           id,
