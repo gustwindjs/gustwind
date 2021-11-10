@@ -34,7 +34,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const app = new oak.Application();
   const router = new oak.Router();
   const wss = getWebsocketServer();
-  const gustwindScripts = "./scripts";
+  const gustwindScripts = path.join(
+    path.dirname(path.fromFileUrl(import.meta.url)),
+    "..",
+    "./scripts",
+  );
 
   serveScripts(router, gustwindScripts);
   serveScripts(router, projectPaths.scripts);
