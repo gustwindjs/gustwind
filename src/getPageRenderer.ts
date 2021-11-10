@@ -24,13 +24,13 @@ function getPageRenderer(
   const projectPaths = projectMeta.paths;
   const stylesheet = getStyleSheet(mode);
 
-  return async (
-    pathname: string,
-    pagePath: string,
-    page: Page,
-    extraContext: DataContext,
-    initialBodyMarkup?: string,
-  ) => {
+  return async ({ pathname, pagePath, page, extraContext, initialBodyMarkup }: {
+    pathname: string;
+    pagePath: string;
+    page: Page;
+    extraContext: DataContext;
+    initialBodyMarkup?: string;
+  }) => {
     const pageContext: DataContext = await getContext(
       projectPaths.dataSources,
       projectPaths.transforms,

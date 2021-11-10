@@ -25,12 +25,12 @@ self.onmessage = async (e) => {
     mode: "production",
     projectMeta,
   });
-  const [html, js, context] = await renderPage(
-    route,
-    filePath,
+  const [html, js, context] = await renderPage({
+    pathname: route,
+    pagePath: filePath,
     page,
     extraContext,
-  );
+  });
 
   await fs.ensureDir(dir).then(() => {
     if (projectMeta.features?.showEditorAlways) {

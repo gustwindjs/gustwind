@@ -7,12 +7,12 @@ async function generateRoutes(
   { dataSourcesPath, transformsPath, renderPage, pagesPath }: {
     dataSourcesPath: string;
     transformsPath: string;
-    renderPage: (
-      route: string,
-      path: string,
-      page: Page,
-      context: DataContext,
-    ) => void;
+    renderPage: ({ route, path, page, context }: {
+      route: string;
+      path: string;
+      page: Page;
+      context: DataContext;
+    }) => void;
     pagesPath: string;
     siteName: string;
   },
@@ -55,12 +55,12 @@ async function generateRoutes(
             get(match, property)
           }/`;
 
-          renderPage(
+          renderPage({
             route,
             path,
             page,
-            { match },
-          );
+            context: { match },
+          });
 
           paths[path] = { route, page };
           routes.push(route);
@@ -71,7 +71,7 @@ async function generateRoutes(
     } else {
       const route = `${rootPath ? "/" + rootPath : ""}/`;
 
-      renderPage(route, path, page, {});
+      renderPage({ route, path, page, context: {} });
 
       paths[path] = { route, page };
       routes.push(route);

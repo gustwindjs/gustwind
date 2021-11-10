@@ -40,12 +40,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
-      renderPage: (route, filePath, page, extraContext) =>
+      renderPage: ({ route, path: filePath, page, context }) =>
         tasks.push({
           route,
           filePath,
           dir: path.join(outputDirectory, route),
-          extraContext,
+          extraContext: context,
           components: components,
           projectMeta,
           page,
