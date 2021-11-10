@@ -6,7 +6,7 @@
   "dataSources": [
     {
       "id": "blogPosts",
-      "operation": "indexBlog",
+      "operation": "indexMarkdown",
       "input": "./blogPosts"
     }
   ],

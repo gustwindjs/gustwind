@@ -5,13 +5,13 @@
   },
   "dataSources": [
     {
-      "id": "blogPosts",
+      "id": "documentation",
       "operation": "indexMarkdown",
-      "input": "./blogPosts"
+      "input": "./documentation"
     }
   ],
   "matchBy": {
-    "dataSource": "blogPosts",
+    "dataSource": "documentation",
     "collection": "content",
     "property": "data.slug"
   },

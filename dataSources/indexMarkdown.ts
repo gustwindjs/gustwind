@@ -2,7 +2,7 @@ import { parse } from "../utils/frontmatter.ts";
 import { dir } from "../utils/fs.ts";
 import type { BlogPost } from "../types.ts";
 
-async function indexBlog(directory: string) {
+async function indexMarkdown(directory: string) {
   const blogFiles = await dir(directory, ".md");
 
   return Promise.all(
@@ -12,4 +12,4 @@ async function indexBlog(directory: string) {
   );
 }
 
-export default indexBlog;
+export default indexMarkdown;

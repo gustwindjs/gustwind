@@ -50,6 +50,7 @@ async function generateRoutes(
         const routerPath = rootPath.slice(1, -1);
         const property = matchBy.property;
         Object.values(dataSource[matchBy.collection]).forEach((match) => {
+          // TODO: If get returns undefined, give a nice warning
           const route = `${routerPath ? "/" + routerPath : ""}/${
             get(match, property)
           }/`;

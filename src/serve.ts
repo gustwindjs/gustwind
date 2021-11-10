@@ -58,6 +58,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
     renderPage({ route, path, page, context }) {
+      Deno.env.get("DEBUG") === "1" && console.log("render page", route, path);
+
       router.get(
         route === "/" ? "/context.json" : `${route}context.json`,
         (ctx) => {

@@ -1,5 +1,7 @@
-# Concepts
-
+---
+slug: 'concepts'
+title: 'Concepts'
+---
 You'll learn how different concepts of Gustwind go together on this page. It's self-similar in many ways and if you are familiar with technologies such as HTML, Tailwind, or React, likely you'll get used to it fast.
 
 At its core, the page engine is an interpolating template interpreter that allows data binding. That means there's special syntax for connecting data with your pages and components.
@@ -110,14 +112,14 @@ In addition to binding data from a source, you can do static bindings to pass da
 
 In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
 
-**dataSources/indexBlog.ts**
+**dataSources/indexMarkdown.ts**
 
 ```typescript
 import { parse } from "../utils/frontmatter.ts";
 import { dir } from "../utils/fs.ts";
 import type { BlogPost } from "../types.ts";
 
-async function indexBlog(directory: string) {
+async function indexMarkdown(directory: string) {
   const blogFiles = await dir(directory, ".md");
 
   return Promise.all(
@@ -127,7 +129,7 @@ async function indexBlog(directory: string) {
   );
 }
 
-export default indexBlog;
+export default indexMarkdown;
 ```
 
 Data sources are asynchronous functions returning objects. Then, when bound, you
@@ -203,7 +205,7 @@ The `[blog].json` case is more complicated as there we'll have to define the map
   "dataSources": [
     {
       "id": "blogPosts",
-      "operation": "indexBlog",
+      "operation": "indexMarkdown",
       "input": "./blogPosts"
     }
   ],
