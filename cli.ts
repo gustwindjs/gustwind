@@ -7,6 +7,7 @@ import { flags, path } from "./deps.ts";
 import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
 import { serve as serveProject } from "./src/serve.ts";
+import { VERSION } from "./version.ts";
 import type { ProjectMeta } from "./types.ts";
 
 function usage() {
@@ -60,8 +61,11 @@ export async function main(cliArgs: string[]): Promise<number> {
   }
 
   if (version) {
-    // TODO: Figure out a nice way to get project name and version
-    console.log(`gustwind@dev`);
+    const { deno, v8, typescript } = Deno.version;
+
+    console.log(
+      `gustwind@${VERSION}\ndeno@${deno}\nv8@${v8}\ntypescript@${typescript}`,
+    );
     return 0;
   }
 

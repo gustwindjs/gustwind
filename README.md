@@ -29,3 +29,5 @@ It's a good idea to use a recent version of [Deno](https://deno.land/) and I rec
 ## Development
 
 Run the available commands through [velociraptor](https://github.com/umbopepato/velociraptor) (vr).
+
+Publishing goes through the [publish](https://deno.land/x/publish) utility.
