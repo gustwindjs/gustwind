@@ -29,10 +29,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       esbuild.stop();
     });
 
-    Deno.writeTextFile(
-      path.join(outputDirectory, "components.json"),
-      JSON.stringify(components),
-    );
+    if (projectMeta.features?.showEditorAlways) {
+      Deno.writeTextFile(
+        path.join(outputDirectory, "components.json"),
+        JSON.stringify(components),
+      );
+    }
 
     const tasks: Task[] = [];
     const { routes } = await generateRoutes({

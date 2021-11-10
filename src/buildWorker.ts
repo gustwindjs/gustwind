@@ -33,14 +33,17 @@ self.onmessage = async (e) => {
   );
 
   await fs.ensureDir(dir).then(() => {
-    Deno.writeTextFile(
-      path.join(dir, "context.json"),
-      JSON.stringify(context),
-    );
-    Deno.writeTextFile(
-      path.join(dir, "definition.json"),
-      JSON.stringify(page),
-    );
+    if (projectMeta.features?.showEditorAlways) {
+      Deno.writeTextFile(
+        path.join(dir, "context.json"),
+        JSON.stringify(context),
+      );
+      Deno.writeTextFile(
+        path.join(dir, "definition.json"),
+        JSON.stringify(page),
+      );
+    }
+
     Deno.writeTextFile(
       path.join(dir, "index.html"),
       html,
