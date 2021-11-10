@@ -62,7 +62,18 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     });
     const workerPool = createWorkerPool<BuildWorkerEvent>(
       amountOfBuildThreads,
-      () => {
+    );
+
+    workerPool.addTaskToEach({
+      type: "init",
+      payload: {
+        components,
+        projectMeta,
+      },
+    });
+
+    return new Promise((resolve) => {
+      workerPool.onWorkFinished(() => {
         workerPool.terminate();
 
         const endTime = performance.now();
@@ -77,18 +88,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
             ) / 1000
           } ms per page.`,
         );
-      },
-    );
 
-    workerPool.addTaskToEach({
-      type: "init",
-      payload: {
-        components,
-        projectMeta,
-      },
+        resolve(undefined);
+      });
+
+      tasks.forEach((task) => workerPool.addTaskToQueue(task));
     });
-
-    tasks.forEach((task) => workerPool.addTaskToQueue(task));
   });
 }
 

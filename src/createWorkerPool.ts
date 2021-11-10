@@ -1,7 +1,8 @@
 type WorkerStatus = "created" | "processing" | "waiting";
 type WorkerWrapper = { status: WorkerStatus; worker: Worker };
 
-function createWorkerPool<E>(amount: number, onWorkDone: () => void) {
+function createWorkerPool<E>(amount: number) {
+  let onWorkFinished: () => void;
   const onReady = (workerWrapper: WorkerWrapper) => {
     workerWrapper.status = "waiting";
 
@@ -11,7 +12,7 @@ function createWorkerPool<E>(amount: number, onWorkDone: () => void) {
       workerWrapper.status = "processing";
       workerWrapper.worker.postMessage(task);
     } else if (workers.every(({ status }) => status !== "processing")) {
-      onWorkDone();
+      onWorkFinished();
     }
   };
   const waitingTasks: E[] = [];
@@ -36,6 +37,9 @@ function createWorkerPool<E>(amount: number, onWorkDone: () => void) {
     },
     terminate: () => {
       workers.forEach(({ worker }) => worker.terminate());
+    },
+    onWorkFinished: (cb: () => void) => {
+      onWorkFinished = cb;
     },
   };
 }
