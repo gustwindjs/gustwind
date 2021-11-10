@@ -14,7 +14,7 @@ Please see the documentation to learn more about the concepts.
 The easiest way to consume the project is to use the CLI:
 
 ```bash
-deno install --allow-env --allow-read=. --allow-write=. --allow-net=deno.land,esm.sh,cdn.skypack.dev,registry.npmjs.org --no-check https://deno.land/x/gustwind@v0.7.3/cli.ts
+deno install --allow-env --allow-read --allow-write --allow-net --allow-run --no-check -f https://deno.land/x/gustwind@v0.7.4/cli.ts
 ```
 
 The APIs are also available as modules if you need more control.
