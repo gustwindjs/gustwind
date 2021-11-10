@@ -3,10 +3,17 @@ import { getJson, resolvePaths } from "../utils/fs.ts";
 import { compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
-import type { ProjectMeta } from "../types.ts";
+import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
-  console.log("Building to static");
+  const amountOfBuildThreads = getAmountOfThreads(
+    projectMeta.amountOfBuildThreads,
+  );
+  console.log(
+    `Building to static with ${amountOfBuildThreads} thread${
+      amountOfBuildThreads > 1 ? "s" : ""
+    }`,
+  );
 
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -36,25 +43,26 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       );
     }
 
-    const tasks: Task[] = [];
+    const tasks: BuildWorkerEvent[] = [];
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
       renderPage: ({ route, path: filePath, page, context }) =>
         tasks.push({
-          route,
-          filePath,
-          dir: path.join(outputDirectory, route),
-          extraContext: context,
-          components: components,
-          projectMeta,
-          page,
+          type: "build",
+          payload: {
+            route,
+            filePath,
+            dir: path.join(outputDirectory, route),
+            extraContext: context,
+            page,
+          },
         }),
       pagesPath: "./pages",
       siteName: projectMeta.siteName,
     });
-    const workerPool = createWorkerPool(
-      getAmountOfThreads(projectMeta.amountOfBuildThreads),
+    const workerPool = createWorkerPool<BuildWorkerEvent>(
+      amountOfBuildThreads,
       () => {
         workerPool.terminate();
 
@@ -73,7 +81,15 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       },
     );
 
-    tasks.forEach((task) => workerPool.addTask(task));
+    workerPool.addTaskToEach({
+      type: "init",
+      payload: {
+        components,
+        projectMeta,
+      },
+    });
+
+    tasks.forEach((task) => workerPool.addTaskToQueue(task));
   });
 }
 
@@ -88,11 +104,10 @@ function getAmountOfThreads(
   return amountOfThreads;
 }
 
-type Task = Record<string, unknown>;
 type WorkerStatus = "created" | "processing" | "waiting";
 type WorkerWrapper = { status: WorkerStatus; worker: Worker };
 
-function createWorkerPool(amount: number, onWorkDone: () => void) {
+function createWorkerPool<E>(amount: number, onWorkDone: () => void) {
   const onReady = (workerWrapper: WorkerWrapper) => {
     workerWrapper.status = "waiting";
 
@@ -105,14 +120,17 @@ function createWorkerPool(amount: number, onWorkDone: () => void) {
       onWorkDone();
     }
   };
-  const waitingTasks: Task[] = [];
+  const waitingTasks: E[] = [];
   const workers: WorkerWrapper[] = Array.from(
     { length: amount },
     () => createWorker(onReady),
   );
 
   return {
-    addTask: (task: Task) => {
+    addTaskToEach: (task: E) => {
+      workers.forEach(({ worker }) => worker.postMessage(task));
+    },
+    addTaskToQueue: (task: E) => {
       const freeWorker = workers.find(({ status }) => status !== "processing");
 
       if (freeWorker) {

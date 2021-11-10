@@ -80,10 +80,26 @@ type Page = {
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
+type BuildWorkerEvent =
+  | {
+    type: "init";
+    payload: { components: Components; projectMeta: ProjectMeta };
+  }
+  | {
+    type: "build";
+    payload: {
+      route: string;
+      filePath: string;
+      dir: string;
+      extraContext: DataContext;
+      page: Page;
+    };
+  };
 
 export type {
   Attributes,
   BlogPost,
+  BuildWorkerEvent,
   Category,
   Component,
   Components,
