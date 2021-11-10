@@ -6,8 +6,6 @@ import { getPagePath } from "../utils/getPagePath.ts";
 import { traversePage } from "../utils/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
-console.log("Hello from the page editor");
-
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
@@ -483,15 +481,19 @@ declare global {
   }
 }
 
-window.createEditor = createEditor;
-window.toggleEditorVisibility = toggleEditorVisibility;
-window.metaChanged = metaChanged;
-window.classChanged = debounce<typeof classChanged>(classChanged);
-window.elementClicked = elementClicked;
-window.elementChanged = elementChanged;
-window.contentChanged = debounce<typeof contentChanged>(contentChanged);
-window.getSelectedComponent = getSelectedComponent;
-window.updateFileSystem = updateFileSystem;
+if (!("Deno" in globalThis)) {
+  console.log("Hello from the page editor");
+
+  window.createEditor = createEditor;
+  window.toggleEditorVisibility = toggleEditorVisibility;
+  window.metaChanged = metaChanged;
+  window.classChanged = debounce<typeof classChanged>(classChanged);
+  window.elementClicked = elementClicked;
+  window.elementChanged = elementChanged;
+  window.contentChanged = debounce<typeof contentChanged>(contentChanged);
+  window.getSelectedComponent = getSelectedComponent;
+  window.updateFileSystem = updateFileSystem;
+}
 
 // https://www.freecodecamp.org/news/javascript-debounce-example/
 function debounce<F>(func: F, timeout = 100) {

@@ -4,10 +4,14 @@ import { twind, twindShim } from "../browserDeps.ts";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../utils/importScript.ts";
 
-twindShim.setup({
-  target: document.body,
-  ...sharedTwindSetup("development"),
-});
+if (!("Deno" in globalThis)) {
+  twindShim.setup({
+    target: document.body,
+    ...sharedTwindSetup("development"),
+  });
+
+  init();
+}
 
 function init() {
   const toggleButton = document.createElement("button");
@@ -28,5 +32,3 @@ function init() {
 
   document.body.appendChild(toggleButton);
 }
-
-init();

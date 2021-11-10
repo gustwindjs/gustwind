@@ -11,6 +11,11 @@ import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
 
+// Include Gustwind scripts to the depsgraph so they can be served at CLI
+import "../scripts/_pageEditor.ts";
+import "../scripts/_toggleEditor.ts";
+import "../scripts/_webSocketClient.ts";
+
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.

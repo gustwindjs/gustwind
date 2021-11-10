@@ -85,12 +85,14 @@ function createWebSocket(pagePath?: string) {
   return socket;
 }
 
-const developmentSocket = createWebSocket(getPagePath());
+if (!("Deno" in globalThis)) {
+  const developmentSocket = createWebSocket(getPagePath());
+
+  window.developmentSocket = developmentSocket;
+}
 
 declare global {
   interface Window {
-    developmentSocket: typeof developmentSocket;
+    developmentSocket: ReturnType<typeof createWebSocket>;
   }
 }
-
-window.developmentSocket = developmentSocket;
