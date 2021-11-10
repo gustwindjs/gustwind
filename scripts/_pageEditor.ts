@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
-import { immer, nanoid } from "../browserDeps.ts";
+import * as immer from "https://cdn.skypack.dev/immer@9.0.6?min";
+import * as nanoid from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
@@ -101,7 +102,7 @@ function toggleEditorVisibility() {
 function initializePage(page: Page["page"]) {
   return immer.produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
-      p._id = nanoid();
+      p._id = nanoid.nanoid();
     });
   });
 }

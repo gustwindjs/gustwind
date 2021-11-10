@@ -7,7 +7,7 @@ async function compileGustwindScripts(scriptsPath: string) {
   await fs.ensureDir(gustwindScriptsPath);
 
   try {
-    const scriptsWithFiles = await compileScripts(scriptsPath, "development");
+    const scriptsWithFiles = await compileScripts(scriptsPath, "production");
 
     await Promise.all(
       scriptsWithFiles.map((
