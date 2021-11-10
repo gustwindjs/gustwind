@@ -59,7 +59,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           },
         }),
       pagesPath: "./pages",
-      siteName: projectMeta.siteName,
     });
     const workerPool = createWorkerPool<BuildWorkerEvent>(
       amountOfBuildThreads,

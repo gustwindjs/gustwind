@@ -41,7 +41,8 @@ function createWebSocket(pagePath?: string) {
 
       updateMeta(payload.meta);
 
-      window.createEditor();
+      // @ts-ignore Figure out how to type Window
+      window.createEditor && window.createEditor();
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 
@@ -49,6 +50,10 @@ function createWebSocket(pagePath?: string) {
         type: "reload",
         payload: { path: pagePath },
       }));
+    } else if (type === "reloadPage") {
+      console.log("Websocket", "reloading page");
+
+      location.reload();
     } else if (type === "replaceScript") {
       const { name } = payload;
       const existingScript = document.querySelector(
@@ -70,7 +75,8 @@ function createWebSocket(pagePath?: string) {
 
         document.body.appendChild(script);
 
-        window.createEditor();
+        // @ts-ignore Figure out how to type Window
+        window.createEditor && window.createEditor();
       }
     } else {
       console.log("WebSocket", "unknown event", event);

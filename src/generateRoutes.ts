@@ -14,7 +14,6 @@ async function generateRoutes(
       context: DataContext;
     }) => void;
     pagesPath: string;
-    siteName: string;
   },
 ) {
   const pages = (await dir(pagesPath, ".json")).map((meta) => ({
