@@ -40,6 +40,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const mode = "development";
   const renderPage = getPageRenderer({ components, mode, projectMeta });
   const { paths: routePaths } = await generateRoutes({
+    dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
     renderPage(route, path, context, page) {
       router.get(

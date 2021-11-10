@@ -56,6 +56,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     );
 
     const ret = await generateRoutes({
+      dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
       renderPage: (route, filePath, page, extraContext) =>
         // TODO: Separate tasks from a pool
