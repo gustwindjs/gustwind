@@ -251,13 +251,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
 async function serveGustwindScripts(router: oak.Router) {
   const pageEditor = await cache(
-    "https://deno.land/x/gustwind/scripts/_pageEditor.ts",
+    "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
   );
   const toggleEditor = await cache(
-    "https://deno.land/x/gustwind/scripts/_toggleEditor.ts",
+    "https://deno.land/x/gustwind/gustwindScripts/_toggleEditor.ts",
   );
   const wsClient = await cache(
-    "https://deno.land/x/gustwind/scripts/_webSocketClient.ts",
+    "https://deno.land/x/gustwind/gustwindScripts/_webSocketClient.ts",
   );
   const scriptsWithFiles = await Promise.all([
     { name: "_pageEditor.ts", file: pageEditor },
