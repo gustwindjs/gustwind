@@ -1,5 +1,6 @@
-import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
+import { opine, Router } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
+import staticFiles from "https://deno.land/x/static_files@1.1.1/mod.ts";
 import { path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
@@ -29,6 +30,7 @@ const cachedScripts: Record<string, string> = {};
 let cachedProjectMeta: ProjectMeta;
 
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
+  const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
@@ -36,8 +38,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
   const components = await getComponents("./components");
-  const app = new oak.Application();
-  const router = new oak.Router();
+  const app = opine();
+  const router = Router();
   const wss = getWebsocketServer();
 
   if (import.meta.url.startsWith("file:///")) {
@@ -62,20 +64,15 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
       router.get(
         route === "/" ? "/context.json" : `${route}context.json`,
-        (ctx) => {
-          ctx.response.body = new TextEncoder().encode(JSON.stringify(context));
-        },
+        (_req, res) => res.json(context),
       );
 
-      router.get(route, async (ctx) => {
+      router.get(route, async (req, res) => {
         try {
-          ctx.response.headers.set(
-            "Content-Type",
-            "text/html; charset=UTF-8",
-          );
+          res.append("Content-Type", "text/html; charset=UTF-8");
 
           const [html, js] = await renderPage({
-            pathname: ctx.request.url.pathname,
+            pathname: req.url,
             pagePath: path,
             // If there's cached data, use it instead. This fixes
             // the case in which there was an update over web socket and
@@ -90,46 +87,33 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           if (js) {
             await router.get(
               route === "/" ? "/index.js" : `${route}/index.js`,
-              (ctx) => {
-                ctx.response.headers.set("Content-Type", "text/javascript");
-                ctx.response.body = new TextEncoder().encode(js);
+              (_req, res) => {
+                res.append("Content-Type", "text/javascript");
+                res.send(js);
               },
             );
           }
 
-          ctx.response.body = new TextEncoder().encode(
-            html,
-          );
+          res.send(html);
         } catch (err) {
           console.error(err);
 
-          ctx.response.body = new TextEncoder().encode(err.stack);
+          res.send(err.stack);
         }
       });
 
       router.get(
         route === "/" ? "/definition.json" : `${route}definition.json`,
-        (ctx) => {
-          ctx.response.body = new TextEncoder().encode(JSON.stringify(page));
-        },
+        (_req, res) => res.send(page),
       );
     },
     pagesPath: projectPaths.pages,
   });
 
-  router.get("/components.json", (ctx) => {
-    ctx.response.body = new TextEncoder().encode(JSON.stringify(components));
-  });
+  router.get("/components.json", (_req, res) => res.json(components));
 
-  app.use(router.routes());
-  app.use(router.allowedMethods());
-
-  // Fall back to oak static server if there is no match earlier
-  app.use(async (context) => {
-    await context.send({
-      root: projectPaths.assets,
-    });
-  });
+  app.use(router);
+  app.use(staticFiles(assetsPath));
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
@@ -263,7 +247,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.developmentPort });
 }
 
-async function serveGustwindScripts(router: oak.Router) {
+async function serveGustwindScripts(router: ReturnType<typeof Router>) {
   const pageEditor = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
   );
@@ -285,7 +269,7 @@ async function serveGustwindScripts(router: oak.Router) {
 }
 
 async function serveScripts(
-  router: oak.Router,
+  router: ReturnType<typeof Router>,
   scriptsPath?: string,
   prefix = "",
 ) {
@@ -303,16 +287,14 @@ async function serveScripts(
 }
 
 function routeScripts(
-  router: oak.Router,
+  router: ReturnType<typeof Router>,
   scriptsWithFiles: { path: string; name: string; content: string }[],
   prefix = "",
 ) {
   scriptsWithFiles.forEach(({ name, content }) => {
-    router.get("/" + prefix + name.replace("ts", "js"), (ctx) => {
-      ctx.response.headers.set("Content-Type", "text/javascript");
-      ctx.response.body = new TextEncoder().encode(
-        cachedScripts[name] || content,
-      );
+    router.get("/" + prefix + name.replace("ts", "js"), (_req, res) => {
+      res.append("Content-Type", "text/javascript");
+      res.send(cachedScripts[name] || content);
     });
   });
 }

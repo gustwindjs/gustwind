@@ -34,7 +34,7 @@ type CliArgs = {
   _: string[];
 };
 
-export async function main(cliArgs: string[]): Promise<number> {
+export async function main(cliArgs: string[]): Promise<number | undefined> {
   const cwd = Deno.cwd();
   const {
     help,
@@ -85,7 +85,7 @@ export async function main(cliArgs: string[]): Promise<number> {
 
     await serveProject(siteMeta, cwd);
 
-    return 0;
+    return;
   }
 
   if (build) {
@@ -101,5 +101,9 @@ export async function main(cliArgs: string[]): Promise<number> {
 }
 
 if (import.meta.main) {
-  Deno.exit(await main(Deno.args));
+  const ret = await main(Deno.args);
+
+  if (ret) {
+    Deno.exit(ret);
+  }
 }
