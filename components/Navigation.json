@@ -19,5 +19,12 @@
     "attributes": {
       "href": "/concepts/"
     }
+  },
+  {
+    "element": "Link",
+    "children": "Deployment",
+    "attributes": {
+      "href": "/deployment/"
+    }
   }
 ]
