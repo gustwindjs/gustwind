@@ -1,10 +1,9 @@
 import * as oak from "https://deno.land/x/oak@v9.0.1/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import { lookup } from "https://deno.land/x/media_types@v2.11.0/mod.ts";
 import { path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import { dir, getJson, resolvePaths, watch } from "../utils/fs.ts";
+import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
@@ -52,7 +51,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   }
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
-  serveAssets(router, projectPaths.assets);
 
   const mode = "development";
   const renderPage = getPageRenderer({ components, mode });
@@ -125,6 +123,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   app.use(router.routes());
   app.use(router.allowedMethods());
+
+  // Fall back to oak static server if there is no match earlier
+  app.use(async (context) => {
+    await context.send({
+      root: projectPaths.assets,
+    });
+  });
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
@@ -277,32 +282,6 @@ async function serveGustwindScripts(router: oak.Router) {
   ));
 
   routeScripts(router, scriptsWithFiles);
-}
-
-async function serveAssets(router: oak.Router, assetsPath?: string) {
-  if (!assetsPath) {
-    return;
-  }
-
-  const assets = await dir(assetsPath);
-
-  assets.forEach(async ({ name, path }) => {
-    const contentType = lookup(path);
-    const content = await Deno.readTextFile(path);
-
-    if (!contentType) {
-      console.error(`${path} is missing a content type!`);
-
-      return;
-    }
-
-    router.get("/" + name, (ctx) => {
-      ctx.response.headers.set("Content-Type", contentType);
-      ctx.response.body = new TextEncoder().encode(
-        cachedScripts[name] || content,
-      );
-    });
-  });
 }
 
 async function serveScripts(
