@@ -6,7 +6,7 @@ const sharedTwindSetup = (mode: Mode) => ({
   mode: "silent",
   // TODO: This messes up Sidewind logic on the playground page
   // hash: mode === "production",
-  theme: { colors: twindColors },
+  theme: { extend: { colors: twindColors } },
   plugins: {
     // TODO: How to override blockquote styles?
     ...twindTypography(),
