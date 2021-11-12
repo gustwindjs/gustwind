@@ -21,6 +21,14 @@ The APIs are also available as modules if you need more control.
 
 It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.16.0 or newer.
 
+## Data flow
+
+Gustwind accepts TypeScript, Markdown, JSON definitions including Twind (Tailwind) classes and emits HTML and JavaScript.
+
+![Gustwind data flow](/gustwind-flow.svg)
+
+It's possible to customize the input formats and it can load data from asynchronous sources, say GraphQL APIs, so it can be used with headless content APIs.
+
 ## Earlier related work
 
 * [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.

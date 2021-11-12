@@ -29,6 +29,7 @@
     ]
   },
   "paths": {
+    "assets": "./assets",
     "components": "./components",
     "dataSources": "./dataSources",
     "output": "./build",
