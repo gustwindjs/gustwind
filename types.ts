@@ -35,7 +35,7 @@ type Library = {
 };
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
-type BlogPost = {
+type MarkdownWithFrontmatter = {
   data: {
     slug: string;
     title: string;
@@ -98,7 +98,6 @@ type BuildWorkerEvent =
 
 export type {
   Attributes,
-  BlogPost,
   BuildWorkerEvent,
   Category,
   Component,
@@ -106,6 +105,7 @@ export type {
   DataContext,
   DataSources,
   Library,
+  MarkdownWithFrontmatter,
   Meta,
   Mode,
   Page,

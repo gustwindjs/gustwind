@@ -1,13 +1,13 @@
 import { parse } from "../utils/frontmatter.ts";
 import { dir } from "../utils/fs.ts";
-import type { BlogPost } from "../types.ts";
+import type { MarkdownWithFrontmatter } from "../types.ts";
 
 async function indexMarkdown(directory: string) {
-  const blogFiles = await dir(directory, ".md");
+  const files = await dir(directory, ".md");
 
   return Promise.all(
-    blogFiles.map(({ path }) =>
-      Deno.readTextFile(path).then((d) => parse(d) as BlogPost)
+    files.map(({ path }) =>
+      Deno.readTextFile(path).then((d) => parse(d) as MarkdownWithFrontmatter)
     ),
   );
 }
