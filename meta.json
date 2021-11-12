@@ -18,7 +18,6 @@
       },
       {
         "rel": "stylesheet",
-        "type": "text/css",
         "href": "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.min.css"
       }
     ],
