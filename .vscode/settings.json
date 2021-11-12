@@ -19,6 +19,7 @@
   },
   "deno.suggest.imports.hosts": {
     "https://unpkg.com": false,
-    "https://esm.sh": false
+    "https://esm.sh": false,
+    "https://deno.land": false
   }
 }

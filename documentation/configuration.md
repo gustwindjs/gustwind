@@ -39,6 +39,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
     ]
   },
   "paths": {
+    "assets": "./assets",
     "components": "./components",
     "dataSources": "./dataSources",
     "output": "./build",

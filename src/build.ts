@@ -24,9 +24,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {
-    await Promise.all([
+    Promise.all([
       writeScripts("./scripts", outputDirectory),
       writeScripts(projectPaths.scripts, outputDirectory),
+      writeAssets(projectPaths.assets, outputDirectory),
     ]);
 
     const transformDirectory = path.join(outputDirectory, "transforms");
@@ -108,7 +109,10 @@ function getAmountOfThreads(
   return amountOfThreads;
 }
 
-async function writeScripts(scriptsPath: string, outputPath: string) {
+async function writeScripts(
+  scriptsPath: ProjectMeta["paths"]["scripts"],
+  outputPath: string,
+) {
   if (!scriptsPath) {
     return Promise.resolve();
   }
@@ -125,6 +129,13 @@ async function writeScripts(scriptsPath: string, outputPath: string) {
         : Promise.resolve()
     ),
   );
+}
+
+function writeAssets(
+  assetsPath: ProjectMeta["paths"]["assets"],
+  outputPath: string,
+) {
+  fs.copy(assetsPath, outputPath, { overwrite: true });
 }
 
 if (import.meta.main) {

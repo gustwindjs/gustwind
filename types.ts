@@ -55,6 +55,7 @@ type ProjectMeta = {
     script?: Record<string, string>[];
   };
   paths: {
+    assets: string;
     dataSources: string;
     components: string;
     output: string;
