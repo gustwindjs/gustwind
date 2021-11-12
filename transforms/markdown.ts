@@ -4,12 +4,14 @@ import { HighlightJS as highlight } from "https://cdn.skypack.dev/highlight.js@1
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
 import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
 import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
+import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml";
 
 highlight.registerLanguage("javascript", highlightJS);
 highlight.registerLanguage("js", highlightJS);
 highlight.registerLanguage("json", highlightJSON);
 highlight.registerLanguage("typescript", highlightTS);
 highlight.registerLanguage("ts", highlightTS);
+highlight.registerLanguage("yaml", highlightYAML);
 
 marked.setOptions({
   gfm: true,
