@@ -21,7 +21,7 @@ self.onmessage = async (e) => {
     const twindSetup = meta.paths.twindSetup
       ? await import(meta.paths.twindSetup).then((m) => m.default)
       : {};
-    renderPage = await getPageRenderer({
+    renderPage = getPageRenderer({
       components,
       mode: "production",
       twindSetup,
