@@ -14,6 +14,8 @@ import { getContext } from "./getContext.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
+// TODO: Some kind of a lifecycle model would be useful to have here
+// as it would allow decoupling twind from the core.
 function getPageRenderer(
   { components, mode }: {
     components: Components;
@@ -52,7 +54,7 @@ function getPageRenderer(
     return htmlTemplate({
       pagePath,
       headMarkup: renderHeadMarkup(
-        stylesheet,
+        twindSheets.getStyleTag(stylesheet),
         projectMeta.head,
         getMeta(context, page.meta, projectMeta.siteName),
       ),
@@ -96,12 +98,12 @@ function applyMeta(meta: Meta, dataContext?: DataContext) {
 }
 
 function renderHeadMarkup(
-  stylesheet: ReturnType<typeof getStyleSheet>,
+  styleTag: string,
   head: ProjectMeta["head"],
   meta: Page["meta"],
 ) {
   return [
-    twindSheets.getStyleTag(stylesheet),
+    styleTag,
     toTags("meta", false, head.meta),
     toTags("link", false, head.link),
     toTags("script", true, head.script),
@@ -165,6 +167,7 @@ async function htmlTemplate(
     pageSource = await compileTypeScript(scriptPath, mode);
   }
 
+  // TODO: Maybe this should be exposed to the user
   const html = `<!DOCTYPE html>
 <html lang="${language}">
   <head>
