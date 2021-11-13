@@ -1,6 +1,9 @@
-import { opine, Router } from "https://deno.land/x/opine@1.9.0/mod.ts";
+import {
+  opine,
+  Router,
+  serveStatic,
+} from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import staticFiles from "https://deno.land/x/static_files@1.1.1/mod.ts";
 import { path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
@@ -113,7 +116,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   router.get("/components.json", (_req, res) => res.json(components));
 
   app.use(router);
-  app.use(staticFiles(assetsPath));
+  app.use(serveStatic(assetsPath));
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
