@@ -65,7 +65,7 @@ self.onmessage = async (e) => {
         Deno.writeTextFile(path.join(dir, "index.js"), js);
       }
     });
-
-    self.postMessage({});
   }
+
+  self.postMessage({});
 };
