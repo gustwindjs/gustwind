@@ -9,7 +9,8 @@ function getStyleSheet(mode: Mode, twindSetup: Record<string, unknown>) {
 
   twind.setup({
     sheet,
-    ...sharedTwindSetup(mode, twindSetup),
+    ...sharedTwindSetup(mode),
+    ...twindSetup,
   });
 
   return sheet;

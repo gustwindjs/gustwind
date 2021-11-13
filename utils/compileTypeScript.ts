@@ -13,6 +13,7 @@ async function compileTypeScript(path: string, mode: Mode) {
     target: ["esnext"],
     treeShaking: true,
     write: false,
+    external: ["/twindSetup.js"],
   }).catch((err) => console.error(err));
 
   if (!result) {

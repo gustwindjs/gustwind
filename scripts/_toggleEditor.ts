@@ -7,12 +7,24 @@ import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 // TODO: Figure out how to load custom twind config here.
 // Maybe this has to go through importScript or import()
 if (!("Deno" in globalThis)) {
+  const sharedSetup = sharedTwindSetup("development");
+
   setup({
     target: document.body,
-    ...sharedTwindSetup("development"),
+    ...sharedSetup,
   });
 
-  init();
+  // deno-lint-ignore no-local This is an external
+  import("/twindSetup.js").then((m) => {
+    console.log("loaded custom twind setup", m.default);
+
+    setup({
+      target: document.body,
+      ...m.default,
+    });
+  }).finally(() => {
+    init();
+  });
 }
 
 function init() {
