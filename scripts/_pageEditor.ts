@@ -289,7 +289,7 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
   traversePage(page, (p, i) => {
     if (p._id === componentId) {
       const matchedElement = findElement(
-        document.querySelector("main"),
+        document.body,
         i,
         page,
       ) as HTMLElement;
@@ -393,7 +393,7 @@ function produceNextPage(
         matched(
           p,
           findElement(
-            document.querySelector("main"),
+            document.body,
             i,
             page,
           ) as HTMLElement,
@@ -471,7 +471,6 @@ function getSelectedComponent(
 declare global {
   interface Window {
     createEditor: typeof createEditor;
-    toggleEditorVisibility: typeof toggleEditorVisibility;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
     elementClicked: typeof elementClicked;
@@ -486,7 +485,6 @@ if (!("Deno" in globalThis)) {
   console.log("Hello from the page editor");
 
   window.createEditor = createEditor;
-  window.toggleEditorVisibility = toggleEditorVisibility;
   window.metaChanged = metaChanged;
   window.classChanged = debounce<typeof classChanged>(classChanged);
   window.elementClicked = elementClicked;
@@ -508,3 +506,5 @@ function debounce<F>(func: F, timeout = 100) {
     }, timeout);
   };
 }
+
+export { createEditor, toggleEditorVisibility };
