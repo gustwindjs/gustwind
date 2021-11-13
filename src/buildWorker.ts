@@ -1,7 +1,9 @@
+import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
+let id: string;
 let renderPage: ReturnType<typeof getPageRenderer>;
 let projectMeta: ProjectMeta;
 
@@ -11,7 +13,9 @@ self.onmessage = async (e) => {
   const { type }: BuildWorkerEvent = e.data;
 
   if (type === "init") {
-    DEBUG && console.log("worker - starting to init");
+    id = nanoid();
+
+    DEBUG && console.log("worker - starting to init", id);
 
     const {
       payload: {
@@ -25,17 +29,18 @@ self.onmessage = async (e) => {
     const twindSetup = meta.paths.twindSetup
       ? await import("file://" + meta.paths.twindSetup).then((m) => m.default)
       : {};
+
+    DEBUG && console.log("worker - twind setup", twindSetup);
+
     renderPage = getPageRenderer({
       components,
       mode: "production",
       twindSetup,
     });
 
-    DEBUG && console.log("worker - finished init");
+    DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
-    DEBUG && console.log("worker - starting to build");
-
     const {
       payload: {
         route,
@@ -45,6 +50,9 @@ self.onmessage = async (e) => {
         page,
       },
     } = e.data;
+
+    DEBUG && console.log("worker - starting to build", id, route, filePath);
+
     const [html, js, context] = await renderPage({
       pathname: route,
       pagePath: filePath,
@@ -74,7 +82,7 @@ self.onmessage = async (e) => {
       }
     });
 
-    DEBUG && console.log("worker - finished build");
+    DEBUG && console.log("worker - finished build", id, route, filePath);
   }
 
   self.postMessage({});
