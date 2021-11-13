@@ -1,4 +1,5 @@
-import { twind, twindSheets } from "../browserDeps.ts";
+import * as twind from "https://cdn.skypack.dev/twind@0.16.16?min";
+import * as twindSheets from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { sharedTwindSetup } from "./sharedTwindSetup.ts";
 import type { Mode } from "../types.ts";
 

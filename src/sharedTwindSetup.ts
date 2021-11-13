@@ -1,4 +1,6 @@
-import { twindColors, twindTypography } from "../browserDeps.ts";
+import * as twindColors from "https://cdn.skypack.dev/twind@0.16.16/colors?min";
+import twindTypography from "https://cdn.skypack.dev/@twind/typography@0.0.2?min";
+
 import type { Mode } from "../types.ts";
 
 const sharedTwindSetup = (mode: Mode) => ({

@@ -1,4 +1,4 @@
-import { twind } from "../browserDeps.ts";
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { get, isObject } from "../utils/functional.ts";
 import type {
   Attributes,
@@ -134,7 +134,7 @@ function resolveClass(component: Component, context: DataContext) {
           context,
         })
       ) {
-        classes.push(twind.tw(klass));
+        classes.push(tw(klass));
       }
     });
   }
@@ -143,7 +143,7 @@ function resolveClass(component: Component, context: DataContext) {
     return classes.join(" ");
   }
 
-  return twind.tw(classes.concat(component.class.split(" ")).join(" "));
+  return tw(classes.concat(component.class.split(" ")).join(" "));
 }
 
 function joinClasses(a?: string, b?: string) {

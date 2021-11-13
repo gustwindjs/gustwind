@@ -1,5 +1,5 @@
 import { marked } from "https://unpkg.com/marked@4.0.0/lib/marked.esm.js";
-import { twind } from "../browserDeps.ts";
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { HighlightJS as highlight } from "https://cdn.skypack.dev/highlight.js@11.3.1?min";
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
 import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
@@ -55,7 +55,7 @@ function transformMarkdown(input: string) {
         }
 
         return '<pre class="' +
-          twind.tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
+          tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
           '"><code class="' +
           // @ts-ignore How to type this?
           this.options.langPrefix +
@@ -76,7 +76,7 @@ function transformMarkdown(input: string) {
 
         return '<a href="#' + slug + '"><h' +
           level +
-          ' class="' + twind.tw`inline` + '"' +
+          ' class="' + tw`inline` + '"' +
           ' id="' +
           slug +
           '">' +
@@ -90,7 +90,7 @@ function transformMarkdown(input: string) {
         if (href === null) {
           return text;
         }
-        let out = '<a class="' + twind.tw`underline` + '" href="' + href + '"';
+        let out = '<a class="' + tw`underline` + '" href="' + href + '"';
         if (title) {
           out += ' title="' + title + '"';
         }
@@ -103,7 +103,7 @@ function transformMarkdown(input: string) {
           klass = ordered
             ? "list-decimal list-inside"
             : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + twind.tw(klass) + '">\n' +
+        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
           body +
           "</" +
           type + ">\n";

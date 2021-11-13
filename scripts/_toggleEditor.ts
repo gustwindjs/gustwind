@@ -1,11 +1,12 @@
 /// <reference lib="dom" />
 /// <reference path="./_pageEditor.ts" />
-import { twind, twindShim } from "../browserDeps.ts";
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { setup } from "https://cdn.skypack.dev/twind@0.16.16/shim?min";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../utils/importScript.ts";
 
 if (!("Deno" in globalThis)) {
-  twindShim.setup({
+  setup({
     target: document.body,
     ...sharedTwindSetup("development"),
   });
@@ -15,7 +16,7 @@ if (!("Deno" in globalThis)) {
 
 function init() {
   const toggleButton = document.createElement("button");
-  toggleButton.className = twind.tw(
+  toggleButton.className = tw(
     "fixed right-4 bottom-4 whitespace-nowrap text-lg",
   );
   toggleButton.innerText = "🐳💨";

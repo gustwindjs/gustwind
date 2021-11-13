@@ -1,4 +1,4 @@
-import { twindSheets } from "../browserDeps.ts";
+import * as twindSheets from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { fs, path } from "../deps.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { get } from "../utils/functional.ts";
