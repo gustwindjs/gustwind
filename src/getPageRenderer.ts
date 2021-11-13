@@ -175,7 +175,7 @@ async function htmlTemplate(
     ${headMarkup || ""}
   </head>
   <body>
-    <main>${bodyMarkup || ""}</main>
+    ${bodyMarkup || ""}
     ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
     ${
     mode === "development"
