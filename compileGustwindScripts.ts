@@ -21,4 +21,8 @@ async function compileGustwindScripts(scriptsPath: string) {
   }
 }
 
-compileGustwindScripts("./scripts");
+if (import.meta.main) {
+  compileGustwindScripts("./scripts");
+}
+
+export { compileGustwindScripts };
