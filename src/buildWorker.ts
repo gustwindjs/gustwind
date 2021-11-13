@@ -5,10 +5,14 @@ import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 let renderPage: ReturnType<typeof getPageRenderer>;
 let projectMeta: ProjectMeta;
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 self.onmessage = async (e) => {
   const { type }: BuildWorkerEvent = e.data;
 
   if (type === "init") {
+    DEBUG && console.log("worker - starting to init");
+
     const {
       payload: {
         components,
@@ -26,8 +30,12 @@ self.onmessage = async (e) => {
       mode: "production",
       twindSetup,
     });
+
+    DEBUG && console.log("worker - finished init");
   }
   if (type === "build") {
+    DEBUG && console.log("worker - starting to build");
+
     const {
       payload: {
         route,
@@ -65,6 +73,8 @@ self.onmessage = async (e) => {
         Deno.writeTextFile(path.join(dir, "index.js"), js);
       }
     });
+
+    DEBUG && console.log("worker - finished build");
   }
 
   self.postMessage({});
