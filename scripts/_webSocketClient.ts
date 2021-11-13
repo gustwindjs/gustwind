@@ -29,13 +29,7 @@ function createWebSocket(pagePath?: string) {
     } else if (type === "refresh") {
       console.log("WebSocket", "refreshing");
 
-      const container = document.querySelector("main");
-
-      if (!container) {
-        console.error("Failed to find main");
-
-        return;
-      }
+      const container = document.body;
 
       // TODO: Restore selection as well?
       container.innerHTML = payload.bodyMarkup;

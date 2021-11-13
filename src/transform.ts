@@ -1,4 +1,3 @@
-import { importScript } from "../utils/importScript.ts";
 import type { Transform } from "../types.ts";
 
 async function transform(
@@ -37,7 +36,7 @@ async function transform(
   // In the browser now
   // @ts-ignore How to type the browser version?
   return Promise.all(
-    transformNames.map((name) => importScript(`/transforms/${name}.js`)),
+    transformNames.map((name) => import(`/transforms/${name}.js`)),
   );
 }
 

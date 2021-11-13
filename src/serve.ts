@@ -54,11 +54,19 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
     serveGustwindScripts(router);
   }
+  serveScript(router, "twindSetup.js", projectPaths.twindSetup);
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({ components, mode });
+  const twindSetup = projectPaths.twindSetup
+    ? await import(projectPaths.twindSetup).then((m) => m.default)
+    : {};
+  const renderPage = getPageRenderer({
+    components,
+    mode,
+    twindSetup,
+  });
   const { paths: routePaths } = await generateRoutes({
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
@@ -284,6 +292,29 @@ async function serveScripts(
     const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
     routeScripts(router, scriptsWithFiles, prefix);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function serveScript(
+  router: ReturnType<typeof Router>,
+  scriptName: string,
+  scriptPath?: string,
+) {
+  if (!scriptPath) {
+    return;
+  }
+
+  try {
+    const script = await compileScript({
+      path: scriptPath,
+      name: "",
+      mode: "development",
+    });
+    script.name = scriptName;
+
+    routeScripts(router, [script]);
   } catch (error) {
     console.error(error);
   }

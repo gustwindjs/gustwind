@@ -23,7 +23,10 @@ function createWorkerPool<E>(amount: number) {
 
   return {
     addTaskToEach: (task: E) => {
-      workers.forEach(({ worker }) => worker.postMessage(task));
+      workers.forEach((workerWrapper) => {
+        workerWrapper.status = "processing";
+        workerWrapper.worker.postMessage(task);
+      });
     },
     addTaskToQueue: (task: E) => {
       const freeWorker = workers.find(({ status }) => status !== "processing");

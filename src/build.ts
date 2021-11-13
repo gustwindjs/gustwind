@@ -1,6 +1,6 @@
 import { esbuild, fs, path } from "../deps.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
-import { compileScripts } from "../utils/compileScripts.ts";
+import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -24,18 +24,22 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {
-    Promise.all([
-      writeScripts("./scripts", outputDirectory),
-      writeScripts(projectPaths.scripts, outputDirectory),
-      writeAssets(projectPaths.assets, outputDirectory),
+    const transformDirectory = path.join(outputDirectory, "transforms");
+
+    // TODO: Push these as tasks to workers
+    await Promise.all([
+      projectMeta.features?.showEditorAlways
+        ? writeScript(outputDirectory, "twindSetup.js", projectPaths.twindSetup)
+        : Promise.resolve(),
+      writeScripts(outputDirectory, "./scripts"),
+      writeScripts(outputDirectory, projectPaths.scripts),
+      writeAssets(outputDirectory, projectPaths.assets),
+      fs.ensureDir(transformDirectory).then(() =>
+        writeScripts(projectPaths.transforms, transformDirectory)
+      ),
     ]);
 
-    const transformDirectory = path.join(outputDirectory, "transforms");
-    fs.ensureDir(transformDirectory).then(async () => {
-      await writeScripts(projectPaths.transforms, transformDirectory);
-
-      esbuild.stop();
-    });
+    esbuild.stop();
 
     if (projectMeta.features?.showEditorAlways) {
       Deno.writeTextFile(
@@ -110,8 +114,8 @@ function getAmountOfThreads(
 }
 
 async function writeScripts(
-  scriptsPath: ProjectMeta["paths"]["scripts"],
   outputPath: string,
+  scriptsPath: ProjectMeta["paths"]["scripts"],
 ) {
   if (!scriptsPath) {
     return Promise.resolve();
@@ -131,9 +135,27 @@ async function writeScripts(
   );
 }
 
-function writeAssets(
-  assetsPath: ProjectMeta["paths"]["assets"],
+async function writeScript(
   outputPath: string,
+  scriptName: string,
+  scriptPath?: string,
+) {
+  if (!scriptPath) {
+    return Promise.resolve();
+  }
+
+  const script = await compileScript({
+    path: scriptPath,
+    name: scriptName,
+    mode: "production",
+  });
+
+  return Deno.writeTextFile(path.join(outputPath, scriptName), script.content);
+}
+
+function writeAssets(
+  outputPath: string,
+  assetsPath: ProjectMeta["paths"]["assets"],
 ) {
   fs.copy(assetsPath, outputPath, { overwrite: true });
 }
