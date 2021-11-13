@@ -49,6 +49,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "twindSetup": "./twindSetup.ts"
   },
   "features": {
+    "loadTwindRuntime": false,
     "showEditorAlways": true
   }
 }

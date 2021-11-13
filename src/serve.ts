@@ -279,10 +279,14 @@ async function serveGustwindScripts(router: ReturnType<typeof Router>) {
   const wsClient = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_webSocketClient.ts",
   );
+  const twindRuntime = await cache(
+    "https://deno.land/x/gustwind/gustwindScripts/_twindRuntime.ts",
+  );
   const scriptsWithFiles = await Promise.all([
     { name: "_pageEditor.ts", file: pageEditor },
     { name: "_toggleEditor.ts", file: toggleEditor },
     { name: "_webSocketClient.ts", file: wsClient },
+    { name: "_twindRuntime.ts", file: twindRuntime },
   ].map(({ name, file: { path } }) =>
     compileScript({ name, path, mode: "development" })
   ));

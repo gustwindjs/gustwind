@@ -65,6 +65,7 @@ type ProjectMeta = {
     twindSetup?: string;
   };
   features?: {
+    loadTwindRuntime?: boolean;
     showEditorAlways?: boolean;
   };
 };

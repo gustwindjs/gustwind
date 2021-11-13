@@ -1,31 +1,15 @@
 /// <reference lib="dom" />
-/// <reference path="./_pageEditor.ts" />
 import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
-import { setup } from "https://cdn.skypack.dev/twind@0.16.16/shim?min";
-import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 
 if (!("Deno" in globalThis)) {
-  const sharedSetup = sharedTwindSetup("development");
-
-  setup({
-    target: document.body,
-    ...sharedSetup,
-  });
-
-  // deno-lint-ignore no-local This is an external
-  import("/twindSetup.js").then((m) => {
-    console.log("loaded custom twind setup", m.default);
-
-    setup({
-      target: document.body,
-      ...m.default,
-    });
-  }).finally(() => {
-    init();
+  import("./_twindRuntime.ts").then((m) => {
+    m.registerListener(init);
   });
 }
 
 function init() {
+  console.log("initializing editor");
+
   let loadedAlready = false;
   const toggleButton = document.createElement("button");
   toggleButton.className = tw(
