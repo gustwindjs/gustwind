@@ -25,7 +25,7 @@ It's a good idea to use a recent version of [Deno](https://deno.land/) and I rec
 
 Gustwind accepts TypeScript, Markdown, JSON definitions including Twind (Tailwind) classes and emits HTML and JavaScript.
 
-![Gustwind data flow](/gustwind-flow.svg)
+![Gustwind data flow](./assets/gustwind-flow.svg)
 
 It's possible to customize the input formats and it can load data from asynchronous sources, say GraphQL APIs, so it can be used with headless content APIs.
 
