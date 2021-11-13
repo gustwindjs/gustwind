@@ -54,7 +54,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
     serveGustwindScripts(router);
   }
-  serveScript(router, projectPaths.twindSetup);
+  serveScript(router, "twindSetup.js", projectPaths.twindSetup);
   serveScripts(router, projectPaths.scripts);
   serveScripts(router, projectPaths.transforms, "transforms/");
 
@@ -299,6 +299,7 @@ async function serveScripts(
 
 async function serveScript(
   router: ReturnType<typeof Router>,
+  scriptName: string,
   scriptPath?: string,
 ) {
   if (!scriptPath) {
@@ -312,6 +313,7 @@ async function serveScript(
       name,
       mode: "development",
     });
+    script.name = scriptName;
 
     routeScripts(router, [script]);
   } catch (error) {
