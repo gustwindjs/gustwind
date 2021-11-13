@@ -17,12 +17,13 @@ import { renderBody } from "./renderBody.ts";
 // TODO: Some kind of a lifecycle model would be useful to have here
 // as it would allow decoupling twind from the core.
 function getPageRenderer(
-  { components, mode }: {
+  { components, mode, twindSetup }: {
     components: Components;
     mode: Mode;
+    twindSetup: Record<string, unknown>;
   },
 ) {
-  const stylesheet = getStyleSheet(mode);
+  const stylesheet = getStyleSheet(mode, twindSetup);
 
   return async (
     { pathname, pagePath, page, extraContext, initialBodyMarkup, projectMeta }:

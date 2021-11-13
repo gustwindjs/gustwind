@@ -62,6 +62,7 @@ type ProjectMeta = {
     pages: string;
     scripts: string;
     transforms: string;
+    twindSetup?: string;
   };
   features?: {
     showEditorAlways?: boolean;

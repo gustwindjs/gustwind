@@ -58,7 +58,14 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   serveScripts(router, projectPaths.transforms, "transforms/");
 
   const mode = "development";
-  const renderPage = getPageRenderer({ components, mode });
+  const twindSetup = projectPaths.twindSetup
+    ? await import(projectPaths.twindSetup).then((m) => m.default)
+    : {};
+  const renderPage = getPageRenderer({
+    components,
+    mode,
+    twindSetup,
+  });
   const { paths: routePaths } = await generateRoutes({
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,

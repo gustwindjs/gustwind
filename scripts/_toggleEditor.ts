@@ -5,6 +5,8 @@ import { setup } from "https://cdn.skypack.dev/twind@0.16.16/shim?min";
 import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 import { importScript } from "../utils/importScript.ts";
 
+// TODO: Figure out how to load custom twind config here.
+// Maybe this has to go through importScript or import()
 if (!("Deno" in globalThis)) {
   setup({
     target: document.body,

@@ -45,7 +45,8 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "output": "./build",
     "pages": "./pages",
     "scripts": "./scripts",
-    "transforms": "./transforms"
+    "transforms": "./transforms",
+    "twindSetup": "./twindSetup.ts"
   },
   "features": {
     "showEditorAlways": true
