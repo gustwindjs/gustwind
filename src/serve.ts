@@ -60,7 +60,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   const mode = "development";
   const twindSetup = projectPaths.twindSetup
-    ? await import(projectPaths.twindSetup).then((m) => m.default)
+    ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
     : {};
   const renderPage = getPageRenderer({
     components,

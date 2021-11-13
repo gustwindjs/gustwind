@@ -23,7 +23,7 @@ self.onmessage = async (e) => {
     projectMeta = meta;
 
     const twindSetup = meta.paths.twindSetup
-      ? await import(meta.paths.twindSetup).then((m) => m.default)
+      ? await import("file://" + meta.paths.twindSetup).then((m) => m.default)
       : {};
     renderPage = getPageRenderer({
       components,
