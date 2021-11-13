@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
-import * as immer from "https://cdn.skypack.dev/immer@9.0.6?min";
-import * as nanoid from "https://cdn.skypack.dev/nanoid@3.1.30?min";
+import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
+import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
@@ -100,15 +100,15 @@ function toggleEditorVisibility() {
 }
 
 function initializePage(page: Page["page"]) {
-  return immer.produce(page, (draftPage: Page["page"]) => {
+  return produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
-      p._id = nanoid.nanoid();
+      p._id = nanoid();
     });
   });
 }
 
 function updateFileSystem(state: Page) {
-  const nextPage = immer.produce(state.page, (draftPage: Page["page"]) => {
+  const nextPage = produce(state.page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -387,7 +387,7 @@ function produceNextPage(
   componentId: Component["_id"],
   matched: (p: Component, element: HTMLElement) => void,
 ) {
-  return immer.produce(page, (draftPage: Page["page"]) => {
+  return produce(page, (draftPage: Page["page"]) => {
     traversePage(draftPage, (p, i) => {
       if (p._id === componentId) {
         matched(
