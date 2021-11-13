@@ -307,10 +307,9 @@ async function serveScript(
   }
 
   try {
-    const name = path.basename(scriptPath);
     const script = await compileScript({
       path: scriptPath,
-      name,
+      name: "",
       mode: "development",
     });
     script.name = scriptName;
