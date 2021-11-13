@@ -287,6 +287,8 @@ async function serveGustwindScripts(router: ReturnType<typeof Router>) {
     compileScript({ name, path, mode: "development" })
   ));
 
+  DEBUG && console.log("serving gustwind scripts", scriptsWithFiles);
+
   routeScripts(router, scriptsWithFiles);
 }
 
