@@ -18,8 +18,8 @@ self.onmessage = async (e) => {
 
     projectMeta = meta;
 
-    const twindSetup = meta.paths.twindSetupPath
-      ? await import(meta.paths.twindSetupPath).then((m) => m.default)
+    const twindSetup = meta.paths.twindSetup
+      ? await import(meta.paths.twindSetup).then((m) => m.default)
       : {};
     renderPage = await getPageRenderer({
       components,
