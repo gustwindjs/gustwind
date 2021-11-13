@@ -26,6 +26,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   await fs.ensureDir(outputDirectory).then(async () => {
     const transformDirectory = path.join(outputDirectory, "transforms");
 
+    await Deno.remove(outputDirectory, { recursive: true });
+
     // TODO: Push these as tasks to workers
     await Promise.all([
       projectMeta.features?.showEditorAlways
