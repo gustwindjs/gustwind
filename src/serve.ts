@@ -32,6 +32,8 @@ const cachedScripts: Record<string, string> = {};
 // This is replaced when the user changes meta.json
 let cachedProjectMeta: ProjectMeta;
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
@@ -46,11 +48,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const wss = getWebsocketServer();
 
   if (import.meta.url.startsWith("file:///")) {
-    Deno.env.get("DEBUG") === "1" && console.log("Serving local scripts");
+    DEBUG && console.log("Serving local scripts");
 
     serveScripts(router, "./scripts");
   } else {
-    Deno.env.get("DEBUG") === "1" && console.log("Serving remote scripts");
+    DEBUG && console.log("Serving remote scripts");
 
     serveGustwindScripts(router);
   }
@@ -62,6 +64,15 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const twindSetup = projectPaths.twindSetup
     ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
     : {};
+
+  DEBUG &&
+    console.log(
+      "twind setup path",
+      projectPaths.twindSetup,
+      "twind setup",
+      twindSetup,
+    );
+
   const renderPage = getPageRenderer({
     components,
     mode,
@@ -71,7 +82,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
     renderPage({ route, path, page, context }) {
-      Deno.env.get("DEBUG") === "1" && console.log("render page", route, path);
+      DEBUG && console.log("render page", route, path);
 
       router.get(
         route === "/" ? "/context.json" : `${route}context.json`,
