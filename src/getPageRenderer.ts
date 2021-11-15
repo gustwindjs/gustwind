@@ -184,13 +184,8 @@ async function htmlTemplate(
       : ""
   }
     ${
-    !features?.showEditorAlways || features?.loadTwindRuntime
-      ? '<script type="module" src="/_twindRuntime.js"></script>'
-      : ""
-  }
-    ${
     mode === "development" || features?.showEditorAlways
-      ? '<script type="module" src="/_toggleEditor.js"></script>'
+      ? '<script type="module" src="/_twindRuntime.js"></script><script type="module" src="/_toggleEditor.js"></script>'
       : ""
   }
   </body>
