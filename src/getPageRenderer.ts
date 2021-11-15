@@ -23,7 +23,7 @@ function getPageRenderer(
     twindSetup: Record<string, unknown>;
   },
 ) {
-  const stylesheet = getStyleSheet(mode, twindSetup);
+  const stylesheet = getStyleSheet(twindSetup);
 
   return async (
     { pathname, pagePath, page, extraContext, initialBodyMarkup, projectMeta }:

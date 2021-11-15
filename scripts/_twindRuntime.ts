@@ -1,6 +1,4 @@
 /// <reference lib="dom" />
-import { setup } from "https://cdn.skypack.dev/twind@0.16.16/shim?min";
-import { sharedTwindSetup } from "../src/sharedTwindSetup.ts";
 
 type Listener = () => void;
 
@@ -12,19 +10,25 @@ if (!("Deno" in globalThis)) {
 }
 
 function setupTwind() {
-  const sharedSetup = sharedTwindSetup("development");
-
-  setup({
+  const defaultSetup = {
+    // https://twind.dev/handbook/configuration.html#mode
+    mode: "silent",
     target: document.body,
-    ...sharedSetup,
-  });
+  };
 
-  // deno-lint-ignore no-local This is an external
-  import("/twindSetup.js").then((m) => {
+  // It seems important to defer loading Twind shim as otherwise
+  // Twind would try to evaluate too soon.
+  //
+  // TODO: What should happen if twindSetup is missing?
+  Promise.all([
+    import("https://cdn.skypack.dev/twind@0.16.16/shim?min"),
+    // deno-lint-ignore no-local This is an external
+    import("/twindSetup.js"),
+  ]).then(([{ setup }, m]) => {
     console.log("loaded custom twind setup", m.default);
 
     setup({
-      target: document.body,
+      ...defaultSetup,
       ...m.default,
     });
 
