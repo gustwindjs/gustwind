@@ -56,7 +56,8 @@
                   "element": "li",
                   "class": "flex gap-2",
                   "attributes": {
-                    "x-class": "[typeof selectedComponent.children !== 'string' && 'hidden']"
+                    "x-attr": "",
+                    "@class": "[typeof selectedComponent.children !== 'string' && 'hidden']"
                   },
                   "children": [
                     {

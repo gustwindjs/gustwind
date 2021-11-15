@@ -86,15 +86,17 @@
                       "element": "li",
                       "class": "my-2",
                       "attributes": {
+                        "x-attr": "",
                         "onclick": "elementClicked(this, this.state.value._id)",
-                        "x-class": "state.level > 0 && 'ml-2'"
+                        "@class": "state.level > 0 && 'ml-2'"
                       },
                       "children": [
                         {
                           "element": "label",
                           "attributes": {
+                            "x-attr": "",
                             "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')",
-                            "x-class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._id === selected.componentId && 'font-bold']"
+                            "@class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._id === selected.componentId && 'font-bold']"
                           }
                         },
                         {
