@@ -1,8 +1,10 @@
 /// <reference lib="dom" />
 
-type Listener = () => void;
+export type Tw = (...o: unknown[]) => string;
+export type Listener = (tw: Tw) => void;
 
 let setupComplete = false;
+let globalTw: Tw;
 const listeners: Listener[] = [];
 
 if (!("Deno" in globalThis)) {
@@ -32,8 +34,11 @@ function setupTwind() {
       ...m.default,
     });
 
-    setupComplete = true;
-    listeners.forEach((listener) => listener());
+    import("https://cdn.skypack.dev/twind@0.16.16?min").then(({ tw }) => {
+      globalTw = tw;
+      setupComplete = true;
+      listeners.forEach((listener) => listener(tw));
+    });
   });
 }
 
@@ -41,7 +46,7 @@ function registerListener(cb: Listener) {
   console.log("registering a twind runtime listener");
 
   if (setupComplete) {
-    cb();
+    cb(globalTw);
   } else {
     listeners.push(cb);
   }

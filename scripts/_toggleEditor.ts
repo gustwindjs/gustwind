@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import type { Tw } from "./_twindRuntime.ts";
 
 if (!("Deno" in globalThis)) {
   import("./_twindRuntime.ts").then((m) => {
@@ -7,7 +7,7 @@ if (!("Deno" in globalThis)) {
   });
 }
 
-function init() {
+function init(tw: Tw) {
   console.log("initializing editor");
 
   let loadedAlready = false;
