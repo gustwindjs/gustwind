@@ -79,10 +79,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         })
       );
 
-      Deno.writeTextFile(
-        path.join(outputDirectory, "components.json"),
-        JSON.stringify(components),
-      );
+      tasks.push({
+        type: "writeFile",
+        payload: {
+          outputPath: path.join(outputDirectory, "components.json"),
+          data: JSON.stringify(components),
+        },
+      });
     }
 
     const projectScripts = await dir(projectPaths.scripts, ".ts");

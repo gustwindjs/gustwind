@@ -100,7 +100,17 @@ self.onmessage = async (e) => {
       },
     } = e.data;
 
-    writeScript(outputDirectory, scriptName, scriptPath);
+    await writeScript(outputDirectory, scriptName, scriptPath);
+  }
+  if (type === "writeFile") {
+    const {
+      payload: {
+        outputPath,
+        data,
+      },
+    } = e.data;
+
+    await Deno.writeTextFile(outputPath, data);
   }
 
   self.postMessage({});

@@ -98,6 +98,13 @@ type BuildWorkerEvent =
     };
   }
   | {
+    type: "writeFile";
+    payload: {
+      outputPath: string;
+      data: string;
+    };
+  }
+  | {
     type: "writeScript";
     payload: {
       outputDirectory: string;
