@@ -5,6 +5,8 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const amountOfBuildThreads = getAmountOfThreads(
     projectMeta.amountOfBuildThreads,
@@ -57,6 +59,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       },
       pagesPath: "./pages",
     });
+
+    if (DEBUG) {
+      const routeGenerationTime = performance.now();
+
+      console.log(`Generated routes in ${routeGenerationTime - startTime} ms`);
+    }
+
     const workerPool = createWorkerPool<BuildWorkerEvent>(
       amountOfBuildThreads,
     );
@@ -119,6 +128,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       type: "writeAssets",
       payload: { outputPath: outputDirectory, assetsPath: projectPaths.assets },
     });
+
+    if (DEBUG) {
+      const initTime = performance.now();
+
+      console.log(`Generated routes and tasks in ${initTime - startTime} ms`);
+    }
 
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {

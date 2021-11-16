@@ -32,8 +32,6 @@ self.onmessage = async (e) => {
       ? await import("file://" + meta.paths.twindSetup).then((m) => m.default)
       : {};
 
-    DEBUG && console.log("worker - twind setup", twindSetup);
-
     renderPage = getPageRenderer({
       components,
       mode: "production",
