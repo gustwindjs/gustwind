@@ -132,7 +132,7 @@ async function writeScript(
     name: scriptName,
     mode: "production",
   });
-  const scriptPath = path.join(outputPath, scriptName);
+  const scriptPath = path.join(outputPath, scriptName.replace(".ts", ".js"));
 
   DEBUG && console.log("writing script", scriptPath);
 
