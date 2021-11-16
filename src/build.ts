@@ -67,7 +67,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     if (DEBUG) {
       const routeGenerationTime = performance.now();
 
-      console.log(`Generated routes in ${routeGenerationTime - startTime} ms`);
+      console.log(
+        `Generated routes in ${routeGenerationTime - startTime} ms`,
+        routes,
+      );
     }
 
     const workerPool = createWorkerPool<BuildWorkerEvent>(
