@@ -125,6 +125,9 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
     if (projectPaths.scripts) {
       const projectScripts = await dir(projectPaths.scripts, ".ts");
+
+      DEBUG && console.log("found project scripts", projectScripts);
+
       projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
         tasks.push({
           type: "writeScript",
