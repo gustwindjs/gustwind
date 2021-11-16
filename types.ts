@@ -101,7 +101,8 @@ type BuildWorkerEvent =
   | {
     type: "writeFile";
     payload: {
-      outputPath: string;
+      dir: string;
+      file: string;
       data: string;
     };
   }

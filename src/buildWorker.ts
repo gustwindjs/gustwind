@@ -62,7 +62,7 @@ self.onmessage = async (e) => {
       projectMeta,
     });
 
-    if (projectMeta.features?.showEditorAlways) {
+    if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
       // TODO: Can this be pushed as a task?
       await Deno.writeTextFile(
         path.join(dir, "context.json"),
@@ -70,10 +70,15 @@ self.onmessage = async (e) => {
       );
     }
 
-    await Deno.writeTextFile(
-      path.join(dir, "index.html"),
-      html,
-    );
+    if (page.layout === "xml") {
+      await Deno.writeTextFile(dir.slice(0, -1), html);
+    } else {
+      await fs.ensureDir(dir);
+      await Deno.writeTextFile(
+        path.join(dir, "index.html"),
+        html,
+      );
+    }
 
     // TODO: Decouple js related logic from a worker. The check can
     // be done on a higher level at `build` and the converted to a task
@@ -97,12 +102,14 @@ self.onmessage = async (e) => {
   if (type === "writeFile") {
     const {
       payload: {
-        outputPath,
+        dir,
+        file,
         data,
       },
     } = e.data;
 
-    await Deno.writeTextFile(outputPath, data);
+    await fs.ensureDir(dir);
+    await Deno.writeTextFile(path.join(dir, file), data);
   }
   if (type === "writeAssets") {
     const {
