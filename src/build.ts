@@ -55,8 +55,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       },
     });
 
-    const transformDirectory = path.join(outputDirectory, "transforms");
-
     if (projectMeta.features?.showEditorAlways) {
       tasks.push({
         type: "writeScript",
@@ -66,10 +64,29 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           scriptPath: projectPaths.twindSetup,
         },
       });
+
+      const transformDirectory = path.join(outputDirectory, "transforms");
+      await fs.ensureDir(transformDirectory);
+
+      const transformScripts = await dir(projectPaths.transforms, ".ts");
+      transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
+        tasks.push({
+          type: "writeScript",
+          payload: {
+            outputDirectory: transformDirectory,
+            scriptName,
+            scriptPath,
+          },
+        })
+      );
+
+      Deno.writeTextFile(
+        path.join(outputDirectory, "components.json"),
+        JSON.stringify(components),
+      );
     }
 
     const projectScripts = await dir(projectPaths.scripts, ".ts");
-
     projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
       tasks.push({
         type: "writeScript",
@@ -82,19 +99,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     );
 
     // TODO: Push these as tasks to workers
-    await Promise.all([
-      writeAssets(outputDirectory, projectPaths.assets),
-      fs.ensureDir(transformDirectory).then(() =>
-        writeScripts(projectPaths.transforms, transformDirectory)
-      ),
-    ]);
-
-    if (projectMeta.features?.showEditorAlways) {
-      Deno.writeTextFile(
-        path.join(outputDirectory, "components.json"),
-        JSON.stringify(components),
-      );
-    }
+    await writeAssets(outputDirectory, projectPaths.assets);
 
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {
