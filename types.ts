@@ -60,7 +60,7 @@ type ProjectMeta = {
     components: string;
     output: string;
     pages: string;
-    scripts: string;
+    scripts?: string;
     transforms: string;
     twindSetup?: string;
   };

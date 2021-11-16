@@ -237,7 +237,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     },
   );
 
-  function watchScripts(scripts: string) {
+  function watchScripts(scripts?: string) {
     scripts &&
       watch(scripts, ".ts", async (matchedPath) => {
         const scriptName = path.basename(

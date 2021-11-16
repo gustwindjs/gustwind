@@ -116,17 +116,19 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       });
     }
 
-    const projectScripts = await dir(projectPaths.scripts, ".ts");
-    projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-      tasks.push({
-        type: "writeScript",
-        payload: {
-          outputDirectory,
-          scriptName,
-          scriptPath,
-        },
-      })
-    );
+    if (projectPaths.scripts) {
+      const projectScripts = await dir(projectPaths.scripts, ".ts");
+      projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
+        tasks.push({
+          type: "writeScript",
+          payload: {
+            outputDirectory,
+            scriptName,
+            scriptPath,
+          },
+        })
+      );
+    }
 
     projectPaths.assets && tasks.push({
       type: "writeAssets",
