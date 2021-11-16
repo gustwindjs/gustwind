@@ -35,12 +35,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
-      renderPage: async ({ route, path: filePath, page, context }) => {
+      renderPage: ({ route, path: filePath, page, context }) => {
         DEBUG && console.log("renderPage", route, filePath, page, context);
 
         const dir = path.join(outputDirectory, route);
 
-        await fs.ensureDir(dir);
+        // TODO: Figure out a better way to do this
+        fs.ensureDirSync(dir);
 
         tasks.push({
           type: "build",
