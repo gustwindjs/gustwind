@@ -169,6 +169,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         resolve(undefined);
       });
 
+      DEBUG && console.log("Generated tasks", tasks);
+
       tasks.forEach((task) => workerPool.addTaskToQueue(task));
     });
   });
