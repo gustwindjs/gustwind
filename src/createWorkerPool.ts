@@ -1,6 +1,8 @@
 type WorkerStatus = "created" | "processing" | "waiting";
 type WorkerWrapper = { status: WorkerStatus; worker: Worker };
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 function createWorkerPool<E>(amount: number) {
   let onWorkFinished: () => void;
   const onReady = (workerWrapper: WorkerWrapper) => {
@@ -12,6 +14,8 @@ function createWorkerPool<E>(amount: number) {
       workerWrapper.status = "processing";
       workerWrapper.worker.postMessage(task);
     } else if (workers.every(({ status }) => status !== "processing")) {
+      DEBUG && console.log("All work done", workers, waitingTasks);
+
       onWorkFinished();
     }
   };
