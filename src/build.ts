@@ -24,31 +24,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {
-    const transformDirectory = path.join(outputDirectory, "transforms");
-
     await Deno.remove(outputDirectory, { recursive: true });
-
-    // TODO: Push these as tasks to workers
-    await Promise.all([
-      projectMeta.features?.showEditorAlways
-        ? writeScript(outputDirectory, "twindSetup.js", projectPaths.twindSetup)
-        : Promise.resolve(),
-      writeScripts(outputDirectory, "./scripts"),
-      writeScripts(outputDirectory, projectPaths.scripts),
-      writeAssets(outputDirectory, projectPaths.assets),
-      fs.ensureDir(transformDirectory).then(() =>
-        writeScripts(projectPaths.transforms, transformDirectory)
-      ),
-    ]);
-
-    esbuild.stop();
-
-    if (projectMeta.features?.showEditorAlways) {
-      Deno.writeTextFile(
-        path.join(outputDirectory, "components.json"),
-        JSON.stringify(components),
-      );
-    }
 
     const tasks: BuildWorkerEvent[] = [];
     const { routes } = await generateRoutes({
@@ -79,9 +55,33 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       },
     });
 
+    const transformDirectory = path.join(outputDirectory, "transforms");
+
+    // TODO: Push these as tasks to workers
+    await Promise.all([
+      projectMeta.features?.showEditorAlways
+        ? writeScript(outputDirectory, "twindSetup.js", projectPaths.twindSetup)
+        : Promise.resolve(),
+      writeScripts(outputDirectory, "./scripts"),
+      writeScripts(outputDirectory, projectPaths.scripts),
+      writeAssets(outputDirectory, projectPaths.assets),
+      fs.ensureDir(transformDirectory).then(() =>
+        writeScripts(projectPaths.transforms, transformDirectory)
+      ),
+    ]);
+
+    if (projectMeta.features?.showEditorAlways) {
+      Deno.writeTextFile(
+        path.join(outputDirectory, "components.json"),
+        JSON.stringify(components),
+      );
+    }
+
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {
         workerPool.terminate();
+
+        esbuild.stop();
 
         const endTime = performance.now();
         const duration = endTime - startTime;
