@@ -68,24 +68,21 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       });
     }
 
-    if (import.meta.url.startsWith("file:///")) {
-      const scripts = await dir("./scripts", ".ts");
+    const projectScripts = await dir(projectPaths.scripts, ".ts");
 
-      scripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        tasks.push({
-          type: "writeScript",
-          payload: {
-            outputDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
-      );
-    }
+    projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
+      tasks.push({
+        type: "writeScript",
+        payload: {
+          outputDirectory,
+          scriptName,
+          scriptPath,
+        },
+      })
+    );
 
     // TODO: Push these as tasks to workers
     await Promise.all([
-      writeScripts(outputDirectory, projectPaths.scripts),
       writeAssets(outputDirectory, projectPaths.assets),
       fs.ensureDir(transformDirectory).then(() =>
         writeScripts(projectPaths.transforms, transformDirectory)
