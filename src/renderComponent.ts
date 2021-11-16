@@ -113,17 +113,27 @@ async function renderComponent(
       : component.children;
   }
 
+  const klass = resolveClass(component, context);
+
   return wrapInElement(
     component.element,
-    generateAttributes({
-      ...component.attributes,
-      class: resolveClass(component, context),
-    }, context),
+    generateAttributes(
+      context,
+      klass
+        ? {
+          ...component.attributes,
+          class: klass,
+        }
+        : component.attributes,
+    ),
     children,
   );
 }
 
-function resolveClass(component: Component, context: DataContext) {
+function resolveClass(
+  component: Component,
+  context: DataContext,
+): string | undefined {
   const classes: string[] = [];
 
   if (component.__class) {
@@ -170,7 +180,11 @@ function wrapInElement(
   return `<${element}${attributes}>${children || ""}</${element}>`;
 }
 
-function generateAttributes(attributes: Attributes, context: DataContext) {
+function generateAttributes(context: DataContext, attributes?: Attributes) {
+  if (!attributes) {
+    return "";
+  }
+
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
       return `${k.slice(2)}="${
