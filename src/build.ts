@@ -72,6 +72,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
         routes,
+        tasks,
       );
     }
 
