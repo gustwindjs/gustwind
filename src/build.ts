@@ -1,6 +1,5 @@
 import { esbuild, fs, path } from "../deps.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
-import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -137,28 +136,6 @@ function getAmountOfThreads(
   }
 
   return amountOfThreads;
-}
-
-async function writeScripts(
-  outputPath: string,
-  scriptsPath: ProjectMeta["paths"]["scripts"],
-) {
-  if (!scriptsPath) {
-    return Promise.resolve();
-  }
-
-  const scriptsWithFiles = await compileScripts(scriptsPath, "production");
-
-  return Promise.all(
-    scriptsWithFiles.map(({ name, content }) =>
-      content
-        ? Deno.writeTextFile(
-          path.join(outputPath, name.replace("ts", "js")),
-          content,
-        )
-        : Promise.resolve()
-    ),
-  );
 }
 
 function writeAssets(
