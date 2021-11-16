@@ -11,10 +11,18 @@ function createWorkerPool<E>(amount: number) {
     if (waitingTasks.length) {
       const task = waitingTasks.pop();
 
+      DEBUG &&
+        console.log(
+          "worker pool - next task to process",
+          task,
+          workers,
+          waitingTasks,
+        );
+
       workerWrapper.status = "processing";
       workerWrapper.worker.postMessage(task);
     } else if (workers.every(({ status }) => status !== "processing")) {
-      DEBUG && console.log("All work done", workers, waitingTasks);
+      DEBUG && console.log("worker pool - all work done", workers);
 
       onWorkFinished();
     }
