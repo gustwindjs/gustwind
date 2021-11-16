@@ -39,3 +39,5 @@ It's possible to customize the input formats and it can load data from asynchron
 Run the available commands through [velociraptor](https://github.com/umbopepato/velociraptor) (vr).
 
 Publishing goes through the [publish](https://deno.land/x/publish) utility.
+
+To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./cli.ts`. A symlink would likely work as well.
