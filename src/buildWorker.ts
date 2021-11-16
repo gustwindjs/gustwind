@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
