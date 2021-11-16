@@ -28,6 +28,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     await Deno.remove(outputDirectory, { recursive: true });
 
     const tasks: BuildWorkerEvent[] = [];
+
+    // TODO: See if route generation can be workerized. The idea
+    // would be that in that case for complex routes (i.e. [] expansion)
+    // the worker would create new tasks on demand.
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
