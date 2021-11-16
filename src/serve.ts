@@ -42,7 +42,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   console.log(`Serving at ${projectMeta.developmentPort}`);
 
-  const components = await getComponents("./components");
+  const components = await getComponents(projectPaths.components);
   const app = opine();
   const router = Router();
   const wss = getWebsocketServer();
