@@ -36,6 +36,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
       renderPage: async ({ route, path: filePath, page, context }) => {
+        DEBUG && console.log("renderPage", route, filePath, page, context);
+
         const dir = path.join(outputDirectory, route);
 
         await fs.ensureDir(dir);
