@@ -121,17 +121,20 @@ self.onmessage = async (e) => {
 async function writeScript(
   outputPath: string,
   scriptName: string,
-  scriptPath?: string,
+  scriptDirectory?: string,
 ) {
-  if (!scriptPath) {
+  if (!scriptDirectory) {
     return Promise.resolve();
   }
 
   const script = await compileScript({
-    path: scriptPath,
+    path: scriptDirectory,
     name: scriptName,
     mode: "production",
   });
+  const scriptPath = path.join(outputPath, scriptName);
 
-  return Deno.writeTextFile(path.join(outputPath, scriptName), script.content);
+  DEBUG && console.log("writing script", scriptPath);
+
+  return Deno.writeTextFile(scriptPath, script.content);
 }
