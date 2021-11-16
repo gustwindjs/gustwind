@@ -21,7 +21,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
-  const components = await getComponents("./components");
+  const components = await getComponents(projectPaths.components);
   const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {
