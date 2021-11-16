@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { compileScript } from "../utils/compileScripts.ts";
-import { fs, path } from "../deps.ts";
+import { path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
@@ -63,31 +63,24 @@ self.onmessage = async (e) => {
       projectMeta,
     });
 
-    await fs.ensureDir(dir).then(async () => {
-      if (projectMeta.features?.showEditorAlways) {
-        // TODO: Convert this to a task at a higher level
-        Deno.writeTextFile(
-          path.join(dir, "context.json"),
-          JSON.stringify(context),
-        );
-        // TODO: Convert this to a task at a higher level
-        Deno.writeTextFile(
-          path.join(dir, "definition.json"),
-          JSON.stringify(page),
-        );
-      }
-
+    if (projectMeta.features?.showEditorAlways) {
+      // TODO: Can this be pushed as a task?
       await Deno.writeTextFile(
-        path.join(dir, "index.html"),
-        html,
+        path.join(dir, "context.json"),
+        JSON.stringify(context),
       );
+    }
 
-      // TODO: Decouple js related logic from a worker. The check can
-      // be done on a higher level at `build` and the converted to a task
-      if (js) {
-        await Deno.writeTextFile(path.join(dir, "index.js"), js);
-      }
-    });
+    await Deno.writeTextFile(
+      path.join(dir, "index.html"),
+      html,
+    );
+
+    // TODO: Decouple js related logic from a worker. The check can
+    // be done on a higher level at `build` and the converted to a task
+    if (js) {
+      await Deno.writeTextFile(path.join(dir, "index.js"), js);
+    }
 
     DEBUG && console.log("worker - finished build", id, route, filePath);
   }

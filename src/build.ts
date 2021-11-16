@@ -29,17 +29,32 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
-      renderPage: ({ route, path: filePath, page, context }) =>
+      renderPage: async ({ route, path: filePath, page, context }) => {
+        const dir = path.join(outputDirectory, route);
+
+        await fs.ensureDir(dir);
+
         tasks.push({
           type: "build",
           payload: {
             route,
             filePath,
-            dir: path.join(outputDirectory, route),
+            dir,
             extraContext: context,
             page,
           },
-        }),
+        });
+
+        if (projectMeta.features?.showEditorAlways) {
+          tasks.push({
+            type: "writeFile",
+            payload: {
+              outputPath: path.join(dir, "definition.json"),
+              data: JSON.stringify(page),
+            },
+          });
+        }
+      },
       pagesPath: "./pages",
     });
     const workerPool = createWorkerPool<BuildWorkerEvent>(
