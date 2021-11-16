@@ -64,7 +64,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           });
         }
       },
-      pagesPath: "./pages",
+      pagesPath: projectPaths.pages,
     });
 
     if (DEBUG) {
