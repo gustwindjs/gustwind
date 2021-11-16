@@ -1,5 +1,5 @@
 import { esbuild, fs, path } from "../deps.ts";
-import { getJson, resolvePaths } from "../utils/fs.ts";
+import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
@@ -68,9 +68,23 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       });
     }
 
+    if (import.meta.url.startsWith("file:///")) {
+      const scripts = await dir("./scripts", ".ts");
+
+      scripts.forEach(({ name: scriptName, path: scriptPath }) =>
+        tasks.push({
+          type: "writeScript",
+          payload: {
+            outputDirectory,
+            scriptName,
+            scriptPath,
+          },
+        })
+      );
+    }
+
     // TODO: Push these as tasks to workers
     await Promise.all([
-      writeScripts(outputDirectory, "./scripts"),
       writeScripts(outputDirectory, projectPaths.scripts),
       writeAssets(outputDirectory, projectPaths.assets),
       fs.ensureDir(transformDirectory).then(() =>
@@ -143,24 +157,6 @@ async function writeScripts(
         : Promise.resolve()
     ),
   );
-}
-
-async function writeScript(
-  outputPath: string,
-  scriptName: string,
-  scriptPath?: string,
-) {
-  if (!scriptPath) {
-    return Promise.resolve();
-  }
-
-  const script = await compileScript({
-    path: scriptPath,
-    name: scriptName,
-    mode: "production",
-  });
-
-  return Deno.writeTextFile(path.join(outputPath, scriptName), script.content);
 }
 
 function writeAssets(
