@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { compileScript } from "../utils/compileScripts.ts";
-import { path } from "../deps.ts";
+import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
@@ -104,6 +104,16 @@ self.onmessage = async (e) => {
     } = e.data;
 
     await Deno.writeTextFile(outputPath, data);
+  }
+  if (type === "writeAssets") {
+    const {
+      payload: {
+        outputPath,
+        assetsPath,
+      },
+    } = e.data;
+
+    await fs.copy(assetsPath, outputPath, { overwrite: true });
   }
 
   self.postMessage({});

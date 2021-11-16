@@ -115,8 +115,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       })
     );
 
-    // TODO: Push these as tasks to workers
-    await writeAssets(outputDirectory, projectPaths.assets);
+    tasks.push({
+      type: "writeAssets",
+      payload: { outputPath: outputDirectory, assetsPath: projectPaths.assets },
+    });
 
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {
@@ -154,13 +156,6 @@ function getAmountOfThreads(
   }
 
   return amountOfThreads;
-}
-
-function writeAssets(
-  outputPath: string,
-  assetsPath: ProjectMeta["paths"]["assets"],
-) {
-  fs.copy(assetsPath, outputPath, { overwrite: true });
 }
 
 if (import.meta.main) {

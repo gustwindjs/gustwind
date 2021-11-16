@@ -111,6 +111,13 @@ type BuildWorkerEvent =
       scriptName: string;
       scriptPath?: string;
     };
+  }
+  | {
+    type: "writeAssets";
+    payload: {
+      outputPath: string;
+      assetsPath: ProjectMeta["paths"]["assets"];
+    };
   };
 
 export type {
