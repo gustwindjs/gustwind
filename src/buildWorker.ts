@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
+import { compileScript } from "../utils/compileScripts.ts";
 import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
@@ -90,6 +91,35 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - finished build", id, route, filePath);
   }
+  if (type === "writeScript") {
+    const {
+      payload: {
+        outputDirectory,
+        scriptName,
+        scriptPath,
+      },
+    } = e.data;
+
+    writeScript(outputDirectory, scriptName, scriptPath);
+  }
 
   self.postMessage({});
 };
+
+async function writeScript(
+  outputPath: string,
+  scriptName: string,
+  scriptPath?: string,
+) {
+  if (!scriptPath) {
+    return Promise.resolve();
+  }
+
+  const script = await compileScript({
+    path: scriptPath,
+    name: scriptName,
+    mode: "production",
+  });
+
+  return Deno.writeTextFile(path.join(outputPath, scriptName), script.content);
+}

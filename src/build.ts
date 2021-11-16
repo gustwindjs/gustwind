@@ -57,11 +57,19 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
     const transformDirectory = path.join(outputDirectory, "transforms");
 
+    if (projectMeta.features?.showEditorAlways) {
+      tasks.push({
+        type: "writeScript",
+        payload: {
+          outputDirectory,
+          scriptName: "twindSetup.js",
+          scriptPath: projectPaths.twindSetup,
+        },
+      });
+    }
+
     // TODO: Push these as tasks to workers
     await Promise.all([
-      projectMeta.features?.showEditorAlways
-        ? writeScript(outputDirectory, "twindSetup.js", projectPaths.twindSetup)
-        : Promise.resolve(),
       writeScripts(outputDirectory, "./scripts"),
       writeScripts(outputDirectory, projectPaths.scripts),
       writeAssets(outputDirectory, projectPaths.assets),

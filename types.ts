@@ -96,6 +96,14 @@ type BuildWorkerEvent =
       extraContext: DataContext;
       page: Page;
     };
+  }
+  | {
+    type: "writeScript";
+    payload: {
+      outputDirectory: string;
+      scriptName: string;
+      scriptPath?: string;
+    };
   };
 
 export type {
