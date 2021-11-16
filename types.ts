@@ -75,6 +75,7 @@ type DataSources = {
   transformWith: Transform[];
 }[];
 type Page = {
+  layout?: "html" | "xml";
   meta: Meta;
   page: Component | Component[];
   matchBy?: { dataSource: string; collection: string; property: string };

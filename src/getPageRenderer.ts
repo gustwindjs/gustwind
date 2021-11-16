@@ -52,6 +52,10 @@ function getPageRenderer(
       pathname,
     );
 
+    if (page.layout === "xml") {
+      return [xmlTemplate(bodyMarkup)];
+    }
+
     return htmlTemplate({
       pagePath,
       headMarkup: renderHeadMarkup(
@@ -146,6 +150,10 @@ function toTags(
     ">" +
     (generateSuffix ? `</${tagName}>` : "")
   ).join(" ");
+}
+
+function xmlTemplate(bodyMarkup: string) {
+  return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
 }
 
 async function htmlTemplate(
