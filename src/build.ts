@@ -128,9 +128,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       })
     );
 
-    tasks.push({
+    projectPaths.assets && tasks.push({
       type: "writeAssets",
-      payload: { outputPath: outputDirectory, assetsPath: projectPaths.assets },
+      payload: {
+        outputPath: outputDirectory,
+        assetsPath: projectPaths.assets,
+      },
     });
 
     if (DEBUG) {

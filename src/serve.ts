@@ -135,7 +135,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   router.get("/components.json", (_req, res) => res.json(components));
 
   app.use(router);
-  app.use(serveStatic(assetsPath));
+  assetsPath && app.use(serveStatic(assetsPath));
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
