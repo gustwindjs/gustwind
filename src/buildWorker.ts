@@ -1,4 +1,5 @@
-/// <reference lib="webworker" />
+/// <reference no-default-lib="true" />
+/// <reference lib="deno.worker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { compileScript } from "../utils/compileScripts.ts";
 import { fs, path } from "../deps.ts";
