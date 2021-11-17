@@ -24,19 +24,19 @@
           "children": [
             {
               "element": "title",
-              "__children": "context.title"
+              "__children": "meta.title"
             },
             {
               "element": "description",
-              "__children": "context.description"
+              "__children": "meta.description"
             },
             {
               "element": "link",
-              "__children": "https://gustwind.js.org/"
+              "children": "https://gustwind.js.org/"
             },
             {
               "element": "lastBuildDate",
-              "__children": "Mon, 06 Sep 2010 00:01:00 +0000 - TODO"
+              "__children": "meta.built"
             },
             {
               "element": "item",
@@ -55,7 +55,7 @@
                 },
                 {
                   "element": "guid",
-                  "__children": "data.id"
+                  "__children": "data.slug"
                 },
                 {
                   "element": "pubDate",

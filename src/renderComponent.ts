@@ -89,7 +89,9 @@ async function renderComponent(
     const ctx = context.__bound || context;
 
     if (typeof boundChildren === "string") {
-      children = get(ctx, boundChildren);
+      // TODO: Maybe it's better to do an existence check here to avoid trouble
+      // with nullables
+      children = get(ctx, boundChildren) || get(context, boundChildren);
     } else {
       children = (
         await Promise.all(
