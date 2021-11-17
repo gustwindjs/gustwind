@@ -27,9 +27,7 @@ async function renderComponent(
     } else {
       context = { ...context, __bound: get(context, component.__bind) };
     }
-  }
-
-  if (foundComponent) {
+  } else if (foundComponent) {
     return await renderComponent(
       transformsPath,
       {
@@ -198,6 +196,9 @@ function generateAttributes(context: DataContext, attributes?: Attributes) {
 
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
+      // @ts-ignore: TODO: How to type this?
+      return `${k.slice(2)}="${get(context.__bound, v) || get(context, v)}"`;
+    } else if (k.startsWith("==")) {
       return `${k.slice(2)}="${
         evaluateExpression(
           v,
