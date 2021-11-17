@@ -106,8 +106,8 @@ async function renderComponent(
         )
       ).join("");
     }
-  } else if (component["@children"]) {
-    const childrenToEvaluate = component["@children"];
+  } else if (component["==children"]) {
+    const childrenToEvaluate = component["==children"];
 
     children = evaluateExpression(
       childrenToEvaluate,
