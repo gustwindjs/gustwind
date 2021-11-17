@@ -1,6 +1,6 @@
-import { parse } from "../utils/frontmatter.ts";
-import { dir } from "../utils/fs.ts";
-import type { MarkdownWithFrontmatter } from "../types.ts";
+import { parse } from "https://deno.land/x/frontmatter/mod.ts";
+import { dir } from "../../utils/fs.ts";
+import type { MarkdownWithFrontmatter } from "../../types.ts";
 
 async function indexMarkdown(directory: string) {
   const files = await dir(directory, ".md");

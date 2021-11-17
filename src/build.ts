@@ -17,6 +17,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     }`,
   );
 
+  const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
@@ -139,10 +140,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       );
     }
 
-    projectPaths.assets && tasks.push({
+    assetsPath && tasks.push({
       type: "writeAssets",
       payload: {
-        outputPath: outputDirectory,
+        outputPath: path.join(outputDirectory, assetsPath),
         assetsPath: projectPaths.assets,
       },
     });

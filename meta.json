@@ -29,14 +29,14 @@
     ]
   },
   "paths": {
-    "assets": "./public",
-    "components": "./components",
-    "dataSources": "./dataSources",
+    "assets": "./assets",
+    "components": "./site/components",
+    "dataSources": "./site/dataSources",
     "output": "./build",
-    "pages": "./pages",
+    "pages": "./site/pages",
     "scripts": "./scripts",
-    "transforms": "./transforms",
-    "twindSetup": "./twindSetup.ts"
+    "transforms": "./site/transforms",
+    "twindSetup": "./site/twindSetup.ts"
   },
   "features": {
     "showEditorAlways": true

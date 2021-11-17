@@ -140,7 +140,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   router.get("/components.json", (_req, res) => res.json(components));
 
   app.use(router);
-  assetsPath && app.use(serveStatic(assetsPath));
+  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
   // Watch project scripts
   watchScripts(projectPaths.scripts);
@@ -272,6 +272,10 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   }
 
   await app.listen({ port: projectMeta.developmentPort });
+}
+
+function cleanAssetsPath(p: string) {
+  return "/" + p.split("/").slice(1).join("/");
 }
 
 async function serveGustwindScripts(router: ReturnType<typeof Router>) {
