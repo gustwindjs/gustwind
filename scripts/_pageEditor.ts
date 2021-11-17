@@ -4,7 +4,6 @@ import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
-import { traversePage } from "../utils/traversePage.ts";
 import type { Component, Components, DataContext, Page } from "../types.ts";
 
 const documentTreeElementId = "document-tree-element";
@@ -80,7 +79,7 @@ function createEditorContainer(pageDefinition: Page) {
     "x-state",
     JSON.stringify({
       ...pageDefinition,
-      page: initializePage(pageDefinition.page),
+      page: initializePage(pageDefinition.body),
     }),
   );
   editorsElement.setAttribute("x-label", "editor");
@@ -99,17 +98,17 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
-function initializePage(page: Page["page"]) {
-  return produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p) => {
+function initializePage(body: Page["body"]) {
+  return produce(body, (draftBody: Page["body"]) => {
+    traverseComponents(draftBody, (p) => {
       p._id = nanoid();
     });
   });
 }
 
 function updateFileSystem(state: Page) {
-  const nextPage = produce(state.page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p) => {
+  const nextPage = produce(state.body, (draftBody: Page["body"]) => {
+    traverseComponents(draftBody, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
 
@@ -261,7 +260,7 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
   // Stop bubbling as we're within a recursive HTML structure
   event?.stopPropagation();
 
-  const { editor: { page } } = getState<PageState>(element);
+  const { editor: { body } } = getState<PageState>(element);
 
   const focusOutListener = (e: Event) => {
     const inputElement = (e.target as HTMLElement);
@@ -286,12 +285,12 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
     hoveredElements.delete(element);
   }
 
-  traversePage(page, (p, i) => {
+  traverseComponents(body, (p, i) => {
     if (p._id === componentId) {
       const matchedElement = findElement(
         document.body,
         i,
-        page,
+        body,
       ) as HTMLElement;
 
       matchedElement.classList.add("border");
@@ -310,10 +309,10 @@ function elementChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+  const { editor: { body }, selected: { componentId } } = getState<PageState>(
     element,
   );
-  const nextPage = produceNextPage(page, componentId, (p, element) => {
+  const nextPage = produceNextBody(body, componentId, (p, element) => {
     element?.replaceWith(changeTag(element, value));
 
     p.element = value;
@@ -345,10 +344,10 @@ function contentChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+  const { editor: { body }, selected: { componentId } } = getState<PageState>(
     element,
   );
-  const nextPage = produceNextPage(page, componentId, (p, element) => {
+  const nextPage = produceNextBody(body, componentId, (p, element) => {
     if (element) {
       element.innerHTML = value;
     }
@@ -363,11 +362,11 @@ function classChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { page }, selected: { componentId } } = getState<PageState>(
+  const { editor: { body }, selected: { componentId } } = getState<PageState>(
     element,
   );
 
-  const nextPage = produceNextPage(page, componentId, (p, element) => {
+  const nextPage = produceNextBody(body, componentId, (p, element) => {
     if (element) {
       element.setAttribute("class", value);
 
@@ -382,20 +381,20 @@ function classChanged(
   setState({ page: nextPage }, { element, parent: "editor" });
 }
 
-function produceNextPage(
-  page: Page["page"],
+function produceNextBody(
+  body: Page["body"],
   componentId: Component["_id"],
   matched: (p: Component, element: HTMLElement) => void,
 ) {
-  return produce(page, (draftPage: Page["page"]) => {
-    traversePage(draftPage, (p, i) => {
+  return produce(body, (draftBody: Page["body"]) => {
+    traverseComponents(draftBody, (p, i) => {
       if (p._id === componentId) {
         matched(
           p,
           findElement(
             document.body,
             i,
-            page,
+            body,
           ) as HTMLElement,
         );
       }
@@ -406,22 +405,22 @@ function produceNextPage(
 function findElement(
   element: Element | null,
   index: number,
-  page: Page["page"],
+  body: Page["body"],
 ): Element | null {
   let i = 0;
 
   function recurse(
     element: Element | null | undefined,
-    page: Page["page"],
+    body: Page["body"] | Component,
   ): Element | null {
     if (!element) {
       return null;
     }
 
-    if (Array.isArray(page)) {
+    if (Array.isArray(body)) {
       let elem: Element | null | undefined = element;
 
-      for (const p of page) {
+      for (const p of body) {
         const match = recurse(elem, p);
 
         if (match) {
@@ -437,8 +436,8 @@ function findElement(
 
       i++;
 
-      if (Array.isArray(page.children)) {
-        const match = recurse(element.firstElementChild, page.children);
+      if (Array.isArray(body.children)) {
+        const match = recurse(element.firstElementChild, body.children);
 
         if (match) {
           return match;
@@ -449,7 +448,7 @@ function findElement(
     return null;
   }
 
-  return recurse(element?.firstElementChild, page);
+  return recurse(element?.firstElementChild, body);
 }
 
 function getSelectedComponent(
@@ -459,13 +458,38 @@ function getSelectedComponent(
   let match = {};
   const { componentId } = selectedState;
 
-  traversePage(editorState.page, (p) => {
+  traverseComponents(editorState.body, (p) => {
     if (p._id === componentId) {
       match = p;
     }
   });
 
   return match;
+}
+
+function traverseComponents(
+  components: Component[],
+  operation: (c: Component, index: number) => void,
+) {
+  let i = 0;
+
+  function recurse(
+    components: Component[] | Component,
+    operation: (c: Component, index: number) => void,
+  ) {
+    if (Array.isArray(components)) {
+      components.forEach((p) => recurse(p, operation));
+    } else {
+      operation(components, i);
+      i++;
+
+      if (Array.isArray(components.children)) {
+        recurse(components.children, operation);
+      }
+    }
+  }
+
+  recurse(components, operation);
 }
 
 declare global {
