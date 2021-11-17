@@ -202,7 +202,7 @@ function generateAttributes(context: DataContext, attributes?: Attributes) {
         evaluateExpression(
           v,
           // @ts-ignore: TODO: How to type this?
-          context.__bound,
+          context.__bound || context,
         )
       }"`;
     }
