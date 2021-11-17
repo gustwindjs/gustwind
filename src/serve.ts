@@ -116,6 +116,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             );
           }
 
+          if (page.layout === "xml") {
+            // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+            res.set("Content-Type", "text/xml");
+          }
+
           res.send(html);
         } catch (err) {
           console.error(err);

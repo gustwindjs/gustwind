@@ -8,6 +8,7 @@ import type {
 } from "../types.ts";
 import { transform } from "./transform.ts";
 
+// TODO: Separate evaluations from data getters. I.e. @ vs. __ prefixes.
 async function renderComponent(
   transformsPath: string,
   component: Component | string,
@@ -88,7 +89,9 @@ async function renderComponent(
     const ctx = context.__bound || context;
 
     if (typeof boundChildren === "string") {
-      children = get(ctx, boundChildren);
+      // TODO: Maybe it's better to do an existence check here to avoid trouble
+      // with nullables
+      children = get(ctx, boundChildren) || get(context, boundChildren);
     } else {
       children = (
         await Promise.all(
@@ -103,6 +106,14 @@ async function renderComponent(
         )
       ).join("");
     }
+  } else if (component["==children"]) {
+    const childrenToEvaluate = component["==children"];
+
+    children = evaluateExpression(
+      childrenToEvaluate,
+      // @ts-ignore: Figure out how to type __bound
+      context.__bound || context,
+    );
   } else {
     children = Array.isArray(component.children)
       ? (await Promise.all(
@@ -113,17 +124,27 @@ async function renderComponent(
       : component.children;
   }
 
+  const klass = resolveClass(component, context);
+
   return wrapInElement(
     component.element,
-    generateAttributes({
-      ...component.attributes,
-      class: resolveClass(component, context),
-    }, context),
+    generateAttributes(
+      context,
+      klass
+        ? {
+          ...component.attributes,
+          class: klass,
+        }
+        : component.attributes,
+    ),
     children,
   );
 }
 
-function resolveClass(component: Component, context: DataContext) {
+function resolveClass(
+  component: Component,
+  context: DataContext,
+): string | undefined {
   const classes: string[] = [];
 
   if (component.__class) {
@@ -170,7 +191,11 @@ function wrapInElement(
   return `<${element}${attributes}>${children || ""}</${element}>`;
 }
 
-function generateAttributes(attributes: Attributes, context: DataContext) {
+function generateAttributes(context: DataContext, attributes?: Attributes) {
+  if (!attributes) {
+    return "";
+  }
+
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
       return `${k.slice(2)}="${

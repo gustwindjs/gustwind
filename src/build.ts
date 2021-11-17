@@ -40,9 +40,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
         const dir = path.join(outputDirectory, route);
 
-        // TODO: Figure out a better way to do this
-        fs.ensureDirSync(dir);
-
         tasks.push({
           type: "build",
           payload: {
@@ -54,11 +51,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           },
         });
 
-        if (projectMeta.features?.showEditorAlways) {
+        if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
           tasks.push({
             type: "writeFile",
             payload: {
-              outputPath: path.join(dir, "definition.json"),
+              dir,
+              file: "definition.json",
               data: JSON.stringify(page),
             },
           });
@@ -117,7 +115,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       tasks.push({
         type: "writeFile",
         payload: {
-          outputPath: path.join(outputDirectory, "components.json"),
+          dir: outputDirectory,
+          file: "components.json",
           data: JSON.stringify(components),
         },
       });

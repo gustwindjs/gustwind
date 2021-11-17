@@ -14,6 +14,8 @@ import { getContext } from "./getContext.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderBody } from "./renderBody.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 // TODO: Some kind of a lifecycle model would be useful to have here
 // as it would allow decoupling twind from the core.
 function getPageRenderer(
@@ -42,7 +44,11 @@ function getPageRenderer(
       projectPaths.transforms,
       page.dataSources,
     );
-    const context = { ...pageContext, ...extraContext };
+    page.meta.built = (new Date()).toString();
+    const context = { meta: page.meta, ...pageContext, ...extraContext };
+
+    DEBUG && console.log("rendering a page with context", context);
+
     const bodyMarkup = initialBodyMarkup || await renderBody(
       projectPaths.transforms,
       page,
@@ -51,6 +57,10 @@ function getPageRenderer(
       context,
       pathname,
     );
+
+    if (page.layout === "xml") {
+      return [xmlTemplate(bodyMarkup)];
+    }
 
     return htmlTemplate({
       pagePath,
@@ -146,6 +156,10 @@ function toTags(
     ">" +
     (generateSuffix ? `</${tagName}>` : "")
   ).join(" ");
+}
+
+function xmlTemplate(bodyMarkup: string) {
+  return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
 }
 
 async function htmlTemplate(

@@ -16,6 +16,7 @@ type Component = {
   __bind?: string;
   __class?: string;
   __children?: string | Component[];
+  "==children"?: string;
   // Page editor - TODO: Consider decoupling this somehow
   // maybe there can be an "enhanced" structure that's adding the id?
   _id?: string;
@@ -75,6 +76,7 @@ type DataSources = {
   transformWith: Transform[];
 }[];
 type Page = {
+  layout?: "html" | "xml";
   meta: Meta;
   page: Component | Component[];
   matchBy?: { dataSource: string; collection: string; property: string };
@@ -100,7 +102,8 @@ type BuildWorkerEvent =
   | {
     type: "writeFile";
     payload: {
-      outputPath: string;
+      dir: string;
+      file: string;
       data: string;
     };
   }
