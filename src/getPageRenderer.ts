@@ -97,18 +97,13 @@ function getPageRenderer(
     const styleTag = twindSheets.getStyleTag(stylesheet);
 
     if (page.layout === "xml") {
-      return [
-        xmlTemplate(
-          projectMeta.language,
-          headMarkup,
-          bodyMarkup,
-          styleTag,
-        ),
-        context,
-      ];
+      return [xmlTemplate(bodyMarkup), context];
     }
 
-    return [htmlTemplate(bodyMarkup), context];
+    return [
+      htmlTemplate(projectMeta.language, headMarkup + styleTag, bodyMarkup),
+      context,
+    ];
   };
 }
 
@@ -134,17 +129,16 @@ function renderHTML(
   );
 }
 
-function htmlTemplate(bodyMarkup: string) {
-  return `<!DOCTYPE html>${bodyMarkup}`;
-}
-
-function xmlTemplate(
+function htmlTemplate(
   language: string,
   headMarkup: string,
   bodyMarkup: string,
-  styleTag: string,
 ) {
-  return `<?xml version="1.0" encoding="UTF-8" ?><html lang="${language}"><head>${headMarkup}${styleTag}</head><body>${bodyMarkup}</body></html>`;
+  return `<!DOCTYPE html><html lang="${language}"><head>${headMarkup}</head><body>${bodyMarkup}</body></html>`;
+}
+
+function xmlTemplate(bodyMarkup: string) {
+  return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
 }
 
 export { getPageRenderer, renderHTML };
