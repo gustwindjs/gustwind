@@ -108,7 +108,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
           if (js) {
             await router.get(
-              route === "/" ? "/index.js" : `${route}/index.js`,
+              route === "/" ? "/index.js" : `${route}index.js`,
               (_req, res) => {
                 res.append("Content-Type", "text/javascript");
                 res.send(js);
