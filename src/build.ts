@@ -195,9 +195,9 @@ function getAmountOfThreads(
 }
 
 if (import.meta.main) {
-  const siteMeta = await getJson<ProjectMeta>("./meta.json");
+  const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  build(siteMeta, Deno.cwd());
+  build(projectMeta, Deno.cwd());
 }
 
 export { build };

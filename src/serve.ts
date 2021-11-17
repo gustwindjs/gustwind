@@ -389,9 +389,9 @@ function routeScripts(
 }
 
 if (import.meta.main) {
-  const siteMeta = await getJson<ProjectMeta>("./meta.json");
+  const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serve(siteMeta, Deno.cwd());
+  serve(projectMeta, Deno.cwd());
 }
 
 export { serve };

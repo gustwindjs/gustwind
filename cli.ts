@@ -81,17 +81,21 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (develop) {
-    const siteMeta = await getJson<ProjectMeta>(path.join(cwd, "./meta.json"));
+    const projectMeta = await getJson<ProjectMeta>(
+      path.join(cwd, "./meta.json"),
+    );
 
-    await serveProject(siteMeta, cwd);
+    await serveProject(projectMeta, cwd);
 
     return;
   }
 
   if (build) {
-    const siteMeta = await getJson<ProjectMeta>(path.join(cwd, "./meta.json"));
+    const projectMeta = await getJson<ProjectMeta>(
+      path.join(cwd, "./meta.json"),
+    );
 
-    await buildProject(siteMeta, cwd);
+    await buildProject(projectMeta, cwd);
 
     return 0;
   }

@@ -67,6 +67,7 @@ function getPageRenderer(
     }
 
     const context = {
+      projectMeta,
       meta: page.meta,
       scripts,
       ...pageContext,
