@@ -11,7 +11,7 @@
       "input": "./blogPosts"
     }
   ],
-  "page": [
+  "body": [
     {
       "element": "rss",
       "attributes": {
