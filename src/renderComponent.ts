@@ -103,6 +103,14 @@ async function renderComponent(
         )
       ).join("");
     }
+  } else if (component["@children"]) {
+    const childrenToEvaluate = component["@children"];
+
+    children = evaluateExpression(
+      childrenToEvaluate,
+      // @ts-ignore: Figure out how to type __bound
+      context.__bound || context,
+    );
   } else {
     children = Array.isArray(component.children)
       ? (await Promise.all(
