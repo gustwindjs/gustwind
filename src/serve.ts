@@ -4,7 +4,7 @@ import {
   serveStatic,
 } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import { path } from "../deps.ts";
+import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
@@ -95,7 +95,27 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         try {
           res.append("Content-Type", "text/html; charset=UTF-8");
 
-          const [html, js] = await renderPage({
+          const scriptName = _path.basename(path, _path.extname(path));
+          const scriptPath = _path.join(_path.dirname(path), scriptName) +
+            ".ts";
+
+          let pageSource = "";
+
+          if (await fs.exists(scriptPath)) {
+            pageSource = await compileTypeScript(scriptPath, mode);
+          }
+
+          if (pageSource) {
+            await router.get(
+              route === "/" ? "/index.js" : `${route}index.js`,
+              (_req, res) => {
+                res.append("Content-Type", "text/javascript");
+                res.send(pageSource);
+              },
+            );
+          }
+
+          const [html] = await renderPage({
             pathname: req.url,
             pagePath: path,
             // If there's cached data, use it instead. This fixes
@@ -107,17 +127,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             initialHeadMarkup: cachedPages[route]?.headMarkup,
             initialBodyMarkup: cachedPages[route]?.bodyMarkup,
             projectMeta: cachedProjectMeta || projectMeta,
+            hasScript: !!pageSource,
           });
-
-          if (js) {
-            await router.get(
-              route === "/" ? "/index.js" : `${route}index.js`,
-              (_req, res) => {
-                res.append("Content-Type", "text/javascript");
-                res.send(js);
-              },
-            );
-          }
 
           if (page.layout === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
@@ -157,9 +168,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         if (socket.state === 1) {
           console.log("watch - Refresh ws");
 
-          const pagePath = path.join(
+          const pagePath = _path.join(
             projectPaths.pages,
-            path.basename(matchedPath, import.meta.url),
+            _path.basename(matchedPath, import.meta.url),
           );
           const p = routePaths[pagePath];
 
@@ -174,7 +185,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           }
 
           if (!p) {
-            if (matchedPath.includes(path.basename(projectPaths.components))) {
+            if (matchedPath.includes(_path.basename(projectPaths.components))) {
               const [componentName, componentDefinition] = await getComponent(
                 matchedPath,
               );
@@ -263,9 +274,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   function watchScripts(scripts?: string) {
     scripts &&
       watch(scripts, ".ts", async (matchedPath) => {
-        const scriptName = path.basename(
+        const scriptName = _path.basename(
           matchedPath,
-          path.extname(matchedPath),
+          _path.extname(matchedPath),
         );
 
         console.log("Changed script", matchedPath);

@@ -74,7 +74,7 @@ type DataSources = {
 type Page = {
   layout?: "html" | "xml";
   meta: Meta;
-  head: Component[];
+  head?: Component[];
   body: Component[];
   matchBy?: { dataSource: string; collection: string; property: string };
   dataSources?: DataSources;

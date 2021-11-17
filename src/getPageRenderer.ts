@@ -1,6 +1,4 @@
 import * as twindSheets from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
-import { fs, path } from "../deps.ts";
-import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import type {
   Components,
   DataContext,
@@ -34,6 +32,7 @@ function getPageRenderer(
       initialHeadMarkup,
       initialBodyMarkup,
       projectMeta,
+      hasScript,
     }: {
       pathname: string;
       pagePath: string;
@@ -42,8 +41,9 @@ function getPageRenderer(
       initialHeadMarkup?: string;
       initialBodyMarkup?: string;
       projectMeta: ProjectMeta;
+      hasScript: boolean;
     },
-  ) => {
+  ): Promise<[string, DataContext]> => {
     const projectPaths = projectMeta.paths;
     const pageContext: DataContext = await getContext(
       projectPaths.dataSources,
@@ -55,19 +55,6 @@ function getPageRenderer(
 
     const scripts = projectMeta.scripts || [];
 
-    /*
-  const scriptName = path.basename(pagePath, path.extname(pagePath));
-  const scriptPath = path.join(path.dirname(pagePath), scriptName) + ".ts";
-
-  let pageSource = "";
-
-  if (await fs.exists(scriptPath)) {
-    pageSource = await compileTypeScript(scriptPath, mode);
-  }
-    */
-
-    // TODO: Figure out if a page has a matching script
-    const hasScript = false;
     if (hasScript) {
       scripts.push({ type: "module", src: "./index.js" });
     }
@@ -110,26 +97,36 @@ function getPageRenderer(
 
     if (page.layout === "xml") {
       return [
-        xmlTemplate(projectMeta.language, headMarkup, bodyMarkup, styleTag),
+        xmlTemplate(
+          projectMeta.language,
+          headMarkup,
+          bodyMarkup,
+          styleTag,
+        ),
+        context,
       ];
     }
 
-    return htmlTemplate(bodyMarkup);
+    return [htmlTemplate(bodyMarkup), context];
   };
 }
 
 function renderHTML(
   transformsPath: string,
   page: Page,
-  pageBody: Page["head"] | Page["body"],
+  children: Page["head"] | Page["body"],
   components: Components,
   pageData: DataContext,
   pathname: string,
 ) {
+  if (!children) {
+    return "";
+  }
+
   return renderComponent(
     transformsPath,
     {
-      children: pageBody,
+      children,
     },
     components,
     { ...pageData, pathname, page },

@@ -2,6 +2,7 @@
 /// <reference lib="deno.worker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { compileScript } from "../utils/compileScripts.ts";
+import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { fs, path } from "../deps.ts";
 import { getPageRenderer } from "./getPageRenderer.ts";
 import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
@@ -54,12 +55,29 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    const [html, js, context] = await renderPage({
+    // TODO: Decouple js related logic from a worker. The check can
+    // be done on a higher level at `build` and the converted to a task
+    const scriptName = path.basename(filePath, path.extname(filePath));
+    const scriptPath = path.join(path.dirname(filePath), scriptName) +
+      ".ts";
+
+    let pageSource = "";
+
+    if (await fs.exists(scriptPath)) {
+      pageSource = await compileTypeScript(scriptPath, "production");
+    }
+
+    if (pageSource) {
+      await Deno.writeTextFile(path.join(dir, "index.js"), pageSource);
+    }
+
+    const [html, context] = await renderPage({
       pathname: route,
       pagePath: filePath,
       page,
       extraContext,
       projectMeta,
+      hasScript: !!pageSource,
     });
 
     if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
@@ -78,12 +96,6 @@ self.onmessage = async (e) => {
         path.join(dir, "index.html"),
         html,
       );
-    }
-
-    // TODO: Decouple js related logic from a worker. The check can
-    // be done on a higher level at `build` and the converted to a task
-    if (js) {
-      await Deno.writeTextFile(path.join(dir, "index.js"), js);
     }
 
     DEBUG && console.log("worker - finished build", id, route, filePath);
