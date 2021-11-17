@@ -58,11 +58,10 @@ function getPageRenderer(
       scripts.push({ type: "module", src: "./index.js" });
     }
     if (mode === "development") {
+      page.meta.pagePath = pagePath;
       scripts.push({ type: "module", src: "/_webSocketClient.js" });
     }
     if (mode === "development" || projectMeta.features?.showEditorAlways) {
-      page.meta.pagePath = pagePath;
-
       scripts.push({ type: "module", src: "/_twindRuntime.js" });
       scripts.push({ type: "module", src: "/_toggleEditor.js" });
     }
