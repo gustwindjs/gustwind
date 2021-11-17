@@ -8,6 +8,7 @@ import type {
 } from "../types.ts";
 import { transform } from "./transform.ts";
 
+// TODO: Separate evaluations from data getters. I.e. @ vs. __ prefixes.
 async function renderComponent(
   transformsPath: string,
   component: Component | string,
