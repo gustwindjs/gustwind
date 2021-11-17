@@ -121,9 +121,7 @@ function renderHTML(
 
   return renderComponent(
     transformsPath,
-    {
-      children,
-    },
+    { children },
     components,
     { ...pageData, pathname, page },
   );
