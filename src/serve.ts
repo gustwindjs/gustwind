@@ -10,8 +10,7 @@ import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer } from "./getPageRenderer.ts";
-import { renderBody } from "./renderBody.ts";
+import { getPageRenderer, renderHTML } from "./getPageRenderer.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
@@ -24,7 +23,10 @@ import "../scripts/_webSocketClient.ts";
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.
-const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
+const cachedPages: Record<
+  string,
+  { headMarkup: string; bodyMarkup: string; page: Page }
+> = {};
 
 // The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
@@ -102,6 +104,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             // the latest data.
             page: cachedPages[route]?.page || page,
             extraContext: context,
+            initialHeadMarkup: cachedPages[route]?.headMarkup,
             initialBodyMarkup: cachedPages[route]?.bodyMarkup,
             projectMeta: cachedProjectMeta || projectMeta,
           });
@@ -205,27 +208,42 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             return;
           }
 
-          const { meta, page } = pageJson;
-          const bodyMarkup = await renderBody(
-            projectPaths.transforms,
-            pageJson,
-            page,
-            components,
-            await getContext(
-              projectPaths.dataSources,
+          const { body, head } = pageJson;
+
+          const [headMarkup, bodyMarkup] = await Promise.all([
+            renderHTML(
               projectPaths.transforms,
-              pageJson.dataSources,
+              pageJson,
+              head,
+              components,
+              await getContext(
+                projectPaths.dataSources,
+                projectPaths.transforms,
+                pageJson.dataSources,
+              ),
+              p.route,
             ),
-            p.route,
-          );
+            renderHTML(
+              projectPaths.transforms,
+              pageJson,
+              body,
+              components,
+              await getContext(
+                projectPaths.dataSources,
+                projectPaths.transforms,
+                pageJson.dataSources,
+              ),
+              p.route,
+            ),
+          ]);
 
           // Cache page so that manual refresh at the client side still
           // has access to it.
           cachedPages[p.route] = {
+            headMarkup,
             bodyMarkup,
-            // TODO: Improve naming
             // Update page content.
-            page: { ...p.page, page },
+            page: { ...p.page, body, head },
           };
 
           socket.send(
@@ -233,7 +251,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
               type: "refresh",
               payload: {
                 bodyMarkup,
-                meta,
+                headMarkup,
               },
             }),
           );

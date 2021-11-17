@@ -1,0 +1,70 @@
+[
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "pagepath",
+      "__content": "meta.pagePath"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "charset": "UTF-8",
+      "name": "viewport",
+      "content": "width=device-width, initial-scale=1.0"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "og:site_name",
+      "__content": "siteMeta.siteName"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "twitter:site",
+      "__content": "siteMeta.siteName"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "og:title",
+      "__content": "meta.title"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "twitter:title",
+      "__content": "meta.title"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "og:description",
+      "__content": "meta.description"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "twitter:description",
+      "__content": "meta.description"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
+      "name": "built",
+      "__content": "meta.built"
+    }
+  },
+  {
+    "element": "title",
+    "__children": "siteMeta.siteName"
+  }
+]

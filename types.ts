@@ -50,11 +50,6 @@ type ProjectMeta = {
   amountOfBuildThreads: number | "cpuMax";
   siteName: string;
   language: string;
-  head: {
-    meta: Record<string, string>[];
-    link?: Record<string, string>[];
-    script?: Record<string, string>[];
-  };
   paths: {
     assets?: string;
     dataSources: string;
@@ -65,6 +60,7 @@ type ProjectMeta = {
     transforms: string;
     twindSetup?: string;
   };
+  scripts?: { type: string; src: string }[];
   features?: {
     showEditorAlways?: boolean;
   };
@@ -78,7 +74,8 @@ type DataSources = {
 type Page = {
   layout?: "html" | "xml";
   meta: Meta;
-  page: Component | Component[];
+  head: Component[];
+  body: Component[];
   matchBy?: { dataSource: string; collection: string; property: string };
   dataSources?: DataSources;
 };

@@ -1,0 +1,13 @@
+{
+  "__bind": "meta.scripts",
+  "__children": [
+    {
+      "element": "script",
+      "attributes": {
+        "async": "",
+        "__type": "data.type",
+        "__src": "data.src"
+      }
+    }
+  ]
+}

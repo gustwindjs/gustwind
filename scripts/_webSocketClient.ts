@@ -1,7 +1,6 @@
 /// <reference lib="dom" />
 /// <reference path="./_pageEditor.ts" />
 import { getPagePath } from "../utils/getPagePath.ts";
-import { updateMeta } from "../utils/updateMeta.ts";
 
 function createWebSocket(pagePath?: string) {
   if (!pagePath) {
@@ -29,12 +28,8 @@ function createWebSocket(pagePath?: string) {
     } else if (type === "refresh") {
       console.log("WebSocket", "refreshing");
 
-      const container = document.body;
-
-      // TODO: Restore selection as well?
-      container.innerHTML = payload.bodyMarkup;
-
-      updateMeta(payload.meta);
+      document.head.innerHTML = payload.headMarkup;
+      document.body.innerHTML = payload.bodyMarkup;
 
       window.createEditor && window.createEditor();
     } else if (type === "reload") {
