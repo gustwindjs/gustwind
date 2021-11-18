@@ -85,7 +85,26 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       path.join(cwd, "./meta.json"),
     );
 
+    const startTime = performance.now();
+    console.log("Starting development server");
+
     await serveProject(projectMeta, cwd);
+
+    const port = projectMeta.developmentPort;
+
+    const endTime = performance.now();
+    console.log(
+      `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
+    );
+
+    // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
+    const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
+    await p.stdin?.write(
+      new TextEncoder().encode(
+        `http://localhost:${port}/`,
+      ),
+    );
+    p.stdin.close();
 
     return;
   }

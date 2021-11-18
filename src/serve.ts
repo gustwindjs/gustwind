@@ -41,9 +41,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
-
-  console.log(`Serving at ${projectMeta.developmentPort}`);
-
   const components = await getComponents(projectPaths.components);
   const app = opine();
   const router = Router();

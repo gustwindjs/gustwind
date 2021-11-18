@@ -5,14 +5,14 @@
   },
   "scripts": {
     "start": {
-      "cmd": "deno run --no-check --unstable src/serve.ts",
+      "cmd": "deno run --no-check --unstable ./cli.ts -d",
       "watch": true
     },
     "build": {
-      "cmd": "deno run --no-check --unstable src/build.ts"
+      "cmd": "deno run --no-check --unstable ./cli.ts -b"
     },
     "watch:build": {
-      "cmd": "deno run --no-check --unstable src/build.ts",
+      "cmd": "deno run --no-check --unstable ./cli.ts -b",
       "watch": true
     },
     "compileGustwindScripts": {
