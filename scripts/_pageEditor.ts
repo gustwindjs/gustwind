@@ -79,7 +79,7 @@ function createEditorContainer(pageDefinition: Page) {
     "x-state",
     JSON.stringify({
       ...pageDefinition,
-      page: initializePage(pageDefinition.body),
+      body: initializeBody(pageDefinition.body),
     }),
   );
   editorsElement.setAttribute("x-label", "editor");
@@ -98,7 +98,7 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
-function initializePage(body: Page["body"]) {
+function initializeBody(body: Page["body"]) {
   return produce(body, (draftBody: Page["body"]) => {
     traverseComponents(draftBody, (p) => {
       p._id = nanoid();
@@ -107,7 +107,7 @@ function initializePage(body: Page["body"]) {
 }
 
 function updateFileSystem(state: Page) {
-  const nextPage = produce(state.body, (draftBody: Page["body"]) => {
+  const nextBody = produce(state.body, (draftBody: Page["body"]) => {
     traverseComponents(draftBody, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -120,7 +120,7 @@ function updateFileSystem(state: Page) {
 
   const payload = {
     path: getPagePath(),
-    data: { ...state, page: nextPage },
+    data: { ...state, body: nextBody },
   };
 
   // TODO: Don't send if payload didn't change
@@ -312,13 +312,13 @@ function elementChanged(
   const { editor: { body }, selected: { componentId } } = getState<PageState>(
     element,
   );
-  const nextPage = produceNextBody(body, componentId, (p, element) => {
+  const nextBody = produceNextBody(body, componentId, (p, element) => {
     element?.replaceWith(changeTag(element, value));
 
     p.element = value;
   });
 
-  setState({ page: nextPage }, { element, parent: "editor" });
+  setState({ body: nextBody }, { element, parent: "editor" });
 }
 
 // https://stackoverflow.com/questions/2206892/jquery-convert-dom-element-to-different-type/59147202#59147202
@@ -347,7 +347,7 @@ function contentChanged(
   const { editor: { body }, selected: { componentId } } = getState<PageState>(
     element,
   );
-  const nextPage = produceNextBody(body, componentId, (p, element) => {
+  const nextBody = produceNextBody(body, componentId, (p, element) => {
     if (element) {
       element.innerHTML = value;
     }
@@ -355,7 +355,7 @@ function contentChanged(
     p.children = value;
   });
 
-  setState({ page: nextPage }, { element, parent: "editor" });
+  setState({ body: nextBody }, { element, parent: "editor" });
 }
 
 function classChanged(
@@ -366,7 +366,7 @@ function classChanged(
     element,
   );
 
-  const nextPage = produceNextBody(body, componentId, (p, element) => {
+  const nextBody = produceNextBody(body, componentId, (p, element) => {
     if (element) {
       element.setAttribute("class", value);
 
@@ -378,7 +378,7 @@ function classChanged(
     p.class = value;
   });
 
-  setState({ page: nextPage }, { element, parent: "editor" });
+  setState({ body: nextBody }, { element, parent: "editor" });
 }
 
 function produceNextBody(

@@ -71,7 +71,7 @@
             {
               "element": "h2",
               "class": "font-bold mb-2",
-              "children": "Page"
+              "children": "Body"
             },
             {
               "element": "ul",
@@ -79,7 +79,7 @@
                 {
                   "element": "template",
                   "attributes": {
-                    "x-each": "editor.page"
+                    "x-each": "editor.body"
                   },
                   "children": [
                     {
