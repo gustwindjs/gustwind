@@ -243,6 +243,9 @@ function metaChanged(
       console.warn("The page doesn't have a <title>!");
     }
   } else {
+    // TODO: Generalize this to work with other bindings as well. If any of
+    // of the meta fields change, likely this should trigger renderComponent
+    // using updated context and the head definition
     const metaElement = document.head.querySelector(
       "meta[name='" + field + "']",
     );
