@@ -59,6 +59,13 @@
   {
     "element": "meta",
     "attributes": {
+      "name": "description",
+      "__content": "meta.description"
+    }
+  },
+  {
+    "element": "meta",
+    "attributes": {
       "name": "og:description",
       "__content": "meta.description"
     }
