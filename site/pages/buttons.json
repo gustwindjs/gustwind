@@ -36,7 +36,8 @@
       "element": "MainFooter"
     },
     {
-      "element": "Scripts"
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }

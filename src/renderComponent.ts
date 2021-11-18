@@ -27,23 +27,29 @@ async function renderComponent(
     } else {
       context = { ...context, __bound: get(context, component.__bind) };
     }
-  } else if (foundComponent) {
-    return await renderComponent(
-      transformsPath,
-      {
-        element: "",
-        children: Array.isArray(foundComponent) ? foundComponent : [{
-          ...component,
-          ...foundComponent,
-          class: joinClasses(
-            component.class as string,
-            foundComponent.class as string,
-          ),
-        }],
-      },
-      components,
-      context,
-    );
+  }
+
+  if (foundComponent) {
+    if (Array.isArray(foundComponent)) {
+      return await renderComponent(
+        transformsPath,
+        {
+          element: "",
+          children: foundComponent,
+        },
+        components,
+        context,
+      );
+    }
+
+    component = {
+      ...component,
+      ...foundComponent,
+      class: joinClasses(
+        component.class as string,
+        foundComponent.class as string,
+      ),
+    };
   }
 
   if (component?.transformWith) {
