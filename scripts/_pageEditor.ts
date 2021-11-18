@@ -228,6 +228,12 @@ function metaChanged(
   const { editor: { meta } } = getState<PageState>(element);
   const field = element.dataset.field as string;
 
+  if (!field) {
+    console.error(`${field} was not found in ${element.dataset}`);
+
+    return;
+  }
+
   if (field === "title") {
     const titleElement = document.querySelector("title");
 
