@@ -4,14 +4,13 @@ import {
   serveStatic,
 } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import { path } from "../deps.ts";
+import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getComponent, getComponents } from "./getComponents.ts";
 import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer } from "./getPageRenderer.ts";
-import { renderBody } from "./renderBody.ts";
+import { getPageRenderer, renderHTML } from "./getPageRenderer.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Page, ProjectMeta } from "../types.ts";
@@ -24,7 +23,10 @@ import "../scripts/_webSocketClient.ts";
 // The cache is populated based on web socket calls. If a page
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.
-const cachedPages: Record<string, { bodyMarkup: string; page: Page }> = {};
+const cachedPages: Record<
+  string,
+  { headMarkup: string; bodyMarkup: string; page: Page }
+> = {};
 
 // The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
@@ -93,7 +95,27 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         try {
           res.append("Content-Type", "text/html; charset=UTF-8");
 
-          const [html, js] = await renderPage({
+          const scriptName = _path.basename(path, _path.extname(path));
+          const scriptPath = _path.join(_path.dirname(path), scriptName) +
+            ".ts";
+
+          let pageSource = "";
+
+          if (await fs.exists(scriptPath)) {
+            pageSource = await compileTypeScript(scriptPath, mode);
+          }
+
+          if (pageSource) {
+            await router.get(
+              route === "/" ? "/index.js" : `${route}index.js`,
+              (_req, res) => {
+                res.append("Content-Type", "text/javascript");
+                res.send(pageSource);
+              },
+            );
+          }
+
+          const [html] = await renderPage({
             pathname: req.url,
             pagePath: path,
             // If there's cached data, use it instead. This fixes
@@ -102,19 +124,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             // the latest data.
             page: cachedPages[route]?.page || page,
             extraContext: context,
+            initialHeadMarkup: cachedPages[route]?.headMarkup,
             initialBodyMarkup: cachedPages[route]?.bodyMarkup,
             projectMeta: cachedProjectMeta || projectMeta,
+            hasScript: !!pageSource,
           });
-
-          if (js) {
-            await router.get(
-              route === "/" ? "/index.js" : `${route}index.js`,
-              (_req, res) => {
-                res.append("Content-Type", "text/javascript");
-                res.send(js);
-              },
-            );
-          }
 
           if (page.layout === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
@@ -154,9 +168,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         if (socket.state === 1) {
           console.log("watch - Refresh ws");
 
-          const pagePath = path.join(
+          const pagePath = _path.join(
             projectPaths.pages,
-            path.basename(matchedPath, import.meta.url),
+            _path.basename(matchedPath, import.meta.url),
           );
           const p = routePaths[pagePath];
 
@@ -171,7 +185,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           }
 
           if (!p) {
-            if (matchedPath.includes(path.basename(projectPaths.components))) {
+            if (matchedPath.includes(_path.basename(projectPaths.components))) {
               const [componentName, componentDefinition] = await getComponent(
                 matchedPath,
               );
@@ -205,27 +219,42 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             return;
           }
 
-          const { meta, page } = pageJson;
-          const bodyMarkup = await renderBody(
-            projectPaths.transforms,
-            pageJson,
-            page,
-            components,
-            await getContext(
-              projectPaths.dataSources,
+          const { body, head } = pageJson;
+
+          const [headMarkup, bodyMarkup] = await Promise.all([
+            renderHTML(
               projectPaths.transforms,
-              pageJson.dataSources,
+              pageJson,
+              head,
+              components,
+              await getContext(
+                projectPaths.dataSources,
+                projectPaths.transforms,
+                pageJson.dataSources,
+              ),
+              p.route,
             ),
-            p.route,
-          );
+            renderHTML(
+              projectPaths.transforms,
+              pageJson,
+              body,
+              components,
+              await getContext(
+                projectPaths.dataSources,
+                projectPaths.transforms,
+                pageJson.dataSources,
+              ),
+              p.route,
+            ),
+          ]);
 
           // Cache page so that manual refresh at the client side still
           // has access to it.
           cachedPages[p.route] = {
+            headMarkup,
             bodyMarkup,
-            // TODO: Improve naming
             // Update page content.
-            page: { ...p.page, page },
+            page: { ...p.page, body, head },
           };
 
           socket.send(
@@ -233,7 +262,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
               type: "refresh",
               payload: {
                 bodyMarkup,
-                meta,
+                headMarkup,
               },
             }),
           );
@@ -245,9 +274,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   function watchScripts(scripts?: string) {
     scripts &&
       watch(scripts, ".ts", async (matchedPath) => {
-        const scriptName = path.basename(
+        const scriptName = _path.basename(
           matchedPath,
-          path.extname(matchedPath),
+          _path.extname(matchedPath),
         );
 
         console.log("Changed script", matchedPath);
@@ -360,9 +389,9 @@ function routeScripts(
 }
 
 if (import.meta.main) {
-  const siteMeta = await getJson<ProjectMeta>("./meta.json");
+  const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serve(siteMeta, Deno.cwd());
+  serve(projectMeta, Deno.cwd());
 }
 
 export { serve };

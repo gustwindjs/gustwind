@@ -3,7 +3,12 @@
     "title": "Gustwind",
     "description": "Deno powered JSON oriented site generator"
   },
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },
@@ -29,6 +34,10 @@
     },
     {
       "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }

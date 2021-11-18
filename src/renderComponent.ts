@@ -30,22 +30,26 @@ async function renderComponent(
   }
 
   if (foundComponent) {
-    return await renderComponent(
-      transformsPath,
-      {
-        element: "",
-        children: Array.isArray(foundComponent) ? foundComponent : [{
-          ...component,
-          ...foundComponent,
-          class: joinClasses(
-            component.class as string,
-            foundComponent.class as string,
-          ),
-        }],
-      },
-      components,
-      context,
-    );
+    if (Array.isArray(foundComponent)) {
+      return await renderComponent(
+        transformsPath,
+        {
+          element: "",
+          children: foundComponent,
+        },
+        components,
+        context,
+      );
+    }
+
+    component = {
+      ...component,
+      ...foundComponent,
+      class: joinClasses(
+        component.class as string,
+        foundComponent.class as string,
+      ),
+    };
   }
 
   if (component?.transformWith) {
@@ -198,11 +202,14 @@ function generateAttributes(context: DataContext, attributes?: Attributes) {
 
   const ret = Object.entries(attributes).map(([k, v]) => {
     if (k.startsWith("__")) {
+      // @ts-ignore: TODO: How to type this?
+      return `${k.slice(2)}="${get(context.__bound, v) || get(context, v)}"`;
+    } else if (k.startsWith("==")) {
       return `${k.slice(2)}="${
         evaluateExpression(
           v,
           // @ts-ignore: TODO: How to type this?
-          context.__bound,
+          context.__bound || context,
         )
       }"`;
     }

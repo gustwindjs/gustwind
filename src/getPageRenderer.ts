@@ -1,18 +1,14 @@
 import * as twindSheets from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
-import { fs, path } from "../deps.ts";
-import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import { get } from "../utils/functional.ts";
 import type {
   Components,
   DataContext,
-  Meta,
   Mode,
   Page,
   ProjectMeta,
 } from "../types.ts";
 import { getContext } from "./getContext.ts";
 import { getStyleSheet } from "./getStyleSheet.ts";
-import { renderBody } from "./renderBody.ts";
+import { renderComponent } from "./renderComponent.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -28,16 +24,26 @@ function getPageRenderer(
   const stylesheet = getStyleSheet(twindSetup);
 
   return async (
-    { pathname, pagePath, page, extraContext, initialBodyMarkup, projectMeta }:
-      {
-        pathname: string;
-        pagePath: string;
-        page: Page;
-        extraContext: DataContext;
-        initialBodyMarkup?: string;
-        projectMeta: ProjectMeta;
-      },
-  ) => {
+    {
+      pathname,
+      pagePath,
+      page,
+      extraContext,
+      initialHeadMarkup,
+      initialBodyMarkup,
+      projectMeta,
+      hasScript,
+    }: {
+      pathname: string;
+      pagePath: string;
+      page: Page;
+      extraContext: DataContext;
+      initialHeadMarkup?: string;
+      initialBodyMarkup?: string;
+      projectMeta: ProjectMeta;
+      hasScript: boolean;
+    },
+  ): Promise<[string, DataContext]> => {
     const projectPaths = projectMeta.paths;
     const pageContext: DataContext = await getContext(
       projectPaths.dataSources,
@@ -45,167 +51,92 @@ function getPageRenderer(
       page.dataSources,
     );
     page.meta.built = (new Date()).toString();
-    const context = { meta: page.meta, ...pageContext, ...extraContext };
+
+    const scripts = projectMeta.scripts?.slice(0) || [];
+
+    if (hasScript) {
+      scripts.push({ type: "module", src: "./index.js" });
+    }
+    if (mode === "development") {
+      page.meta.pagePath = pagePath;
+      scripts.push({ type: "module", src: "/_webSocketClient.js" });
+    }
+    if (mode === "development" || projectMeta.features?.showEditorAlways) {
+      scripts.push({ type: "module", src: "/_twindRuntime.js" });
+      scripts.push({ type: "module", src: "/_toggleEditor.js" });
+    }
+
+    const context = {
+      projectMeta,
+      meta: page.meta,
+      scripts,
+      ...pageContext,
+      ...extraContext,
+    };
 
     DEBUG && console.log("rendering a page with context", context);
 
-    const bodyMarkup = initialBodyMarkup || await renderBody(
-      projectPaths.transforms,
-      page,
-      page.page,
-      components,
-      context,
-      pathname,
-    );
+    const [headMarkup, bodyMarkup] = await Promise.all([
+      initialHeadMarkup ? Promise.resolve(initialHeadMarkup) : renderHTML(
+        projectPaths.transforms,
+        page,
+        page.head,
+        components,
+        context,
+        pathname,
+      ),
+      initialBodyMarkup ? Promise.resolve(initialBodyMarkup) : renderHTML(
+        projectPaths.transforms,
+        page,
+        page.body,
+        components,
+        context,
+        pathname,
+      ),
+    ]);
+    const styleTag = twindSheets.getStyleTag(stylesheet);
 
     if (page.layout === "xml") {
-      return [xmlTemplate(bodyMarkup)];
+      return [xmlTemplate(bodyMarkup), context];
     }
 
-    return htmlTemplate({
-      pagePath,
-      headMarkup: renderHeadMarkup(
-        twindSheets.getStyleTag(stylesheet),
-        projectMeta.head,
-        getMeta(context, page.meta, projectMeta.siteName),
-      ),
-      bodyMarkup,
-      mode,
-      features: projectMeta.features,
-      language: projectMeta.language,
+    return [
+      htmlTemplate(projectMeta.language, headMarkup + styleTag, bodyMarkup),
       context,
-    });
+    ];
   };
 }
 
-function getMeta(
+function renderHTML(
+  transformsPath: string,
+  page: Page,
+  children: Page["head"] | Page["body"],
+  components: Components,
   pageData: DataContext,
-  meta: Meta,
-  siteName: string,
+  pathname: string,
 ) {
-  return {
-    ...applyMeta(meta, pageData),
-    "og:site_name": siteName || "",
-    "twitter:site": siteName || "",
-    "og:title": meta.title || "",
-    "twitter:title": meta.title || "",
-    "og:description": meta.description || "",
-    "twitter:description": meta.description || "",
-  };
-}
-
-function applyMeta(meta: Meta, dataContext?: DataContext) {
-  const ret: Meta = {};
-
-  Object.entries(meta).forEach(([k, v]) => {
-    if (k.startsWith("__") && dataContext) {
-      ret[k.slice(2)] = get<DataContext>(dataContext, v);
-    } else {
-      ret[k] = v;
-    }
-  });
-
-  return ret;
-}
-
-function renderHeadMarkup(
-  styleTag: string,
-  head: ProjectMeta["head"],
-  meta: Page["meta"],
-) {
-  return [
-    styleTag,
-    toTags("meta", false, head.meta),
-    toTags("link", false, head.link),
-    toTags("script", true, head.script),
-    renderMetaMarkup(meta),
-  ].join("");
-}
-
-function renderMetaMarkup(
-  meta?: Meta,
-) {
-  if (!meta) {
+  if (!children) {
     return "";
   }
 
-  const ret = Object.entries(meta).map(([key, value]) =>
-    `<meta name="${key}" content="${value}"></meta>`
+  return renderComponent(
+    transformsPath,
+    { children },
+    components,
+    { ...pageData, pathname, page },
   );
-
-  if (meta.title) {
-    ret.push(`<title>${meta.title}</title>`);
-  }
-
-  return ret.join("\n");
 }
 
-function toTags(
-  tagName: string,
-  generateSuffix: boolean,
-  fields?: Record<string, string>[],
+function htmlTemplate(
+  language: string,
+  headMarkup: string,
+  bodyMarkup: string,
 ) {
-  if (!fields) {
-    return "";
-  }
-
-  return fields.map((o) =>
-    `<${tagName} ` + Object.entries(o).map(([k, v]) =>
-      `${k}="${v}"`
-    ).join(" ") +
-    ">" +
-    (generateSuffix ? `</${tagName}>` : "")
-  ).join(" ");
+  return `<!DOCTYPE html><html lang="${language}"><head>${headMarkup}</head><body>${bodyMarkup}</body></html>`;
 }
 
 function xmlTemplate(bodyMarkup: string) {
   return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
 }
 
-async function htmlTemplate(
-  { pagePath, headMarkup, bodyMarkup, mode, features, language, context }: {
-    pagePath: string;
-    headMarkup?: string;
-    bodyMarkup?: string;
-    mode: Mode;
-    features: ProjectMeta["features"];
-    language: ProjectMeta["language"];
-    context: DataContext;
-  },
-): Promise<[string, string, DataContext]> {
-  const scriptName = path.basename(pagePath, path.extname(pagePath));
-  const scriptPath = path.join(path.dirname(pagePath), scriptName) + ".ts";
-
-  let pageSource = "";
-
-  if (await fs.exists(scriptPath)) {
-    pageSource = await compileTypeScript(scriptPath, mode);
-  }
-
-  // TODO: Maybe this should be exposed to the user
-  const html = `<!DOCTYPE html>
-<html lang="${language}">
-  <head>
-    <meta name="pagepath" content="${pagePath}" />
-    ${headMarkup || ""}
-  </head>
-  <body>
-    ${bodyMarkup || ""}
-    ${pageSource ? `<script type="module" src="./index.js"></script>` : ""}
-    ${
-    mode === "development"
-      ? '<script type="module" src="/_webSocketClient.js"></script>'
-      : ""
-  }
-    ${
-    mode === "development" || features?.showEditorAlways
-      ? '<script type="module" src="/_twindRuntime.js"></script><script type="module" src="/_toggleEditor.js"></script>'
-      : ""
-  }
-  </body>
-</html>`;
-
-  return [html, pageSource, context];
-}
-
-export { getPageRenderer };
+export { getPageRenderer, renderHTML };

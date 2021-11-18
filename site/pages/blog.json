@@ -10,7 +10,12 @@
       "input": "./blogPosts"
     }
   ],
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },
@@ -30,7 +35,7 @@
                   "element": "Link",
                   "__children": "data.title",
                   "attributes": {
-                    "__href": "data.slug + '/'"
+                    "==href": "data.slug + '/'"
                   }
                 }
               ]
@@ -41,6 +46,10 @@
     },
     {
       "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }

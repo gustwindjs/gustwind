@@ -11,7 +11,12 @@
       "transformWith": ["markdown"]
     }
   ],
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },
@@ -61,6 +66,10 @@
     },
     {
       "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }

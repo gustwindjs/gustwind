@@ -170,7 +170,12 @@ The first two cases can be defined with the following syntax:
       "transformWith": ["markdown"]
     }
   ],
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "main",
       "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
@@ -214,7 +219,12 @@ The `[blog].json` case is more complicated as there we'll have to define the map
     "collection": "content",
     "property": "data.slug"
   },
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },
@@ -269,7 +279,12 @@ We can apply the same idea for generating a reversed blog index:
     "transformWith": ["reverse"],
     "input": "./content/blogPosts"
   }],
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },

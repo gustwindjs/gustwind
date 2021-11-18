@@ -15,7 +15,12 @@
     "collection": "content",
     "property": "data.slug"
   },
-  "page": [
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
     {
       "element": "MainNavigation"
     },
@@ -37,6 +42,10 @@
     },
     {
       "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }

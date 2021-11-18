@@ -12,32 +12,12 @@ Each project built with Gustwind needs minimal configuration to describe where t
   "amountOfBuildThreads": "cpuMax",
   "siteName": "Gustwind",
   "language": "en",
-  "head": {
-    "meta": [
-      {
-        "charset": "UTF-8",
-        "name": "viewport",
-        "content": "width=device-width, initial-scale=1.0"
-      }
-    ],
-    "link": [
-      {
-        "rel": "icon",
-        "href": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>"
-      },
-      {
-        "rel": "stylesheet",
-        "type": "text/css",
-        "href": "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/github.css"
-      }
-    ],
-    "script": [
-      {
-        "type": "text/javascript",
-        "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
-      }
-    ]
-  },
+  "scripts": [
+    {
+      "type": "text/javascript",
+      "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
+    }
+  ],
   "paths": {
     "assets": "./assets",
     "components": "./components",
