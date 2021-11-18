@@ -52,7 +52,7 @@ function getPageRenderer(
     );
     page.meta.built = (new Date()).toString();
 
-    const scripts = projectMeta.scripts || [];
+    const scripts = projectMeta.scripts?.slice(0) || [];
 
     if (hasScript) {
       scripts.push({ type: "module", src: "./index.js" });
