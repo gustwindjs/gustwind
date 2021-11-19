@@ -9,7 +9,7 @@ import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderHTML } from "./getPageRenderer.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Component, Layout, ProjectMeta, Routes } from "../types.ts";
+import type { Component, Layout, ProjectMeta, RootRoutes } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
@@ -39,7 +39,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
 
   const [routes, layouts, components] = await Promise.all([
-    getJson<Routes>(projectPaths.routes),
+    getJson<RootRoutes>(projectPaths.routes),
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
@@ -80,17 +80,23 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   }
 
   app.use(({ url }, res) => {
-    // req.url
-    // TODO: Resolve against the route definition now
-    if (rootRoutes[url]) {
-      console.log("got match");
+    const matchedRoute = rootRoutes[url];
 
-      res.send("got match");
+    if (matchedRoute) {
+      const matchedLayout = layouts[matchedRoute.layout];
 
-      return;
+      if (matchedLayout) {
+        console.log("got match", matchedLayout);
+
+        res.send("got matching route and layout");
+
+        return;
+      }
+
+      res.send("no matching layout");
     }
 
-    res.send("no match");
+    res.send("no matching route");
   });
 
   /*
