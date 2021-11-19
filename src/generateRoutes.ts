@@ -1,6 +1,6 @@
 import { dir, getJsonSync } from "../utils/fs.ts";
 import { get } from "../utils/functional.ts";
-import type { DataContext, Page } from "../types.ts";
+import type { DataContext, Layout } from "../types.ts";
 import { getContext } from "./getContext.ts";
 
 async function generateRoutes(
@@ -10,7 +10,7 @@ async function generateRoutes(
     renderPage: ({ route, path, page, context }: {
       route: string;
       path: string;
-      page: Page;
+      page: Layout;
       context: DataContext;
     }) => void;
     pagesPath: string;
@@ -19,11 +19,11 @@ async function generateRoutes(
   const pages = (await dir(pagesPath, ".json")).map((meta) => ({
     meta,
     // TODO: Can this become async?
-    page: getJsonSync<Page>(meta.path) as Page,
+    page: getJsonSync<Layout>(meta.path) as Layout,
   }));
   const paths: Record<
     string,
-    { route: string; page: Page }
+    { route: string; page: Layout }
   > = {};
   const routes: string[] = [];
 

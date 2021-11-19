@@ -1,19 +1,15 @@
-import {
-  opine,
-  Router,
-  serveStatic,
-} from "https://deno.land/x/opine@1.9.0/mod.ts";
+import { opine, serveStatic } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
-import { getComponent, getComponents } from "./getComponents.ts";
+import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { getPageRenderer, renderHTML } from "./getPageRenderer.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Page, ProjectMeta } from "../types.ts";
+import type { Component, Layout, ProjectMeta, Routes } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
@@ -25,7 +21,7 @@ import "../scripts/_webSocketClient.ts";
 // oak router can then refer to the cached version instead.
 const cachedPages: Record<
   string,
-  { headMarkup: string; bodyMarkup: string; page: Page }
+  { headMarkup: string; bodyMarkup: string; page: Layout }
 > = {};
 
 // The cache is populated if and when scripts are changed.
@@ -41,23 +37,28 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
-  const components = await getComponents(projectPaths.components);
+
+  const [routes, layouts, components] = await Promise.all([
+    getJson<Routes>(projectPaths.routes),
+    getDefinitions<Layout>(projectPaths.layouts),
+    getDefinitions<Component>(projectPaths.components),
+  ]);
+
   const app = opine();
-  const router = Router();
   const wss = getWebsocketServer();
 
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Serving local scripts");
 
-    serveScripts(router, "./scripts");
+    serveScripts(app, "./scripts");
   } else {
     DEBUG && console.log("Serving remote scripts");
 
-    serveGustwindScripts(router);
+    serveGustwindScripts(app);
   }
-  serveScript(router, "twindSetup.js", projectPaths.twindSetup);
-  serveScripts(router, projectPaths.scripts);
-  serveScripts(router, projectPaths.transforms, "transforms/");
+  serveScript(app, "twindSetup.js", projectPaths.twindSetup);
+  serveScripts(app, projectPaths.scripts);
+  serveScripts(app, projectPaths.transforms, "transforms/");
 
   const mode = "development";
   const twindSetup = projectPaths.twindSetup
@@ -72,6 +73,14 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
+  // TODO: Resolve against the route definition now
+  app.use((req, res) => {
+    // req.url
+
+    res.send("hello");
+  });
+
+  /*
   const renderPage = getPageRenderer({
     components,
     mode,
@@ -189,7 +198,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
           if (!p) {
             if (matchedPath.includes(_path.basename(projectPaths.components))) {
-              const [componentName, componentDefinition] = await getComponent(
+              const [componentName, componentDefinition] = await getDefinition<Component>(
                 matchedPath,
               );
 
@@ -273,6 +282,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       });
     },
   );
+  */
 
   function watchScripts(scripts?: string) {
     scripts &&
@@ -303,14 +313,14 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       });
   }
 
-  await app.listen({ port: projectMeta.developmentPort });
+  await app.listen({ port: projectMeta.port });
 }
 
 function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
 }
 
-async function serveGustwindScripts(router: ReturnType<typeof Router>) {
+async function serveGustwindScripts(router: ReturnType<typeof opine>) {
   const pageEditor = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
   );
@@ -338,7 +348,7 @@ async function serveGustwindScripts(router: ReturnType<typeof Router>) {
 }
 
 async function serveScripts(
-  router: ReturnType<typeof Router>,
+  router: ReturnType<typeof opine>,
   scriptsPath?: string,
   prefix = "",
 ) {
@@ -356,7 +366,7 @@ async function serveScripts(
 }
 
 async function serveScript(
-  router: ReturnType<typeof Router>,
+  router: ReturnType<typeof opine>,
   scriptName: string,
   scriptPath?: string,
 ) {
@@ -379,7 +389,7 @@ async function serveScript(
 }
 
 function routeScripts(
-  router: ReturnType<typeof Router>,
+  router: ReturnType<typeof opine>,
   scriptsWithFiles: { path: string; name: string; content: string }[],
   prefix = "",
 ) {

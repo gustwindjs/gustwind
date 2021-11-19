@@ -4,7 +4,7 @@ import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
-import type { Component, Components, DataContext, Page } from "../types.ts";
+import type { Component, Components, DataContext, Layout } from "../types.ts";
 
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
@@ -21,7 +21,7 @@ declare global {
   function evaluateAllDirectives(): void;
 }
 
-type EditorState = Page;
+type EditorState = Layout;
 type SelectedState = { componentId?: string };
 type PageState = {
   editor: EditorState;
@@ -31,12 +31,15 @@ type PageState = {
 async function createEditor() {
   console.log("create editor");
 
-  const [components, context, pageDefinition]: [Components, DataContext, Page] =
-    await Promise.all([
-      fetch("/components.json").then((res) => res.json()),
-      fetch("./context.json").then((res) => res.json()),
-      fetch("./definition.json").then((res) => res.json()),
-    ]);
+  const [components, context, pageDefinition]: [
+    Components,
+    DataContext,
+    Layout,
+  ] = await Promise.all([
+    fetch("/components.json").then((res) => res.json()),
+    fetch("./context.json").then((res) => res.json()),
+    fetch("./definition.json").then((res) => res.json()),
+  ]);
 
   const editorContainer = createEditorContainer(pageDefinition);
 
@@ -67,7 +70,7 @@ async function createEditor() {
 
 const editorsId = "editors";
 
-function createEditorContainer(pageDefinition: Page) {
+function createEditorContainer(pageDefinition: Layout) {
   let editorsElement = document.getElementById(editorsId);
 
   editorsElement?.remove();
@@ -98,16 +101,16 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
-function initializeBody(body: Page["body"]) {
-  return produce(body, (draftBody: Page["body"]) => {
+function initializeBody(body: Layout["body"]) {
+  return produce(body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p) => {
       p._id = nanoid();
     });
   });
 }
 
-function updateFileSystem(state: Page) {
-  const nextBody = produce(state.body, (draftBody: Page["body"]) => {
+function updateFileSystem(state: Layout) {
+  const nextBody = produce(state.body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -391,11 +394,11 @@ function classChanged(
 }
 
 function produceNextBody(
-  body: Page["body"],
+  body: Layout["body"],
   componentId: Component["_id"],
   matched: (p: Component, element: HTMLElement) => void,
 ) {
-  return produce(body, (draftBody: Page["body"]) => {
+  return produce(body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p, i) => {
       if (p._id === componentId) {
         matched(
@@ -414,13 +417,13 @@ function produceNextBody(
 function findElement(
   element: Element | null,
   index: number,
-  body: Page["body"],
+  body: Layout["body"],
 ): Element | null {
   let i = 0;
 
   function recurse(
     element: Element | null | undefined,
-    body: Page["body"] | Component,
+    body: Layout["body"] | Component,
   ): Element | null {
     if (!element) {
       return null;

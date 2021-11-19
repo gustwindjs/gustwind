@@ -5,8 +5,8 @@ import {
 import type {
   Components,
   DataContext,
+  Layout,
   Mode,
-  Page,
   ProjectMeta,
 } from "../types.ts";
 import { getContext } from "./getContext.ts";
@@ -39,7 +39,7 @@ function getPageRenderer(
     }: {
       pathname: string;
       pagePath: string;
-      page: Page;
+      page: Layout;
       extraContext: DataContext;
       initialHeadMarkup?: string;
       initialBodyMarkup?: string;
@@ -122,8 +122,8 @@ function getPageRenderer(
 
 function renderHTML(
   transformsPath: string,
-  page: Page,
-  children: Page["head"] | Page["body"],
+  page: Layout,
+  children: Layout["head"] | Layout["body"],
   components: Components,
   pageData: DataContext,
   pathname: string,

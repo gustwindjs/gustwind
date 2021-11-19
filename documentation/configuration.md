@@ -8,16 +8,8 @@ Each project built with Gustwind needs minimal configuration to describe where t
 
 ```json
 {
-  "developmentPort": 3000,
+  "port": 3000,
   "amountOfBuildThreads": "cpuMax",
-  "siteName": "Gustwind",
-  "language": "en",
-  "scripts": [
-    {
-      "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
-    }
-  ],
   "paths": {
     "assets": "./assets",
     "components": "./components",

@@ -50,7 +50,6 @@ type Routes = {
   type?: "html" | "xml";
   layout?: string;
   meta: Meta;
-  scripts?: { type: string; src: string }[];
   dataSources?: DataSource[];
   matchBy?: { dataSource: string; collection: string; property: string };
   routes?: Record<string, Routes>;
@@ -63,6 +62,8 @@ type DataSource = {
 };
 
 type ProjectMeta = {
+  port: number;
+  amountOfBuildThreads: number | "cpuMax";
   paths: {
     assets?: string;
     components: string;
@@ -75,14 +76,12 @@ type ProjectMeta = {
     twindSetup?: string;
   };
   features?: {
-    amountOfBuildThreads: number | "cpuMax";
-    developmentPort: number;
     extractCSS?: boolean;
     showEditorAlways?: boolean;
   };
 };
 
-type Page = {
+type Layout = {
   head?: Component[];
   body: Component[];
 };
@@ -100,7 +99,7 @@ type BuildWorkerEvent =
       filePath: string;
       dir: string;
       extraContext: DataContext;
-      page: Page;
+      layout: Layout;
     };
   }
   | {
@@ -135,11 +134,11 @@ export type {
   Components,
   DataContext,
   DataSource,
+  Layout,
   Library,
   MarkdownWithFrontmatter,
   Meta,
   Mode,
-  Page,
   ParentCategory,
   ProjectMeta,
   Props,

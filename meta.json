@@ -1,4 +1,6 @@
 {
+  "port": 3000,
+  "amountOfBuildThreads": 1,
   "paths": {
     "assets": "./assets",
     "components": "./site/components",
@@ -11,8 +13,6 @@
     "twindSetup": "./site/twindSetup.ts"
   },
   "features": {
-    "developmentPort": 3000,
-    "amountOfBuildThreads": 1,
     "extractCSS": false,
     "showEditorAlways": true
   }

@@ -90,7 +90,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     await serveProject(projectMeta, cwd);
 
-    const port = projectMeta.developmentPort;
+    const port = projectMeta.port;
 
     const endTime = performance.now();
     console.log(

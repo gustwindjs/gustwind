@@ -1,9 +1,9 @@
 import { esbuild, fs, path } from "../deps.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
-import { getComponents } from "./getComponents.ts";
+import { getDefinitions } from "./getDefinitions.ts";
 import { generateRoutes } from "./generateRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
+import type { BuildWorkerEvent, Component, ProjectMeta } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -22,7 +22,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
-  const components = await getComponents(projectPaths.components);
+  const components = await getDefinitions<Component>(projectPaths.components);
   const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {

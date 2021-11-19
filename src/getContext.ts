@@ -1,11 +1,11 @@
 import { join } from "https://deno.land/std@0.107.0/path/mod.ts";
-import type { Page, ProjectMeta } from "../types.ts";
+import type { Layout, ProjectMeta } from "../types.ts";
 import { transform } from "./transform.ts";
 
 async function getContext(
   dataSourcesPath: ProjectMeta["paths"]["dataSources"],
   transformsPath: ProjectMeta["paths"]["transforms"],
-  dataSources: Page["dataSources"],
+  dataSources: Layout["dataSources"],
 ) {
   // TODO: If data sources are defined but not an array, give a nice error
   if (dataSources && Array.isArray(dataSources)) {
