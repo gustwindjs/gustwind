@@ -1,16 +1,4 @@
 {
-  "meta": {
-    "title": "Gustwind",
-    "description": "Deno powered JSON oriented site generator"
-  },
-  "dataSources": [
-    {
-      "id": "readme",
-      "operation": "file",
-      "input": "./README.md",
-      "transformWith": ["markdown"]
-    }
-  ],
   "head": [
     {
       "element": "MetaFields"

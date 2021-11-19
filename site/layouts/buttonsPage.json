@@ -1,8 +1,4 @@
 {
-  "meta": {
-    "title": "Gustwind",
-    "description": "Deno powered JSON oriented site generator"
-  },
   "head": [
     {
       "element": "MetaFields"

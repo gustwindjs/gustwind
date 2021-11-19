@@ -1,16 +1,4 @@
 {
-  "layout": "xml",
-  "meta": {
-    "title": "Gustwind",
-    "description": "Gustwind blog"
-  },
-  "dataSources": [
-    {
-      "id": "blogPosts",
-      "operation": "indexMarkdown",
-      "input": "./blogPosts"
-    }
-  ],
   "body": [
     {
       "element": "rss",

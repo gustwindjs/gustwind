@@ -45,40 +45,46 @@ type MarkdownWithFrontmatter = {
   };
   content: string;
 };
-type ProjectMeta = {
-  developmentPort: number;
-  amountOfBuildThreads: number | "cpuMax";
-  siteName: string;
-  language: string;
-  paths: {
-    assets?: string;
-    dataSources: string;
-    components: string;
-    output: string;
-    pages: string;
-    scripts?: string;
-    transforms: string;
-    twindSetup?: string;
-  };
+
+type Routes = {
+  type?: "html" | "xml";
+  layout?: string;
+  meta: Meta;
   scripts?: { type: string; src: string }[];
-  features?: {
-    extractCSS?: boolean;
-    showEditorAlways?: boolean;
-  };
+  dataSources?: DataSource[];
+  matchBy?: { dataSource: string; collection: string; property: string };
+  routes?: Record<string, Routes>;
 };
-type DataSources = {
+type DataSource = {
   id: string;
   operation: string;
   input: string;
   transformWith: Transform[];
-}[];
+};
+
+type ProjectMeta = {
+  paths: {
+    assets?: string;
+    components: string;
+    dataSources: string;
+    layouts: string;
+    output: string;
+    routes: string;
+    scripts?: string;
+    transforms: string;
+    twindSetup?: string;
+  };
+  features?: {
+    amountOfBuildThreads: number | "cpuMax";
+    developmentPort: number;
+    extractCSS?: boolean;
+    showEditorAlways?: boolean;
+  };
+};
+
 type Page = {
-  layout?: "html" | "xml";
-  meta: Meta;
   head?: Component[];
   body: Component[];
-  matchBy?: { dataSource: string; collection: string; property: string };
-  dataSources?: DataSources;
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
@@ -128,7 +134,7 @@ export type {
   Component,
   Components,
   DataContext,
-  DataSources,
+  DataSource,
   Library,
   MarkdownWithFrontmatter,
   Meta,
@@ -137,5 +143,6 @@ export type {
   ParentCategory,
   ProjectMeta,
   Props,
+  Routes,
   Transform,
 };
