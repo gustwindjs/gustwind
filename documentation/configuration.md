@@ -29,7 +29,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "twindSetup": "./twindSetup.ts"
   },
   "features": {
-    "extractCSS": true,
+    "extractCSS": false,
     "showEditorAlways": true
   }
 }

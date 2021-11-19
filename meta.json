@@ -20,7 +20,7 @@
     "twindSetup": "./site/twindSetup.ts"
   },
   "features": {
-    "extractCSS": true,
+    "extractCSS": false,
     "showEditorAlways": true
   }
 }
