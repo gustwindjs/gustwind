@@ -1,4 +1,7 @@
-import * as twindSheets from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
+import {
+  getStyleTag,
+  getStyleTagProperties,
+} from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import type {
   Components,
   DataContext,
@@ -43,7 +46,7 @@ function getPageRenderer(
       projectMeta: ProjectMeta;
       hasScript: boolean;
     },
-  ): Promise<[string, DataContext]> => {
+  ): Promise<[string, DataContext, string?]> => {
     const projectPaths = projectMeta.paths;
     const pageContext: DataContext = await getContext(
       projectPaths.dataSources,
@@ -94,15 +97,25 @@ function getPageRenderer(
         pathname,
       ),
     ]);
-    const styleTag = twindSheets.getStyleTag(stylesheet);
 
     if (page.layout === "xml") {
       return [xmlTemplate(bodyMarkup), context];
     }
 
+    // https://web.dev/defer-non-critical-css/
+    const styleTag = projectMeta.features?.extractCSS
+      ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
+      : getStyleTag(stylesheet);
+
+    let css = "";
+    if (projectMeta.features?.extractCSS) {
+      css = getStyleTagProperties(stylesheet).textContent;
+    }
+
     return [
       htmlTemplate(projectMeta.language, headMarkup + styleTag, bodyMarkup),
       context,
+      css,
     ];
   };
 }

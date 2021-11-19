@@ -62,6 +62,7 @@ type ProjectMeta = {
   };
   scripts?: { type: string; src: string }[];
   features?: {
+    extractCSS?: boolean;
     showEditorAlways?: boolean;
   };
 };

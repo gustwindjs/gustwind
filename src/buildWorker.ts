@@ -71,7 +71,7 @@ self.onmessage = async (e) => {
       await Deno.writeTextFile(path.join(dir, "index.js"), pageSource);
     }
 
-    const [html, context] = await renderPage({
+    const [html, context, css] = await renderPage({
       pathname: route,
       pagePath: filePath,
       page,
@@ -79,6 +79,11 @@ self.onmessage = async (e) => {
       projectMeta,
       hasScript: !!pageSource,
     });
+
+    if (css) {
+      // TODO: Push this to a task
+      await Deno.writeTextFile(path.join(dir, "styles.css"), css);
+    }
 
     if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
       // TODO: Can this be pushed as a task?

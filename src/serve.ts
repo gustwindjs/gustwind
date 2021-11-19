@@ -112,7 +112,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
             );
           }
 
-          const [html] = await renderPage({
+          const [html, _context, css] = await renderPage({
             pathname: req.url,
             pagePath: path,
             // If there's cached data, use it instead. This fixes
@@ -130,6 +130,12 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           if (page.layout === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
             res.set("Content-Type", "text/xml");
+          }
+
+          if (css) {
+            await router.get(route + "styles.css", (_req, res) => {
+              res.send(css);
+            });
           }
 
           res.send(html);
