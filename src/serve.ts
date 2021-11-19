@@ -73,11 +73,24 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
-  // TODO: Resolve against the route definition now
-  app.use((req, res) => {
-    // req.url
+  const { meta: routesMeta, routes: rootRoutes } = routes;
 
-    res.send("hello");
+  if (!rootRoutes) {
+    throw new Error("Missing root routes in the route definition!");
+  }
+
+  app.use(({ url }, res) => {
+    // req.url
+    // TODO: Resolve against the route definition now
+    if (rootRoutes[url]) {
+      console.log("got match");
+
+      res.send("got match");
+
+      return;
+    }
+
+    res.send("no match");
   });
 
   /*
