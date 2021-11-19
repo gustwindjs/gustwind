@@ -5,8 +5,7 @@ import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getDefinition, getDefinitions } from "./getDefinitions.ts";
-import { generateRoutes } from "./generateRoutes.ts";
-import { getPageRenderer, renderHTML } from "./getPageRenderer.ts";
+import { renderHTML, renderPage } from "./renderPage.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { Component, Layout, ProjectMeta, RootRoutes } from "../types.ts";
@@ -16,13 +15,10 @@ import "../scripts/_pageEditor.ts";
 import "../scripts/_toggleEditor.ts";
 import "../scripts/_webSocketClient.ts";
 
-// The cache is populated based on web socket calls. If a page
+// The cache is populated based on web socket calls. If a layout
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.
-const cachedPages: Record<
-  string,
-  { headMarkup: string; bodyMarkup: string; page: Layout }
-> = {};
+const cachedLayouts: Record<string, Layout> = {};
 
 // The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
@@ -73,22 +69,63 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
-  const { meta: routesMeta, routes: rootRoutes } = routes;
+  const { meta: routesMeta, routes: rootRoutes, scripts: rootScripts } = routes;
 
   if (!rootRoutes) {
     throw new Error("Missing root routes in the route definition!");
   }
 
-  app.use(({ url }, res) => {
+  app.use(async ({ url }, res) => {
     const matchedRoute = rootRoutes[url];
 
     if (matchedRoute) {
       const matchedLayout = layouts[matchedRoute.layout];
 
       if (matchedLayout) {
-        console.log("got match", matchedLayout);
+        // TODO: Figure out a good way to deal with page scripts
+        // Maybe this has to become explicit somehow?
+        /*
+        const scriptName = _path.basename(path, _path.extname(path));
+        const scriptPath = _path.join(_path.dirname(path), scriptName) +
+          ".ts";
 
-        res.send("got matching route and layout");
+        let pageSource = "";
+
+        if (await fs.exists(scriptPath)) {
+          pageSource = await compileTypeScript(scriptPath, mode);
+        }
+        */
+
+        const [html, _context, css] = await renderPage({
+          projectMeta: cachedProjectMeta || projectMeta,
+          // If there's cached data, use it instead. This fixes
+          // the case in which there was an update over web socket and
+          // also avoids the need to hit the file system for getting
+          // the latest data.
+          layout: cachedLayouts[url] || matchedLayout,
+          meta: routesMeta,
+          route: matchedRoute, // TODO: Cache?
+          scripts: rootScripts,
+          hasScript: false, // TODO: !!pageSource,
+          mode: "development",
+          pagePath: "", // TODO: figure out the path of the page in the system
+          twindSetup,
+          components,
+          pathname: url,
+        });
+
+        if (matchedRoute.type === "xml") {
+          // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+          res.set("Content-Type", "text/xml");
+        }
+
+        if (css) {
+          await app.get(url + "styles.css", (_req, res) => {
+            res.send(css);
+          });
+        }
+
+        res.send(html);
 
         return;
       }

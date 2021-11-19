@@ -48,15 +48,17 @@ type MarkdownWithFrontmatter = {
 
 type RootRoutes = {
   meta: Meta;
-  routes: Record<string, Routes>;
+  scripts: Scripts;
+  routes: Record<string, Route>;
 };
-type Routes = {
+type Route = {
   type?: "html" | "xml";
   layout: string;
   meta: Meta;
+  scripts: Scripts;
   dataSources?: DataSource[];
   matchBy?: { dataSource: string; collection: string; property: string };
-  routes?: Record<string, Routes>;
+  routes?: Record<string, Route>;
 };
 type DataSource = {
   id: string;
@@ -64,6 +66,7 @@ type DataSource = {
   input: string;
   transformWith: Transform[];
 };
+type Scripts = { type: string; src: string }[];
 
 type ProjectMeta = {
   port: number;
@@ -147,6 +150,7 @@ export type {
   ProjectMeta,
   Props,
   RootRoutes,
-  Routes,
+  Route,
+  Scripts,
   Transform,
 };
