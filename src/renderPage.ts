@@ -1,11 +1,12 @@
 import {
   getStyleTag,
   getStyleTagProperties,
+  virtualSheet,
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
+import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import type {
   Components,
   DataContext,
-  DataSource,
   Layout,
   Meta,
   Mode,
@@ -14,10 +15,11 @@ import type {
   Scripts,
 } from "../types.ts";
 import { getContext } from "./getContext.ts";
-import { getStyleSheet } from "./getStyleSheet.ts";
 import { renderComponent } from "./renderComponent.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
+
+const stylesheet = virtualSheet();
 
 // TODO: Some kind of a lifecycle model would be useful to have here
 // as it would allow decoupling twind from the core.
@@ -46,7 +48,11 @@ async function renderPage({
   components: Components;
   pathname: string;
 }) {
-  const stylesheet = getStyleSheet(twindSetup);
+  setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
+
+  // @ts-ignore Somehow TS gets confused here
+  stylesheet.reset();
+
   const projectPaths = projectMeta.paths;
   const pageContext: DataContext = await getContext(
     projectPaths.dataSources,
