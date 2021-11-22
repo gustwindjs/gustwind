@@ -72,6 +72,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
+  app.get("/components.json", (_req, res) => res.json(components));
+
   // TODO: This can happen later on demand
   const expandedRoutes = await expandRoutes({
     routes,
