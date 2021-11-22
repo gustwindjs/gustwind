@@ -8,7 +8,13 @@ import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderHTML, renderPage } from "./renderPage.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Component, Layout, ProjectMeta, RootRoutes } from "../types.ts";
+import type {
+  Component,
+  Layout,
+  ProjectMeta,
+  RootRoutes,
+  Route,
+} from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
@@ -374,11 +380,19 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.port });
 }
 
-function matchRoute(rootRoutes: RootRoutes["routes"], url: string) {
-  const trimmedUrl = trim(url, "/");
+// TODO: Support "[data.slug]"
+function matchRoute(
+  rootRoutes: RootRoutes["routes"],
+  url: string,
+): Route | undefined {
+  const parts = trim(url, "/").split("/");
+  const match = rootRoutes[url] || rootRoutes[parts[0]];
 
-  // TODO: Support "[data.slug]"
-  return rootRoutes[url] || rootRoutes[trimmedUrl];
+  if (match && match.routes && parts.length > 1) {
+    return matchRoute(match.routes, parts.slice(1).join("/"));
+  }
+
+  return match;
 }
 
 // https://stackoverflow.com/a/32516190/228885

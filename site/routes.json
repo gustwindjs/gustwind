@@ -65,6 +65,15 @@
       "meta": {
         "title": "Gustwind buttons",
         "description": "Secret buttons page"
+      },
+      "routes": {
+        "more": {
+          "layout": "buttonsPage",
+          "meta": {
+            "title": "More Gustwind buttons",
+            "description": "Another secret buttons page"
+          }
+        }
       }
     },
     "atom.xml": {
