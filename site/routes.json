@@ -1,8 +1,6 @@
 {
   "/": {
     "meta": {
-      "language": "en",
-      "siteName": "Gustwind",
       "title": "Gustwind",
       "description": "Deno powered JSON oriented site generator"
     },

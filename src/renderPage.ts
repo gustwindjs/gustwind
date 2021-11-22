@@ -61,6 +61,7 @@ async function renderPage({
 
   const context = {
     projectMeta,
+    ...projectMeta.meta,
     ...route.meta,
     scripts: pageScripts,
     ...route.context,

@@ -69,6 +69,7 @@ type Scripts = { type: string; src: string }[];
 type ProjectMeta = {
   port: number;
   amountOfBuildThreads: number | "cpuMax";
+  meta: Meta;
   paths: {
     assets?: string;
     components: string;

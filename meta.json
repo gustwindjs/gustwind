@@ -1,6 +1,10 @@
 {
   "port": 3000,
   "amountOfBuildThreads": 1,
+  "meta": {
+    "language": "en",
+    "siteName": "Gustwind"
+  },
   "paths": {
     "assets": "./assets",
     "components": "./site/components",

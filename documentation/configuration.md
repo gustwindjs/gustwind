@@ -10,6 +10,10 @@ Each project built with Gustwind needs minimal configuration to describe where t
 {
   "port": 3000,
   "amountOfBuildThreads": "cpuMax",
+  "meta": {
+    "language": "en",
+    "siteName": "Gustwind"
+  },
   "paths": {
     "assets": "./assets",
     "components": "./components",
