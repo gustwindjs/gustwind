@@ -64,7 +64,7 @@ async function renderPage({
     ...projectMeta.meta,
     ...route.meta,
     scripts: pageScripts,
-    ...route.context,
+    ...(route.context ? await route.context() : {}),
   };
 
   DEBUG && console.log("rendering a page with context", context);

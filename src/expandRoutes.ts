@@ -15,6 +15,8 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
   const ret = Object.fromEntries(
     await Promise.all(
       Object.entries(routes).map(async ([url, v]) => {
+        let ret = { ...v };
+
         if (v.expand) {
           const { dataSources, matchBy } = v.expand;
 
@@ -52,18 +54,28 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
             expandedRoutes[route] = {
               meta,
               layout,
-              context: { match },
+              context: () => Promise.resolve({ match }),
             };
           });
 
-          return [url, {
+          ret = {
             ...v,
             routes: { ...(v.routes || {}), ...expandedRoutes },
-          }];
+          };
         }
-        // TODO: v.dataSources -> context for blog index
 
-        return [url, v];
+        if (v.dataSources) {
+          const context = () =>
+            getContext(
+              dataSourcesPath,
+              transformsPath,
+              // @ts-ignore: dataSources is defined by now for sure
+              v.dataSources,
+            );
+
+          return [url, { ...ret, context }];
+        }
+        return [url, ret];
       }),
     ),
   );

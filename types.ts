@@ -52,11 +52,15 @@ type Route = {
   meta: Meta;
   scripts?: Scripts;
   routes?: Record<string, Route>;
+  dataSources?: DataSource[];
   expand?: {
     dataSources?: DataSource[];
     matchBy?: { dataSource: string; collection: string; slug: string };
   };
-  context?: DataContext;
+  // Context has to be evaluated during rendering for twind to work as
+  // transforms might depend on it. Therefore it has to be wrapped into a
+  // function that gets generated when expanding routes.
+  context?: () => Promise<DataContext>;
 };
 type DataSource = {
   id: string;

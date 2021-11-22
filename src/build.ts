@@ -1,7 +1,6 @@
 import { esbuild, fs, path } from "../deps.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
-import { generateRoutes } from "./generateRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, Component, ProjectMeta } from "../types.ts";
 
@@ -33,6 +32,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     // TODO: See if route generation can be workerized. The idea
     // would be that in that case for complex routes (i.e. [] expansion)
     // the worker would create new tasks on demand.
+    /*
     const { routes } = await generateRoutes({
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
@@ -65,6 +65,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       },
       pagesPath: projectPaths.pages,
     });
+    */
+    const routes = {};
 
     if (DEBUG) {
       const routeGenerationTime = performance.now();
