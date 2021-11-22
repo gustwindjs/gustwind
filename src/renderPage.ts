@@ -12,7 +12,6 @@ import type {
   Mode,
   ProjectMeta,
   Route,
-  Scripts,
 } from "../types.ts";
 import { renderComponent } from "./renderComponent.ts";
 
@@ -25,10 +24,7 @@ const stylesheet = virtualSheet();
 async function renderPage({
   projectMeta,
   layout,
-  meta,
   route,
-  scripts,
-  hasScript,
   mode,
   pagePath,
   twindSetup,
@@ -38,9 +34,6 @@ async function renderPage({
   projectMeta: ProjectMeta;
   layout: Layout;
   route: Route;
-  meta: Meta;
-  scripts: Scripts;
-  hasScript: boolean;
   mode: Mode;
   pagePath: string;
   twindSetup: Record<string, unknown>;
@@ -55,11 +48,8 @@ async function renderPage({
   const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
-  const pageScripts = scripts?.slice(0) || [];
+  const pageScripts = route.scripts?.slice(0) || [];
 
-  if (hasScript) {
-    scripts.push({ type: "module", src: "./index.js" });
-  }
   if (mode === "development") {
     runtimeMeta.pagePath = pagePath;
     pageScripts.push({ type: "module", src: "/_webSocketClient.js" });
@@ -71,7 +61,7 @@ async function renderPage({
 
   const context = {
     projectMeta,
-    meta,
+    ...route.meta,
     scripts: pageScripts,
     ...route.context,
   };
@@ -110,7 +100,8 @@ async function renderPage({
   }
 
   return [
-    htmlTemplate(meta.language, headMarkup + styleTag, bodyMarkup),
+    // TODO: Add siteMeta back
+    htmlTemplate("en", headMarkup + styleTag, bodyMarkup),
     context,
     css,
   ];

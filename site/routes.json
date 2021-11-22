@@ -1,55 +1,60 @@
 {
-  "meta": {
-    "language": "en",
-    "siteName": "Gustwind"
+  "/": {
+    "meta": {
+      "language": "en",
+      "siteName": "Gustwind",
+      "title": "Gustwind",
+      "description": "Deno powered JSON oriented site generator"
+    },
+    "scripts": [
+      {
+        "type": "text/javascript",
+        "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
+      }
+    ],
+    "layout": "siteIndex",
+    "dataSources": [
+      {
+        "id": "readme",
+        "operation": "file",
+        "input": "./README.md",
+        "transformWith": ["markdown"]
+      }
+    ],
+    "expand": {
+      "dataSources": [
+        {
+          "id": "documentation",
+          "operation": "indexMarkdown",
+          "input": "./documentation"
+        }
+      ],
+      "matchBy": {
+        "dataSource": "documentation",
+        "collection": "content",
+        "slug": "data.slug"
+      },
+      "layout": "documentationPage",
+      "meta": {
+        "__title": "match.name",
+        "__description": "match.description"
+      }
+    }
   },
-  "scripts": [
-    {
-      "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
-    }
-  ],
-  "routes": {
-    "/": {
-      "layout": "siteIndex",
-      "meta": {
-        "title": "Gustwind",
-        "description": "Deno powered JSON oriented site generator"
-      },
-      "dataSources": [
-        {
-          "id": "readme",
-          "operation": "file",
-          "input": "./README.md",
-          "transformWith": ["markdown"]
-        }
-      ],
-      "expand": {
-        "dataSources": [
-          {
-            "id": "documentation",
-            "operation": "indexMarkdown",
-            "input": "./documentation"
-          }
-        ],
-        "matchBy": {
-          "dataSource": "documentation",
-          "collection": "content",
-          "slug": "data.slug"
-        },
-        "layout": "documentationPage",
-        "meta": {
-          "__title": "match.name",
-          "__description": "match.description"
-        }
-      }
+  "blog": {
+    "layout": "blogIndex",
+    "meta": {
+      "title": "Blog",
+      "description": "A blog about Gustwind"
     },
-    "blog": {
-      "layout": "blogIndex",
-      "meta": {
-        "title": "Blog",
-        "description": "A blog about Gustwind"
-      },
+    "dataSources": [
+      {
+        "id": "blogPosts",
+        "operation": "indexMarkdown",
+        "input": "./blogPosts"
+      }
+    ],
+    "expand": {
       "dataSources": [
         {
           "id": "blogPosts",
@@ -57,56 +62,47 @@
           "input": "./blogPosts"
         }
       ],
-      "expand": {
-        "dataSources": [
-          {
-            "id": "blogPosts",
-            "operation": "indexMarkdown",
-            "input": "./blogPosts"
-          }
-        ],
-        "matchBy": {
-          "dataSource": "blogPosts",
-          "collection": "content",
-          "slug": "data.slug"
-        },
-        "layout": "blogPage",
-        "meta": {
-          "__title": "match.name",
-          "__description": "match.description"
-        }
-      }
-    },
-    "buttons": {
-      "layout": "buttonsPage",
-      "meta": {
-        "title": "Gustwind buttons",
-        "description": "Secret buttons page"
+      "matchBy": {
+        "dataSource": "blogPosts",
+        "collection": "content",
+        "slug": "data.slug"
       },
-      "routes": {
-        "more": {
-          "layout": "buttonsPage",
-          "meta": {
-            "title": "More Gustwind buttons",
-            "description": "Another secret buttons page"
-          }
-        }
-      }
-    },
-    "atom.xml": {
-      "layout": "rssPage",
-      "type": "xml",
+      "layout": "blogPage",
       "meta": {
-        "title": "Gustwind",
-        "description": "Gustwind blog"
-      },
-      "dataSources": [
-        {
-          "id": "blogPosts",
-          "operation": "indexMarkdown",
-          "input": "./blogPosts"
-        }
-      ]
+        "__title": "match.name",
+        "__description": "match.description"
+      }
     }
+  },
+  "buttons": {
+    "layout": "buttonsPage",
+    "meta": {
+      "title": "Gustwind buttons",
+      "description": "Secret buttons page"
+    },
+    "routes": {
+      "more": {
+        "layout": "buttonsPage",
+        "meta": {
+          "title": "More Gustwind buttons",
+          "description": "Another secret buttons page"
+        }
+      }
+    }
+  },
+  "atom.xml": {
+    "layout": "rssPage",
+    "type": "xml",
+    "meta": {
+      "title": "Gustwind",
+      "description": "Gustwind blog"
+    },
+    "dataSources": [
+      {
+        "id": "blogPosts",
+        "operation": "indexMarkdown",
+        "input": "./blogPosts"
+      }
+    ]
   }
 }

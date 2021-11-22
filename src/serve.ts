@@ -9,13 +9,7 @@ import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderHTML, renderPage } from "./renderPage.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type {
-  Component,
-  Layout,
-  ProjectMeta,
-  RootRoutes,
-  Route,
-} from "../types.ts";
+import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
@@ -42,7 +36,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
 
   const [routes, layouts, components] = await Promise.all([
-    getJson<RootRoutes>(projectPaths.routes),
+    getJson<Record<string, Route>>(projectPaths.routes),
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
@@ -76,19 +70,15 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
-  const { meta: routesMeta, routes: rootRoutes, scripts: rootScripts } = routes;
-
-  if (!rootRoutes) {
-    throw new Error("Missing root routes in the route definition!");
-  }
-
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
+  // TODO: This can happen later on demand
   const expandedRoutes = await expandRoutes({
-    routes: rootRoutes,
+    routes,
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
   });
+
   app.use(async ({ url }, res) => {
     const matchedRoute = matchRoute(expandedRoutes, url);
 
@@ -96,20 +86,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       const matchedLayout = layouts[matchedRoute.layout];
 
       if (matchedLayout) {
-        // TODO: Figure out a good way to deal with page scripts
-        // Maybe this has to become explicit somehow?
-        /*
-        const scriptName = _path.basename(path, _path.extname(path));
-        const scriptPath = _path.join(_path.dirname(path), scriptName) +
-          ".ts";
-
-        let pageSource = "";
-
-        if (await fs.exists(scriptPath)) {
-          pageSource = await compileTypeScript(scriptPath, mode);
-        }
-        */
-
         const [html, _context, css] = await renderPage({
           projectMeta: cachedProjectMeta || projectMeta,
           // If there's cached data, use it instead. This fixes
@@ -117,10 +93,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           // also avoids the need to hit the file system for getting
           // the latest data.
           layout: cachedLayouts[url] || matchedLayout,
-          meta: routesMeta,
           route: matchedRoute, // TODO: Cache?
-          scripts: rootScripts,
-          hasScript: false, // TODO: !!pageSource,
           mode: "development",
           pagePath: "", // TODO: figure out the path of the page in the system
           twindSetup,
@@ -387,13 +360,18 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 }
 
 async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
-  routes: RootRoutes["routes"];
+  routes: Route["routes"];
   dataSourcesPath: string;
   transformsPath: string;
 }) {
+  if (!routes) {
+    return {};
+  }
+
   return Object.fromEntries(
     await Promise.all(
       Object.entries(routes).map(async ([url, v]) => {
+        // TODO: If url === '/', this should expand parent urls!
         if (v.expand) {
           const { dataSources, matchBy } = v.expand;
 
@@ -442,6 +420,7 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
               : expandedRoutes,
           }];
         }
+        // TODO: v.dataSources -> context for blog index
 
         return [url, v];
       }),
@@ -450,11 +429,17 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
 }
 
 function matchRoute(
-  rootRoutes: RootRoutes["routes"],
+  routes: Route["routes"],
   url: string,
 ): Route | undefined {
+  if (!routes) {
+    return;
+  }
+
   const parts = trim(url, "/").split("/");
-  const match = rootRoutes[url] || rootRoutes[parts[0]];
+  const match = routes[url] || routes[parts[0]];
+
+  console.log("matching route", routes, url, parts, match);
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));

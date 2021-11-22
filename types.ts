@@ -46,11 +46,6 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-type RootRoutes = {
-  meta: Meta;
-  scripts: Scripts;
-  routes: Record<string, Route>;
-};
 type Route = {
   type?: "html" | "xml";
   layout: string;
@@ -152,7 +147,6 @@ export type {
   ParentCategory,
   ProjectMeta,
   Props,
-  RootRoutes,
   Route,
   Scripts,
   Transform,
