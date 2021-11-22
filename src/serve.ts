@@ -10,7 +10,6 @@ import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type {
   Component,
-  ExpandedRoute,
   Layout,
   ProjectMeta,
   RootRoutes,
@@ -384,13 +383,29 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
 function expandRoutes(
   routes: RootRoutes["routes"],
-): Record<string, ExpandedRoute> {
+) {
   // TODO: This should convert each `expand` into new routes
-  return {};
+  return Object.fromEntries(
+    Object.entries(routes).map(([k, v]) => {
+      if (v.expand) {
+        const expandedRoutes = {};
+
+        // TODO
+        console.log("expand now", v.expand);
+
+        return [k, {
+          ...v,
+          routes: v.routes ? { ...v.routes, expandRoutes } : expandedRoutes,
+        }];
+      }
+
+      return [k, v];
+    }),
+  );
 }
 
 function matchRoute(
-  rootRoutes: Record<string, ExpandedRoute>,
+  rootRoutes: RootRoutes["routes"],
   url: string,
 ): Route | undefined {
   const parts = trim(url, "/").split("/");
