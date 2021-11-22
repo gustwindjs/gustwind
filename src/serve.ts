@@ -10,6 +10,7 @@ import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type {
   Component,
+  ExpandedRoute,
   Layout,
   ProjectMeta,
   RootRoutes,
@@ -83,8 +84,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
+  const expandedRoutes = expandRoutes(rootRoutes);
   app.use(async ({ url }, res) => {
-    const matchedRoute = matchRoute(rootRoutes, url);
+    const matchedRoute = matchRoute(expandedRoutes, url);
 
     if (matchedRoute) {
       const matchedLayout = layouts[matchedRoute.layout];
@@ -380,22 +382,19 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.port });
 }
 
-// TODO: Support expansions
+function expandRoutes(
+  routes: RootRoutes["routes"],
+): Record<string, ExpandedRoute> {
+  // TODO: This should convert each `expand` into new routes
+  return {};
+}
+
 function matchRoute(
-  rootRoutes: RootRoutes["routes"],
+  rootRoutes: Record<string, ExpandedRoute>,
   url: string,
 ): Route | undefined {
   const parts = trim(url, "/").split("/");
   const match = rootRoutes[url] || rootRoutes[parts[0]];
-
-  console.log(url, parts, match, rootRoutes);
-
-  // TODO: How to handle expansions?
-  /*
-  if (url.startsWith('[') && url.endsWith(']')) {
-    console.log("got data sources for", url);
-  }
-  */
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));

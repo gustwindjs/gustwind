@@ -56,9 +56,14 @@ type Route = {
   layout: string;
   meta: Meta;
   scripts: Scripts;
-  dataSources?: DataSource[];
-  matchBy?: { dataSource: string; collection: string; property: string };
-  routes?: Record<string, Route>;
+  routes?: Record<string, ExpandedRoute>;
+};
+type ExpandedRoute = Route & {
+  expand: {
+    dataSources?: DataSource[];
+    matchBy?: { dataSource: string; collection: string; property: string };
+    slug: string;
+  };
 };
 type DataSource = {
   id: string;
@@ -141,6 +146,7 @@ export type {
   Components,
   DataContext,
   DataSource,
+  ExpandedRoute,
   Layout,
   Library,
   MarkdownWithFrontmatter,
