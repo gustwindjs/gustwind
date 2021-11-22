@@ -380,13 +380,22 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.port });
 }
 
-// TODO: Support "[data.slug]"
+// TODO: Support expansions
 function matchRoute(
   rootRoutes: RootRoutes["routes"],
   url: string,
 ): Route | undefined {
   const parts = trim(url, "/").split("/");
   const match = rootRoutes[url] || rootRoutes[parts[0]];
+
+  console.log(url, parts, match, rootRoutes);
+
+  // TODO: How to handle expansions?
+  /*
+  if (url.startsWith('[') && url.endsWith(']')) {
+    console.log("got data sources for", url);
+  }
+  */
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
