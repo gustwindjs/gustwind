@@ -2,12 +2,11 @@ import { opine, serveStatic } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
-import { get } from "../utils/functional.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
+import { trim } from "../utils/string.ts";
 import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderHTML, renderPage } from "./renderPage.ts";
-import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
@@ -293,20 +292,6 @@ function matchRoute(
   }
 
   return match;
-}
-
-// https://stackoverflow.com/a/32516190/228885
-function trim(s: string, c: string) {
-  if (c === "]") c = "\\]";
-  if (c === "^") c = "\\^";
-  if (c === "\\") c = "\\\\";
-  return s.replace(
-    new RegExp(
-      "^[" + c + "]+|[" + c + "]+$",
-      "g",
-    ),
-    "",
-  );
 }
 
 function cleanAssetsPath(p: string) {
