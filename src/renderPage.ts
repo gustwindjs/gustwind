@@ -78,7 +78,7 @@ async function renderPage({
   const context = {
     projectMeta,
     meta,
-    scripts,
+    scripts: pageScripts,
     ...pageContext,
   };
 
