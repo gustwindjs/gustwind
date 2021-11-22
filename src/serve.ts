@@ -9,6 +9,7 @@ import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderHTML, renderPage } from "./renderPage.ts";
 import { getContext } from "./getContext.ts";
 import { getWebsocketServer } from "./webSockets.ts";
+import { expandRoutes } from "./expandRoutes.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
@@ -272,80 +273,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   }
 
   await app.listen({ port: projectMeta.port });
-}
-
-async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
-  routes: Route["routes"];
-  dataSourcesPath: string;
-  transformsPath: string;
-}) {
-  if (!routes) {
-    return {};
-  }
-
-  const ret = Object.fromEntries(
-    await Promise.all(
-      Object.entries(routes).map(async ([url, v]) => {
-        if (v.expand) {
-          const { dataSources, matchBy } = v.expand;
-
-          if (!matchBy) {
-            throw new Error("Tried to matchBy a path that is not matchable");
-          }
-
-          if (!dataSources) {
-            throw new Error("Missing dataSources");
-          }
-
-          const pageData = await getContext(
-            dataSourcesPath,
-            transformsPath,
-            dataSources,
-          );
-
-          const dataSource = pageData[matchBy.dataSource];
-
-          if (!dataSource) {
-            throw new Error("Missing data source");
-          }
-
-          const expandedRoutes: Record<string, Route> = {};
-          Object.values(dataSource[matchBy.collection]).forEach((match) => {
-            const route = get(match, matchBy.slug);
-
-            if (!route) {
-              throw new Error("Route is missing");
-            }
-
-            // @ts-ignore v.expand exists by now for sure
-            const { meta, layout } = v.expand;
-
-            expandedRoutes[route] = {
-              meta,
-              layout,
-              context: { match },
-            };
-          });
-
-          return [url, {
-            ...v,
-            routes: { ...(v.routes || {}), ...expandedRoutes },
-          }];
-        }
-        // TODO: v.dataSources -> context for blog index
-
-        return [url, v];
-      }),
-    ),
-  );
-
-  // / is an exception. If it has an expansion, then it has to be added
-  // to the root as otherwise the router won't find it later.
-  if (ret["/"]) {
-    return { ...ret, ...ret["/"].routes };
-  }
-
-  return ret;
 }
 
 function matchRoute(
