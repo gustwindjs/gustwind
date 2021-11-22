@@ -46,15 +46,15 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Serving local scripts");
 
-    serveScripts(app, "./scripts");
+    await serveScripts(app, "./scripts");
   } else {
     DEBUG && console.log("Serving remote scripts");
 
     serveGustwindScripts(app);
   }
-  serveScript(app, "twindSetup.js", projectPaths.twindSetup);
-  serveScripts(app, projectPaths.scripts);
-  serveScripts(app, projectPaths.transforms, "transforms/");
+  await serveScript(app, "twindSetup.js", projectPaths.twindSetup);
+  await serveScripts(app, projectPaths.scripts);
+  await serveScripts(app, projectPaths.transforms, "transforms/");
 
   const mode = "development";
   const twindSetup = projectPaths.twindSetup
@@ -75,11 +75,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     throw new Error("Missing root routes in the route definition!");
   }
 
-  app.use(async ({ url }, res, next) => {
-    if (url.split(".").length > 1) {
-      return next();
-    }
+  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
+  app.use(async ({ url }, res) => {
     const matchedRoute = matchRoute(rootRoutes, url);
 
     if (matchedRoute) {
@@ -139,8 +137,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
     res.send("no matching route");
   });
-
-  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
   /*
   const renderPage = getPageRenderer({
