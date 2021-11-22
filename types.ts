@@ -55,13 +55,13 @@ type Route = {
   type?: "html" | "xml";
   layout: string;
   meta: Meta;
-  scripts: Scripts;
+  scripts?: Scripts;
   routes?: Record<string, Route>;
-  expand: {
+  expand?: {
     dataSources?: DataSource[];
-    matchBy?: { dataSource: string; collection: string; property: string };
-    slug: string;
+    matchBy?: { dataSource: string; collection: string; slug: string };
   };
+  context?: DataContext;
 };
 type DataSource = {
   id: string;

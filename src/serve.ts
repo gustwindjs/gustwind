@@ -2,6 +2,7 @@ import { opine, serveStatic } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
+import { get } from "../utils/functional.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { getDefinition, getDefinitions } from "./getDefinitions.ts";
@@ -83,7 +84,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
-  const expandedRoutes = expandRoutes(rootRoutes);
+  const expandedRoutes = await expandRoutes({
+    routes: rootRoutes,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
+  });
   app.use(async ({ url }, res) => {
     const matchedRoute = matchRoute(expandedRoutes, url);
 
@@ -381,26 +386,66 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await app.listen({ port: projectMeta.port });
 }
 
-function expandRoutes(
-  routes: RootRoutes["routes"],
-) {
-  // TODO: This should convert each `expand` into new routes
+async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
+  routes: RootRoutes["routes"];
+  dataSourcesPath: string;
+  transformsPath: string;
+}) {
   return Object.fromEntries(
-    Object.entries(routes).map(([k, v]) => {
-      if (v.expand) {
-        const expandedRoutes = {};
+    await Promise.all(
+      Object.entries(routes).map(async ([url, v]) => {
+        if (v.expand) {
+          const { dataSources, matchBy } = v.expand;
 
-        // TODO
-        console.log("expand now", v.expand);
+          if (!matchBy) {
+            throw new Error("Tried to matchBy a path that is not matchable");
+          }
 
-        return [k, {
-          ...v,
-          routes: v.routes ? { ...v.routes, expandRoutes } : expandedRoutes,
-        }];
-      }
+          if (!dataSources) {
+            throw new Error("Missing dataSources");
+          }
 
-      return [k, v];
-    }),
+          const pageData = await getContext(
+            dataSourcesPath,
+            transformsPath,
+            dataSources,
+          );
+
+          const dataSource = pageData[matchBy.dataSource];
+
+          if (!dataSource) {
+            throw new Error("Missing data source");
+          }
+
+          const expandedRoutes: Record<string, Route> = {};
+          Object.values(dataSource[matchBy.collection]).forEach((match) => {
+            const route = get(match, matchBy.slug);
+
+            if (!route) {
+              throw new Error("Route is missing");
+            }
+
+            // @ts-ignore v.expand exists by now for sure
+            const { meta, layout } = v.expand;
+
+            expandedRoutes[route] = {
+              meta,
+              layout,
+              context: { match },
+            };
+          });
+
+          return [url, {
+            ...v,
+            routes: v.routes
+              ? { ...v.routes, ...expandedRoutes }
+              : expandedRoutes,
+          }];
+        }
+
+        return [url, v];
+      }),
+    ),
   );
 }
 

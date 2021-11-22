@@ -14,7 +14,6 @@ import type {
   Route,
   Scripts,
 } from "../types.ts";
-import { getContext } from "./getContext.ts";
 import { renderComponent } from "./renderComponent.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -54,11 +53,6 @@ async function renderPage({
   stylesheet.reset();
 
   const projectPaths = projectMeta.paths;
-  const pageContext: DataContext = await getContext(
-    projectPaths.dataSources,
-    projectPaths.transforms,
-    route.dataSources,
-  );
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
   const pageScripts = scripts?.slice(0) || [];
@@ -79,7 +73,7 @@ async function renderPage({
     projectMeta,
     meta,
     scripts: pageScripts,
-    ...pageContext,
+    ...route.context,
   };
 
   DEBUG && console.log("rendering a page with context", context);
