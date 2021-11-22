@@ -368,10 +368,9 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
     return {};
   }
 
-  return Object.fromEntries(
+  const ret = Object.fromEntries(
     await Promise.all(
       Object.entries(routes).map(async ([url, v]) => {
-        // TODO: If url === '/', this should expand parent urls!
         if (v.expand) {
           const { dataSources, matchBy } = v.expand;
 
@@ -415,9 +414,7 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
 
           return [url, {
             ...v,
-            routes: v.routes
-              ? { ...v.routes, ...expandedRoutes }
-              : expandedRoutes,
+            routes: { ...(v.routes || {}), ...expandedRoutes },
           }];
         }
         // TODO: v.dataSources -> context for blog index
@@ -426,6 +423,14 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
       }),
     ),
   );
+
+  // / is an exception. If it has an expansion, then it has to be added
+  // to the root as otherwise the router won't find it later.
+  if (ret["/"]) {
+    return { ...ret, ...ret["/"].routes };
+  }
+
+  return ret;
 }
 
 function matchRoute(
