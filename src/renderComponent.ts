@@ -44,6 +44,7 @@ async function renderComponent(
     component = {
       ...component,
       ...foundComponent,
+      element: foundComponent.element,
       class: joinClasses(
         component.class as string,
         foundComponent.class as string,
