@@ -80,7 +80,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       return next();
     }
 
-    const matchedRoute = rootRoutes[url];
+    const matchedRoute = matchRoute(rootRoutes, url);
 
     if (matchedRoute) {
       const matchedLayout = layouts[matchedRoute.layout];
@@ -376,6 +376,27 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   }
 
   await app.listen({ port: projectMeta.port });
+}
+
+function matchRoute(rootRoutes: RootRoutes["routes"], url: string) {
+  const trimmedUrl = trim(url, "/");
+
+  // TODO: Support "[data.slug]"
+  return rootRoutes[url] || rootRoutes[trimmedUrl];
+}
+
+// https://stackoverflow.com/a/32516190/228885
+function trim(s: string, c: string) {
+  if (c === "]") c = "\\]";
+  if (c === "^") c = "\\^";
+  if (c === "\\") c = "\\\\";
+  return s.replace(
+    new RegExp(
+      "^[" + c + "]+|[" + c + "]+$",
+      "g",
+    ),
+    "",
+  );
 }
 
 function cleanAssetsPath(p: string) {
