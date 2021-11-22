@@ -75,7 +75,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     throw new Error("Missing root routes in the route definition!");
   }
 
-  app.use(async ({ url }, res) => {
+  app.use(async ({ url }, res, next) => {
+    if (url.split(".").length > 1) {
+      return next();
+    }
+
     const matchedRoute = rootRoutes[url];
 
     if (matchedRoute) {
@@ -135,6 +139,8 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
     res.send("no matching route");
   });
+
+  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
   /*
   const renderPage = getPageRenderer({
