@@ -93,7 +93,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const dynamicRouter = Router();
   app.use(dynamicRouter);
   app.use(async ({ url }, res) => {
-    const matchedRoute = expandedRoutes[trim(url, "/")];
+    const matchedRoute = expandedRoutes[url === "/" ? "/" : trim(url, "/")];
 
     if (matchedRoute) {
       const layoutName = matchedRoute.layout;
