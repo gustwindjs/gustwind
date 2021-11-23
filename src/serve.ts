@@ -156,6 +156,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     res.send("no matching route");
   });
 
+  watchDataSourceInputs(wss, projectRoot, expandedRoutes);
   watchScripts(wss, projectPaths.scripts);
   watchMeta(wss, projectRoot);
   watchComponents(components, wss, projectPaths.routes);
@@ -165,6 +166,29 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   watchTransforms(wss, projectPaths.transforms);
 
   await app.listen({ port: projectMeta.port });
+}
+
+function watchDataSourceInputs(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path: string,
+  routes: Record<string, Route>,
+) {
+  const watched = new Set();
+
+  Object.values(routes).forEach(({ dataSources }) => {
+    dataSources?.forEach(({ input }) => {
+      if (!watched.has(input)) {
+        watch(_path.join(path, input), "", (matchedPath) => {
+          console.log("Changed data source input", matchedPath);
+          wss.clients.forEach((socket) => {
+            // TODO: Update dependent routes
+            socket.send(JSON.stringify({ type: "reload" }));
+          });
+        });
+        watched.add(input);
+      }
+    });
+  });
 }
 
 function watchMeta(
