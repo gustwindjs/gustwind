@@ -64,11 +64,15 @@ self.onmessage = async (e) => {
     }
 
     if (route.type !== "xml" && projectMeta.features?.showEditorAlways) {
-      // TODO: Can this be pushed to another task?
+      // TODO: Can these be pushed to tasks?
       await fs.ensureDir(dir);
       await Deno.writeTextFile(
         path.join(dir, "context.json"),
         JSON.stringify(context),
+      );
+      await Deno.writeTextFile(
+        path.join(dir, "definition.json"),
+        JSON.stringify(route),
       );
     }
 
