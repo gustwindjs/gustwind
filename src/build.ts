@@ -2,7 +2,14 @@ import { esbuild, fs, path } from "../deps.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, Component, ProjectMeta } from "../types.ts";
+import { expandRoutes } from "./expandRoutes.ts";
+import type {
+  BuildWorkerEvent,
+  Component,
+  Layout,
+  ProjectMeta,
+  Route,
+} from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -21,13 +28,44 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
-  const components = await getDefinitions<Component>(projectPaths.components);
+  const [routes, layouts, components] = await Promise.all([
+    getJson<Record<string, Route>>(projectPaths.routes),
+    getDefinitions<Layout>(projectPaths.layouts),
+    getDefinitions<Component>(projectPaths.components),
+  ]);
+
+  // TODO: Flatten this as well
+  const expandedRoutes = await expandRoutes({
+    routes,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
+  });
   const outputDirectory = projectPaths.output;
+
+  if (!expandedRoutes) {
+    throw new Error("No routes found");
+  }
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
     const tasks: BuildWorkerEvent[] = [];
+
+    Object.entries(expandedRoutes).forEach(([url, route]) => {
+      // TODO: Generate tasks
+      const dir = path.join(outputDirectory, url);
+
+      tasks.push({
+        type: "build",
+        payload: {
+          layout: layouts[route.layout],
+          route,
+          pagePath: "", // TODO
+          dir,
+          url,
+        },
+      });
+    });
 
     // TODO: See if route generation can be workerized. The idea
     // would be that in that case for complex routes (i.e. [] expansion)
@@ -164,7 +202,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
         const endTime = performance.now();
         const duration = endTime - startTime;
-        const routeAmount = routes.length;
+        // TODO: Fix calculation here as this is recursive
+        const routeAmount = Object.keys(expandedRoutes).length;
 
         console.log(
           `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${

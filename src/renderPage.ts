@@ -39,7 +39,7 @@ async function renderPage({
   twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
-}) {
+}): Promise<[string, DataContext, string?]> {
   setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
 
   // @ts-ignore Somehow TS gets confused here

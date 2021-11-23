@@ -57,6 +57,7 @@ type Route = {
     dataSources?: DataSource[];
     matchBy?: { dataSource: string; collection: string; slug: string };
   };
+  // TODO: Eliminate this as it's not worker friendly (needs to happen later)
   // Context has to be evaluated during rendering for twind to work as
   // transforms might depend on it. Therefore it has to be wrapped into a
   // function that gets generated when expanding routes.
@@ -105,11 +106,11 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
-      route: string;
-      filePath: string;
-      dir: string;
-      extraContext: DataContext;
       layout: Layout;
+      route: Route;
+      pagePath: string;
+      dir: string;
+      url: string;
     };
   }
   | {

@@ -2,14 +2,14 @@
 /// <reference lib="deno.worker" />
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { compileScript } from "../utils/compileScripts.ts";
-import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { fs, path } from "../deps.ts";
-import { getPageRenderer } from "./getPageRenderer.ts";
-import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
+import { renderPage } from "./renderPage.ts";
+import type { BuildWorkerEvent, Components, ProjectMeta } from "../types.ts";
 
 let id: string;
-let renderPage: ReturnType<typeof getPageRenderer>;
+let components: Components;
 let projectMeta: ProjectMeta;
+let twindSetup: Record<string, unknown>;
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -21,63 +21,41 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to init", id);
 
-    const {
-      payload: {
-        components,
-        projectMeta: meta,
-      },
-    } = e.data;
+    const { payload } = e.data;
 
-    projectMeta = meta;
+    components = payload.components;
+    projectMeta = payload.projectMeta;
 
-    const twindSetup = meta.paths.twindSetup
-      ? await import("file://" + meta.paths.twindSetup).then((m) => m.default)
+    twindSetup = projectMeta.paths.twindSetup
+      ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
+        m.default
+      )
       : {};
-
-    renderPage = getPageRenderer({
-      components,
-      mode: "production",
-      twindSetup,
-    });
 
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
     const {
       payload: {
+        layout,
         route,
         filePath,
         dir,
-        extraContext,
-        page,
+        url,
       },
     } = e.data;
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    // TODO: Decouple js related logic from a worker. The check can
-    // be done on a higher level at `build` and the converted to a task
-    const scriptName = path.basename(filePath, path.extname(filePath));
-    const scriptPath = path.join(path.dirname(filePath), scriptName) +
-      ".ts";
-
-    let pageSource = "";
-
-    if (await fs.exists(scriptPath)) {
-      pageSource = await compileTypeScript(scriptPath, "production");
-    }
-
-    if (pageSource) {
-      await Deno.writeTextFile(path.join(dir, "index.js"), pageSource);
-    }
-
     const [html, context, css] = await renderPage({
-      pathname: route,
-      pagePath: filePath,
-      page,
-      extraContext,
       projectMeta,
-      hasScript: !!pageSource,
+      layout,
+      route,
+      mode: "production",
+      pagePath: "", // TODO
+      twindSetup,
+      components,
+      pathname: url,
     });
 
     if (css) {
@@ -85,7 +63,7 @@ self.onmessage = async (e) => {
       await Deno.writeTextFile(path.join(dir, "styles.css"), css);
     }
 
-    if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
+    if (route.type !== "xml" && projectMeta.features?.showEditorAlways) {
       // TODO: Can this be pushed as a task?
       await Deno.writeTextFile(
         path.join(dir, "context.json"),
@@ -93,7 +71,7 @@ self.onmessage = async (e) => {
       );
     }
 
-    if (page.layout === "xml") {
+    if (route.type === "xml") {
       await Deno.writeTextFile(dir.slice(0, -1), html);
     } else {
       await fs.ensureDir(dir);

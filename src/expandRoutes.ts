@@ -7,7 +7,7 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
   routes: Route["routes"];
   dataSourcesPath: string;
   transformsPath: string;
-}) {
+}): Promise<Route["routes"]> {
   if (!routes) {
     return {};
   }
@@ -83,7 +83,7 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
   // / is an exception. If it has an expansion, then it has to be added
   // to the root as otherwise the router won't find it later.
   if (ret["/"]) {
-    return { ...ret, ...ret["/"].routes };
+    return { ...ret, ...ret["/"].routes, "/": { ...ret["/"], routes: {} } };
   }
 
   return ret;
