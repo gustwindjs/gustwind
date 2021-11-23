@@ -33,7 +33,6 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
             transformsPath,
             dataSources,
           );
-
           const dataSource = pageData[matchBy.dataSource];
 
           if (!dataSource) {

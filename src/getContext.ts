@@ -5,10 +5,13 @@ import { transform } from "./transform.ts";
 async function getContext(
   dataSourcesPath: ProjectMeta["paths"]["dataSources"],
   transformsPath: ProjectMeta["paths"]["transforms"],
-  dataSources: DataSource[],
+  dataSources?: DataSource[],
 ) {
-  // TODO: If data sources are defined but not an array, give a nice error
-  if (dataSources && Array.isArray(dataSources)) {
+  if (dataSources) {
+    if (!Array.isArray(dataSources)) {
+      throw new Error("Data sources are not defined as an array");
+    }
+
     return await Promise.all(
       // @ts-ignore: Figure out how the type
       dataSources.map(({ id, operation, input, transformWith }) => {
@@ -35,7 +38,7 @@ async function getContext(
     );
   }
 
-  return {};
+  return Promise.resolve({});
 }
 
 export { getContext };

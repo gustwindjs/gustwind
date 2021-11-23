@@ -63,15 +63,11 @@ async function renderPage({
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
-  let extraContext;
-  if (route.dataSources) {
-    extraContext = await getContext(
-      projectPaths.dataSources,
-      projectPaths.transforms,
-      route.dataSources,
-    );
-  }
-
+  const extraContext = await getContext(
+    projectPaths.dataSources,
+    projectPaths.transforms,
+    route.dataSources,
+  );
   const context = {
     projectMeta,
     ...projectMeta.meta,
