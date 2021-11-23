@@ -1,4 +1,8 @@
-import { opine, serveStatic } from "https://deno.land/x/opine@1.9.0/mod.ts";
+import {
+  opine,
+  Router,
+  serveStatic,
+} from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { fs, path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
@@ -81,6 +85,11 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     transformsPath: projectPaths.transforms,
   });
 
+  // Use a custom router to capture dynamically generated routes. Otherwise
+  // newly added routes would be after the catch-all route in the system
+  // and the router would never get to them.
+  const dynamicRouter = Router();
+  app.use(dynamicRouter);
   app.use(async ({ url }, res) => {
     const matchedRoute = matchRoute(expandedRoutes, url);
 
@@ -88,7 +97,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       const matchedLayout = layouts[matchedRoute.layout];
 
       if (matchedLayout) {
-        const [html, _context, css] = await renderPage({
+        const [html, context, css] = await renderPage({
           projectMeta: cachedProjectMeta || projectMeta,
           // If there's cached data, use it instead. This fixes
           // the case in which there was an update over web socket and
@@ -108,10 +117,23 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           res.set("Content-Type", "text/xml");
         }
 
+        await dynamicRouter.get(
+          url + "definition.json",
+          (_req, res) => res.json(matchedRoute),
+        );
+
+        if (context) {
+          await dynamicRouter.get(
+            url + "context.json",
+            (_req, res) => res.json(context),
+          );
+        }
+
         if (css) {
-          await app.get(url + "styles.css", (_req, res) => {
-            res.send(css);
-          });
+          await dynamicRouter.get(
+            url + "styles.css",
+            (_req, res) => res.send(css),
+          );
         }
 
         res.send(html);
