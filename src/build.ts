@@ -44,8 +44,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   );
   const outputDirectory = projectPaths.output;
 
-  console.log("expanded routes", expandedRoutes);
-
   if (!expandedRoutes) {
     throw new Error("No routes found");
   }
@@ -56,16 +54,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     const tasks: BuildWorkerEvent[] = [];
 
     Object.entries(expandedRoutes).forEach(([url, route]) => {
-      // TODO: Generate tasks
-      const dir = path.join(outputDirectory, url);
-
       tasks.push({
         type: "build",
         payload: {
           layout: layouts[route.layout],
           route,
           pagePath: "", // TODO
-          dir,
+          dir: path.join(outputDirectory, url),
           url,
         },
       });
