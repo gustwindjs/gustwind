@@ -150,7 +150,7 @@ async function createPageEditor(
   components: Components,
   context: DataContext,
 ) {
-  console.log("Creating page editor");
+  console.log("creating page editor");
 
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
