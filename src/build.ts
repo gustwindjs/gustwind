@@ -29,11 +29,24 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
+
   const [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
+
+  const workerPool = createWorkerPool<BuildWorkerEvent>(
+    amountOfBuildThreads,
+  );
+
+  workerPool.addTaskToEach({
+    type: "init",
+    payload: {
+      components,
+      projectMeta,
+    },
+  });
 
   const expandedRoutes = flattenRoutes(
     await expandRoutes({
@@ -51,10 +64,8 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    const tasks: BuildWorkerEvent[] = [];
-
     Object.entries(expandedRoutes).forEach(([url, route]) => {
-      tasks.push({
+      workerPool.addTaskToQueue({
         type: "build",
         payload: {
           layout: layouts[route.layout],
@@ -72,24 +83,11 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
         expandedRoutes,
-        tasks,
       );
     }
 
-    const workerPool = createWorkerPool<BuildWorkerEvent>(
-      amountOfBuildThreads,
-    );
-
-    workerPool.addTaskToEach({
-      type: "init",
-      payload: {
-        components,
-        projectMeta,
-      },
-    });
-
     if (projectMeta.features?.showEditorAlways) {
-      tasks.push({
+      workerPool.addTaskToQueue({
         type: "writeScript",
         payload: {
           outputDirectory,
@@ -103,7 +101,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
       const transformScripts = await dir(projectPaths.transforms, ".ts");
       transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        tasks.push({
+        workerPool.addTaskToQueue({
           type: "writeScript",
           payload: {
             outputDirectory: transformDirectory,
@@ -113,7 +111,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         })
       );
 
-      tasks.push({
+      workerPool.addTaskToQueue({
         type: "writeFile",
         payload: {
           dir: outputDirectory,
@@ -129,7 +127,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       DEBUG && console.log("found project scripts", projectScripts);
 
       projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        tasks.push({
+        workerPool.addTaskToQueue({
           type: "writeScript",
           payload: {
             outputDirectory,
@@ -140,7 +138,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       );
     }
 
-    assetsPath && tasks.push({
+    assetsPath && workerPool.addTaskToQueue({
       type: "writeAssets",
       payload: {
         outputPath: path.join(outputDirectory, assetsPath),
@@ -175,10 +173,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
         resolve(undefined);
       });
-
-      DEBUG && console.log("Generated tasks", tasks);
-
-      tasks.forEach((task) => workerPool.addTaskToQueue(task));
     });
   });
 }
