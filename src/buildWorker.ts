@@ -73,7 +73,7 @@ self.onmessage = async (e) => {
     }
 
     if (route.type === "xml") {
-      await Deno.writeTextFile(dir.slice(0, -1), html);
+      await Deno.writeTextFile(dir, html);
     } else {
       await fs.ensureDir(dir);
       await Deno.writeTextFile(
