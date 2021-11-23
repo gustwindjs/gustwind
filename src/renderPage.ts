@@ -151,7 +151,7 @@ function htmlTemplate(
 ) {
   // TODO: Consider generalizing html attribute handling
   return `<!DOCTYPE html><html${
-    language ? 'language="' + language + '"' : ""
+    language ? ' language="' + language + '"' : ""
   }><head>${headMarkup}</head><body>${bodyMarkup}</body></html$>`;
 }
 
