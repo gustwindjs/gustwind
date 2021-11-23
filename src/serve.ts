@@ -13,6 +13,7 @@ import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { expandRoutes } from "./expandRoutes.ts";
+import { flattenRoutes } from "./flattenRoutes.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
@@ -78,11 +79,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   app.get("/components.json", (_req, res) => res.json(components));
 
   // TODO: This should happen later on demand to speed up startup
-  const expandedRoutes = await expandRoutes({
-    routes,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
-  });
+  const expandedRoutes = flattenRoutes(
+    await expandRoutes({
+      routes,
+      dataSourcesPath: projectPaths.dataSources,
+      transformsPath: projectPaths.transforms,
+    }),
+  );
 
   // Use a custom router to capture dynamically generated routes. Otherwise
   // newly added routes would be after the catch-all route in the system
@@ -90,7 +93,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const dynamicRouter = Router();
   app.use(dynamicRouter);
   app.use(async ({ url }, res) => {
-    const matchedRoute = matchRoute(expandedRoutes, url);
+    const matchedRoute = expandedRoutes[trim(url, "/")];
 
     if (matchedRoute) {
       const layoutName = matchedRoute.layout;
@@ -293,6 +296,7 @@ function watchScripts(
     });
 }
 
+/*
 function matchRoute(
   routes: Route["routes"],
   url: string,
@@ -310,6 +314,7 @@ function matchRoute(
 
   return match;
 }
+*/
 
 function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
