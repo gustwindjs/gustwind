@@ -66,51 +66,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       });
     });
 
-    // TODO: See if route generation can be workerized. The idea
-    // would be that in that case for complex routes (i.e. [] expansion)
-    // the worker would create new tasks on demand.
-    /*
-    const { routes } = await generateRoutes({
-      dataSourcesPath: projectPaths.dataSources,
-      transformsPath: projectPaths.transforms,
-      renderPage: ({ route, path: filePath, page, context }) => {
-        DEBUG && console.log("renderPage", route, filePath, page, context);
-
-        const dir = path.join(outputDirectory, route);
-
-        tasks.push({
-          type: "build",
-          payload: {
-            route,
-            filePath,
-            dir,
-            extraContext: context,
-            page,
-          },
-        });
-
-        if (page.layout !== "xml" && projectMeta.features?.showEditorAlways) {
-          tasks.push({
-            type: "writeFile",
-            payload: {
-              dir,
-              file: "definition.json",
-              data: JSON.stringify(page),
-            },
-          });
-        }
-      },
-      pagesPath: projectPaths.pages,
-    });
-    */
-    const routes = {};
-
     if (DEBUG) {
       const routeGenerationTime = performance.now();
 
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
-        routes,
+        expandedRoutes,
         tasks,
       );
     }
@@ -201,7 +162,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
         const endTime = performance.now();
         const duration = endTime - startTime;
-        // TODO: Fix calculation here as this is recursive
         const routeAmount = Object.keys(expandedRoutes).length;
 
         console.log(
