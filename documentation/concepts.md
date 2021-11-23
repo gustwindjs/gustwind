@@ -4,7 +4,7 @@ title: 'Concepts'
 ---
 You'll learn how different concepts of Gustwind go together on this page. It's self-similar in many ways and if you are familiar with technologies such as HTML, Tailwind, or React, likely you'll get used to it fast.
 
-At its core, the page engine is an interpolating template interpreter that allows data binding. That means there's special syntax for connecting data with your pages and components.
+At its core, the page engine is an interpolating template interpreter that allows data binding. That means there's special syntax for connecting data with your pages and components. The data binding itself happens at [routing level](/routing/) and here we focus on the component and layout level.
 
 ## Components
 
@@ -108,6 +108,40 @@ In addition to binding data from a source, you can do static bindings to pass da
 }
 ```
 
+To apply an interpolation, i.e. combining data at the field level, there's `==` syntax:
+
+**layouts/blogIndex.json**
+
+```json
+{
+  "element": "div",
+  "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+  "__bind": "blogPosts.content",
+  "children": [
+    {
+      "element": "ul",
+      "__children": [
+        {
+          "element": "li",
+          "class": "inline",
+          "children": [
+            {
+              "element": "Link",
+              "__children": "data.title",
+              "attributes": {
+                "==href": "data.slug + '/'"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+In this case we add `/` to each slug.
+
 ## Data sources
 
 In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
@@ -143,82 +177,30 @@ Due to the signature, to implement a file loader you could do this:
 export default Deno.readTextFile;
 ```
 
-## Pages
+## Transforms
 
-Gustwind follows a couple of conventions for page definitions. The rules are as
-follows:
+Transforms accept data and then perform a manipulation on it. It could for example accept a Markdown string and convert it to HTML or reverse the input given to it as below:
 
-- `pages/index.json` - `/` of the site
-- `pages/about.json` - `/about/` of the site
-- `pages/[blog].json` - `/blog/some-title` of the site
+**transforms/reverse.ts**
 
-The first two cases can be defined with the following syntax:
-
-**pages/index.json**
-
-```json
-{
-  "meta": {
-    "title": "Gustwind",
-    "description": ""
-  },
-  "dataSources": [
-    {
-      "id": "readme",
-      "operation": "file",
-      "input": "./README.md",
-      "transformWith": ["markdown"]
-    }
-  ],
-  "head": [
-    {
-      "element": "MetaFields"
-    }
-  ],
-  "body": [
-    {
-      "element": "main",
-      "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
-      "__bind": "readme",
-      "__children": "content"
-    }
-  ]
+```typescript
+function reverse(arr: unknown[]) {
+  return [...arr].reverse();
 }
+
+export default reverse;
 ```
 
-Note the `meta`, `dataSources`, and `page` portions of the configuration:
+Both transforms and data sources are used in [the route definition](/routing/).
 
-- `meta` is used to define the metadata per page show in `meta` tags and `title`
-- `dataSources` define **which** data to map to the page and how to optionally
-  **transform** them
-- `page` is about the page content and **how** the data is bound. This is the
-  spot where it's good to leverage the power of components and connect data with
-  them.
+## Layouts
 
-For the about page, you would do something similar and perhaps bind to another Markdown file somewhere in the system.
+Gustwind layouts are comparable to components except they have specific fields for `head` and `body`:
 
-The `[blog].json` case is more complicated as there we'll have to define the mapping between the entry data (blog pages) and pages to be generated. That's handled as follows:
-
-**pages/[blog].json**
+**layouts/siteIndex.json**
 
 ```json
 {
-  "meta": {
-    "__title": "match.name",
-    "__description": "match.description"
-  },
-  "dataSources": [
-    {
-      "id": "blogPosts",
-      "operation": "indexMarkdown",
-      "input": "./blogPosts"
-    }
-  ],
-  "matchBy": {
-    "dataSource": "blogPosts",
-    "collection": "content",
-    "property": "data.slug"
-  },
   "head": [
     {
       "element": "MetaFields"
@@ -229,12 +211,82 @@ The `[blog].json` case is more complicated as there we'll have to define the map
       "element": "MainNavigation"
     },
     {
-      "element": "main",
-      "class": "py-4 mx-auto max-w-3xl prose lg:prose-xl",
+      "element": "header",
+      "class": "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
+      "children": [
+        {
+          "element": "div",
+          "class": "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
+          "children": [
+            {
+              "element": "div",
+              "class": "flex flex-col gap-8",
+              "children": [
+                {
+                  "element": "h1",
+                  "class": "text-4xl md:text-8xl",
+                  "children": [
+                    {
+                      "element": "span",
+                      "class": "whitespace-nowrap pr-4",
+                      "children": "🐳💨"
+                    },
+                    {
+                      "element": "span",
+                      "children": "Gustwind"
+                    }
+                  ]
+                },
+                {
+                  "element": "h2",
+                  "class": "text-xl md:text-4xl font-extralight",
+                  "children": "Deno powered JSON oriented site generator"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "div",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "__bind": "readme",
+      "__children": "content"
+    },
+    {
+      "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
+    }
+  ]
+}
+```
+
+For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
+
+**layouts/blogPage.json**
+
+```json
+{
+  "head": [
+    {
+      "element": "MetaFields"
+    }
+  ],
+  "body": [
+    {
+      "element": "MainNavigation"
+    },
+    {
+      "element": "div",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "children": [
         {
           "element": "h1",
-          "__children": "match.title"
+          "__children": "match.data.title"
         },
         {
           "element": "p",
@@ -246,67 +298,11 @@ The `[blog].json` case is more complicated as there we'll have to define the map
     },
     {
       "element": "MainFooter"
+    },
+    {
+      "element": "Scripts",
+      "__bind": "scripts"
     }
   ]
 }
 ```
-
-In this example, we're defining the mapping between the data and the pages to generate using the `matchBy` field. There we tell the system that you should generate a page per each of the `blogPosts` based on their `id` which will happen to be the slug as well (this might change later to be more configurable).
-
-Another thing we're doing here is binding data to the `meta` of the page. That `match` property contains the data of the currently matched blog post and we can use it where we need it.
-
-## Loading scripts
-
-If a script that has the same name as a page exists, then Deno will compile it and include the result to the static page. I.e. if a `blog.json` and `blog.ts` files existed, the latter would get compiled and included to the resulting HTML file.
-
-## Transforms
-
-Note also the `transformWith` property we use against the match body. Using it we tell the system to use the `markdown` transform to compile.
-
-We can apply the same idea for generating a reversed blog index:
-
-**pages/blog.json**
-
-```json
-{
-  "meta": {
-    "title": "Blog",
-    "description": "Blog description goes here"
-  },
-  "dataSources": [{
-    "id": "blogPosts",
-    "operation": "index",
-    "transformWith": ["reverse"],
-    "input": "./content/blogPosts"
-  }],
-  "head": [
-    {
-      "element": "MetaFields"
-    }
-  ],
-  "body": [
-    {
-      "element": "MainNavigation"
-    },
-    {
-      "element": "main",
-      "class": "py-4 mx-auto max-w-5xl prose lg:prose-xl",
-      "children": [
-        {
-          "element": "h1",
-          "children": "Blog"
-        },
-        {
-          "element": "blogPosts",
-          "__bind": "blogPosts"
-        }
-      ]
-    },
-    {
-      "element": "MainFooter"
-    }
-  ]
-}
-```
-
-Transforms are powerful as they let you shape the data to fit specific needs within different parts of the system.
