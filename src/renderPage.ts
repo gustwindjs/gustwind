@@ -112,8 +112,11 @@ async function renderPage({
   }
 
   return [
-    // TODO: Add siteMeta back
-    htmlTemplate("en", headMarkup + styleTag, bodyMarkup),
+    htmlTemplate(
+      route.meta?.language || projectMeta.meta?.language,
+      headMarkup + styleTag,
+      bodyMarkup,
+    ),
     context,
     css,
   ];
@@ -143,7 +146,10 @@ function htmlTemplate(
   headMarkup: string,
   bodyMarkup: string,
 ) {
-  return `<!DOCTYPE html><html lang="${language}"><head>${headMarkup}</head><body>${bodyMarkup}</body></html>`;
+  // TODO: Consider generalizing html attribute handling
+  return `<!DOCTYPE html><html${
+    language ? 'language="' + language + '"' : ""
+  }><head>${headMarkup}</head><body>${bodyMarkup}</body></html$>`;
 }
 
 function xmlTemplate(bodyMarkup: string) {
