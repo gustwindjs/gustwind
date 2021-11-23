@@ -56,6 +56,7 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
               meta,
               layout,
               context: v.context ? { ...v.context, match } : { match },
+              url: route,
             };
           });
 
@@ -65,7 +66,7 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
           };
         }
 
-        return [url, ret];
+        return [url, { ...ret, url }];
       }),
     ),
   );

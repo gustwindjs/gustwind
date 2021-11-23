@@ -178,13 +178,15 @@ function watchDataSourceInputs(
 ) {
   const watched = new Set();
 
-  Object.values(routes).forEach(({ dataSources }) => {
+  Object.values(routes).forEach(({ dataSources, url }) => {
     dataSources?.forEach(({ input }) => {
+      console.log("watching data sources for url", url);
+
       if (!watched.has(input)) {
         watch(_path.join(path, input), "", (matchedPath) => {
           console.log("Changed data source input", matchedPath);
           wss.clients.forEach((socket) => {
-            // TODO: Update dependent routes
+            // TODO: Update dependent routes based on url
             socket.send(JSON.stringify({ type: "reloadPage" }));
           });
         });
