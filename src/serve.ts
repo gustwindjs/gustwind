@@ -4,13 +4,13 @@ import {
   serveStatic,
 } from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import { fs, path as _path } from "../deps.ts";
+import { path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, resolvePaths, watch } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
 import { getDefinition, getDefinitions } from "./getDefinitions.ts";
-import { renderHTML, renderPage } from "./renderPage.ts";
+import { renderPage } from "./renderPage.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
@@ -61,7 +61,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   await serveScripts(app, projectPaths.scripts);
   await serveScripts(app, projectPaths.transforms, "transforms/");
 
-  const mode = "development";
   const twindSetup = projectPaths.twindSetup
     ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
     : {};
@@ -78,7 +77,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   app.get("/components.json", (_req, res) => res.json(components));
 
-  // TODO: This can happen later on demand
+  // TODO: This should happen later on demand to speed up startup
   const expandedRoutes = await expandRoutes({
     routes,
     dataSourcesPath: projectPaths.dataSources,
@@ -94,16 +93,17 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     const matchedRoute = matchRoute(expandedRoutes, url);
 
     if (matchedRoute) {
-      const matchedLayout = layouts[matchedRoute.layout];
+      const layoutName = matchedRoute.layout;
+      const matchedLayout = layouts[layoutName];
 
       if (matchedLayout) {
-        const layout = cachedLayouts[url] || matchedLayout;
+        // If there's cached data, use it instead. This fixes
+        // the case in which there was an update over web socket and
+        // also avoids the need to hit the file system for getting
+        // the latest data.
+        const layout = cachedLayouts[layoutName] || matchedLayout;
         const [html, context, css] = await renderPage({
           projectMeta: cachedProjectMeta || projectMeta,
-          // If there's cached data, use it instead. This fixes
-          // the case in which there was an update over web socket and
-          // also avoids the need to hit the file system for getting
-          // the latest data.
           layout,
           route: matchedRoute, // TODO: Cache?
           mode: "development",
@@ -153,153 +153,144 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     res.send("no matching route");
   });
 
-  /*
-  // Watch project scripts
-  watchScripts(projectPaths.scripts);
+  watchScripts(wss, projectPaths.scripts);
+  watchMeta(wss, projectRoot);
+  watchComponents(components, wss, projectPaths.routes);
+  watchDataSources(wss, projectPaths.routes);
+  watchRoutes(wss, projectPaths.routes);
+  watchLayouts(wss, projectPaths.layouts);
+  watchTransforms(wss, projectPaths.transforms);
 
-  watch(
-    projectRoot,
-    ".json",
-    (matchedPath) => {
-      wss.clients.forEach(async (socket) => {
+  await app.listen({ port: projectMeta.port });
+}
+
+function watchMeta(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, "meta.json", (matchedPath) => {
+    console.log("Changed meta", matchedPath);
+    wss.clients.forEach((socket) => {
+      // TODO: Update meta cache
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchComponents(
+  components: Record<string, Component>,
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, ".json", (matchedPath) => {
+    console.log("Changed component", matchedPath);
+
+    wss.clients.forEach(async (socket) => {
+      const [componentName, componentDefinition] = await getDefinition<
+        Component
+      >(
+        matchedPath,
+      );
+
+      if (componentName && componentDefinition) {
+        components[componentName] = componentDefinition;
+      }
+
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchDataSources(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, ".json", (matchedPath) => {
+    console.log("Changed data sources", matchedPath);
+    wss.clients.forEach((socket) => {
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchRoutes(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, ".json", (matchedPath) => {
+    console.log("Changed routes", matchedPath);
+    wss.clients.forEach((socket) => {
+      // TODO: Update route cache (needs change above as well in the catch-all route)
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchLayouts(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, ".json", (matchedPath) => {
+    console.log("Changed layouts", matchedPath);
+    wss.clients.forEach(async (socket) => {
+      const [layoutName, layoutDefinition] = await getDefinition<Layout>(
+        matchedPath,
+      );
+
+      if (layoutName && layoutDefinition) {
+        cachedLayouts[layoutName] = layoutDefinition;
+      }
+
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchTransforms(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path && watch(path, ".ts", (matchedPath) => {
+    console.log("Changed transforms", matchedPath);
+    wss.clients.forEach((socket) => {
+      // TODO: Update transform cache? Since these go through
+      // import(), likely tracking timestamps of updates would be enough
+      // as then those could be used for invalidation
+      socket.send(JSON.stringify({ type: "reload" }));
+    });
+  });
+}
+
+function watchScripts(
+  wss: ReturnType<typeof getWebsocketServer>,
+  path?: string,
+) {
+  path &&
+    watch(path, ".ts", async (matchedPath) => {
+      const scriptName = _path.basename(
+        matchedPath,
+        _path.extname(matchedPath),
+      );
+
+      console.log("Changed script", matchedPath);
+
+      cachedScripts[scriptName + ".ts"] = await compileTypeScript(
+        matchedPath,
+        "development",
+      );
+
+      wss.clients.forEach((socket) => {
         // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
         if (socket.state === 1) {
-          console.log("watch - Refresh ws");
-
-          const pagePath = _path.join(
-            projectPaths.pages,
-            _path.basename(matchedPath, import.meta.url),
-          );
-          const p = routePaths[pagePath];
-
-          if (pagePath.endsWith("meta.json")) {
-            const projectMeta = await getJson<ProjectMeta>(matchedPath);
-            projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
-            cachedProjectMeta = projectMeta;
-
-            socket.send(JSON.stringify({ type: "reloadPage" }));
-
-            return;
-          }
-
-          if (!p) {
-            if (matchedPath.includes(_path.basename(projectPaths.components))) {
-              const [componentName, componentDefinition] = await getDefinition<Component>(
-                matchedPath,
-              );
-
-              if (componentName && componentDefinition) {
-                components[componentName] = componentDefinition;
-              }
-
-              socket.send(JSON.stringify({ type: "reload" }));
-
-              return;
-            }
-
-            console.error(
-              "Failed to find match for",
-              matchedPath,
-              "in",
-              Object.keys(routePaths),
-            );
-
-            return;
-          }
-
-          let pageJson;
-          try {
-            pageJson = await getJson<Page>(pagePath);
-          } catch (error) {
-            // TODO: Send an error to the client to show
-            console.error(error);
-
-            return;
-          }
-
-          const { body, head } = pageJson;
-
-          const [headMarkup, bodyMarkup] = await Promise.all([
-            renderHTML(
-              projectPaths.transforms,
-              pageJson,
-              head,
-              components,
-              await getContext(
-                projectPaths.dataSources,
-                projectPaths.transforms,
-                pageJson.dataSources,
-              ),
-              p.route,
-            ),
-            renderHTML(
-              projectPaths.transforms,
-              pageJson,
-              body,
-              components,
-              await getContext(
-                projectPaths.dataSources,
-                projectPaths.transforms,
-                pageJson.dataSources,
-              ),
-              p.route,
-            ),
-          ]);
-
-          // Cache page so that manual refresh at the client side still
-          // has access to it.
-          cachedPages[p.route] = {
-            headMarkup,
-            bodyMarkup,
-            // Update page content.
-            page: { ...p.page, body, head },
-          };
-
           socket.send(
             JSON.stringify({
-              type: "refresh",
-              payload: {
-                bodyMarkup,
-                headMarkup,
-              },
+              type: "replaceScript",
+              payload: { name: "/" + scriptName + ".js" },
             }),
           );
         }
       });
-    },
-  );
-  */
-
-  function watchScripts(scripts?: string) {
-    scripts &&
-      watch(scripts, ".ts", async (matchedPath) => {
-        const scriptName = _path.basename(
-          matchedPath,
-          _path.extname(matchedPath),
-        );
-
-        console.log("Changed script", matchedPath);
-
-        cachedScripts[scriptName + ".ts"] = await compileTypeScript(
-          matchedPath,
-          mode,
-        );
-
-        wss.clients.forEach((socket) => {
-          // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
-          if (socket.state === 1) {
-            socket.send(
-              JSON.stringify({
-                type: "replaceScript",
-                payload: { name: "/" + scriptName + ".js" },
-              }),
-            );
-          }
-        });
-      });
-  }
-
-  await app.listen({ port: projectMeta.port });
+    });
 }
 
 function matchRoute(
