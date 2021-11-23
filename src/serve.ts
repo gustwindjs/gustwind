@@ -325,6 +325,8 @@ function cleanAssetsPath(p: string) {
 }
 
 async function serveGustwindScripts(router: ReturnType<typeof opine>) {
+  // TODO: Generate a list of these scripts in a dynamic way instead
+  // of hardcoding
   const pageEditor = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
   );
