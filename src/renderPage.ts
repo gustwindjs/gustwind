@@ -62,7 +62,7 @@ async function renderPage({
 
   let extraContext;
   if (route.dataSources) {
-    extraContext = getContext(
+    extraContext = await getContext(
       projectPaths.dataSources,
       projectPaths.transforms,
       route.dataSources,
@@ -75,7 +75,7 @@ async function renderPage({
     ...route.meta,
     scripts: pageScripts,
     ...route.context,
-    data: extraContext,
+    ...extraContext,
   };
 
   DEBUG && console.log("rendering a page with context", context);
