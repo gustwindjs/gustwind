@@ -3,6 +3,7 @@ import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import { expandRoutes } from "./expandRoutes.ts";
+import { flattenRoutes } from "./flattenRoutes.ts";
 import type {
   BuildWorkerEvent,
   Component,
@@ -34,13 +35,16 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     getDefinitions<Component>(projectPaths.components),
   ]);
 
-  // TODO: Flatten this as well
-  const expandedRoutes = await expandRoutes({
-    routes,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
-  });
+  const expandedRoutes = flattenRoutes(
+    await expandRoutes({
+      routes,
+      dataSourcesPath: projectPaths.dataSources,
+      transformsPath: projectPaths.transforms,
+    }),
+  );
   const outputDirectory = projectPaths.output;
+
+  console.log("expanded routes", expandedRoutes);
 
   if (!expandedRoutes) {
     throw new Error("No routes found");
