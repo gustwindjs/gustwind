@@ -14,11 +14,18 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "language": "en",
     "siteName": "Gustwind"
   },
+  "scripts": [
+    {
+      "type": "text/javascript",
+      "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
+    }
+  ],
   "paths": {
     "assets": "./assets",
     "components": "./components",
     "dataSources": "./dataSources",
     "output": "./build",
+    "routes": "./site/routes.json",
     "pages": "./pages",
     "scripts": "./scripts",
     "transforms": "./transforms",

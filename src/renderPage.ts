@@ -49,8 +49,11 @@ async function renderPage({
   const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
-  const pageScripts = route.scripts?.slice(0) || [];
+  let pageScripts = route.scripts?.slice(0) || [];
 
+  if (projectMeta.scripts) {
+    pageScripts = pageScripts.concat(projectMeta.scripts);
+  }
   if (mode === "development") {
     runtimeMeta.pagePath = pagePath;
     pageScripts.push({ type: "module", src: "/_webSocketClient.js" });

@@ -70,6 +70,7 @@ type Scripts = { type: string; src: string }[];
 type ProjectMeta = {
   port: number;
   amountOfBuildThreads: number | "cpuMax";
+  scripts?: Scripts;
   meta: Meta;
   paths: {
     assets?: string;
