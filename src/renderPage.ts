@@ -14,6 +14,7 @@ import type {
   Route,
 } from "../types.ts";
 import { renderComponent } from "./renderComponent.ts";
+import { getContext } from "./getContext.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -59,12 +60,22 @@ async function renderPage({
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
+  let extraContext;
+  if (route.dataSources) {
+    extraContext = getContext(
+      projectPaths.dataSources,
+      projectPaths.transforms,
+      route.dataSources,
+    );
+  }
+
   const context = {
     projectMeta,
     ...projectMeta.meta,
     ...route.meta,
     scripts: pageScripts,
-    ...(route.context ? await route.context() : {}),
+    ...route.context,
+    ...extraContext,
   };
 
   DEBUG && console.log("rendering a page with context", context);

@@ -54,7 +54,7 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
             expandedRoutes[route] = {
               meta,
               layout,
-              context: () => Promise.resolve({ match }),
+              context: v.context ? { ...v.context, match } : { match },
             };
           });
 
@@ -64,17 +64,6 @@ async function expandRoutes({ routes, dataSourcesPath, transformsPath }: {
           };
         }
 
-        if (v.dataSources) {
-          const context = () =>
-            getContext(
-              dataSourcesPath,
-              transformsPath,
-              // @ts-ignore: dataSources is defined by now for sure
-              v.dataSources,
-            );
-
-          return [url, { ...ret, context }];
-        }
         return [url, ret];
       }),
     ),
