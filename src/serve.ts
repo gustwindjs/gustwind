@@ -97,13 +97,14 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       const matchedLayout = layouts[matchedRoute.layout];
 
       if (matchedLayout) {
+        const layout = cachedLayouts[url] || matchedLayout;
         const [html, context, css] = await renderPage({
           projectMeta: cachedProjectMeta || projectMeta,
           // If there's cached data, use it instead. This fixes
           // the case in which there was an update over web socket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          layout: cachedLayouts[url] || matchedLayout,
+          layout,
           route: matchedRoute, // TODO: Cache?
           mode: "development",
           pagePath: "", // TODO: figure out the path of the page in the system
@@ -118,7 +119,12 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         }
 
         await dynamicRouter.get(
-          url + "definition.json",
+          url + "layout.json",
+          (_req, res) => res.json(layout),
+        );
+
+        await dynamicRouter.get(
+          url + "route.json",
           (_req, res) => res.json(matchedRoute),
         );
 

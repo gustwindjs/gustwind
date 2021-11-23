@@ -71,7 +71,11 @@ self.onmessage = async (e) => {
         JSON.stringify(context),
       );
       await Deno.writeTextFile(
-        path.join(dir, "definition.json"),
+        path.join(dir, "layout.json"),
+        JSON.stringify(layout),
+      );
+      await Deno.writeTextFile(
+        path.join(dir, "route.json"),
         JSON.stringify(route),
       );
     }

@@ -4,7 +4,13 @@ import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import { renderComponent } from "../src/renderComponent.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
-import type { Component, Components, DataContext, Layout } from "../types.ts";
+import type {
+  Component,
+  Components,
+  DataContext,
+  Layout,
+  Route,
+} from "../types.ts";
 
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
@@ -21,7 +27,7 @@ declare global {
   function evaluateAllDirectives(): void;
 }
 
-type EditorState = Layout;
+type EditorState = Layout & { meta: Route["meta"] };
 type SelectedState = { componentId?: string };
 type PageState = {
   editor: EditorState;
@@ -31,17 +37,19 @@ type PageState = {
 async function createEditor() {
   console.log("create editor");
 
-  const [components, context, pageDefinition]: [
+  const [components, context, layout, route]: [
     Components,
     DataContext,
     Layout,
+    Route,
   ] = await Promise.all([
     fetch("/components.json").then((res) => res.json()),
     fetch("./context.json").then((res) => res.json()),
-    fetch("./definition.json").then((res) => res.json()),
+    fetch("./layout.json").then((res) => res.json()),
+    fetch("./route.json").then((res) => res.json()),
   ]);
 
-  const editorContainer = createEditorContainer(pageDefinition);
+  const editorContainer = createEditorContainer(layout, route);
 
   const selectionContainer = document.createElement("div");
   selectionContainer.setAttribute("x-label", "selected");
@@ -70,7 +78,7 @@ async function createEditor() {
 
 const editorsId = "editors";
 
-function createEditorContainer(pageDefinition: Layout) {
+function createEditorContainer(layout: Layout, route: Route) {
   let editorsElement = document.getElementById(editorsId);
 
   editorsElement?.remove();
@@ -81,8 +89,9 @@ function createEditorContainer(pageDefinition: Layout) {
   editorsElement.setAttribute(
     "x-state",
     JSON.stringify({
-      ...pageDefinition,
-      body: initializeBody(pageDefinition.body),
+      ...layout,
+      body: initializeBody(layout.body),
+      meta: route.meta,
     }),
   );
   editorsElement.setAttribute("x-label", "editor");
@@ -102,6 +111,12 @@ function toggleEditorVisibility() {
 }
 
 function initializeBody(body: Layout["body"]) {
+  if (!body) {
+    console.error("initializeBody - missing body");
+
+    return;
+  }
+
   return produce(body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p) => {
       p._id = nanoid();
