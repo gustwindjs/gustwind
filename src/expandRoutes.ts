@@ -8,66 +8,16 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
   routes: Route["routes"];
   dataSourcesPath: string;
   transformsPath: string;
-}): Promise<Route["routes"]> {
+}): Promise<NonNullable<Route["routes"]>> {
   if (!routes) {
-    return {};
+    throw new Error("Missing route definition");
   }
 
   const ret = Object.fromEntries(
     await Promise.all(
-      Object.entries(routes).map(async ([url, v]) => {
-        let ret = { ...v };
-
-        if (v.expand) {
-          const { dataSources, matchBy } = v.expand;
-
-          if (!matchBy) {
-            throw new Error("Tried to matchBy a path that is not matchable");
-          }
-
-          if (!dataSources) {
-            throw new Error("Missing dataSources");
-          }
-
-          const pageData = await getContext(
-            mode,
-            dataSourcesPath,
-            transformsPath,
-            dataSources,
-          );
-          const dataSource = pageData[matchBy.dataSource];
-
-          if (!dataSource) {
-            throw new Error("Missing data source");
-          }
-
-          const expandedRoutes: Record<string, Route> = {};
-          Object.values(dataSource[matchBy.collection]).forEach((match) => {
-            const route = get(match, matchBy.slug);
-
-            if (!route) {
-              throw new Error("Route is missing");
-            }
-
-            // @ts-ignore v.expand exists by now for sure
-            const { meta, layout } = v.expand;
-
-            expandedRoutes[route] = {
-              meta,
-              layout,
-              context: v.context ? { ...v.context, match } : { match },
-              url: route,
-            };
-          });
-
-          ret = {
-            ...v,
-            routes: { ...(v.routes || {}), ...expandedRoutes },
-          };
-        }
-
-        return [url, { ...ret, url }];
-      }),
+      Object.entries(routes).map(([url, route]) =>
+        expandRoute({ url, route, mode, dataSourcesPath, transformsPath })
+      ),
     ),
   );
 
@@ -80,4 +30,66 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
   return ret;
 }
 
-export { expandRoutes };
+async function expandRoute(
+  { url, route, mode, dataSourcesPath, transformsPath }: {
+    mode: Mode;
+    dataSourcesPath: string;
+    transformsPath: string;
+    url: string;
+    route: Route;
+  },
+): Promise<[string, Route]> {
+  let ret = { ...route };
+
+  if (route.expand) {
+    const { dataSources, matchBy } = route.expand;
+
+    if (!matchBy) {
+      throw new Error("Tried to matchBy a path that is not matchable");
+    }
+
+    if (!dataSources) {
+      throw new Error("Missing dataSources");
+    }
+
+    const pageData = await getContext(
+      mode,
+      dataSourcesPath,
+      transformsPath,
+      dataSources,
+    );
+    const dataSource = pageData[matchBy.dataSource];
+
+    if (!dataSource) {
+      throw new Error("Missing data source");
+    }
+
+    const expandedRoutes: Record<string, Route> = {};
+    Object.values(dataSource[matchBy.collection]).forEach((match) => {
+      const u = get(match, matchBy.slug);
+
+      if (!u) {
+        throw new Error("Route is missing");
+      }
+
+      // @ts-ignore route.expand exists by now for sure
+      const { meta, layout } = route.expand;
+
+      expandedRoutes[u] = {
+        meta,
+        layout,
+        context: route.context ? { ...route.context, match } : { match },
+        url: u,
+      };
+    });
+
+    ret = {
+      ...route,
+      routes: { ...(route.routes || {}), ...expandedRoutes },
+    };
+  }
+
+  return [url, { ...ret, url }];
+}
+
+export { expandRoute, expandRoutes };

@@ -12,9 +12,8 @@ import { trim } from "../utils/string.ts";
 import { getDefinition, getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import { expandRoutes } from "./expandRoutes.ts";
-import { flattenRoutes } from "./flattenRoutes.ts";
-import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
+import { expandRoute, expandRoutes } from "./expandRoutes.ts";
+import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
@@ -25,12 +24,8 @@ import "../scripts/_webSocketClient.ts";
 // is updated by web sockets, it should end up here so that
 // oak router can then refer to the cached version instead.
 const cachedLayouts: Record<string, Layout> = {};
-
-// The cache is populated if and when scripts are changed.
 const cachedScripts: Record<string, string> = {};
-
-// This is replaced when the user changes meta.json
-let cachedProjectMeta: ProjectMeta;
+let cachedRoutes: Record<string, Route> = {};
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -80,15 +75,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   const mode = "development";
 
-  // TODO: This should happen later on demand to speed up startup
-  const expandedRoutes = flattenRoutes(
-    await expandRoutes({
-      mode,
-      routes,
-      dataSourcesPath: projectPaths.dataSources,
-      transformsPath: projectPaths.transforms,
-    }),
-  );
+  // TODO: Likely this should happen later on demand to speed up startup
+  cachedRoutes = await expandRoutes({
+    mode,
+    routes,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
+  });
 
   // Use a custom router to capture dynamically generated routes. Otherwise
   // newly added routes would be after the catch-all route in the system
@@ -96,7 +89,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const dynamicRouter = Router();
   app.use(dynamicRouter);
   app.use(async ({ url }, res) => {
-    const matchedRoute = expandedRoutes[url === "/" ? "/" : trim(url, "/")];
+    const matchedRoute = matchRoute(cachedRoutes, url);
 
     if (matchedRoute) {
       const layoutName = matchedRoute.layout;
@@ -109,7 +102,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         // the latest data.
         const layout = cachedLayouts[layoutName] || matchedLayout;
         const [html, context, css] = await renderPage({
-          projectMeta: cachedProjectMeta || projectMeta,
+          projectMeta,
           layout,
           route: matchedRoute, // TODO: Cache?
           mode,
@@ -159,7 +152,14 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     res.send("no matching route");
   });
 
-  watchDataSourceInputs(wss, projectRoot, expandedRoutes);
+  watchDataSourceInputs({
+    wss,
+    path: projectRoot,
+    routes: cachedRoutes,
+    mode,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
+  });
   watchScripts(wss, projectPaths.scripts);
   watchMeta(wss, projectRoot);
   watchComponents(components, wss, projectPaths.routes);
@@ -172,21 +172,35 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 }
 
 function watchDataSourceInputs(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path: string,
-  routes: Record<string, Route>,
+  { wss, path, routes, mode, dataSourcesPath, transformsPath }: {
+    wss: ReturnType<typeof getWebsocketServer>;
+    path: string;
+    routes: Record<string, Route>;
+    mode: Mode;
+    dataSourcesPath: ProjectMeta["paths"]["dataSources"];
+    transformsPath: ProjectMeta["paths"]["transforms"];
+  },
 ) {
   const watched = new Set();
 
-  Object.values(routes).forEach(({ dataSources, url }) => {
-    dataSources?.forEach(({ input }) => {
-      console.log("watching data sources for url", url);
+  Object.values(routes).forEach((route) => {
+    const { dataSources, url } = route;
 
+    dataSources?.forEach(({ input }) => {
       if (!watched.has(input)) {
-        watch(_path.join(path, input), "", (matchedPath) => {
-          console.log("Changed data source input", matchedPath);
+        watch(_path.join(path, input), "", async (matchedPath) => {
+          console.log("Changed data source input", matchedPath, url);
+
+          const [u, r] = await expandRoute({
+            url: url as string,
+            route,
+            mode,
+            dataSourcesPath,
+            transformsPath,
+          });
+          routes[u] = r;
+
           wss.clients.forEach((socket) => {
-            // TODO: Update dependent routes based on url
             socket.send(JSON.stringify({ type: "reloadPage" }));
           });
         });
@@ -325,7 +339,6 @@ function watchScripts(
     });
 }
 
-/*
 function matchRoute(
   routes: Route["routes"],
   url: string,
@@ -343,7 +356,6 @@ function matchRoute(
 
   return match;
 }
-*/
 
 function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
