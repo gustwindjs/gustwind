@@ -1,15 +1,4 @@
 {
-  "meta": {
-    "title": "Blog",
-    "description": "A blog about Gustwind"
-  },
-  "dataSources": [
-    {
-      "id": "blogPosts",
-      "operation": "indexMarkdown",
-      "input": "./blogPosts"
-    }
-  ],
   "head": [
     {
       "element": "MetaFields"

@@ -45,40 +45,53 @@ type MarkdownWithFrontmatter = {
   };
   content: string;
 };
+
+type Route = {
+  type?: "html" | "xml";
+  layout: string;
+  meta: Meta;
+  scripts?: Scripts;
+  routes?: Record<string, Route>;
+  dataSources?: DataSource[];
+  expand?: {
+    dataSources?: DataSource[];
+    matchBy?: { dataSource: string; collection: string; slug: string };
+  };
+  context?: DataContext;
+};
+type DataSource = {
+  id: string;
+  operation: string;
+  input: string;
+  transformWith: Transform[];
+};
+type Scripts = { type: string; src: string }[];
+
 type ProjectMeta = {
-  developmentPort: number;
+  port: number;
   amountOfBuildThreads: number | "cpuMax";
-  siteName: string;
-  language: string;
+  scripts?: Scripts;
+  meta: Meta;
   paths: {
     assets?: string;
-    dataSources: string;
     components: string;
+    dataSources: string;
+    layouts: string;
     output: string;
-    pages: string;
+    routes: string;
     scripts?: string;
     transforms: string;
     twindSetup?: string;
   };
-  scripts?: { type: string; src: string }[];
   features?: {
     extractCSS?: boolean;
     showEditorAlways?: boolean;
   };
 };
-type DataSources = {
-  id: string;
-  operation: string;
-  input: string;
-  transformWith: Transform[];
-}[];
-type Page = {
-  layout?: "html" | "xml";
-  meta: Meta;
+
+type Layout = {
   head?: Component[];
   body: Component[];
-  matchBy?: { dataSource: string; collection: string; property: string };
-  dataSources?: DataSources;
 };
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
@@ -90,11 +103,11 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
-      route: string;
-      filePath: string;
+      layout: Layout;
+      route: Route;
+      pagePath: string;
       dir: string;
-      extraContext: DataContext;
-      page: Page;
+      url: string;
     };
   }
   | {
@@ -128,14 +141,16 @@ export type {
   Component,
   Components,
   DataContext,
-  DataSources,
+  DataSource,
+  Layout,
   Library,
   MarkdownWithFrontmatter,
   Meta,
   Mode,
-  Page,
   ParentCategory,
   ProjectMeta,
   Props,
+  Route,
+  Scripts,
   Transform,
 };

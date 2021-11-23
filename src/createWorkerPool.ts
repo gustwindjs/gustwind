@@ -24,7 +24,7 @@ function createWorkerPool<E>(amount: number) {
     } else if (workers.every(({ status }) => status !== "processing")) {
       DEBUG && console.log("worker pool - all work done", workers);
 
-      onWorkFinished();
+      onWorkFinished && onWorkFinished();
     }
   };
   const waitingTasks: E[] = [];

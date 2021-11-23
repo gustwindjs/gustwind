@@ -1,9 +1,9 @@
 import * as websockets from "https://deno.land/x/websocket@v0.1.3/mod.ts";
-import type { Page } from "../types.ts";
+import type { Layout } from "../types.ts";
 
 type WebSocketMessage = {
   type: "update";
-  payload: { path: string; data: Page };
+  payload: { path: string; data: Layout };
 };
 
 const getWebsocketServer = (port = 8080) => {

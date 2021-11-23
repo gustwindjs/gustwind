@@ -8,10 +8,12 @@ Each project built with Gustwind needs minimal configuration to describe where t
 
 ```json
 {
-  "developmentPort": 3000,
+  "port": 3000,
   "amountOfBuildThreads": "cpuMax",
-  "siteName": "Gustwind",
-  "language": "en",
+  "meta": {
+    "language": "en",
+    "siteName": "Gustwind"
+  },
   "scripts": [
     {
       "type": "text/javascript",
@@ -23,6 +25,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "components": "./components",
     "dataSources": "./dataSources",
     "output": "./build",
+    "routes": "./site/routes.json",
     "pages": "./pages",
     "scripts": "./scripts",
     "transforms": "./transforms",

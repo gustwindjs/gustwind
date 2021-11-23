@@ -15,6 +15,13 @@
   },
   {
     "element": "Link",
+    "children": "Routing",
+    "attributes": {
+      "href": "/routing/"
+    }
+  },
+  {
+    "element": "Link",
     "children": "Concepts",
     "attributes": {
       "href": "/concepts/"

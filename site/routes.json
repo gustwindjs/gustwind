@@ -1,0 +1,100 @@
+{
+  "/": {
+    "meta": {
+      "title": "Gustwind",
+      "description": "Deno powered JSON oriented site generator"
+    },
+    "layout": "siteIndex",
+    "dataSources": [
+      {
+        "id": "readme",
+        "operation": "file",
+        "input": "./README.md",
+        "transformWith": ["markdown"]
+      }
+    ],
+    "expand": {
+      "dataSources": [
+        {
+          "id": "documentation",
+          "operation": "indexMarkdown",
+          "input": "./documentation"
+        }
+      ],
+      "matchBy": {
+        "dataSource": "documentation",
+        "collection": "content",
+        "slug": "data.slug"
+      },
+      "layout": "documentationPage",
+      "meta": {
+        "__title": "match.name",
+        "__description": "match.description"
+      }
+    }
+  },
+  "blog": {
+    "layout": "blogIndex",
+    "meta": {
+      "title": "Blog",
+      "description": "A blog about Gustwind"
+    },
+    "dataSources": [
+      {
+        "id": "blogPosts",
+        "operation": "indexMarkdown",
+        "input": "./blogPosts"
+      }
+    ],
+    "expand": {
+      "dataSources": [
+        {
+          "id": "blogPosts",
+          "operation": "indexMarkdown",
+          "input": "./blogPosts"
+        }
+      ],
+      "matchBy": {
+        "dataSource": "blogPosts",
+        "collection": "content",
+        "slug": "data.slug"
+      },
+      "layout": "blogPage",
+      "meta": {
+        "__title": "match.name",
+        "__description": "match.description"
+      }
+    }
+  },
+  "buttons": {
+    "layout": "buttonsPage",
+    "meta": {
+      "title": "Gustwind buttons",
+      "description": "Secret buttons page"
+    },
+    "routes": {
+      "more": {
+        "layout": "buttonsPage",
+        "meta": {
+          "title": "More Gustwind buttons",
+          "description": "Another secret buttons page"
+        }
+      }
+    }
+  },
+  "atom.xml": {
+    "layout": "rssPage",
+    "type": "xml",
+    "meta": {
+      "title": "Gustwind",
+      "description": "Gustwind blog"
+    },
+    "dataSources": [
+      {
+        "id": "blogPosts",
+        "operation": "indexMarkdown",
+        "input": "./blogPosts"
+      }
+    ]
+  }
+}
