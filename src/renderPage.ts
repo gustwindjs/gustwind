@@ -64,6 +64,7 @@ async function renderPage({
   }
 
   const extraContext = await getContext(
+    mode,
     projectPaths.dataSources,
     projectPaths.transforms,
     route.dataSources,

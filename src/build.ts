@@ -50,6 +50,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   const expandedRoutes = flattenRoutes(
     await expandRoutes({
+      mode: "production",
       routes,
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,

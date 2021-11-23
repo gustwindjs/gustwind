@@ -1,8 +1,9 @@
 import { join } from "https://deno.land/std@0.107.0/path/mod.ts";
-import type { DataSource, ProjectMeta } from "../types.ts";
 import { transform } from "./transform.ts";
+import type { DataSource, Mode, ProjectMeta } from "../types.ts";
 
 async function getContext(
+  mode: Mode,
   dataSourcesPath: ProjectMeta["paths"]["dataSources"],
   transformsPath: ProjectMeta["paths"]["transforms"],
   dataSources?: DataSource[],
@@ -17,7 +18,13 @@ async function getContext(
       dataSources.map(({ id, operation, input, transformWith }) => {
         const dataSourcePath = join(dataSourcesPath, `${operation}.ts`);
 
-        return import("file://" + dataSourcePath).then(async (
+        // TODO: Expose caching behavior as this is likely dependent on mode.
+        // During production mode it should be cached!
+        return import(
+          mode === "production"
+            ? "file://" + dataSourcePath
+            : "file://" + dataSourcePath + "?cache=" + new Date().getTime()
+        ).then(async (
           o,
         ) => [
           id,

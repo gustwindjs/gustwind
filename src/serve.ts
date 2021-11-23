@@ -78,9 +78,12 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   app.get("/components.json", (_req, res) => res.json(components));
 
+  const mode = "development";
+
   // TODO: This should happen later on demand to speed up startup
   const expandedRoutes = flattenRoutes(
     await expandRoutes({
+      mode,
       routes,
       dataSourcesPath: projectPaths.dataSources,
       transformsPath: projectPaths.transforms,
@@ -109,7 +112,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           projectMeta: cachedProjectMeta || projectMeta,
           layout,
           route: matchedRoute, // TODO: Cache?
-          mode: "development",
+          mode,
           pagePath: "", // TODO: figure out the path of the page in the system
           twindSetup,
           components,
@@ -182,7 +185,7 @@ function watchDataSourceInputs(
           console.log("Changed data source input", matchedPath);
           wss.clients.forEach((socket) => {
             // TODO: Update dependent routes
-            socket.send(JSON.stringify({ type: "reload" }));
+            socket.send(JSON.stringify({ type: "reloadPage" }));
           });
         });
         watched.add(input);
@@ -199,7 +202,7 @@ function watchMeta(
     console.log("Changed meta", matchedPath);
     wss.clients.forEach((socket) => {
       // TODO: Update meta cache
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
@@ -223,7 +226,7 @@ function watchComponents(
         components[componentName] = componentDefinition;
       }
 
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
@@ -235,7 +238,7 @@ function watchDataSources(
   path && watch(path, ".json", (matchedPath) => {
     console.log("Changed data sources", matchedPath);
     wss.clients.forEach((socket) => {
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
@@ -248,7 +251,7 @@ function watchRoutes(
     console.log("Changed routes", matchedPath);
     wss.clients.forEach((socket) => {
       // TODO: Update route cache (needs change above as well in the catch-all route)
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
@@ -268,7 +271,7 @@ function watchLayouts(
         cachedLayouts[layoutName] = layoutDefinition;
       }
 
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
@@ -283,7 +286,7 @@ function watchTransforms(
       // TODO: Update transform cache? Since these go through
       // import(), likely tracking timestamps of updates would be enough
       // as then those could be used for invalidation
-      socket.send(JSON.stringify({ type: "reload" }));
+      socket.send(JSON.stringify({ type: "reloadPage" }));
     });
   });
 }
