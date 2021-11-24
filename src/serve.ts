@@ -6,30 +6,33 @@ import {
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
-import { compileTypeScript } from "../utils/compileTypeScript.ts";
-import { getJson, resolvePaths, watch } from "../utils/fs.ts";
+import { getJson, resolvePaths } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
-import { getDefinition, getDefinitions } from "./getDefinitions.ts";
+import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import { expandRoute, expandRoutes } from "./expandRoutes.ts";
-import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
+import { expandRoutes } from "./expandRoutes.ts";
+import { watchAll } from "./watch.ts";
+import type { ServeCache } from "./watch.ts";
+import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 // Include Gustwind scripts to the depsgraph so they can be served at CLI
 import "../scripts/_pageEditor.ts";
 import "../scripts/_toggleEditor.ts";
 import "../scripts/_webSocketClient.ts";
 
-// The cache is populated based on web socket calls. If a layout
-// is updated by web sockets, it should end up here so that
-// oak router can then refer to the cached version instead.
-const cachedLayouts: Record<string, Layout> = {};
-const cachedScripts: Record<string, string> = {};
-let cachedRoutes: Record<string, Route> = {};
-
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
+  // The cache is populated based on web socket or file system calls. If there's
+  // something in the cache, then the routing logic will refer to it instead of
+  // the original entries loaded from the file system.
+  const cache: ServeCache = {
+    layouts: {},
+    scripts: {},
+    routes: {},
+  };
+
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -47,15 +50,33 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Serving local scripts");
 
-    await serveScripts(app, "./scripts");
+    await serveScripts({
+      router: app,
+      scriptsCache: cache.scripts,
+      scriptsPath: "./scripts",
+    });
   } else {
     DEBUG && console.log("Serving remote scripts");
 
-    serveGustwindScripts(app);
+    serveGustwindScripts({ router: app, scriptsCache: cache.scripts });
   }
-  await serveScript(app, "twindSetup.js", projectPaths.twindSetup);
-  await serveScripts(app, projectPaths.scripts);
-  await serveScripts(app, projectPaths.transforms, "transforms/");
+  await serveScript({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptName: "twindSetup.js",
+    scriptPath: projectPaths.twindSetup,
+  });
+  await serveScripts({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptsPath: projectPaths.scripts,
+  });
+  await serveScripts({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptsPath: projectPaths.transforms,
+    prefix: "transforms/",
+  });
 
   const twindSetup = projectPaths.twindSetup
     ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
@@ -76,7 +97,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const mode = "development";
 
   // TODO: Likely this should happen later on demand to speed up startup
-  cachedRoutes = await expandRoutes({
+  cache.routes = await expandRoutes({
     mode,
     routes,
     dataSourcesPath: projectPaths.dataSources,
@@ -89,7 +110,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   const dynamicRouter = Router();
   app.use(dynamicRouter);
   app.use(async ({ url }, res) => {
-    const matchedRoute = matchRoute(cachedRoutes, url);
+    const matchedRoute = matchRoute(cache.routes, url);
 
     if (matchedRoute) {
       const layoutName = matchedRoute.layout;
@@ -100,7 +121,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
         // the case in which there was an update over web socket and
         // also avoids the need to hit the file system for getting
         // the latest data.
-        const layout = cachedLayouts[layoutName] || matchedLayout;
+        const layout = cache.layouts[layoutName] || matchedLayout;
         const [html, context, css] = await renderPage({
           projectMeta,
           layout,
@@ -152,191 +173,16 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     res.send("no matching route");
   });
 
-  watchDataSourceInputs({
+  watchAll({
+    cache,
     wss,
-    path: projectRoot,
-    routes: cachedRoutes,
     mode,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
+    projectRoot,
+    projectPaths,
+    components,
   });
-  watchScripts(wss, projectPaths.scripts);
-  watchMeta(wss, projectRoot);
-  watchComponents(components, wss, projectPaths.routes);
-  watchDataSources(wss, projectPaths.routes);
-  watchRoutes(wss, projectPaths.routes);
-  watchLayouts(wss, projectPaths.layouts);
-  watchTransforms(wss, projectPaths.transforms);
 
   await app.listen({ port: projectMeta.port });
-}
-
-function watchDataSourceInputs(
-  { wss, path, routes, mode, dataSourcesPath, transformsPath }: {
-    wss: ReturnType<typeof getWebsocketServer>;
-    path: string;
-    routes: Record<string, Route>;
-    mode: Mode;
-    dataSourcesPath: ProjectMeta["paths"]["dataSources"];
-    transformsPath: ProjectMeta["paths"]["transforms"];
-  },
-) {
-  const watched = new Set();
-
-  Object.values(routes).forEach((route) => {
-    const { dataSources, url } = route;
-
-    dataSources?.forEach(({ input }) => {
-      if (!watched.has(input)) {
-        watch(_path.join(path, input), "", async (matchedPath) => {
-          console.log("Changed data source input", matchedPath, url);
-
-          const [u, r] = await expandRoute({
-            url: url as string,
-            route,
-            mode,
-            dataSourcesPath,
-            transformsPath,
-          });
-          routes[u] = r;
-
-          wss.clients.forEach((socket) => {
-            socket.send(JSON.stringify({ type: "reloadPage" }));
-          });
-        });
-        watched.add(input);
-      }
-    });
-  });
-}
-
-function watchMeta(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, "meta.json", (matchedPath) => {
-    console.log("Changed meta", matchedPath);
-    wss.clients.forEach((socket) => {
-      // TODO: Update meta cache
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchComponents(
-  components: Record<string, Component>,
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, ".json", (matchedPath) => {
-    console.log("Changed component", matchedPath);
-
-    wss.clients.forEach(async (socket) => {
-      const [componentName, componentDefinition] = await getDefinition<
-        Component
-      >(
-        matchedPath,
-      );
-
-      if (componentName && componentDefinition) {
-        components[componentName] = componentDefinition;
-      }
-
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchDataSources(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, ".json", (matchedPath) => {
-    console.log("Changed data sources", matchedPath);
-    wss.clients.forEach((socket) => {
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchRoutes(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, ".json", (matchedPath) => {
-    console.log("Changed routes", matchedPath);
-    wss.clients.forEach((socket) => {
-      // TODO: Update route cache (needs change above as well in the catch-all route)
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchLayouts(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, ".json", (matchedPath) => {
-    console.log("Changed layouts", matchedPath);
-    wss.clients.forEach(async (socket) => {
-      const [layoutName, layoutDefinition] = await getDefinition<Layout>(
-        matchedPath,
-      );
-
-      if (layoutName && layoutDefinition) {
-        cachedLayouts[layoutName] = layoutDefinition;
-      }
-
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchTransforms(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path && watch(path, ".ts", (matchedPath) => {
-    console.log("Changed transforms", matchedPath);
-    wss.clients.forEach((socket) => {
-      // TODO: Update transform cache? Since these go through
-      // import(), likely tracking timestamps of updates would be enough
-      // as then those could be used for invalidation
-      socket.send(JSON.stringify({ type: "reloadPage" }));
-    });
-  });
-}
-
-function watchScripts(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  path &&
-    watch(path, ".ts", async (matchedPath) => {
-      const scriptName = _path.basename(
-        matchedPath,
-        _path.extname(matchedPath),
-      );
-
-      console.log("Changed script", matchedPath);
-
-      cachedScripts[scriptName + ".ts"] = await compileTypeScript(
-        matchedPath,
-        "development",
-      );
-
-      wss.clients.forEach((socket) => {
-        // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
-        if (socket.state === 1) {
-          socket.send(
-            JSON.stringify({
-              type: "replaceScript",
-              payload: { name: "/" + scriptName + ".js" },
-            }),
-          );
-        }
-      });
-    });
 }
 
 function matchRoute(
@@ -361,7 +207,10 @@ function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
 }
 
-async function serveGustwindScripts(router: ReturnType<typeof opine>) {
+async function serveGustwindScripts({ router, scriptsCache }: {
+  router: ReturnType<typeof opine>;
+  scriptsCache: ServeCache["scripts"];
+}) {
   // TODO: Generate a list of these scripts in a dynamic way instead
   // of hardcoding
   const pageEditor = await cache(
@@ -387,13 +236,16 @@ async function serveGustwindScripts(router: ReturnType<typeof opine>) {
 
   DEBUG && console.log("serving gustwind scripts", scriptsWithFiles);
 
-  routeScripts(router, scriptsWithFiles);
+  routeScripts({ router, scriptsCache, scriptsWithFiles });
 }
 
 async function serveScripts(
-  router: ReturnType<typeof opine>,
-  scriptsPath?: string,
-  prefix = "",
+  { router, scriptsCache, scriptsPath, prefix = "" }: {
+    router: ReturnType<typeof opine>;
+    scriptsCache: ServeCache["scripts"];
+    scriptsPath?: string;
+    prefix?: string;
+  },
 ) {
   if (!scriptsPath) {
     return;
@@ -402,17 +254,18 @@ async function serveScripts(
   try {
     const scriptsWithFiles = await compileScripts(scriptsPath, "development");
 
-    routeScripts(router, scriptsWithFiles, prefix);
+    routeScripts({ router, scriptsCache, scriptsWithFiles, prefix });
   } catch (error) {
     console.error(error);
   }
 }
 
-async function serveScript(
-  router: ReturnType<typeof opine>,
-  scriptName: string,
-  scriptPath?: string,
-) {
+async function serveScript({ router, scriptsCache, scriptName, scriptPath }: {
+  router: ReturnType<typeof opine>;
+  scriptsCache: ServeCache["scripts"];
+  scriptName: string;
+  scriptPath?: string;
+}) {
   if (!scriptPath) {
     return;
   }
@@ -425,21 +278,22 @@ async function serveScript(
     });
     script.name = scriptName;
 
-    routeScripts(router, [script]);
+    routeScripts({ router, scriptsCache, scriptsWithFiles: [script] });
   } catch (error) {
     console.error(error);
   }
 }
 
-function routeScripts(
-  router: ReturnType<typeof opine>,
-  scriptsWithFiles: { path: string; name: string; content: string }[],
-  prefix = "",
-) {
+function routeScripts({ router, scriptsCache, scriptsWithFiles, prefix = "" }: {
+  router: ReturnType<typeof opine>;
+  scriptsCache: ServeCache["scripts"];
+  scriptsWithFiles: { path: string; name: string; content: string }[];
+  prefix?: string;
+}) {
   scriptsWithFiles.forEach(({ name, content }) => {
     router.get("/" + prefix + name.replace("ts", "js"), (_req, res) => {
       res.append("Content-Type", "text/javascript");
-      res.send(cachedScripts[name] || content);
+      res.send(scriptsCache[name] || content);
     });
   });
 }
