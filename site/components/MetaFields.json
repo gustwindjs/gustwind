@@ -54,14 +54,14 @@
     "element": "meta",
     "attributes": {
       "name": "og:site_name",
-      "__content": "projectMeta.siteName"
+      "__content": "meta.siteName"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "twitter:site",
-      "__content": "projectMeta.siteName"
+      "__content": "meta.siteName"
     }
   },
   {
@@ -108,6 +108,6 @@
   },
   {
     "element": "title",
-    "__children": "projectMeta.siteName"
+    "==children": "projectMeta.meta.title + '–' + meta.title"
   }
 ]
