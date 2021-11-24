@@ -108,6 +108,6 @@
   },
   {
     "element": "title",
-    "==children": "projectMeta.meta.title + '–' + meta.title"
+    "__children": "meta.title"
   }
 ]
