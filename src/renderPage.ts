@@ -69,13 +69,14 @@ async function renderPage({
     projectPaths.transforms,
     route.dataSources,
   );
+  const meta = {
+    ...runtimeMeta,
+    ...projectMeta.meta,
+    ...route.meta,
+  };
   const context = {
     projectMeta,
-    meta: {
-      ...runtimeMeta,
-      ...projectMeta.meta,
-      ...route.meta,
-    },
+    meta,
     scripts: pageScripts,
     ...route.context,
     ...extraContext,

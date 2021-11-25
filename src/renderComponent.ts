@@ -7,6 +7,7 @@ import type {
   DataContext,
 } from "../types.ts";
 import { transform } from "./transform.ts";
+import { evaluateExpression, evaluateFields } from "./evaluate.ts";
 
 async function renderComponent(
   transformsPath: string,
@@ -192,7 +193,9 @@ function wrapInElement(
     return typeof children === "string" ? children : "";
   }
 
-  return `<${element}${attributes}>${children || ""}</${element}>`;
+  return `<${element}${attributes ? " " + attributes : ""}>${
+    children || ""
+  }</${element}>`;
 }
 
 function generateAttributes(context: DataContext, attributes?: Attributes) {
@@ -200,42 +203,8 @@ function generateAttributes(context: DataContext, attributes?: Attributes) {
     return "";
   }
 
-  const ret = Object.entries(attributes).map(([k, v]) => {
-    if (k.startsWith("__")) {
-      // @ts-ignore: TODO: How to type this?
-      return `${k.slice(2)}="${get(context.__bound, v) || get(context, v)}"`;
-    } else if (k.startsWith("==")) {
-      return `${k.slice(2)}="${
-        evaluateExpression(
-          v,
-          // @ts-ignore: TODO: How to type this?
-          context.__bound || context,
-        )
-      }"`;
-    }
-
-    return `${k}="${v}"`;
-  })
-    .filter(Boolean).join(
-      " ",
-    );
-
-  return ret.length > 0 ? " " + ret : "";
-}
-
-// From Sidewind
-function evaluateExpression(
-  expression: string,
-  value: Record<string, unknown> = {},
-) {
-  try {
-    return Function.apply(
-      null,
-      Object.keys(value).concat(`return ${expression}`),
-    )(...Object.values(value));
-  } catch (err) {
-    console.error("Failed to evaluate", expression, value, err);
-  }
+  return evaluateFields(context, attributes).map(([k, v]) => `${k}="${v}"`)
+    .join(" ");
 }
 
 export { renderComponent };
