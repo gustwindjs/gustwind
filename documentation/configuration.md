@@ -1,6 +1,7 @@
 ---
 slug: 'configuration'
 title: 'Configuration'
+description: ''
 ---
 Each project built with Gustwind needs minimal configuration to describe where to find the assets, site name, and development port:
 

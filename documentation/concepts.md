@@ -1,6 +1,7 @@
 ---
 slug: 'concepts'
 title: 'Concepts'
+description: ''
 ---
 You'll learn how different concepts of Gustwind go together on this page. It's self-similar in many ways and if you are familiar with technologies such as HTML, Tailwind, or React, likely you'll get used to it fast.
 

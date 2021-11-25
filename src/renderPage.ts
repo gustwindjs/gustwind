@@ -15,6 +15,7 @@ import type {
 } from "../types.ts";
 import { renderComponent } from "./renderComponent.ts";
 import { getContext } from "./getContext.ts";
+import { evaluateFields } from "./evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -76,7 +77,7 @@ async function renderPage({
   };
   const context = {
     projectMeta,
-    meta,
+    meta: Object.fromEntries(evaluateFields(route.context, meta)),
     scripts: pageScripts,
     ...route.context,
     ...extraContext,

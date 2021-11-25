@@ -1,6 +1,7 @@
 ---
 slug: 'routing'
 title: 'Routing'
+description: ''
 ---
 
 In Gustwind, routes are defined using configuration. The model favors explicity over implicity and it supports nesting. Thanks to nesting, you can implement features like i18n and generate a blog or pages to the site root as in the example below.
@@ -42,8 +43,8 @@ The example below shows how the structure of this site has been defined:
       },
       "layout": "documentationPage",
       "meta": {
-        "__title": "match.name",
-        "__description": "match.description"
+        "__title": "match.data.title",
+        "__description": "match.data.description"
       }
     }
   },

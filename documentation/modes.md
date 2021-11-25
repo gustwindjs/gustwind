@@ -1,6 +1,7 @@
 ---
 slug: 'modes'
 title: 'Modes'
+description: ''
 ---
 Gustwind implements two modes: `development` and `production`. The idea of the `development` mode is to allow rapid development of your site while the `production` mode emits the site content in a static HTML to upload to a static file server to host.
 

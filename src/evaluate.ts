@@ -1,13 +1,21 @@
 import { get } from "../utils/functional.ts";
 import type { Attributes, DataContext } from "../types.ts";
 
-function evaluateFields(context: DataContext, attributes: Attributes) {
+function evaluateFields(context?: DataContext, attributes?: Attributes) {
+  if (!context || !attributes) {
+    return [];
+  }
+
   return Object.entries(attributes).map(([k, v]) =>
     evaluateField(context, k, v)
   );
 }
 
-function evaluateField(context: DataContext, k: string, v: string) {
+function evaluateField(
+  context: DataContext,
+  k: string,
+  v: string,
+): [string, string] {
   if (k.startsWith("__")) {
     // @ts-ignore: TODO: How to type __bound
     return [k.slice(2), get(context.__bound, v) || get(context, v)];
