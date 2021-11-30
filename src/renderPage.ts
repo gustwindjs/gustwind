@@ -77,7 +77,10 @@ async function renderPage({
   };
   const context = {
     projectMeta,
-    meta: Object.fromEntries(evaluateFields(route.context, meta)),
+    meta: {
+      ...meta,
+      ...Object.fromEntries(evaluateFields(route.context, meta)),
+    },
     scripts: pageScripts,
     ...route.context,
     ...extraContext,
