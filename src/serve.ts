@@ -28,6 +28,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache: ServeCache = {
+    components: {},
     layouts: {},
     scripts: {},
     routes: {},
@@ -43,6 +44,7 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
+  cache.components = components;
 
   const app = opine();
   const wss = getWebsocketServer();
@@ -92,7 +94,10 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
 
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
-  app.get("/components.json", (_req, res) => res.json(components));
+  app.get(
+    "/components.json",
+    (_req, res) => res.json(cache.components),
+  );
 
   const mode = "development";
 
@@ -127,9 +132,9 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
           layout,
           route: matchedRoute, // TODO: Cache?
           mode,
-          pagePath: "", // TODO: figure out the path of the page in the system
+          pagePath: "todo", // TODO: figure out the path of the page in the system
           twindSetup,
-          components,
+          components: cache.components,
           pathname: url,
         });
 
@@ -179,7 +184,6 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     mode,
     projectRoot,
     projectPaths,
-    components,
   });
 
   await app.listen({ port: projectMeta.port });

@@ -59,8 +59,8 @@ function watchMeta(
 }
 
 function watchComponents(
-  components: Record<string, Component>,
   wss: ReturnType<typeof getWebsocketServer>,
+  componentCache: ServeCache["components"],
   path?: string,
 ) {
   path && watch(path, ".json", (matchedPath) => {
@@ -74,7 +74,7 @@ function watchComponents(
       );
 
       if (componentName && componentDefinition) {
-        components[componentName] = componentDefinition;
+        componentCache[componentName] = componentDefinition;
       }
 
       socket.send(JSON.stringify({ type: "reloadPage" }));
@@ -177,13 +177,12 @@ function watchScripts(
 }
 
 function watchAll(
-  { wss, cache, mode, projectRoot, projectPaths, components }: {
+  { wss, cache, mode, projectRoot, projectPaths }: {
     wss: ReturnType<typeof getWebsocketServer>;
     cache: ServeCache;
     mode: Mode;
     projectRoot: string;
     projectPaths: ProjectMeta["paths"];
-    components: Record<string, Component>;
   },
 ) {
   watchDataSourceInputs({
@@ -196,14 +195,15 @@ function watchAll(
   });
   watchScripts(wss, cache.scripts, projectPaths.scripts);
   watchMeta(wss, projectRoot);
-  watchComponents(components, wss, projectPaths.routes);
-  watchDataSources(wss, projectPaths.routes);
+  watchComponents(wss, cache.components, projectPaths.components);
+  watchDataSources(wss, projectPaths.dataSources);
   watchRoutes(wss, projectPaths.routes);
   watchLayouts(wss, cache.layouts, projectPaths.layouts);
   watchTransforms(wss, projectPaths.transforms);
 }
 
 type ServeCache = {
+  components: Record<string, Component>;
   layouts: Record<string, Layout>;
   scripts: Record<string, string>;
   routes: Record<string, Route>;

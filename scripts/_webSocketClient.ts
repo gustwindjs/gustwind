@@ -4,10 +4,14 @@ import { getPagePath } from "../utils/getPagePath.ts";
 
 function createWebSocket(pagePath?: string) {
   if (!pagePath) {
+    console.error("WebSocket", "page path is missing!");
+
     return;
   }
 
   const socket = new WebSocket("ws://localhost:8080");
+
+  console.log("WebSocket", "connecting");
 
   socket.addEventListener("message", (event) => {
     let type, payload;
