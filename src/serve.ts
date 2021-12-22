@@ -149,15 +149,17 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
         },
       ),
     );
-  }
-  // TODO: Restore
-  /*
-  else {
-    DEBUG && console.log("Serving remote scripts");
+  } else {
+    DEBUG && console.log("Compiling remote scripts");
 
-    serveGustwindScripts({ router: app, scriptsCache: cache.scripts });
+    scripts = Object.fromEntries(
+      (await compileGustwindScripts()).map(
+        ({ name, content }) => {
+          return [name.replace(".ts", ".js"), content];
+        },
+      ),
+    );
   }
-  */
 
   // TODO: Restore
   /*
@@ -274,15 +276,7 @@ function matchRoute(
   return match;
 }
 
-/*
-function cleanAssetsPath(p: string) {
-  return "/" + p.split("/").slice(1).join("/");
-}
-
-async function serveGustwindScripts({ router, scriptsCache }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-}) {
+async function compileGustwindScripts() {
   // TODO: Generate a list of these scripts in a dynamic way instead
   // of hardcoding. The question is how to do the lookup.
   const pageEditor = await cache(
@@ -297,7 +291,8 @@ async function serveGustwindScripts({ router, scriptsCache }: {
   const twindRuntime = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_twindRuntime.ts",
   );
-  const scriptsWithFiles = await Promise.all([
+
+  return Promise.all([
     { name: "_pageEditor.ts", file: pageEditor },
     { name: "_toggleEditor.ts", file: toggleEditor },
     { name: "_webSocketClient.ts", file: wsClient },
@@ -305,10 +300,11 @@ async function serveGustwindScripts({ router, scriptsCache }: {
   ].map(({ name, file: { path } }) =>
     compileScript({ name, path, mode: "development" })
   ));
+}
 
-  DEBUG && console.log("serving gustwind scripts", scriptsWithFiles);
-
-  routeScripts({ router, scriptsCache, scriptsWithFiles });
+/*
+function cleanAssetsPath(p: string) {
+  return "/" + p.split("/").slice(1).join("/");
 }
 
 async function serveScripts(
