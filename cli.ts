@@ -6,7 +6,7 @@
 import { flags, path } from "./deps.ts";
 import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
-import { serve as serveProject } from "./src/serve.ts";
+import { serveGustwind } from "./src/serve.ts";
 import { VERSION } from "./version.ts";
 import type { ProjectMeta } from "./types.ts";
 
@@ -88,7 +88,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     const startTime = performance.now();
     console.log("Starting development server");
 
-    await serveProject(projectMeta, cwd);
+    const serve = await serveGustwind(projectMeta, cwd);
 
     const port = projectMeta.port;
 
@@ -96,6 +96,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log(
       `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
     );
+
+    await serve();
 
     // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
     const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });

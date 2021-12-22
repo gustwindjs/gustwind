@@ -1,3 +1,4 @@
+import { Server } from "https://deno.land/std@0.118.0/http/server.ts";
 import {
   opine,
   Router,
@@ -18,7 +19,7 @@ import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function serve(projectMeta: ProjectMeta, projectRoot: string) {
+async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   // The cache is populated based on web socket or file system calls. If there's
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
@@ -181,7 +182,10 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     projectPaths,
   });
 
-  await app.listen({ port: projectMeta.port });
+  const server = new Server({ handler: () => new Response("Hello World\n") });
+  const listener = Deno.listen({ port: projectMeta.port });
+
+  return () => server.serve(listener);
 }
 
 function matchRoute(
@@ -300,7 +304,7 @@ function routeScripts({ router, scriptsCache, scriptsWithFiles, prefix = "" }: {
 if (import.meta.main) {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serve(projectMeta, Deno.cwd());
+  serveGustwind(projectMeta, Deno.cwd());
 }
 
-export { serve };
+export { serveGustwind };
