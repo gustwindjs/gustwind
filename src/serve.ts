@@ -1,5 +1,7 @@
 import { Server } from "https://deno.land/std@0.118.0/http/server.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
+import { relative } from "https://deno.land/std@0.118.0/path/mod.ts";
+import { lookup } from "https://deno.land/x/media_types@v2.11.1/mod.ts";
 import { path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
@@ -232,8 +234,20 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
         return respond(404, "No matching layout");
       }
 
-      // TODO: Restore serving assets
-      // assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
+      const assetPath = projectPaths.assets && _path.join(
+        projectPaths.assets,
+        relative(assetsPath || "", trim(pathname, "/")),
+      );
+
+      try {
+        if (assetPath) {
+          const asset = await Deno.readTextFile(assetPath);
+
+          return respond(200, asset, lookup(assetPath));
+        }
+      } catch (_error) {
+        // TODO: What to do with possible errors?
+      }
 
       if (pathname.endsWith(".js")) {
         // TODO: Read from cache.scripts instead and store initial script data there
@@ -253,12 +267,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
   return () => server.serve(listener);
 }
-
-/*
-function cleanAssetsPath(p: string) {
-  return "/" + p.split("/").slice(1).join("/");
-}
-*/
 
 function respond(status: number, text: string, contentType = "text/plain") {
   return new Response(text, {
