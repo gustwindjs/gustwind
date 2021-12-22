@@ -24,9 +24,11 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     contexts: {},
     components: {},
     layouts: {},
+    layoutDefinitions: {},
     scripts: {},
     styles: {},
     routes: {},
+    routeDefinitions: {},
   };
 
   const mode = "development";
@@ -229,6 +231,9 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
             contentType = "text/xml";
           }
 
+          cache.layoutDefinitions[url + "layout.json"] = layout;
+          cache.routeDefinitions[url + "route.json"] = matchedRoute;
+
           if (css) {
             cache.styles[url + "styles.css"] = css;
           }
@@ -253,6 +258,26 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
       if (matchedContext) {
         return respond(200, JSON.stringify(matchedContext), "application/json");
+      }
+
+      const matchedLayoutDefinition = cache.layoutDefinitions[url];
+
+      if (matchedLayoutDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedLayoutDefinition),
+          "application/json",
+        );
+      }
+
+      const matchedRouteDefinition = cache.routeDefinitions[url];
+
+      if (matchedRouteDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedRouteDefinition),
+          "application/json",
+        );
       }
 
       const assetPath = projectPaths.assets && _path.join(

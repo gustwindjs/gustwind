@@ -212,10 +212,12 @@ function watchAll(
 type ServeCache = {
   contexts: Record<string, DataContext>;
   components: Record<string, Component>;
+  layoutDefinitions: Record<string, Layout>;
   layouts: Record<string, Layout>;
   scripts: Record<string, string>;
   styles: Record<string, string>;
   routes: Record<string, Route>;
+  routeDefinitions: Record<string, Route>;
 };
 
 export type { ServeCache };
