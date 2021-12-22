@@ -1,9 +1,4 @@
 import { Server } from "https://deno.land/std@0.118.0/http/server.ts";
-import {
-  opine,
-  Router,
-  serveStatic,
-} from "https://deno.land/x/opine@1.9.0/mod.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import { path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
@@ -30,6 +25,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     routes: {},
   };
 
+  const mode = "development";
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -42,8 +38,18 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   ]);
   cache.components = components;
 
-  const app = opine();
   const wss = getWebsocketServer();
+
+  // TODO: This could happen later on demand to speed up startup
+  cache.routes = await expandRoutes({
+    mode,
+    routes,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
+  });
+
+  /*
+  const app = opine();
 
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Serving local scripts");
@@ -95,15 +101,8 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     (_req, res) => res.json(cache.components),
   );
 
-  const mode = "development";
 
-  // TODO: Likely this should happen later on demand to speed up startup
-  cache.routes = await expandRoutes({
-    mode,
-    routes,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
-  });
+
 
   // Use a custom router to capture dynamically generated routes. Otherwise
   // newly added routes would be after the catch-all route in the system
@@ -173,6 +172,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
     res.send("no matching route");
   });
+  */
 
   watchAll({
     cache,
@@ -182,7 +182,23 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     projectPaths,
   });
 
-  const server = new Server({ handler: () => new Response("Hello World\n") });
+  const server = new Server({
+    handler: ({ url }) => {
+      const matchedRoute = matchRoute(cache.routes, url);
+
+      if (matchedRoute) {
+        // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
+        return new Response("Got match", {
+          headers: { "content-type": "text/html" },
+        });
+      }
+
+      // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
+      return new Response("No match", {
+        headers: { "content-type": "text/html" },
+      });
+    },
+  });
   const listener = Deno.listen({ port: projectMeta.port });
 
   return () => server.serve(listener);
@@ -196,8 +212,9 @@ function matchRoute(
     return;
   }
 
-  const parts = trim(url, "/").split("/");
-  const match = routes[url] || routes[parts[0]];
+  const { pathname } = new URL(url);
+  const parts = trim(pathname, "/").split("/");
+  const match = routes[pathname] || routes[parts[0]];
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
@@ -206,6 +223,7 @@ function matchRoute(
   return match;
 }
 
+/*
 function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
 }
@@ -300,6 +318,7 @@ function routeScripts({ router, scriptsCache, scriptsWithFiles, prefix = "" }: {
     });
   });
 }
+*/
 
 if (import.meta.main) {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
