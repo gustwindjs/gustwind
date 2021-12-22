@@ -4,7 +4,14 @@ import { path as _path } from "../deps.ts";
 import { getDefinition } from "./getDefinitions.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
+import type {
+  Component,
+  DataContext,
+  Layout,
+  Mode,
+  ProjectMeta,
+  Route,
+} from "../types.ts";
 
 function watchDataSourceInputs(
   { wss, path, routesCache, mode, dataSourcesPath, transformsPath }: {
@@ -203,6 +210,7 @@ function watchAll(
 }
 
 type ServeCache = {
+  contexts: Record<string, DataContext>;
   components: Record<string, Component>;
   layouts: Record<string, Layout>;
   scripts: Record<string, string>;

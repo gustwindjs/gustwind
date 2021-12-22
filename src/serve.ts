@@ -21,6 +21,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache: ServeCache = {
+    contexts: {},
     components: {},
     layouts: {},
     scripts: {},
@@ -232,6 +233,10 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
             cache.styles[url + "styles.css"] = css;
           }
 
+          if (context) {
+            cache.contexts[url + "context.json"] = context;
+          }
+
           return respond(200, html, contentType);
         }
 
@@ -242,6 +247,12 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
       if (matchedCSS) {
         return respond(200, matchedCSS, "text/css");
+      }
+
+      const matchedContext = cache.contexts[url];
+
+      if (matchedContext) {
+        return respond(200, JSON.stringify(matchedContext), "application/json");
       }
 
       const assetPath = projectPaths.assets && _path.join(
