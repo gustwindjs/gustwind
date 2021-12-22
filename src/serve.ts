@@ -142,13 +142,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Compiling local scripts");
 
-    scripts = Object.fromEntries(
-      (await compileScripts("./scripts", "development")).map(
-        ({ name, content }) => {
-          return [name.replace(".ts", ".js"), content];
-        },
-      ),
-    );
+    scripts = await compileScriptsToJavaScript("./scripts");
   } else {
     DEBUG && console.log("Compiling remote scripts");
 
@@ -162,6 +156,8 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   }
 
   if (projectPaths.twindSetup) {
+    DEBUG && console.log("Compiling project twind setup");
+
     const name = "twindSetup.js";
 
     scripts[name] = (await compileScript({
@@ -170,21 +166,24 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       mode: "development",
     })).content;
   }
+  if (projectPaths.scripts) {
+    DEBUG && console.log("Compiling project scripts");
 
-  // TODO: Restore
-  /*
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.scripts,
-  });
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.transforms,
-    prefix: "transforms/",
-  });
-  */
+    const customScripts = await compileScriptsToJavaScript(
+      projectPaths.scripts,
+    );
+
+    scripts = { ...scripts, ...customScripts };
+  }
+  if (projectPaths.transforms) {
+    DEBUG && console.log("Compiling project transforms");
+
+    const transformScripts = await compileScriptsToJavaScript(
+      projectPaths.transforms,
+    );
+
+    scripts = { ...scripts, ...transformScripts };
+  }
 
   watchAll({
     cache,
@@ -212,6 +211,8 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
           // also avoids the need to hit the file system for getting
           // the latest data.
           const layout = cache.layouts[layoutName] || matchedLayout;
+
+          // TODO: Store context and css so that subsequent requests can find the data
           const [html, context, css] = await renderPage({
             projectMeta,
             layout,
@@ -239,6 +240,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       }
 
       if (pathname.endsWith(".js")) {
+        // TODO: Read from cache.scripts instead and store initial script data there
         const matchedScript = scripts[trim(pathname, "/")];
 
         if (matchedScript) {
@@ -306,68 +308,19 @@ async function compileGustwindScripts() {
   ));
 }
 
+async function compileScriptsToJavaScript(path: string) {
+  return Object.fromEntries(
+    (await compileScripts(path, "development")).map(
+      ({ name, content }) => {
+        return [name.replace(".ts", ".js"), content];
+      },
+    ),
+  );
+}
+
 /*
 function cleanAssetsPath(p: string) {
   return "/" + p.split("/").slice(1).join("/");
-}
-
-async function serveScripts(
-  { router, scriptsCache, scriptsPath, prefix = "" }: {
-    router: ReturnType<typeof opine>;
-    scriptsCache: ServeCache["scripts"];
-    scriptsPath?: string;
-    prefix?: string;
-  },
-) {
-  if (!scriptsPath) {
-    return;
-  }
-
-  try {
-    const scriptsWithFiles = await compileScripts(scriptsPath, "development");
-
-    routeScripts({ router, scriptsCache, scriptsWithFiles, prefix });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function serveScript({ router, scriptsCache, scriptName, scriptPath }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-  scriptName: string;
-  scriptPath?: string;
-}) {
-  if (!scriptPath) {
-    return;
-  }
-
-  try {
-    const script = await compileScript({
-      path: scriptPath,
-      name: "",
-      mode: "development",
-    });
-    script.name = scriptName;
-
-    routeScripts({ router, scriptsCache, scriptsWithFiles: [script] });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function routeScripts({ router, scriptsCache, scriptsWithFiles, prefix = "" }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-  scriptsWithFiles: { path: string; name: string; content: string }[];
-  prefix?: string;
-}) {
-  scriptsWithFiles.forEach(({ name, content }) => {
-    router.get("/" + prefix + name.replace("ts", "js"), (_req, res) => {
-      res.append("Content-Type", "text/javascript");
-      res.send(scriptsCache[name] || content);
-    });
-  });
 }
 */
 
