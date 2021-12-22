@@ -1,9 +1,7 @@
-import {
-  opine,
-  Router,
-  serveStatic,
-} from "https://deno.land/x/opine@1.9.0/mod.ts";
+import { Server } from "https://deno.land/std@0.118.0/http/server.ts";
 import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
+import { relative } from "https://deno.land/std@0.118.0/path/mod.ts";
+import { lookup } from "https://deno.land/x/media_types@v2.11.1/mod.ts";
 import { path as _path } from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
@@ -18,17 +16,22 @@ import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function serve(projectMeta: ProjectMeta, projectRoot: string) {
+async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   // The cache is populated based on web socket or file system calls. If there's
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache: ServeCache = {
+    contexts: {},
     components: {},
     layouts: {},
+    layoutDefinitions: {},
     scripts: {},
+    styles: {},
     routes: {},
+    routeDefinitions: {},
   };
 
+  const mode = "development";
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -41,38 +44,13 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
   ]);
   cache.components = components;
 
-  const app = opine();
   const wss = getWebsocketServer();
 
-  if (import.meta.url.startsWith("file:///")) {
-    DEBUG && console.log("Serving local scripts");
-
-    await serveScripts({
-      router: app,
-      scriptsCache: cache.scripts,
-      scriptsPath: "./scripts",
-    });
-  } else {
-    DEBUG && console.log("Serving remote scripts");
-
-    serveGustwindScripts({ router: app, scriptsCache: cache.scripts });
-  }
-  await serveScript({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptName: "twindSetup.js",
-    scriptPath: projectPaths.twindSetup,
-  });
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.scripts,
-  });
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.transforms,
-    prefix: "transforms/",
+  cache.routes = await expandRoutes({
+    mode,
+    routes,
+    dataSourcesPath: projectPaths.dataSources,
+    transformsPath: projectPaths.transforms,
   });
 
   const twindSetup = projectPaths.twindSetup
@@ -87,91 +65,51 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
-  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
+  if (import.meta.url.startsWith("file:///")) {
+    DEBUG && console.log("Compiling local scripts");
 
-  app.get(
-    "/components.json",
-    (_req, res) => res.json(cache.components),
-  );
+    cache.scripts = await compileScriptsToJavaScript("./scripts");
+  } else {
+    DEBUG && console.log("Compiling remote scripts");
 
-  const mode = "development";
+    cache.scripts = Object.fromEntries(
+      (await compileGustwindScripts()).map(
+        ({ name, content }) => {
+          return [name.replace(".ts", ".js"), content];
+        },
+      ),
+    );
+  }
 
-  // TODO: Likely this should happen later on demand to speed up startup
-  cache.routes = await expandRoutes({
-    mode,
-    routes,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
-  });
+  if (projectPaths.twindSetup) {
+    DEBUG && console.log("Compiling project twind setup");
 
-  // Use a custom router to capture dynamically generated routes. Otherwise
-  // newly added routes would be after the catch-all route in the system
-  // and the router would never get to them.
-  const dynamicRouter = Router();
-  app.use(dynamicRouter);
-  app.use(async ({ url }, res) => {
-    const matchedRoute = matchRoute(cache.routes, url);
+    const name = "twindSetup.js";
 
-    if (matchedRoute) {
-      const layoutName = matchedRoute.layout;
-      const matchedLayout = layouts[layoutName];
+    cache.scripts[name] = (await compileScript({
+      path: projectPaths.twindSetup,
+      name,
+      mode: "development",
+    })).content;
+  }
+  if (projectPaths.scripts) {
+    DEBUG && console.log("Compiling project scripts");
 
-      if (matchedLayout) {
-        // If there's cached data, use it instead. This fixes
-        // the case in which there was an update over web socket and
-        // also avoids the need to hit the file system for getting
-        // the latest data.
-        const layout = cache.layouts[layoutName] || matchedLayout;
-        const [html, context, css] = await renderPage({
-          projectMeta,
-          layout,
-          route: matchedRoute, // TODO: Cache?
-          mode,
-          pagePath: "todo", // TODO: figure out the path of the page in the system
-          twindSetup,
-          components: cache.components,
-          pathname: url,
-        });
+    const customScripts = await compileScriptsToJavaScript(
+      projectPaths.scripts,
+    );
 
-        if (matchedRoute.type === "xml") {
-          // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
-          res.set("Content-Type", "text/xml");
-        }
+    cache.scripts = { ...cache.scripts, ...customScripts };
+  }
+  if (projectPaths.transforms) {
+    DEBUG && console.log("Compiling project transforms");
 
-        await dynamicRouter.get(
-          url + "layout.json",
-          (_req, res) => res.json(layout),
-        );
+    const transformScripts = await compileScriptsToJavaScript(
+      projectPaths.transforms,
+    );
 
-        await dynamicRouter.get(
-          url + "route.json",
-          (_req, res) => res.json(matchedRoute),
-        );
-
-        if (context) {
-          await dynamicRouter.get(
-            url + "context.json",
-            (_req, res) => res.json(context),
-          );
-        }
-
-        if (css) {
-          await dynamicRouter.get(
-            url + "styles.css",
-            (_req, res) => res.send(css),
-          );
-        }
-
-        res.send(html);
-
-        return;
-      }
-
-      res.send("no matching layout");
-    }
-
-    res.send("no matching route");
-  });
+    cache.scripts = { ...cache.scripts, ...transformScripts };
+  }
 
   watchAll({
     cache,
@@ -181,19 +119,148 @@ async function serve(projectMeta: ProjectMeta, projectRoot: string) {
     projectPaths,
   });
 
-  await app.listen({ port: projectMeta.port });
+  const server = new Server({
+    handler: async ({ url }) => {
+      const { pathname } = new URL(url);
+      const matchedRoute = matchRoute(cache.routes, pathname);
+
+      if (matchedRoute) {
+        const layoutName = matchedRoute.layout;
+        const matchedLayout = layouts[layoutName];
+
+        if (matchedLayout) {
+          let contentType = "text/html";
+
+          // If there's cached data, use it instead. This fixes
+          // the case in which there was an update over web socket and
+          // also avoids the need to hit the file system for getting
+          // the latest data.
+          const layout = cache.layouts[layoutName] || matchedLayout;
+
+          // TODO: Store context and css so that subsequent requests can find the data
+          const [html, context, css] = await renderPage({
+            projectMeta,
+            layout,
+            route: matchedRoute, // TODO: Cache?
+            mode,
+            pagePath: "todo", // TODO: figure out the path of the page in the system
+            twindSetup,
+            components: cache.components,
+            pathname: url,
+          });
+
+          if (matchedRoute.type === "xml") {
+            // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+            contentType = "text/xml";
+          }
+
+          cache.layoutDefinitions[url + "layout.json"] = layout;
+          cache.routeDefinitions[url + "route.json"] = matchedRoute;
+
+          if (css) {
+            cache.styles[url + "styles.css"] = css;
+          }
+
+          if (context) {
+            cache.contexts[url + "context.json"] = context;
+          }
+
+          return respond(200, html, contentType);
+        }
+
+        return respond(404, "No matching layout");
+      }
+
+      if (pathname === "/components.json") {
+        return respond(
+          200,
+          JSON.stringify(cache.components),
+          "application/json",
+        );
+      }
+
+      const matchedCSS = cache.styles[url];
+
+      if (matchedCSS) {
+        return respond(200, matchedCSS, "text/css");
+      }
+
+      const matchedContext = cache.contexts[url];
+
+      if (matchedContext) {
+        return respond(200, JSON.stringify(matchedContext), "application/json");
+      }
+
+      const matchedLayoutDefinition = cache.layoutDefinitions[url];
+
+      if (matchedLayoutDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedLayoutDefinition),
+          "application/json",
+        );
+      }
+
+      const matchedRouteDefinition = cache.routeDefinitions[url];
+
+      if (matchedRouteDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedRouteDefinition),
+          "application/json",
+        );
+      }
+
+      const assetPath = projectPaths.assets && _path.join(
+        projectPaths.assets,
+        relative(assetsPath || "", trim(pathname, "/")),
+      );
+
+      try {
+        if (assetPath) {
+          const asset = await Deno.readTextFile(assetPath);
+
+          return respond(200, asset, lookup(assetPath));
+        }
+      } catch (_error) {
+        // TODO: What to do with possible errors?
+      }
+
+      if (pathname.endsWith(".js")) {
+        const matchedScript = cache.scripts[trim(pathname, "/")];
+
+        if (matchedScript) {
+          return respond(200, matchedScript, "text/javascript");
+        }
+
+        return respond(404, "No matching script");
+      }
+
+      return respond(404, "No matching route");
+    },
+  });
+  const listener = Deno.listen({ port: projectMeta.port });
+
+  return () => server.serve(listener);
+}
+
+function respond(status: number, text: string, contentType = "text/plain") {
+  return new Response(text, {
+    headers: { "content-type": contentType },
+    status,
+  });
 }
 
 function matchRoute(
   routes: Route["routes"],
-  url: string,
+  pathname: string,
 ): Route | undefined {
   if (!routes) {
     return;
   }
 
-  const parts = trim(url, "/").split("/");
-  const match = routes[url] || routes[parts[0]];
+  const parts = trim(pathname, "/").split("/");
+  const match = routes[pathname] || routes[parts[0]];
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
@@ -202,14 +269,7 @@ function matchRoute(
   return match;
 }
 
-function cleanAssetsPath(p: string) {
-  return "/" + p.split("/").slice(1).join("/");
-}
-
-async function serveGustwindScripts({ router, scriptsCache }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-}) {
+async function compileGustwindScripts() {
   // TODO: Generate a list of these scripts in a dynamic way instead
   // of hardcoding. The question is how to do the lookup.
   const pageEditor = await cache(
@@ -224,7 +284,8 @@ async function serveGustwindScripts({ router, scriptsCache }: {
   const twindRuntime = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_twindRuntime.ts",
   );
-  const scriptsWithFiles = await Promise.all([
+
+  return Promise.all([
     { name: "_pageEditor.ts", file: pageEditor },
     { name: "_toggleEditor.ts", file: toggleEditor },
     { name: "_webSocketClient.ts", file: wsClient },
@@ -232,75 +293,22 @@ async function serveGustwindScripts({ router, scriptsCache }: {
   ].map(({ name, file: { path } }) =>
     compileScript({ name, path, mode: "development" })
   ));
-
-  DEBUG && console.log("serving gustwind scripts", scriptsWithFiles);
-
-  routeScripts({ router, scriptsCache, scriptsWithFiles });
 }
 
-async function serveScripts(
-  { router, scriptsCache, scriptsPath, prefix = "" }: {
-    router: ReturnType<typeof opine>;
-    scriptsCache: ServeCache["scripts"];
-    scriptsPath?: string;
-    prefix?: string;
-  },
-) {
-  if (!scriptsPath) {
-    return;
-  }
-
-  try {
-    const scriptsWithFiles = await compileScripts(scriptsPath, "development");
-
-    routeScripts({ router, scriptsCache, scriptsWithFiles, prefix });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function serveScript({ router, scriptsCache, scriptName, scriptPath }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-  scriptName: string;
-  scriptPath?: string;
-}) {
-  if (!scriptPath) {
-    return;
-  }
-
-  try {
-    const script = await compileScript({
-      path: scriptPath,
-      name: "",
-      mode: "development",
-    });
-    script.name = scriptName;
-
-    routeScripts({ router, scriptsCache, scriptsWithFiles: [script] });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function routeScripts({ router, scriptsCache, scriptsWithFiles, prefix = "" }: {
-  router: ReturnType<typeof opine>;
-  scriptsCache: ServeCache["scripts"];
-  scriptsWithFiles: { path: string; name: string; content: string }[];
-  prefix?: string;
-}) {
-  scriptsWithFiles.forEach(({ name, content }) => {
-    router.get("/" + prefix + name.replace("ts", "js"), (_req, res) => {
-      res.append("Content-Type", "text/javascript");
-      res.send(scriptsCache[name] || content);
-    });
-  });
+async function compileScriptsToJavaScript(path: string) {
+  return Object.fromEntries(
+    (await compileScripts(path, "development")).map(
+      ({ name, content }) => {
+        return [name.replace(".ts", ".js"), content];
+      },
+    ),
+  );
 }
 
 if (import.meta.main) {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serve(projectMeta, Deno.cwd());
+  serveGustwind(projectMeta, Deno.cwd());
 }
 
-export { serve };
+export { serveGustwind };
