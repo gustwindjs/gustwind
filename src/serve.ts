@@ -138,15 +138,14 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   });
   */
 
-  let scripts: Record<string, string>;
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Compiling local scripts");
 
-    scripts = await compileScriptsToJavaScript("./scripts");
+    cache.scripts = await compileScriptsToJavaScript("./scripts");
   } else {
     DEBUG && console.log("Compiling remote scripts");
 
-    scripts = Object.fromEntries(
+    cache.scripts = Object.fromEntries(
       (await compileGustwindScripts()).map(
         ({ name, content }) => {
           return [name.replace(".ts", ".js"), content];
@@ -160,7 +159,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
     const name = "twindSetup.js";
 
-    scripts[name] = (await compileScript({
+    cache.scripts[name] = (await compileScript({
       path: projectPaths.twindSetup,
       name,
       mode: "development",
@@ -173,7 +172,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       projectPaths.scripts,
     );
 
-    scripts = { ...scripts, ...customScripts };
+    cache.scripts = { ...cache.scripts, ...customScripts };
   }
   if (projectPaths.transforms) {
     DEBUG && console.log("Compiling project transforms");
@@ -182,7 +181,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       projectPaths.transforms,
     );
 
-    scripts = { ...scripts, ...transformScripts };
+    cache.scripts = { ...cache.scripts, ...transformScripts };
   }
 
   watchAll({
@@ -250,8 +249,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       }
 
       if (pathname.endsWith(".js")) {
-        // TODO: Read from cache.scripts instead and store initial script data there
-        const matchedScript = scripts[trim(pathname, "/")];
+        const matchedScript = cache.scripts[trim(pathname, "/")];
 
         if (matchedScript) {
           return respond(200, matchedScript, "text/javascript");
