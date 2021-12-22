@@ -161,14 +161,18 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     );
   }
 
+  if (projectPaths.twindSetup) {
+    const name = "twindSetup.js";
+
+    scripts[name] = (await compileScript({
+      path: projectPaths.twindSetup,
+      name,
+      mode: "development",
+    })).content;
+  }
+
   // TODO: Restore
   /*
-  await serveScript({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptName: "twindSetup.js",
-    scriptPath: projectPaths.twindSetup,
-  });
   await serveScripts({
     router: app,
     scriptsCache: cache.scripts,
