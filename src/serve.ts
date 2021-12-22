@@ -66,82 +66,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
       twindSetup,
     );
 
-  /*
-  app.get(
-    "/components.json",
-    (_req, res) => res.json(cache.components),
-  );
-
-  // Use a custom router to capture dynamically generated routes. Otherwise
-  // newly added routes would be after the catch-all route in the system
-  // and the router would never get to them.
-  const dynamicRouter = Router();
-  app.use(dynamicRouter);
-  app.use(async ({ url }, res) => {
-    const matchedRoute = matchRoute(cache.routes, url);
-
-    if (matchedRoute) {
-      const layoutName = matchedRoute.layout;
-      const matchedLayout = layouts[layoutName];
-
-      if (matchedLayout) {
-        // If there's cached data, use it instead. This fixes
-        // the case in which there was an update over web socket and
-        // also avoids the need to hit the file system for getting
-        // the latest data.
-        const layout = cache.layouts[layoutName] || matchedLayout;
-        const [html, context, css] = await renderPage({
-          projectMeta,
-          layout,
-          route: matchedRoute, // TODO: Cache?
-          mode,
-          pagePath: "todo", // TODO: figure out the path of the page in the system
-          twindSetup,
-          components: cache.components,
-          pathname: url,
-        });
-
-        if (matchedRoute.type === "xml") {
-          // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
-          res.set("Content-Type", "text/xml");
-        }
-
-        await dynamicRouter.get(
-          url + "layout.json",
-          (_req, res) => res.json(layout),
-        );
-
-        await dynamicRouter.get(
-          url + "route.json",
-          (_req, res) => res.json(matchedRoute),
-        );
-
-        if (context) {
-          await dynamicRouter.get(
-            url + "context.json",
-            (_req, res) => res.json(context),
-          );
-        }
-
-        if (css) {
-          await dynamicRouter.get(
-            url + "styles.css",
-            (_req, res) => res.send(css),
-          );
-        }
-
-        res.send(html);
-
-        return;
-      }
-
-      res.send("no matching layout");
-    }
-
-    res.send("no matching route");
-  });
-  */
-
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Compiling local scripts");
 
@@ -246,6 +170,14 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
         }
 
         return respond(404, "No matching layout");
+      }
+
+      if (pathname === "/components.json") {
+        return respond(
+          200,
+          JSON.stringify(cache.components),
+          "application/json",
+        );
       }
 
       const matchedCSS = cache.styles[url];
