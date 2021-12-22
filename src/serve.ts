@@ -48,9 +48,19 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     transformsPath: projectPaths.transforms,
   });
 
-  /*
-  const app = opine();
+  const twindSetup = projectPaths.twindSetup
+    ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
+    : {};
 
+  DEBUG &&
+    console.log(
+      "twind setup path",
+      projectPaths.twindSetup,
+      "twind setup",
+      twindSetup,
+    );
+
+  /*
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Serving local scripts");
 
@@ -82,27 +92,12 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     prefix: "transforms/",
   });
 
-  const twindSetup = projectPaths.twindSetup
-    ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
-    : {};
-
-  DEBUG &&
-    console.log(
-      "twind setup path",
-      projectPaths.twindSetup,
-      "twind setup",
-      twindSetup,
-    );
-
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
   app.get(
     "/components.json",
     (_req, res) => res.json(cache.components),
   );
-
-
-
 
   // Use a custom router to capture dynamically generated routes. Otherwise
   // newly added routes would be after the catch-all route in the system
@@ -182,20 +177,53 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     projectPaths,
   });
 
+  // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
   const server = new Server({
-    handler: ({ url }) => {
+    handler: async ({ url }) => {
       const matchedRoute = matchRoute(cache.routes, url);
 
       if (matchedRoute) {
-        // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
-        return new Response("Got match", {
-          headers: { "content-type": "text/html" },
+        const layoutName = matchedRoute.layout;
+        const matchedLayout = layouts[layoutName];
+
+        if (matchedLayout) {
+          let contentType = "text/html";
+
+          // If there's cached data, use it instead. This fixes
+          // the case in which there was an update over web socket and
+          // also avoids the need to hit the file system for getting
+          // the latest data.
+          const layout = cache.layouts[layoutName] || matchedLayout;
+          const [html, context, css] = await renderPage({
+            projectMeta,
+            layout,
+            route: matchedRoute, // TODO: Cache?
+            mode,
+            pagePath: "todo", // TODO: figure out the path of the page in the system
+            twindSetup,
+            components: cache.components,
+            pathname: url,
+          });
+
+          if (matchedRoute.type === "xml") {
+            // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+            contentType = "text/xml";
+          }
+
+          return new Response(html, {
+            headers: { "content-type": contentType },
+          });
+        }
+
+        return new Response("No matching layout", {
+          headers: { "content-type": "text/plain" },
         });
       }
 
-      // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
-      return new Response("No match", {
-        headers: { "content-type": "text/html" },
+      // TODO: Match against js and other assets
+
+      return new Response("No matching route", {
+        headers: { "content-type": "text/plain" },
       });
     },
   });
