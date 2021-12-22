@@ -226,10 +226,10 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
             contentType = "text/xml";
           }
 
-          return respond(html, contentType);
+          return respond(200, html, contentType);
         }
 
-        return respond("No matching layout");
+        return respond(404, "No matching layout");
       }
 
       // TODO: Restore serving assets
@@ -240,13 +240,13 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
         const matchedScript = scripts[trim(pathname, "/")];
 
         if (matchedScript) {
-          return respond(matchedScript, "text/javascript");
+          return respond(200, matchedScript, "text/javascript");
         }
 
-        return respond("No matching script");
+        return respond(404, "No matching script");
       }
 
-      return respond("No matching route");
+      return respond(404, "No matching route");
     },
   });
   const listener = Deno.listen({ port: projectMeta.port });
@@ -260,9 +260,10 @@ function cleanAssetsPath(p: string) {
 }
 */
 
-function respond(text: string, contentType = "text/plain") {
+function respond(status: number, text: string, contentType = "text/plain") {
   return new Response(text, {
     headers: { "content-type": contentType },
+    status,
   });
 }
 
