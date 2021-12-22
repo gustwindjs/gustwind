@@ -61,37 +61,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     );
 
   /*
-  if (import.meta.url.startsWith("file:///")) {
-    DEBUG && console.log("Serving local scripts");
-
-    await serveScripts({
-      router: app,
-      scriptsCache: cache.scripts,
-      scriptsPath: "./scripts",
-    });
-  } else {
-    DEBUG && console.log("Serving remote scripts");
-
-    serveGustwindScripts({ router: app, scriptsCache: cache.scripts });
-  }
-  await serveScript({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptName: "twindSetup.js",
-    scriptPath: projectPaths.twindSetup,
-  });
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.scripts,
-  });
-  await serveScripts({
-    router: app,
-    scriptsCache: cache.scripts,
-    scriptsPath: projectPaths.transforms,
-    prefix: "transforms/",
-  });
-
   assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
   app.get(
@@ -169,6 +138,48 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   });
   */
 
+  let scripts: Record<string, string>;
+  if (import.meta.url.startsWith("file:///")) {
+    DEBUG && console.log("Compiling local scripts");
+
+    scripts = Object.fromEntries(
+      (await compileScripts("./scripts", "development")).map(
+        ({ name, content }) => {
+          return [name.replace(".ts", ".js"), content];
+        },
+      ),
+    );
+  }
+  // TODO: Restore
+  /*
+  else {
+    DEBUG && console.log("Serving remote scripts");
+
+    serveGustwindScripts({ router: app, scriptsCache: cache.scripts });
+  }
+  */
+
+  // TODO: Restore
+  /*
+  await serveScript({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptName: "twindSetup.js",
+    scriptPath: projectPaths.twindSetup,
+  });
+  await serveScripts({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptsPath: projectPaths.scripts,
+  });
+  await serveScripts({
+    router: app,
+    scriptsCache: cache.scripts,
+    scriptsPath: projectPaths.transforms,
+    prefix: "transforms/",
+  });
+  */
+
   watchAll({
     cache,
     wss,
@@ -180,7 +191,8 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
   // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
   const server = new Server({
     handler: async ({ url }) => {
-      const matchedRoute = matchRoute(cache.routes, url);
+      const { pathname } = new URL(url);
+      const matchedRoute = matchRoute(cache.routes, pathname);
 
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
@@ -220,7 +232,19 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
         });
       }
 
-      // TODO: Match against js and other assets
+      if (pathname.endsWith(".js")) {
+        const matchedScript = scripts[trim(pathname, "/")];
+
+        if (matchedScript) {
+          return new Response(matchedScript, {
+            headers: { "content-type": "text/javascript" },
+          });
+        }
+
+        return new Response("No matching script", {
+          headers: { "content-type": "text/plain" },
+        });
+      }
 
       return new Response("No matching route", {
         headers: { "content-type": "text/plain" },
@@ -234,13 +258,12 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
 function matchRoute(
   routes: Route["routes"],
-  url: string,
+  pathname: string,
 ): Route | undefined {
   if (!routes) {
     return;
   }
 
-  const { pathname } = new URL(url);
   const parts = trim(pathname, "/").split("/");
   const match = routes[pathname] || routes[parts[0]];
 
