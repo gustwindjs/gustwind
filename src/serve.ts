@@ -16,11 +16,6 @@ import { watchAll } from "./watch.ts";
 import type { ServeCache } from "./watch.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
-// Include Gustwind scripts to the depsgraph so they can be served at CLI
-import "../scripts/_pageEditor.ts";
-import "../scripts/_toggleEditor.ts";
-import "../scripts/_webSocketClient.ts";
-
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 async function serve(projectMeta: ProjectMeta, projectRoot: string) {
@@ -216,7 +211,7 @@ async function serveGustwindScripts({ router, scriptsCache }: {
   scriptsCache: ServeCache["scripts"];
 }) {
   // TODO: Generate a list of these scripts in a dynamic way instead
-  // of hardcoding
+  // of hardcoding. The question is how to do the lookup.
   const pageEditor = await cache(
     "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
   );
