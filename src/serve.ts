@@ -46,7 +46,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
 
   const wss = getWebsocketServer();
 
-  // TODO: This could happen later on demand to speed up startup
   cache.routes = await expandRoutes({
     mode,
     routes,
