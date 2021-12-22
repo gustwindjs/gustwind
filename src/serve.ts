@@ -61,8 +61,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     );
 
   /*
-  assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
-
   app.get(
     "/components.json",
     (_req, res) => res.json(cache.components),
@@ -193,7 +191,6 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     projectPaths,
   });
 
-  // TODO: Handle static assets - https://deno.com/deploy/docs/serve-static-assets
   const server = new Server({
     handler: async ({ url }) => {
       const { pathname } = new URL(url);
@@ -229,39 +226,44 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
             contentType = "text/xml";
           }
 
-          return new Response(html, {
-            headers: { "content-type": contentType },
-          });
+          return respond(html, contentType);
         }
 
-        return new Response("No matching layout", {
-          headers: { "content-type": "text/plain" },
-        });
+        return respond("No matching layout");
       }
+
+      // TODO: Restore serving assets
+      // assetsPath && app.use(cleanAssetsPath(assetsPath), serveStatic(assetsPath));
 
       if (pathname.endsWith(".js")) {
         // TODO: Read from cache.scripts instead and store initial script data there
         const matchedScript = scripts[trim(pathname, "/")];
 
         if (matchedScript) {
-          return new Response(matchedScript, {
-            headers: { "content-type": "text/javascript" },
-          });
+          return respond(matchedScript, "text/javascript");
         }
 
-        return new Response("No matching script", {
-          headers: { "content-type": "text/plain" },
-        });
+        return respond("No matching script");
       }
 
-      return new Response("No matching route", {
-        headers: { "content-type": "text/plain" },
-      });
+      return respond("No matching route");
     },
   });
   const listener = Deno.listen({ port: projectMeta.port });
 
   return () => server.serve(listener);
+}
+
+/*
+function cleanAssetsPath(p: string) {
+  return "/" + p.split("/").slice(1).join("/");
+}
+*/
+
+function respond(text: string, contentType = "text/plain") {
+  return new Response(text, {
+    headers: { "content-type": contentType },
+  });
 }
 
 function matchRoute(
@@ -317,12 +319,6 @@ async function compileScriptsToJavaScript(path: string) {
     ),
   );
 }
-
-/*
-function cleanAssetsPath(p: string) {
-  return "/" + p.split("/").slice(1).join("/");
-}
-*/
 
 if (import.meta.main) {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
