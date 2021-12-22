@@ -206,6 +206,7 @@ type ServeCache = {
   components: Record<string, Component>;
   layouts: Record<string, Layout>;
   scripts: Record<string, string>;
+  styles: Record<string, string>;
   routes: Record<string, Route>;
 };
 

@@ -24,6 +24,7 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     components: {},
     layouts: {},
     scripts: {},
+    styles: {},
     routes: {},
   };
 
@@ -227,10 +228,20 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
             contentType = "text/xml";
           }
 
+          if (css) {
+            cache.styles[url + "styles.css"] = css;
+          }
+
           return respond(200, html, contentType);
         }
 
         return respond(404, "No matching layout");
+      }
+
+      const matchedCSS = cache.styles[url];
+
+      if (matchedCSS) {
+        return respond(200, matchedCSS, "text/css");
       }
 
       const assetPath = projectPaths.assets && _path.join(

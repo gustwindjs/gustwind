@@ -81,6 +81,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (develop) {
+    // TODO: What to do if and when meta.json changes? Likely this needs a
+    // file watcher that's able to restart the server.
     const projectMeta = await getJson<ProjectMeta>(
       path.join(cwd, "./meta.json"),
     );
