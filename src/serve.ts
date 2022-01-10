@@ -296,13 +296,21 @@ async function compileGustwindScripts() {
 }
 
 async function compileScriptsToJavaScript(path: string) {
-  return Object.fromEntries(
-    (await compileScripts(path, "development")).map(
-      ({ name, content }) => {
-        return [name.replace(".ts", ".js"), content];
-      },
-    ),
-  );
+  try {
+    return Object.fromEntries(
+      (await compileScripts(path, "development")).map(
+        ({ name, content }) => {
+          return [name.replace(".ts", ".js"), content];
+        },
+      ),
+    );
+  } catch (error) {
+    DEBUG && console.error(error);
+
+    // If the scripts directory doesn't exist or something else goes wrong,
+    // above might throw
+    return {};
+  }
 }
 
 if (import.meta.main) {
