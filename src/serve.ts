@@ -10,13 +10,17 @@ import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import { expandRoutes } from "./expandRoutes.ts";
-import { watchAll } from "./watch.ts";
 import type { ServeCache } from "./watch.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
+// TODO: Use an object over individual parameters
+async function serveGustwind(
+  projectMeta: ProjectMeta,
+  projectRoot: string,
+  watchFiles = true,
+) {
   // The cache is populated based on web socket or file system calls. If there's
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
@@ -111,13 +115,17 @@ async function serveGustwind(projectMeta: ProjectMeta, projectRoot: string) {
     cache.scripts = { ...cache.scripts, ...transformScripts };
   }
 
-  watchAll({
-    cache,
-    wss,
-    mode,
-    projectRoot,
-    projectPaths,
-  });
+  if (watchFiles) {
+    import("./watch.ts").then(({ watchAll }) =>
+      watchAll({
+        cache,
+        wss,
+        mode,
+        projectRoot,
+        projectPaths,
+      })
+    );
+  }
 
   const server = new Server({
     handler: async ({ url }) => {
