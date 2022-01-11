@@ -12,6 +12,8 @@ import { getCache } from "./src/cache.ts";
 import { VERSION } from "./version.ts";
 import type { ProjectMeta } from "./types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 function usage() {
   console.log(`
 Usage: gustwind [-w|-b|-d] [-D]
@@ -37,7 +39,7 @@ type CliArgs = {
 };
 
 export async function main(cliArgs: string[]): Promise<number | undefined> {
-  const cwd = Deno.cwd();
+  const projectRoot = Deno.cwd();
   const {
     help,
     version,
@@ -86,21 +88,39 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     // TODO: What to do if and when meta.json changes? Likely this needs a
     // file watcher that's able to restart the server.
     const projectMeta = await getJson<ProjectMeta>(
-      path.join(cwd, "./meta.json"),
+      path.join(projectRoot, "./meta.json"),
     );
 
     const startTime = performance.now();
     console.log("Starting development server");
 
+    const projectPaths = projectMeta.paths;
     const cache = getCache();
     watchAll({
       cache,
       mode: "development",
-      projectRoot: cwd,
-      projectPaths: projectMeta.paths,
+      projectRoot: projectRoot,
+      projectPaths,
     });
 
-    const serve = await serveGustwind(projectMeta, cwd, cache);
+    // TODO: Watch twindSetup file to update the cache on change
+    cache.twindSetup = projectPaths.twindSetup
+      ? await import(
+        "file://" + path.join(projectRoot, projectPaths.twindSetup) +
+          "?cache=" +
+          new Date().getTime()
+      ).then((m) => m.default)
+      : {};
+
+    DEBUG &&
+      console.log(
+        "twind setup path",
+        projectPaths.twindSetup,
+        "twind setup",
+        cache.twindSetup,
+      );
+
+    const serve = await serveGustwind(projectMeta, projectRoot, cache);
 
     const port = projectMeta.port;
 
@@ -125,10 +145,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
   if (build) {
     const projectMeta = await getJson<ProjectMeta>(
-      path.join(cwd, "./meta.json"),
+      path.join(projectRoot, "./meta.json"),
     );
 
-    await buildProject(projectMeta, cwd);
+    await buildProject(projectMeta, projectRoot);
 
     return 0;
   }

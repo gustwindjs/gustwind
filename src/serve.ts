@@ -43,18 +43,6 @@ async function serveGustwind(
     transformsPath: projectPaths.transforms,
   });
 
-  cache.twindSetup = projectPaths.twindSetup
-    ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
-    : {};
-
-  DEBUG &&
-    console.log(
-      "twind setup path",
-      projectPaths.twindSetup,
-      "twind setup",
-      cache.twindSetup,
-    );
-
   if (import.meta.url.startsWith("file:///")) {
     DEBUG && console.log("Compiling local scripts");
 
