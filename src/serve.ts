@@ -8,7 +8,6 @@ import { getJson, resolvePaths } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
-import { getWebsocketServer } from "./webSockets.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import type { ServeCache } from "./watch.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
@@ -47,8 +46,6 @@ async function serveGustwind(
     getDefinitions<Component>(projectPaths.components),
   ]);
   cache.components = components;
-
-  const wss = getWebsocketServer();
 
   cache.routes = await expandRoutes({
     mode,
@@ -119,7 +116,6 @@ async function serveGustwind(
     import("./watch.ts").then(({ watchAll }) =>
       watchAll({
         cache,
-        wss,
         mode,
         projectRoot,
         projectPaths,

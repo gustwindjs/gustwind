@@ -184,14 +184,15 @@ function watchScripts(
 }
 
 function watchAll(
-  { wss, cache, mode, projectRoot, projectPaths }: {
-    wss: ReturnType<typeof getWebsocketServer>;
+  { cache, mode, projectRoot, projectPaths }: {
     cache: ServeCache;
     mode: Mode;
     projectRoot: string;
     projectPaths: ProjectMeta["paths"];
   },
 ) {
+  const wss = getWebsocketServer();
+
   watchDataSourceInputs({
     wss,
     path: projectRoot,
