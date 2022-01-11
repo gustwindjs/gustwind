@@ -9,9 +9,7 @@ import { trim } from "../utils/string.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { expandRoutes } from "./expandRoutes.ts";
-import { getCache } from "./cache.ts";
-import type { ServeCache } from "./watch.ts";
-
+import { getCache, type ServeCache } from "./cache.ts";
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -45,7 +43,7 @@ async function serveGustwind(
     transformsPath: projectPaths.transforms,
   });
 
-  const twindSetup = projectPaths.twindSetup
+  cache.twindSetup = projectPaths.twindSetup
     ? await import("file://" + projectPaths.twindSetup).then((m) => m.default)
     : {};
 
@@ -54,7 +52,7 @@ async function serveGustwind(
       "twind setup path",
       projectPaths.twindSetup,
       "twind setup",
-      twindSetup,
+      cache.twindSetup,
     );
 
   if (import.meta.url.startsWith("file:///")) {
@@ -128,7 +126,7 @@ async function serveGustwind(
             route: matchedRoute, // TODO: Cache?
             mode,
             pagePath: "todo", // TODO: figure out the path of the page in the system
-            twindSetup,
+            twindSetup: cache.twindSetup,
             components: cache.components,
             pathname: url,
           });

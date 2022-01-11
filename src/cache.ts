@@ -1,4 +1,17 @@
-import type { ServeCache } from "./watch.ts";
+import type { Component, DataContext, Layout, Route } from "../types.ts";
+
+type ServeCache = {
+  contexts: Record<string, DataContext>;
+  components: Record<string, Component>;
+  layoutDefinitions: Record<string, Layout>;
+  layouts: Record<string, Layout>;
+  scripts: Record<string, string>;
+  styles: Record<string, string>;
+  routes: Record<string, Route>;
+  routeDefinitions: Record<string, Route>;
+  // TODO: Does twind setup have a better type?
+  twindSetup: Record<string, unknown>;
+};
 
 function getCache(): ServeCache {
   return {
@@ -10,7 +23,10 @@ function getCache(): ServeCache {
     styles: {},
     routes: {},
     routeDefinitions: {},
+    twindSetup: {},
   };
 }
 
 export { getCache };
+
+export type { ServeCache };
