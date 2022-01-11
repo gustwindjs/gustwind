@@ -9,31 +9,22 @@ import { trim } from "../utils/string.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { expandRoutes } from "./expandRoutes.ts";
+import { getCache } from "./cache.ts";
 import type { ServeCache } from "./watch.ts";
+
 import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-// TODO: Use an object over individual parameters
 async function serveGustwind(
   projectMeta: ProjectMeta,
   projectRoot: string,
-  watchFiles = true,
+  initialCache?: ServeCache,
 ) {
-  // The cache is populated based on web socket or file system calls. If there's
+  // The cache is populated based on an external source (web socket, fs). If there's
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
-  const cache: ServeCache = {
-    contexts: {},
-    components: {},
-    layouts: {},
-    layoutDefinitions: {},
-    scripts: {},
-    styles: {},
-    routes: {},
-    routeDefinitions: {},
-  };
-
+  const cache = initialCache || getCache();
   const mode = "development";
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
@@ -110,17 +101,6 @@ async function serveGustwind(
     );
 
     cache.scripts = { ...cache.scripts, ...transformScripts };
-  }
-
-  if (watchFiles) {
-    import("./watch.ts").then(({ watchAll }) =>
-      watchAll({
-        cache,
-        mode,
-        projectRoot,
-        projectPaths,
-      })
-    );
   }
 
   const server = new Server({

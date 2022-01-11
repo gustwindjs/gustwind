@@ -7,6 +7,8 @@ import { flags, path } from "./deps.ts";
 import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
 import { serveGustwind } from "./src/serve.ts";
+import { watchAll } from "./src/watch.ts";
+import { getCache } from "./src/cache.ts";
 import { VERSION } from "./version.ts";
 import type { ProjectMeta } from "./types.ts";
 
@@ -90,7 +92,15 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     const startTime = performance.now();
     console.log("Starting development server");
 
-    const serve = await serveGustwind(projectMeta, cwd);
+    const cache = getCache();
+    watchAll({
+      cache,
+      mode: "development",
+      projectRoot: cwd,
+      projectPaths: projectMeta.paths,
+    });
+
+    const serve = await serveGustwind(projectMeta, cwd, cache);
 
     const port = projectMeta.port;
 
