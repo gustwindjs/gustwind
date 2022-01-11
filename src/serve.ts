@@ -232,6 +232,7 @@ async function serveGustwind(
         }
       } catch (_error) {
         // TODO: What to do with possible errors?
+        DEBUG && console.error(_error);
       }
 
       if (pathname.endsWith(".js")) {
