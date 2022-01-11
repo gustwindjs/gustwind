@@ -10,20 +10,25 @@ import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { Component, Layout, ProjectMeta, Route } from "../types.ts";
+import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function serveGustwind(
-  projectMeta: ProjectMeta,
-  projectRoot: string,
-  initialCache?: ServeCache,
-) {
+async function serveGustwind({
+  projectMeta,
+  projectRoot,
+  mode,
+  initialCache,
+}: {
+  projectMeta: ProjectMeta;
+  projectRoot: string;
+  mode: Mode;
+  initialCache?: ServeCache;
+}) {
   // The cache is populated based on an external source (web socket, fs). If there's
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache = initialCache || getCache();
-  const mode = "development";
   const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
@@ -43,20 +48,22 @@ async function serveGustwind(
     transformsPath: projectPaths.transforms,
   });
 
-  if (import.meta.url.startsWith("file:///")) {
-    DEBUG && console.log("Compiling local scripts");
+  if (mode === "development") {
+    if (import.meta.url.startsWith("file:///")) {
+      DEBUG && console.log("Compiling local scripts");
 
-    cache.scripts = await compileScriptsToJavaScript("./scripts");
-  } else {
-    DEBUG && console.log("Compiling remote scripts");
+      cache.scripts = await compileScriptsToJavaScript("./scripts");
+    } else {
+      DEBUG && console.log("Compiling remote scripts");
 
-    cache.scripts = Object.fromEntries(
-      (await compileGustwindScripts()).map(
-        ({ name, content }) => {
-          return [name.replace(".ts", ".js"), content];
-        },
-      ),
-    );
+      cache.scripts = Object.fromEntries(
+        (await compileGustwindScripts()).map(
+          ({ name, content }) => {
+            return [name.replace(".ts", ".js"), content];
+          },
+        ),
+      );
+    }
   }
 
   if (projectPaths.twindSetup) {
@@ -287,7 +294,7 @@ async function compileScriptsToJavaScript(path: string) {
 if (import.meta.main) {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
-  serveGustwind(projectMeta, Deno.cwd());
+  serveGustwind({ projectMeta, projectRoot: Deno.cwd(), mode: "development" });
 }
 
 export { serveGustwind };
