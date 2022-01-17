@@ -52,7 +52,13 @@ async function serveGustwind({
     if (import.meta.url.startsWith("file:///")) {
       DEBUG && console.log("Compiling local scripts");
 
-      cache.scripts = await compileScriptsToJavaScript("./scripts");
+      cache.scripts = await compileScriptsToJavaScript(
+        _path.join(
+          _path.dirname(_path.fromFileUrl(import.meta.url)),
+          "..",
+          "scripts",
+        ),
+      );
     } else {
       DEBUG && console.log("Compiling remote scripts");
 
