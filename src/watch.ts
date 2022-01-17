@@ -8,10 +8,10 @@ import type { Component, Layout, Mode, ProjectMeta } from "../types.ts";
 import type { ServeCache } from "./cache.ts";
 
 function watchDataSourceInputs(
-  { wss, path, routesCache, mode, dataSourcesPath, transformsPath }: {
+  { wss, path, cache, mode, dataSourcesPath, transformsPath }: {
     wss: ReturnType<typeof getWebsocketServer>;
     path: string;
-    routesCache: ServeCache["routes"];
+    cache: ServeCache;
     mode: Mode;
     dataSourcesPath: ProjectMeta["paths"]["dataSources"];
     transformsPath: ProjectMeta["paths"]["transforms"];
@@ -19,7 +19,7 @@ function watchDataSourceInputs(
 ) {
   const watched = new Set();
 
-  Object.values(routesCache).forEach((route) => {
+  Object.values(cache.routes).forEach((route) => {
     const { dataSources, url } = route;
 
     dataSources?.forEach(({ input }) => {
@@ -34,7 +34,7 @@ function watchDataSourceInputs(
             dataSourcesPath,
             transformsPath,
           });
-          routesCache[u] = r;
+          cache.routes[u] = r;
 
           wss.clients.forEach((socket) => {
             socket.send(JSON.stringify({ type: "reloadPage" }));
@@ -61,7 +61,7 @@ function watchMeta(
 
 function watchComponents(
   wss: ReturnType<typeof getWebsocketServer>,
-  componentCache: ServeCache["components"],
+  cache: ServeCache,
   path?: string,
 ) {
   path && watch(path, ".json", (matchedPath) => {
@@ -75,7 +75,9 @@ function watchComponents(
       );
 
       if (componentName && componentDefinition) {
-        componentCache[componentName] = componentDefinition;
+        console.log("Updating component", componentName, componentDefinition);
+
+        cache.components[componentName] = componentDefinition;
       }
 
       socket.send(JSON.stringify({ type: "reloadPage" }));
@@ -110,7 +112,7 @@ function watchRoutes(
 
 function watchLayouts(
   wss: ReturnType<typeof getWebsocketServer>,
-  layoutsCache: ServeCache["layouts"],
+  cache: ServeCache,
   path?: string,
 ) {
   path && watch(path, ".json", (matchedPath) => {
@@ -121,7 +123,7 @@ function watchLayouts(
       );
 
       if (layoutName && layoutDefinition) {
-        layoutsCache[layoutName] = layoutDefinition;
+        cache.layouts[layoutName] = layoutDefinition;
       }
 
       socket.send(JSON.stringify({ type: "reloadPage" }));
@@ -146,7 +148,7 @@ function watchTransforms(
 
 function watchScripts(
   wss: ReturnType<typeof getWebsocketServer>,
-  scriptsCache: ServeCache["scripts"],
+  cache: ServeCache,
   path?: string,
 ) {
   path &&
@@ -158,7 +160,7 @@ function watchScripts(
 
       console.log("Changed script", matchedPath);
 
-      scriptsCache[scriptName + ".ts"] = await compileTypeScript(
+      cache.scripts[scriptName + ".ts"] = await compileTypeScript(
         matchedPath,
         "development",
       );
@@ -190,17 +192,17 @@ function watchAll(
   watchDataSourceInputs({
     wss,
     path: projectRoot,
-    routesCache: cache.routes,
+    cache,
     mode,
     dataSourcesPath: projectPaths.dataSources,
     transformsPath: projectPaths.transforms,
   });
-  watchScripts(wss, cache.scripts, projectPaths.scripts);
+  watchScripts(wss, cache, projectPaths.scripts);
   watchMeta(wss, projectRoot);
-  watchComponents(wss, cache.components, projectPaths.components);
+  watchComponents(wss, cache, projectPaths.components);
   watchDataSources(wss, projectPaths.dataSources);
   watchRoutes(wss, projectPaths.routes);
-  watchLayouts(wss, cache.layouts, projectPaths.layouts);
+  watchLayouts(wss, cache, projectPaths.layouts);
   watchTransforms(wss, projectPaths.transforms);
 }
 
