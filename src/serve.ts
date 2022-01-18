@@ -201,7 +201,7 @@ async function serveGustwind({
 
       try {
         if (assetPath) {
-          const asset = await Deno.readTextFile(assetPath);
+          const asset = await Deno.readFile(assetPath);
 
           return respond(200, asset, lookup(assetPath));
         }
@@ -228,7 +228,11 @@ async function serveGustwind({
   return () => server.serve(listener);
 }
 
-function respond(status: number, text: string, contentType = "text/plain") {
+function respond(
+  status: number,
+  text: string | Uint8Array,
+  contentType = "text/plain",
+) {
   return new Response(text, {
     headers: { "content-type": contentType },
     status,
