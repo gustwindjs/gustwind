@@ -1,6 +1,4 @@
-Gustwind is an experimental site generator built on top of JSON definitions using [Deno](https://deno.land/), [Twind](https://twind.dev/), and [Sidewind](https://sidewind.js.org/).
-
-The goal of the design is to allow component oriented development of large scale sites (more than thousands of pages). Conceptually it's split as follows:
+Gustwind is an experimental site generator built on top of JSON definitions using [Deno](https://deno.land/). The goal of the design is to allow component oriented development of large scale sites. Conceptually it's split as follows:
 
 * **Development mode** lets you preview the site and modify page definitions to commit later
 * **Production mode** generates pure static HTML with CSS inlined to the files

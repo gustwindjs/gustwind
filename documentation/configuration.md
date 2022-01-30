@@ -18,7 +18,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
   "scripts": [
     {
       "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@6.0.0/dist/sidewind.umd.production.min.js"
+      "src": "https://unpkg.com/sidewind@6.0.2/dist/sidewind.umd.production.min.js"
     }
   ],
   "paths": {
