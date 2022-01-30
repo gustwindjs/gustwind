@@ -322,10 +322,14 @@ function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
 
       matchedElement.classList.add("border");
       matchedElement.classList.add("border-red-800");
-      matchedElement.setAttribute("contenteditable", "true");
-      matchedElement.addEventListener("focusout", focusOutListener);
-
       hoveredElements.add(matchedElement);
+
+      // If element has children, enabling contenteditable on it will mess
+      // up logic due to DOM change.
+      if (!Array.isArray(p.children)) {
+        matchedElement.setAttribute("contenteditable", "true");
+        matchedElement.addEventListener("focusout", focusOutListener);
+      }
     }
   });
 
