@@ -1,6 +1,7 @@
-import type { Transform } from "../types.ts";
+import type { Mode, Transform } from "../types.ts";
 
 async function transform(
+  mode: Mode,
   transformsPath: string,
   transformNames?: Transform[],
   input?: unknown,
@@ -23,7 +24,11 @@ async function transform(
             name,
           );
 
-        return import("file://" + transformPath);
+        return import(
+          mode === "production"
+            ? "file://" + transformPath
+            : "file://" + transformPath + "?cache=" + new Date().getTime()
+        );
       }),
     );
 

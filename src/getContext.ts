@@ -18,8 +18,6 @@ async function getContext(
       dataSources.map(({ id, operation, input, transformWith }) => {
         const dataSourcePath = join(dataSourcesPath, `${operation}.ts`);
 
-        // TODO: Expose caching behavior as this is likely dependent on mode.
-        // During production mode it should be cached!
         return import(
           mode === "production"
             ? "file://" + dataSourcePath
@@ -29,6 +27,7 @@ async function getContext(
         ) => [
           id,
           await transform(
+            mode,
             transformsPath,
             transformWith,
             await o.default(input),

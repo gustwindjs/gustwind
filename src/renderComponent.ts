@@ -58,6 +58,7 @@ async function renderComponent(
 
     if (typeof component.inputText === "string") {
       transformedContext = await transform(
+        "production",
         transformsPath,
         component?.transformWith,
         component.inputText,
@@ -76,6 +77,7 @@ async function renderComponent(
       }
 
       transformedContext = await transform(
+        "production",
         transformsPath,
         component?.transformWith,
         input,
