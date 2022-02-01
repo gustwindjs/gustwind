@@ -56,7 +56,7 @@ type Route = {
   dataSources?: DataSource[];
   expand?: {
     dataSources?: DataSource[];
-    matchBy?: { dataSource: string; collection: string; slug: string };
+    matchBy?: { dataSource: string; collection?: string; slug: string };
   };
   // These are attached later
   context?: DataContext;

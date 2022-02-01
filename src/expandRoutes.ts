@@ -65,23 +65,45 @@ async function expandRoute(
     }
 
     const expandedRoutes: Record<string, Route> = {};
-    Object.values(dataSource[matchBy.collection]).forEach((match) => {
-      const u = get(match, matchBy.slug);
 
-      if (!u) {
-        throw new Error("Route is missing");
-      }
+    if (matchBy.collection) {
+      Object.values(dataSource[matchBy.collection]).forEach((match) => {
+        const u = get(match, matchBy.slug);
 
-      // @ts-ignore route.expand exists by now for sure
-      const { meta, layout } = route.expand;
+        if (!u) {
+          throw new Error("Route is missing");
+        }
 
-      expandedRoutes[u] = {
-        meta,
-        layout,
-        context: route.context ? { ...route.context, match } : { match },
-        url: u,
-      };
-    });
+        // @ts-ignore route.expand exists by now for sure
+        const { meta, layout } = route.expand;
+
+        expandedRoutes[u] = {
+          meta,
+          layout,
+          context: route.context ? { ...route.context, match } : { match },
+          url: u,
+        };
+      });
+    } else {
+      dataSource.content.forEach((match) => {
+        const u = get(match, matchBy.slug);
+
+        if (!u) {
+          throw new Error("Route is missing");
+        }
+
+        // @ts-ignore route.expand exists by now for sure
+        const { meta, layout } = route.expand;
+
+        // @ts-ignore Not sure how to type this
+        expandedRoutes[u] = {
+          meta,
+          layout,
+          context: { match },
+          url: u,
+        };
+      });
+    }
 
     ret = {
       ...route,
