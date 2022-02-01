@@ -5,6 +5,7 @@ type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
 type Component = {
+  visibleIf?: string; // A string to evaluate to figure out if to render an element at all
   element?: string; // TODO: Only valid DOM element names + components
   children?: string | Component[];
   class?: string;

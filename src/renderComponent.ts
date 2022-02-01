@@ -29,6 +29,20 @@ async function renderComponent(
     }
   }
 
+  if (component.visibleIf) {
+    const expressionToEvaluate = component.visibleIf;
+
+    const showComponent = evaluateExpression(
+      expressionToEvaluate,
+      // @ts-ignore: Figure out how to type __bound
+      context.__bound || context,
+    );
+
+    if (!showComponent) {
+      return Promise.resolve("");
+    }
+  }
+
   if (foundComponent) {
     if (Array.isArray(foundComponent)) {
       return await renderComponent(
