@@ -25,7 +25,12 @@ async function renderComponent(
     if (isObject(component.__bind)) {
       context = { ...context, __bound: component.__bind };
     } else {
-      context = { ...context, __bound: get(context, component.__bind) };
+      context = {
+        ...context,
+        __bound: get(context, component.__bind) ||
+          // @ts-ignore It's important to check possibly bound context too
+          get(context.__bound, component.__bind),
+      };
     }
   }
 
