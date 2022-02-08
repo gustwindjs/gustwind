@@ -23,7 +23,6 @@
       ],
       "matchBy": {
         "dataSource": "documentation",
-        "collection": "content",
         "slug": "data.slug"
       },
       "layout": "documentationPage",
@@ -56,7 +55,6 @@
       ],
       "matchBy": {
         "dataSource": "blogPosts",
-        "collection": "content",
         "slug": "data.slug"
       },
       "layout": "blogPage",
