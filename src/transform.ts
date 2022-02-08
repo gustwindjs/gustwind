@@ -7,7 +7,8 @@ async function transform(
   input?: unknown,
 ): Promise<Record<string, unknown>> {
   if (!transformNames) {
-    return Promise.resolve({ content: input });
+    // @ts-ignore The type is unknown here
+    return Promise.resolve(input);
   }
 
   if ("Deno" in globalThis) {
