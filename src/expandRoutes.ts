@@ -73,7 +73,11 @@ async function expandRoute(
           const u = get(match, matchBy.slug);
 
           if (!u) {
-            throw new Error("Route is missing");
+            throw new Error(
+              `Route ${matchBy.slug} is missing from ${
+                JSON.stringify(match, null, 2)
+              }`,
+            );
           }
 
           // @ts-ignore route.expand exists by now for sure
@@ -92,7 +96,11 @@ async function expandRoute(
         const u = get(match, matchBy.slug);
 
         if (!u) {
-          throw new Error("Route is missing");
+          throw new Error(
+            `Route ${matchBy.slug} is missing from ${
+              JSON.stringify(match, null, 2)
+            }`,
+          );
         }
 
         // @ts-ignore route.expand exists by now for sure
