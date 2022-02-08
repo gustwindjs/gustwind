@@ -66,7 +66,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     await Deno.remove(outputDirectory, { recursive: true });
 
     Object.entries(expandedRoutes).forEach(([url, route]) => {
-      workerPool.addTaskToQueue({
+      route.layout && workerPool.addTaskToQueue({
         type: "build",
         payload: {
           layout: layouts[route.layout],

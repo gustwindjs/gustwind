@@ -49,7 +49,7 @@ type MarkdownWithFrontmatter = {
 
 type Route = {
   type?: "html" | "xml";
-  layout: string;
+  layout?: string;
   meta: Meta;
   scripts?: Scripts;
   routes?: Record<string, Route>;
