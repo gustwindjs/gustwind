@@ -72,7 +72,7 @@ type Scripts = { type: string; src: string }[];
 
 type ProjectMeta = {
   port: number;
-  amountOfBuildThreads: number | "cpuMax";
+  amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   scripts?: Scripts;
   meta: Meta;
   paths: {

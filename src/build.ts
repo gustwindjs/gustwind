@@ -185,6 +185,10 @@ function getAmountOfThreads(
     // -1 since the main thread needs one CPU but at least one
     return Math.max(navigator.hardwareConcurrency - 1, 1);
   }
+  if (amountOfThreads === "cpuHalf") {
+    // -1 since the main thread needs one CPU but at least one
+    return Math.max(Math.ceil(navigator.hardwareConcurrency / 2), 1);
+  }
 
   return amountOfThreads;
 }
