@@ -1,6 +1,6 @@
 import { compileGustwindScripts } from "./compileGustwindScripts.ts";
 
-export const VERSION = "0.18.1";
+export const VERSION = "0.19.0";
 
 export async function prepublish(_version: string) {
   try {
