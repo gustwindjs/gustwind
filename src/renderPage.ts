@@ -88,46 +88,52 @@ async function renderPage({
 
   DEBUG && console.log("rendering a page with context", context);
 
-  const [headMarkup, bodyMarkup] = await Promise.all([
-    renderHTML(
-      projectPaths.transforms,
-      layout.head,
-      components,
-      context,
-      pathname,
-    ),
-    renderHTML(
-      projectPaths.transforms,
-      layout.body,
-      components,
-      context,
-      pathname,
-    ),
-  ]);
+  try {
+    const [headMarkup, bodyMarkup] = await Promise.all([
+      renderHTML(
+        projectPaths.transforms,
+        layout.head,
+        components,
+        context,
+        pathname,
+      ),
+      renderHTML(
+        projectPaths.transforms,
+        layout.body,
+        components,
+        context,
+        pathname,
+      ),
+    ]);
 
-  if (route.type === "xml") {
-    return [xmlTemplate(bodyMarkup), context];
+    if (route.type === "xml") {
+      return [xmlTemplate(bodyMarkup), context];
+    }
+
+    // https://web.dev/defer-non-critical-css/
+    const styleTag = projectMeta.features?.extractCSS
+      ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
+      : getStyleTag(stylesheet);
+
+    let css = "";
+    if (projectMeta.features?.extractCSS) {
+      css = getStyleTagProperties(stylesheet).textContent;
+    }
+
+    return [
+      htmlTemplate(
+        route.meta?.language || projectMeta.meta?.language,
+        headMarkup + styleTag,
+        bodyMarkup,
+      ),
+      context,
+      css,
+    ];
+  } catch (error) {
+    console.error("Failed to render", route.url, error);
   }
 
-  // https://web.dev/defer-non-critical-css/
-  const styleTag = projectMeta.features?.extractCSS
-    ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
-    : getStyleTag(stylesheet);
-
-  let css = "";
-  if (projectMeta.features?.extractCSS) {
-    css = getStyleTagProperties(stylesheet).textContent;
-  }
-
-  return [
-    htmlTemplate(
-      route.meta?.language || projectMeta.meta?.language,
-      headMarkup + styleTag,
-      bodyMarkup,
-    ),
-    context,
-    css,
-  ];
+  return ["", {}];
 }
 
 function renderHTML(
