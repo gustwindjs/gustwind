@@ -67,25 +67,28 @@ async function expandRoute(
     const expandedRoutes: Record<string, Route> = {};
 
     if (matchBy.collection) {
-      Object.values(dataSource[matchBy.collection]).forEach((match) => {
-        const u = get(match, matchBy.slug);
+      (Array.isArray(dataSource)
+        ? dataSource
+        : Object.values(dataSource[matchBy.collection])).forEach((match) => {
+          const u = get(match, matchBy.slug);
 
-        if (!u) {
-          throw new Error("Route is missing");
-        }
+          if (!u) {
+            throw new Error("Route is missing");
+          }
 
-        // @ts-ignore route.expand exists by now for sure
-        const { meta, layout } = route.expand;
+          // @ts-ignore route.expand exists by now for sure
+          const { meta, layout } = route.expand;
 
-        expandedRoutes[u] = {
-          meta,
-          layout,
-          context: route.context ? { ...route.context, match } : { match },
-          url: u,
-        };
-      });
+          expandedRoutes[u] = {
+            meta,
+            layout,
+            context: route.context ? { ...route.context, match } : { match },
+            url: u,
+          };
+        });
     } else {
-      dataSource.content.forEach((match) => {
+      // TODO: Give a warning if dataSource isn't an array
+      Array.isArray(dataSource) && dataSource.forEach((match) => {
         const u = get(match, matchBy.slug);
 
         if (!u) {
