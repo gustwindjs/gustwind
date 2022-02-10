@@ -1,4 +1,4 @@
-import { get } from "../utils/functional.ts";
+import { get, isObject } from "../utils/functional.ts";
 import type { Attributes, DataContext } from "../types.ts";
 
 function evaluateFields(context?: DataContext, attributes?: Attributes) {
@@ -20,12 +20,14 @@ function evaluateField(
     // @ts-ignore: TODO: How to type __bound
     return [k.slice(2), get(context.__bound, v) || get(context, v)];
   } else if (k.startsWith("==")) {
+    // @ts-ignore: TODO: How to type __bound
+    const ctx = context.__bound || context;
+
     return [
       k.slice(2),
       evaluateExpression(
         v,
-        // @ts-ignore: TODO: How to type __bound
-        context.__bound || context,
+        isObject(ctx) ? ctx : { data: ctx },
       ),
     ];
   }
