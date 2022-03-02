@@ -104,11 +104,42 @@ async function serveGustwind({
 
   const server = new Server({
     handler: async ({ url }) => {
+      const matchedContext = cache.contexts[url];
+
+      if (matchedContext) {
+        return respond(200, JSON.stringify(matchedContext), "application/json");
+      }
+
+      const matchedLayoutDefinition = cache.layoutDefinitions[url];
+
+      if (matchedLayoutDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedLayoutDefinition),
+          "application/json",
+        );
+      }
+
+      const matchedRouteDefinition = cache.routeDefinitions[url];
+
+      if (matchedRouteDefinition) {
+        return respond(
+          200,
+          JSON.stringify(matchedRouteDefinition),
+          "application/json",
+        );
+      }
+
       const { pathname } = new URL(url);
       const matchedRoute = matchRoute(cache.routes, pathname);
 
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
+
+        if (!layoutName) {
+          return respond(404, "No matching layout");
+        }
+
         const matchedLayout = layouts[layoutName];
 
         if (matchedLayout) {
@@ -129,7 +160,7 @@ async function serveGustwind({
             pagePath: "todo", // TODO: figure out the path of the page in the system
             twindSetup: cache.twindSetup,
             components: cache.components,
-            pathname: url,
+            pathname,
           });
 
           if (matchedRoute.type === "xml") {
@@ -166,32 +197,6 @@ async function serveGustwind({
 
       if (matchedCSS) {
         return respond(200, matchedCSS, "text/css");
-      }
-
-      const matchedContext = cache.contexts[url];
-
-      if (matchedContext) {
-        return respond(200, JSON.stringify(matchedContext), "application/json");
-      }
-
-      const matchedLayoutDefinition = cache.layoutDefinitions[url];
-
-      if (matchedLayoutDefinition) {
-        return respond(
-          200,
-          JSON.stringify(matchedLayoutDefinition),
-          "application/json",
-        );
-      }
-
-      const matchedRouteDefinition = cache.routeDefinitions[url];
-
-      if (matchedRouteDefinition) {
-        return respond(
-          200,
-          JSON.stringify(matchedRouteDefinition),
-          "application/json",
-        );
       }
 
       const assetPath = projectPaths.assets && _path.join(

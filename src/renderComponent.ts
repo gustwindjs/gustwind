@@ -175,6 +175,8 @@ function resolveClass(
 
   if (component.__class) {
     Object.entries(component.__class).forEach(([klass, expression]) => {
+      // console.log("evaluating __class", component.attributes, context);
+
       if (
         evaluateExpression(expression, {
           attributes: component.attributes,
