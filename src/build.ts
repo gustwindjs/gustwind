@@ -73,7 +73,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
           route,
           pagePath: "", // TODO
           dir: path.join(outputDirectory, url),
-          url,
+          url: url === "/" ? "/" : "/" + url + "/",
         },
       });
     });
