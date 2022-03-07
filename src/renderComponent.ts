@@ -135,10 +135,12 @@ async function renderComponent(
   } else if (component["==children"]) {
     const childrenToEvaluate = component["==children"];
 
+    // @ts-ignore: Figure out how to type __bound
+    const ctx = context.__bound || context;
+
     children = evaluateExpression(
       childrenToEvaluate,
-      // @ts-ignore: Figure out how to type __bound
-      context.__bound || context,
+      isObject(ctx) ? ctx : { data: ctx },
     );
   } else {
     children = Array.isArray(component.children)
