@@ -146,6 +146,7 @@ function watchTransforms(
   });
 }
 
+// TODO: This should get imports from each script and watch them as well
 function watchScripts(
   wss: ReturnType<typeof getWebsocketServer>,
   cache: ServeCache,
