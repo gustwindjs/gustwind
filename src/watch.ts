@@ -161,7 +161,7 @@ function watchScripts(
 
       console.log("Changed script", matchedPath);
 
-      cache.scripts[scriptName + ".ts"] = await compileTypeScript(
+      cache.scripts[scriptName + ".js"] = await compileTypeScript(
         matchedPath,
         "development",
       );
