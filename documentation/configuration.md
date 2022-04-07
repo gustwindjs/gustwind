@@ -18,7 +18,9 @@ Each project built with Gustwind needs minimal configuration to describe where t
   "scripts": [
     {
       "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@6.0.2/dist/sidewind.umd.production.min.js"
+      "src": "https://unpkg.com/sidewind@7.2.1/dist/sidewind.umd.production.min.js",
+      "integrity": "sha384-ahby8Y7azUa5BB34OKQAlP+9dzfC9qG7yIolMRF0gjZ6SmwiVLvhaeisANAZBSrM",
+      "crossorigin": "anonymous"
     }
   ],
   "paths": {
