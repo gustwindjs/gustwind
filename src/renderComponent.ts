@@ -228,8 +228,14 @@ function generateAttributes(context: DataContext, attributes?: Attributes) {
     return "";
   }
 
-  return evaluateFields(context, attributes).map(([k, v]) => `${k}="${v}"`)
+  return evaluateFields(context, attributes).map(([k, v]) =>
+    isUndefined(v) ? "" : `${k}="${v}"`
+  )
     .join(" ");
+}
+
+function isUndefined(str: string) {
+  return typeof str == "undefined";
 }
 
 export { renderComponent };
