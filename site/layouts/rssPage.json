@@ -39,7 +39,7 @@
                 },
                 {
                   "element": "link",
-                  "#children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
+                  "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
                 },
                 {
                   "element": "guid",
