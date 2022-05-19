@@ -81,7 +81,7 @@ async function renderPage({
     projectMeta,
     meta: {
       ...meta,
-      ...Object.fromEntries(evaluateFields(route.context, meta)),
+      ...Object.fromEntries(await evaluateFields(route.context, meta)),
     },
     scripts: pageScripts,
     ...route.context,

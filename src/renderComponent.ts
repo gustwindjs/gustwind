@@ -26,8 +26,20 @@ async function renderComponent(
     if (isObject(component.__bind)) {
       context = {
         ...context,
-        // @ts-ignore We know __bind is an object by now.
-        __bound: { ...pageUtilities, ...context, ...component.__bind },
+        __bound: {
+          ...pageUtilities,
+          ...context,
+          render: (structure: Component | string) =>
+            renderComponent(
+              transformsPath,
+              structure,
+              components,
+              context,
+              pageUtilities,
+            ),
+          // @ts-ignore We know __bind is an object by now.
+          ...component.__bind,
+        },
       };
     } else {
       // TODO: Should __bound become an object always? Then it could contain
@@ -146,7 +158,7 @@ async function renderComponent(
     // @ts-ignore: Figure out how to type __bound
     const ctx = context.__bound || context;
 
-    children = evaluateExpression(
+    children = await evaluateExpression(
       childrenToEvaluate,
       isObject(ctx)
         ? { ...pageUtilities, ...ctx }
@@ -168,11 +180,11 @@ async function renderComponent(
       : component.children;
   }
 
-  const klass = resolveClass(component, context, pageUtilities);
+  const klass = await resolveClass(component, context, pageUtilities);
 
   return wrapInElement(
     component.element,
-    generateAttributes(
+    await generateAttributes(
       { ...pageUtilities, ...context },
       klass
         ? {
@@ -185,27 +197,26 @@ async function renderComponent(
   );
 }
 
-function resolveClass(
+async function resolveClass(
   component: Component,
   context: DataContext,
   pageUtilities: Record<string, unknown>,
-): string | undefined {
+): Promise<string | undefined> {
   const classes: string[] = [];
 
-  // TODO: Separate __class and ==class since now __class is evaluated (not just a lookup)
   if (component.__class) {
-    Object.entries(component.__class).forEach(([klass, expression]) => {
-      // console.log("evaluating __class", component.attributes, context);
-
-      if (
-        evaluateExpression(expression, {
-          attributes: component.attributes,
-          context: { ...pageUtilities, ...context },
-        })
-      ) {
-        classes.push(tw(klass));
-      }
-    });
+    await Object.entries(component.__class).forEach(
+      async ([klass, expression]) => {
+        if (
+          await evaluateExpression(expression, {
+            attributes: component.attributes,
+            context: { ...pageUtilities, ...context },
+          })
+        ) {
+          classes.push(tw(klass));
+        }
+      },
+    );
   }
 
   if (!component.class) {
@@ -241,14 +252,17 @@ function wrapInElement(
   }</${element}>`;
 }
 
-function generateAttributes(context: DataContext, attributes?: Attributes) {
+async function generateAttributes(
+  context: DataContext,
+  attributes?: Attributes,
+) {
   if (!attributes) {
     return "";
   }
 
-  return evaluateFields(context, attributes).map(([k, v]) =>
-    isUndefined(v) ? "" : `${k}="${v}"`
-  )
+  const fields = await evaluateFields(context, attributes);
+
+  return fields.map(([k, v]) => isUndefined(v) ? "" : `${k}="${v}"`)
     .join(" ");
 }
 

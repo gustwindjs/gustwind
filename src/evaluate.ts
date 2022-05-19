@@ -6,16 +6,16 @@ function evaluateFields(context?: DataContext, attributes?: Attributes) {
     return [];
   }
 
-  return Object.entries(attributes).map(([k, v]) =>
-    evaluateField(context, k, v)
+  return Promise.all(
+    Object.entries(attributes).map(([k, v]) => evaluateField(context, k, v)),
   );
 }
 
-function evaluateField(
+async function evaluateField(
   context: DataContext,
   k: string,
   v: string,
-): [string, string] {
+): Promise<[string, string]> {
   if (k.startsWith("__")) {
     // @ts-ignore: TODO: How to type __bound
     return [k.slice(2), get(context.__bound, v) || get(context, v)];
@@ -25,7 +25,7 @@ function evaluateField(
 
     return [
       k.slice(2),
-      evaluateExpression(
+      await evaluateExpression(
         v,
         isObject(ctx) ? ctx : { data: ctx },
       ),
@@ -41,10 +41,12 @@ function evaluateExpression(
   value: Record<string, unknown> = {},
 ) {
   try {
-    return Function.apply(
-      null,
-      Object.keys(value).concat(`return ${expression}`),
-    )(...Object.values(value));
+    return Promise.resolve(
+      Function.apply(
+        null,
+        Object.keys(value).concat(`return ${expression}`),
+      )(...Object.values(value)),
+    );
   } catch (err) {
     console.error("Failed to evaluate", expression, value, err);
   }
