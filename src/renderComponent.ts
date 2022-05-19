@@ -20,6 +20,18 @@ async function renderComponent(
     return component;
   }
 
+  if (component.visibleIf) {
+    const showComponent = await evaluateExpression(
+      component.visibleIf,
+      // @ts-ignore: Figure out how to type __bound
+      context.__bound || context,
+    );
+
+    if (!showComponent) {
+      return Promise.resolve("");
+    }
+  }
+
   const foundComponent = component.element && components[component.element];
 
   if (component.__bind) {
@@ -50,18 +62,6 @@ async function renderComponent(
           // @ts-ignore It's important to check possibly bound context too
           get(context.__bound, component.__bind),
       };
-    }
-  }
-
-  if (component.visibleIf) {
-    const showComponent = await evaluateExpression(
-      component.visibleIf,
-      // @ts-ignore: Figure out how to type __bound
-      context.__bound || context,
-    );
-
-    if (!showComponent) {
-      return Promise.resolve("");
     }
   }
 
