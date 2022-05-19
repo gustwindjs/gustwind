@@ -14,7 +14,7 @@ async function renderComponent(
   component: Component | string,
   components: Components,
   context: DataContext,
-  pageUtilities: Record<string, unknown>,
+  pageUtilities = {},
 ): Promise<string> {
   if (typeof component === "string") {
     return component;
@@ -167,7 +167,7 @@ async function renderComponent(
   return wrapInElement(
     component.element,
     generateAttributes(
-      context,
+      { ...pageUtilities, ...context },
       klass
         ? {
           ...component.attributes,

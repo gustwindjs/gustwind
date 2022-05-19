@@ -18,7 +18,10 @@
         },
         {
           "element": "div",
-          "==children": "testUtility('hello') + ' ' + 'world!'"
+          "==children": "testUtility('hello') + ' ' + 'world!'",
+          "attributes": {
+            "==title": "testUtility('hello') + ' ' + 'world!'"
+          }
         },
         {
           "element": "div",
