@@ -24,8 +24,14 @@ async function renderComponent(
 
   if (component.__bind) {
     if (isObject(component.__bind)) {
-      context = { ...context, __bound: component.__bind };
+      context = {
+        ...context,
+        // @ts-ignore We know __bind is an object by now.
+        __bound: { ...pageUtilities, ...context, ...component.__bind },
+      };
     } else {
+      // TODO: Should __bound become an object always? Then it could contain
+      // main context and page utilities as well.
       context = {
         ...context,
         __bound: get(context, component.__bind) ||
