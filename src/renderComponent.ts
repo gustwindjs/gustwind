@@ -54,10 +54,8 @@ async function renderComponent(
   }
 
   if (component.visibleIf) {
-    const expressionToEvaluate = component.visibleIf;
-
-    const showComponent = evaluateExpression(
-      expressionToEvaluate,
+    const showComponent = await evaluateExpression(
+      component.visibleIf,
       // @ts-ignore: Figure out how to type __bound
       context.__bound || context,
     );
