@@ -84,6 +84,7 @@ type ProjectMeta = {
     routes: string;
     scripts?: string;
     transforms: string;
+    pageUtilities?: string;
     twindSetup?: string;
   };
   features?: {

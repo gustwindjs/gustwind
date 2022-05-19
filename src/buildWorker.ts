@@ -9,6 +9,7 @@ import type { BuildWorkerEvent, Components, ProjectMeta } from "../types.ts";
 let id: string;
 let components: Components;
 let projectMeta: ProjectMeta;
+let pageUtilities: Record<string, unknown>;
 let twindSetup: Record<string, unknown>;
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -25,6 +26,10 @@ self.onmessage = async (e) => {
 
     components = payload.components;
     projectMeta = payload.projectMeta;
+
+    pageUtilities = projectMeta.paths.pageUtilities
+      ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
+      : {};
 
     twindSetup = projectMeta.paths.twindSetup
       ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
@@ -55,6 +60,7 @@ self.onmessage = async (e) => {
       pagePath: "", // TODO
       twindSetup,
       components,
+      pageUtilities,
       pathname: url,
     });
 

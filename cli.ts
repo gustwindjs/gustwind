@@ -104,6 +104,15 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       projectPaths,
     });
 
+    // TODO: Watch pageUtilities file to update the cache on change
+    initialCache.pageUtilities = projectPaths.pageUtilities
+      ? await import(
+        "file://" + path.join(projectRoot, projectPaths.pageUtilities) +
+          "?cache=" +
+          new Date().getTime()
+      ).then((m) => m)
+      : {};
+
     // TODO: Watch twindSetup file to update the cache on change
     initialCache.twindSetup = projectPaths.twindSetup
       ? await import(

@@ -20,6 +20,7 @@
     "routes": "./site/routes.json",
     "scripts": "./scripts",
     "transforms": "./site/transforms",
+    "pageUtilities": "./site/pageUtilities.ts",
     "twindSetup": "./site/twindSetup.ts"
   },
   "features": {

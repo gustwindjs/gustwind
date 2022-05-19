@@ -32,6 +32,7 @@ Each project built with Gustwind needs minimal configuration to describe where t
     "pages": "./pages",
     "scripts": "./scripts",
     "transforms": "./transforms",
+    "pageUtilities": "./pageUtilities.ts"
     "twindSetup": "./twindSetup.ts"
   },
   "features": {

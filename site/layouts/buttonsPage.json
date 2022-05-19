@@ -18,6 +18,10 @@
         },
         {
           "element": "div",
+          "==children": "testUtility('hello') + ' ' + 'world!'"
+        },
+        {
+          "element": "div",
           "class": "btn btn-blue",
           "children": "Test button"
         },

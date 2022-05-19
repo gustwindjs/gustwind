@@ -29,6 +29,7 @@ async function renderPage({
   route,
   mode,
   pagePath,
+  pageUtilities,
   twindSetup,
   components,
   pathname,
@@ -38,6 +39,7 @@ async function renderPage({
   route: Route;
   mode: Mode;
   pagePath: string;
+  pageUtilities: Record<string, unknown>;
   twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
@@ -96,6 +98,7 @@ async function renderPage({
         components,
         context,
         pathname,
+        pageUtilities,
       ),
       renderHTML(
         projectPaths.transforms,
@@ -103,6 +106,7 @@ async function renderPage({
         components,
         context,
         pathname,
+        pageUtilities,
       ),
     ]);
 
@@ -142,6 +146,7 @@ function renderHTML(
   components: Components,
   pageData: DataContext,
   pathname: string,
+  pageUtilities: Record<string, unknown>,
 ) {
   if (!children) {
     return "";
@@ -152,6 +157,7 @@ function renderHTML(
     { children },
     components,
     { ...pageData, pathname },
+    pageUtilities,
   );
 }
 

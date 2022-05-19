@@ -14,6 +14,7 @@ async function renderComponent(
   component: Component | string,
   components: Components,
   context: DataContext,
+  pageUtilities: Record<string, unknown>,
 ): Promise<string> {
   if (typeof component === "string") {
     return component;
@@ -58,6 +59,7 @@ async function renderComponent(
         },
         components,
         context,
+        pageUtilities,
       );
     }
 
@@ -126,7 +128,7 @@ async function renderComponent(
               renderComponent(transformsPath, c, components, {
                 ...context,
                 __bound: d,
-              })
+              }, pageUtilities)
             )
           ),
         )
@@ -140,19 +142,27 @@ async function renderComponent(
 
     children = evaluateExpression(
       childrenToEvaluate,
-      isObject(ctx) ? ctx : { data: ctx },
+      isObject(ctx)
+        ? { ...pageUtilities, ...ctx }
+        : { ...pageUtilities, data: ctx },
     );
   } else {
     children = Array.isArray(component.children)
       ? (await Promise.all(
         component.children.map(async (component) =>
-          await renderComponent(transformsPath, component, components, context)
+          await renderComponent(
+            transformsPath,
+            component,
+            components,
+            context,
+            pageUtilities,
+          )
         ),
       )).join("")
       : component.children;
   }
 
-  const klass = resolveClass(component, context);
+  const klass = resolveClass(component, context, pageUtilities);
 
   return wrapInElement(
     component.element,
@@ -172,9 +182,11 @@ async function renderComponent(
 function resolveClass(
   component: Component,
   context: DataContext,
+  pageUtilities: Record<string, unknown>,
 ): string | undefined {
   const classes: string[] = [];
 
+  // TODO: Separate __class and ==class since now __class is evaluated (not just a lookup)
   if (component.__class) {
     Object.entries(component.__class).forEach(([klass, expression]) => {
       // console.log("evaluating __class", component.attributes, context);
@@ -182,7 +194,7 @@ function resolveClass(
       if (
         evaluateExpression(expression, {
           attributes: component.attributes,
-          context,
+          context: { ...pageUtilities, ...context },
         })
       ) {
         classes.push(tw(klass));

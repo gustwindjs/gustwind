@@ -9,6 +9,7 @@ type ServeCache = {
   styles: Record<string, string>;
   routes: Record<string, Route>;
   routeDefinitions: Record<string, Route>;
+  pageUtilities: Record<string, unknown>;
   // TODO: Does twind setup have a better type?
   twindSetup: Record<string, unknown>;
 };
@@ -23,6 +24,7 @@ function getCache(): ServeCache {
     styles: {},
     routes: {},
     routeDefinitions: {},
+    pageUtilities: {},
     twindSetup: {},
   };
 }
