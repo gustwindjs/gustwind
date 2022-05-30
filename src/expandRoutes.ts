@@ -76,7 +76,7 @@ async function expandRoute(
             throw new Error(
               `Route ${matchBy.slug} is missing from ${
                 JSON.stringify(match, null, 2)
-              }`,
+              } for ${matchBy.collection} within ${url} route`,
             );
           }
 
@@ -99,7 +99,7 @@ async function expandRoute(
           throw new Error(
             `Route ${matchBy.slug} is missing from ${
               JSON.stringify(match, null, 2)
-            }`,
+            } with slug ${matchBy.slug} within ${url} route`,
           );
         }
 
