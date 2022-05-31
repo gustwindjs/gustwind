@@ -39,6 +39,7 @@ async function evaluateField(
 function evaluateExpression(
   expression: string,
   value: Record<string, unknown> = {},
+  showErrors = true,
 ) {
   try {
     return Promise.resolve(
@@ -48,7 +49,7 @@ function evaluateExpression(
       )(...Object.values(value)),
     );
   } catch (err) {
-    console.error("Failed to evaluate", expression, value, err);
+    showErrors && console.error("Failed to evaluate", expression, value, err);
   }
 }
 
