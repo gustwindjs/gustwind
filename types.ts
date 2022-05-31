@@ -18,6 +18,7 @@ type Component = {
   __class?: string;
   __children?: string | Component[];
   "==children"?: string;
+  __foreach?: [string, Component[]];
   // Page editor - TODO: Consider decoupling this somehow
   // maybe there can be an "enhanced" structure that's adding the id?
   _id?: string;

@@ -162,6 +162,25 @@ async function renderComponent(
         ? { ...pageUtilities, ...ctx }
         : { ...pageUtilities, data: ctx },
     );
+  } else if (component.__foreach) {
+    // This is similar to __children but with a nicer binding (['value', Component[]])
+    const [value, boundChildren] = component.__foreach;
+
+    // @ts-ignore: Figure out how to type __bound
+    const ctx = context.__bound || context;
+
+    children = (
+      await Promise.all(
+        ctx[value].flatMap((d: unknown) =>
+          boundChildren.map((c) =>
+            renderComponent(transformsPath, c, components, {
+              ...context,
+              __bound: d,
+            }, pageUtilities)
+          )
+        ),
+      )
+    ).join("");
   } else {
     children = Array.isArray(component.children)
       ? (await Promise.all(
