@@ -1,4 +1,4 @@
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { tw } from "../deps.ts";
 import { get, isObject } from "../utils/functional.ts";
 import type {
   Attributes,

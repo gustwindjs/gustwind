@@ -1,6 +1,6 @@
-import { join } from "https://deno.land/std@0.107.0/path/mod.ts";
 import { transform } from "./transform.ts";
 import type { DataSource, Mode, ProjectMeta } from "../types.ts";
+import { path } from "../deps.ts";
 
 type ResolvedDataSources = Record<string, unknown>;
 const resolvedDataSources: ResolvedDataSources = {};
@@ -22,7 +22,7 @@ async function getContext(
     for (
       const { id, operation, input, transformWith, dependsOn } of dataSources
     ) {
-      const dataSourcePath = join(dataSourcesPath, `${operation}.ts`);
+      const dataSourcePath = path.join(dataSourcesPath, `${operation}.ts`);
 
       // TODO: The assumption here is that the dependencies have been declared
       // earlier. Ideally there would be logic to figure out the loading order

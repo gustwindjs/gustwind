@@ -1,8 +1,9 @@
-import { Server } from "https://deno.land/std@0.118.0/http/server.ts";
-import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
-import { relative } from "https://deno.land/std@0.118.0/path/mod.ts";
-import { lookup } from "https://deno.land/x/media_types@v2.11.1/mod.ts";
-import { path as _path } from "../deps.ts";
+import {
+  cache,
+  lookupMediaType,
+  path as _path,
+  Server,
+} from "../deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
@@ -202,14 +203,14 @@ async function serveGustwind({
 
       const assetPath = projectPaths.assets && _path.join(
         projectPaths.assets,
-        relative(assetsPath || "", trim(pathname, "/")),
+        _path.relative(assetsPath || "", trim(pathname, "/")),
       );
 
       try {
         if (assetPath) {
           const asset = await Deno.readFile(assetPath);
 
-          return respond(200, asset, lookup(assetPath));
+          return respond(200, asset, lookupMediaType(assetPath));
         }
       } catch (_error) {
         // TODO: What to do with possible errors?
