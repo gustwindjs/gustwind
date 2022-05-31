@@ -21,10 +21,16 @@ async function renderComponent(
   }
 
   if (component.visibleIf) {
+    // @ts-ignore: Figure out how to type __bound
+    const ctx = context.__bound || context;
+
+    if (!(component.visibleIf in ctx)) {
+      return Promise.resolve("");
+    }
+
     const showComponent = await evaluateExpression(
       component.visibleIf,
-      // @ts-ignore: Figure out how to type __bound
-      context.__bound || context,
+      ctx,
     );
 
     if (!showComponent) {
