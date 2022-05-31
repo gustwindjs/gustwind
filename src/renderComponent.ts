@@ -172,7 +172,9 @@ async function renderComponent(
     children = (
       await Promise.all(
         ctx[value].flatMap((d: unknown) =>
-          boundChildren.map((c) =>
+          (Array.isArray(boundChildren) ? boundChildren : [boundChildren]).map((
+            c,
+          ) =>
             renderComponent(transformsPath, c, components, {
               ...context,
               __bound: d,
