@@ -46,7 +46,8 @@ async function getContext(
         ),
       ]);
 
-      resolvedDataSources[id] = resolvedData;
+      // resolvedData is [id, data]
+      resolvedDataSources[id] = resolvedData[1];
 
       ret.push(resolvedData);
     }
