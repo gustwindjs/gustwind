@@ -13,13 +13,22 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
     throw new Error("Missing route definition");
   }
 
-  const ret = Object.fromEntries(
-    await Promise.all(
-      Object.entries(routes).map(([url, route]) =>
-        expandRoute({ url, route, mode, dataSourcesPath, transformsPath })
-      ),
-    ),
-  );
+  const ret: Record<string, Route> = {};
+
+  // Resolve promises in series to avoid race conditions in resolving
+  for (
+    const [url, route] of Object.entries(routes)
+  ) {
+    const [expandedUrl, expandedRoute] = await expandRoute({
+      url,
+      route,
+      mode,
+      dataSourcesPath,
+      transformsPath,
+    });
+
+    ret[expandedUrl] = expandedRoute;
+  }
 
   // / is an exception. If it has an expansion, then it has to be added
   // to the root as otherwise the router won't find it later.

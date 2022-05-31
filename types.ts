@@ -67,6 +67,8 @@ type DataSource = {
   operation: string;
   input: string;
   transformWith: Transform[];
+  // The only valid values are names of other operations here
+  dependsOn?: string[];
 };
 type Scripts = { type: string; src: string }[];
 
