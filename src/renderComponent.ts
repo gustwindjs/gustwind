@@ -24,7 +24,7 @@ async function renderComponent(
     // @ts-ignore: Figure out how to type __bound
     const ctx = context.__bound || context;
 
-    if (!(component.visibleIf in ctx)) {
+    if (!(isUndefined(ctx[component.visibleIf]))) {
       return Promise.resolve("");
     }
 
