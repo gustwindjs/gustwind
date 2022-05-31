@@ -50,7 +50,7 @@ async function renderComponent(
               pageUtilities,
             ),
           // @ts-ignore We know __bind is an object by now.
-          ...component.__bind,
+          ...resolveContext(component.__bind, context),
         },
       };
     } else {
@@ -193,6 +193,20 @@ async function renderComponent(
     ),
     children,
   );
+}
+
+function resolveContext(
+  kv: Record<string, unknown>,
+  context: Record<string, unknown>,
+) {
+  const ret: Record<string, unknown> = {};
+
+  Object.entries(kv).forEach(([k, v]) => {
+    // @ts-ignore TODO: Assume this is fine for now
+    ret[k] = get(context, v) || v;
+  });
+
+  return ret;
 }
 
 async function resolveClass(
