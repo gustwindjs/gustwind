@@ -176,6 +176,11 @@ async function renderComponent(
             renderComponent(transformsPath, c, components, {
               ...context,
               __bound: d,
+              // Attach match to the context. The gotcha with this is
+              // that it leads to an inconsistent system.
+              // Example. "match.value" would always perform a lookup
+              // TODO: Likely a convention (__value for key) is needed to solve this.
+              match: d,
             }, pageUtilities)
           )
         ),
