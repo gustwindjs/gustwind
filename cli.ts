@@ -144,8 +144,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
     );
 
-    await serve();
-
     // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
     const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
     await p.stdin?.write(
@@ -154,6 +152,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       ),
     );
     p.stdin.close();
+
+    console.log("The server address has been copied to the clipboard");
+
+    await serve();
 
     return;
   }
