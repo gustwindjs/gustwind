@@ -1,4 +1,6 @@
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+// This file is loaded both on client and server so it's important
+// to keep related imports at minimum.
+import { tw } from "../client-deps.ts";
 import { get, isObject } from "../utils/functional.ts";
 import type {
   Attributes,
