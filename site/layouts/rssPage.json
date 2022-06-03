@@ -1,63 +1,61 @@
-{
-  "body": [
-    {
-      "element": "rss",
-      "attributes": {
-        "version": "2.0"
-      },
-      "children": [
-        {
-          "element": "channel",
-          "children": [
-            {
-              "element": "title",
-              "__children": "meta.title"
-            },
-            {
-              "element": "description",
-              "__children": "meta.description"
-            },
-            {
-              "element": "link",
-              "children": "https://gustwind.js.org/"
-            },
-            {
-              "element": "lastBuildDate",
-              "__children": "meta.built"
-            },
-            {
-              "__bind": "blogPosts.content",
-              "__children": [
-                {
-                  "element": "item",
-                  "children": [
-                    {
-                      "element": "title",
-                      "__children": "data.title"
-                    },
-                    {
-                      "element": "description",
-                      "__children": "data.description"
-                    },
-                    {
-                      "element": "link",
-                      "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
-                    },
-                    {
-                      "element": "guid",
-                      "__children": "data.slug"
-                    },
-                    {
-                      "element": "pubDate",
-                      "__children": "data.date"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "element": "rss",
+    "attributes": {
+      "version": "2.0"
+    },
+    "children": [
+      {
+        "element": "channel",
+        "children": [
+          {
+            "element": "title",
+            "__children": "meta.title"
+          },
+          {
+            "element": "description",
+            "__children": "meta.description"
+          },
+          {
+            "element": "link",
+            "children": "https://gustwind.js.org/"
+          },
+          {
+            "element": "lastBuildDate",
+            "__children": "meta.built"
+          },
+          {
+            "__bind": "blogPosts.content",
+            "__children": [
+              {
+                "element": "item",
+                "children": [
+                  {
+                    "element": "title",
+                    "__children": "data.title"
+                  },
+                  {
+                    "element": "description",
+                    "__children": "data.description"
+                  },
+                  {
+                    "element": "link",
+                    "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
+                  },
+                  {
+                    "element": "guid",
+                    "__children": "data.slug"
+                  },
+                  {
+                    "element": "pubDate",
+                    "__children": "data.date"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

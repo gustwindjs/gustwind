@@ -196,74 +196,80 @@ Both transforms and data sources are used in [the route definition](/routing/).
 
 ## Layouts
 
-Gustwind layouts are comparable to components except they have specific fields for `head` and `body`:
+Gustwind layouts are comparable to components:
 
 **layouts/siteIndex.json**
 
 ```json
-{
-  "head": [
-    {
-      "element": "MetaFields"
-    }
-  ],
-  "body": [
-    {
-      "element": "MainNavigation"
-    },
-    {
-      "element": "header",
-      "class": "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
-      "children": [
-        {
-          "element": "div",
-          "class": "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
-          "children": [
-            {
-              "element": "div",
-              "class": "flex flex-col gap-8",
-              "children": [
-                {
-                  "element": "h1",
-                  "class": "text-4xl md:text-8xl",
-                  "children": [
-                    {
-                      "element": "span",
-                      "class": "whitespace-nowrap pr-4",
-                      "children": "🐳💨"
-                    },
-                    {
-                      "element": "span",
-                      "children": "Gustwind"
-                    }
-                  ]
-                },
-                {
-                  "element": "h2",
-                  "class": "text-xl md:text-4xl font-extralight",
-                  "children": "Deno powered JSON oriented site generator"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "element": "div",
-      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-      "__bind": "readme",
-      "__children": "content"
-    },
-    {
-      "element": "MainFooter"
-    },
-    {
-      "element": "Scripts",
-      "__bind": "scripts"
-    }
-  ]
-}
+[
+  {
+    "element": "head",
+    "children": [
+      {
+        "element": "MetaFields"
+      }
+    ]
+  },
+  {
+    "element": "body",
+    "children": [
+      {
+        "element": "MainNavigation"
+      },
+      {
+        "element": "header",
+        "class": "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
+        "children": [
+          {
+            "element": "div",
+            "class": "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
+            "children": [
+              {
+                "element": "div",
+                "class": "flex flex-col gap-8",
+                "children": [
+                  {
+                    "element": "h1",
+                    "class": "text-4xl md:text-8xl",
+                    "children": [
+                      {
+                        "element": "span",
+                        "class": "whitespace-nowrap pr-4",
+                        "children": "🐳💨"
+                      },
+                      {
+                        "element": "span",
+                        "children": "Gustwind"
+                      }
+                    ]
+                  },
+                  {
+                    "element": "h2",
+                    "class": "text-xl md:text-4xl font-extralight",
+                    "children": "Deno powered JSON oriented site generator"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "element": "div",
+        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+        "__bind": "readme",
+        "__children": "content"
+      },
+      {
+        "element": "MainFooter"
+      },
+      {
+        "element": "Scripts",
+        "__bind": "scripts"
+      }
+    ]
+  }
+]
 ```
 
 For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
@@ -271,39 +277,137 @@ For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
 **layouts/blogPage.json**
 
 ```json
+[
+  {
+    "element": "head",
+    "children": [
+      {
+        "element": "MetaFields"
+      }
+    ]
+  },
+  {
+    "element": "body",
+    "children": [
+      {
+        "element": "MainNavigation"
+      },
+      {
+        "element": "div",
+        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+        "children": [
+          {
+            "element": "h1",
+            "__children": "match.data.title"
+          },
+          {
+            "element": "p",
+            "inputProperty": "match.content",
+            "transformWith": ["markdown"],
+            "__children": "content"
+          }
+        ]
+      },
+      {
+        "element": "MainFooter"
+      },
+      {
+        "element": "Scripts",
+        "__bind": "scripts"
+      }
+    ]
+  }
+]
+```
+
+The same idea can be used to implement an RSS feed.
+
+**layouts/rssPage.json**
+
+```json
+[
+  {
+    "element": "rss",
+    "attributes": {
+      "version": "2.0"
+    },
+    "children": [
+      {
+        "element": "channel",
+        "children": [
+          {
+            "element": "title",
+            "__children": "meta.title"
+          },
+          {
+            "element": "description",
+            "__children": "meta.description"
+          },
+          {
+            "element": "link",
+            "children": "https://gustwind.js.org/"
+          },
+          {
+            "element": "lastBuildDate",
+            "__children": "meta.built"
+          },
+          {
+            "__bind": "blogPosts.content",
+            "__children": [
+              {
+                "element": "item",
+                "children": [
+                  {
+                    "element": "title",
+                    "__children": "data.title"
+                  },
+                  {
+                    "element": "description",
+                    "__children": "data.description"
+                  },
+                  {
+                    "element": "link",
+                    "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
+                  },
+                  {
+                    "element": "guid",
+                    "__children": "data.slug"
+                  },
+                  {
+                    "element": "pubDate",
+                    "__children": "data.date"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+The route configuration could look like this:
+
+**routes.json**
+
+```json
 {
-  "head": [
-    {
-      "element": "MetaFields"
-    }
-  ],
-  "body": [
-    {
-      "element": "MainNavigation"
+  "atom.xml": {
+    "layout": "rssPage",
+    "type": "xml",
+    "meta": {
+      "title": "Gustwind",
+      "description": "Gustwind blog"
     },
-    {
-      "element": "div",
-      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-      "children": [
-        {
-          "element": "h1",
-          "__children": "match.data.title"
-        },
-        {
-          "element": "p",
-          "inputProperty": "match.content",
-          "transformWith": ["markdown"],
-          "__children": "content"
-        }
-      ]
-    },
-    {
-      "element": "MainFooter"
-    },
-    {
-      "element": "Scripts",
-      "__bind": "scripts"
-    }
-  ]
+    "dataSources": [
+      {
+        "id": "blogPosts",
+        "operation": "indexMarkdown",
+        "input": "./blogPosts"
+      }
+    ]
+  }
 }
 ```

@@ -93,27 +93,17 @@ async function renderPage({
   DEBUG && console.log("rendering a page with context", context);
 
   try {
-    const [headMarkup, bodyMarkup] = await Promise.all([
-      renderHTML(
-        projectPaths.transforms,
-        layout.head,
-        components,
-        context,
-        pathname,
-        pageUtilities,
-      ),
-      renderHTML(
-        projectPaths.transforms,
-        layout.body,
-        components,
-        context,
-        pathname,
-        pageUtilities,
-      ),
-    ]);
+    const markup = await renderHTML(
+      projectPaths.transforms,
+      layout,
+      components,
+      context,
+      pathname,
+      pageUtilities,
+    );
 
     if (route.type === "xml") {
-      return [xmlTemplate(bodyMarkup), context];
+      return [xmlTemplate(markup), context];
     }
 
     // https://web.dev/defer-non-critical-css/
@@ -129,8 +119,7 @@ async function renderPage({
     return [
       htmlTemplate(
         route.meta?.language || projectMeta.meta?.language,
-        headMarkup + styleTag,
-        bodyMarkup,
+        injectStyleTag(markup, styleTag),
       ),
       context,
       css,
@@ -142,9 +131,15 @@ async function renderPage({
   return ["", {}];
 }
 
+function injectStyleTag(markup: string, styleTag: string) {
+  const parts = markup.split("</head>");
+
+  return parts[0] + styleTag + parts[1];
+}
+
 function renderHTML(
   transformsPath: string,
-  children: Layout["head"] | Layout["body"],
+  children: Layout,
   components: Components,
   pageData: DataContext,
   pathname: string,
@@ -165,13 +160,12 @@ function renderHTML(
 
 function htmlTemplate(
   language: string,
-  headMarkup: string,
-  bodyMarkup: string,
+  markup: string,
 ) {
   // TODO: Consider generalizing html attribute handling
   return `<!DOCTYPE html><html${
     language ? ' language="' + language + '"' : ""
-  }><head>${headMarkup}</head><body>${bodyMarkup}</body></html$>`;
+  }>${markup}</html$>`;
 }
 
 function xmlTemplate(bodyMarkup: string) {

@@ -96,10 +96,7 @@ type ProjectMeta = {
   };
 };
 
-type Layout = {
-  head?: Component[];
-  body: Component[];
-};
+type Layout = Component[];
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type BuildWorkerEvent =
