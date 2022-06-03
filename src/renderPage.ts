@@ -1,8 +1,10 @@
+// This file is loaded both on client and server so it's important
+// to keep related imports at minimum.
 import {
   getStyleTag,
   getStyleTagProperties,
   virtualSheet,
-} from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
+} from "../client-deps.ts";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import type {
   Components,

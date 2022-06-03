@@ -1,4 +1,4 @@
-import { path } from "../deps.ts";
+import { path } from "../server-deps.ts";
 import { dir, getJson } from "../utils/fs.ts";
 
 async function getDefinitions<T>(directoryPath: string) {

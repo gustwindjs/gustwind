@@ -3,7 +3,7 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags, path } from "./deps.ts";
+import { flags, path } from "./server-deps.ts";
 import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
 import { serveGustwind } from "./src/serve.ts";
@@ -144,8 +144,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
     );
 
-    await serve();
-
     // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
     const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
     await p.stdin?.write(
@@ -154,6 +152,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       ),
     );
     p.stdin.close();
+
+    console.log("The server address has been copied to the clipboard");
+
+    await serve();
 
     return;
   }

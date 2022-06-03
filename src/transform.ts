@@ -12,7 +12,10 @@ async function transform(
   }
 
   if ("Deno" in globalThis) {
-    const path = await import("https://deno.land/std@0.107.0/path/mod.ts");
+    // TODO: Probably this will be removed if transform definition changes
+    // Note that we shouldn't depend on server-deps.ts here as this file
+    // needs to run in the browser as well.
+    const path = await import("https://deno.land/std@0.142.0/path/mod.ts");
     const transforms = await Promise.all(
       transformNames.map((name) => {
         const transformPath = path.join(transformsPath, `${name}.ts`);
