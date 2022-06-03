@@ -26,28 +26,32 @@
               "__children": "meta.built"
             },
             {
-              "element": "item",
               "__bind": "blogPosts.content",
               "__children": [
                 {
-                  "element": "title",
-                  "__children": "data.title"
-                },
-                {
-                  "element": "description",
-                  "__children": "data.description"
-                },
-                {
-                  "element": "link",
-                  "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
-                },
-                {
-                  "element": "guid",
-                  "__children": "data.slug"
-                },
-                {
-                  "element": "pubDate",
-                  "__children": "data.date"
+                  "element": "item",
+                  "children": [
+                    {
+                      "element": "title",
+                      "__children": "data.title"
+                    },
+                    {
+                      "element": "description",
+                      "__children": "data.description"
+                    },
+                    {
+                      "element": "link",
+                      "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
+                    },
+                    {
+                      "element": "guid",
+                      "__children": "data.slug"
+                    },
+                    {
+                      "element": "pubDate",
+                      "__children": "data.date"
+                    }
+                  ]
                 }
               ]
             }
