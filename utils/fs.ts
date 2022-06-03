@@ -1,4 +1,4 @@
-import { async, path } from "../deps.ts";
+import { async, path } from "../server-deps.ts";
 import type { ProjectMeta } from "../types.ts";
 
 function resolvePaths(rootPath = Deno.cwd(), paths: ProjectMeta["paths"]) {

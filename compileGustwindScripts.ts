@@ -1,4 +1,4 @@
-import { esbuild, fs, path } from "./deps.ts";
+import { esbuild, fs, path } from "./server-deps.ts";
 import { compileScripts } from "./utils/compileScripts.ts";
 
 async function compileGustwindScripts(scriptsPath: string) {

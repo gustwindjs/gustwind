@@ -1,6 +1,6 @@
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { watch } from "../utils/fs.ts";
-import { path as _path } from "../deps.ts";
+import { path as _path } from "../server-deps.ts";
 import { getDefinition } from "./getDefinitions.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import { getWebsocketServer } from "./webSockets.ts";

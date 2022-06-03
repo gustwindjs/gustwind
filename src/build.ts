@@ -1,4 +1,4 @@
-import { esbuild, fs, path } from "../deps.ts";
+import { esbuild, fs, path } from "../server-deps.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";

@@ -1,4 +1,4 @@
-import { esbuild } from "../deps.ts";
+import { esbuild } from "../server-deps.ts";
 import type { Mode } from "../types.ts";
 
 async function compileTypeScript(path: string, mode: Mode) {

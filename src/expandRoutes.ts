@@ -1,4 +1,4 @@
-import { path as _path } from "../deps.ts";
+import { path as _path } from "../server-deps.ts";
 import { get } from "../utils/functional.ts";
 import { getContext } from "./getContext.ts";
 import type { Mode, Route } from "../types.ts";

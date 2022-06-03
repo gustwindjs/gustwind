@@ -3,7 +3,7 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags, path } from "./deps.ts";
+import { flags, path } from "./server-deps.ts";
 import { getJson } from "./utils/fs.ts";
 import { build as buildProject } from "./src/build.ts";
 import { serveGustwind } from "./src/serve.ts";
