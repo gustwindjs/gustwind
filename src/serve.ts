@@ -1,5 +1,4 @@
-import { lookup } from "https://deno.land/x/media_types@v2.11.1/mod.ts";
-import { cache, path as _path, Server } from "../server-deps.ts";
+import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
