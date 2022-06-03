@@ -1,4 +1,4 @@
-import * as websockets from "https://deno.land/x/websocket@v0.1.3/mod.ts";
+import { websockets } from "../server-deps.ts";
 import type { Layout } from "../types.ts";
 
 type WebSocketMessage = {
