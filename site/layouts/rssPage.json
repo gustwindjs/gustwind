@@ -8,7 +8,6 @@
       "children": [
         {
           "element": "channel",
-          "__bind": "blogPosts.content",
           "children": [
             {
               "element": "title",
@@ -28,6 +27,7 @@
             },
             {
               "element": "item",
+              "__bind": "blogPosts.content",
               "__children": [
                 {
                   "element": "title",
