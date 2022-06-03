@@ -1,56 +1,69 @@
 [
   {
-    "element": "rss",
+    "element": "feed",
+    "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
     "attributes": {
-      "version": "2.0"
+      "xmlns":"http://www.w3.org/2005/Atom"
     },
     "children": [
       {
-        "element": "channel",
-        "children": [
+        "element": "title",
+        "__children": "meta.siteName"
+      },
+      {
+        "element": "id",
+        "children": "https://gustwind.js.org/"
+      },
+      {
+        "element": "link",
+        "attributes": {
+          "rel": "alternate",
+          "href": "https://gustwind.js.org/"
+        }
+      },
+      {
+        "element": "link",
+        "attributes": {
+          "rel": "self",
+          "href": "https://gustwind.js.org/atom.xml"
+        }
+      },
+      {
+        "element": "updated",
+        "==children": "(new Date(meta.built)).toISOString()"
+      },
+      {
+        "__bind": "blogPosts",
+        "__children": [
           {
-            "element": "title",
-            "__children": "meta.title"
-          },
-          {
-            "element": "description",
-            "__children": "meta.description"
-          },
-          {
-            "element": "link",
-            "children": "https://gustwind.js.org/"
-          },
-          {
-            "element": "lastBuildDate",
-            "__children": "meta.built"
-          },
-          {
-            "__bind": "blogPosts.content",
-            "__children": [
+            "element": "entry",
+            "children": [
               {
-                "element": "item",
-                "children": [
-                  {
-                    "element": "title",
-                    "__children": "data.title"
-                  },
-                  {
-                    "element": "description",
-                    "__children": "data.description"
-                  },
-                  {
-                    "element": "link",
-                    "==children": "'https://gustwind.js.org/blog/' + data.slug + '/'"
-                  },
-                  {
-                    "element": "guid",
-                    "__children": "data.slug"
-                  },
-                  {
-                    "element": "pubDate",
-                    "__children": "data.date"
-                  }
-                ]
+                "element": "title",
+                "__children": "title"
+              },
+              {
+                "element": "link",
+                "attributes": {
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "==href": "'https://gustwind.js.org/blog/' + slug + '/'"
+                }
+              },
+              {
+                "element": "id",
+                "__children": "slug"
+              },
+              {
+                "element": "published",
+                "==children": "(new Date(date)).toISOString()"
+              },
+              {
+                "element": "content",
+                "attributes": {
+                  "type": "html"
+                },
+                "__children": "description"
               }
             ]
           }
