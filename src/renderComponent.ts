@@ -49,6 +49,7 @@ async function renderComponent(
     if (isObject(component.__bind)) {
       context = {
         ...context,
+        attributes: component.attributes,
         __bound: {
           ...pageUtilities,
           ...context,
@@ -61,7 +62,7 @@ async function renderComponent(
               pageUtilities,
             ),
           // @ts-ignore We know __bind is an object by now.
-          ...resolveContext(component.__bind, context),
+          ...(await resolveContext(component.__bind, context)),
         },
       };
     } else {
@@ -69,6 +70,7 @@ async function renderComponent(
       // main context and page utilities as well.
       context = {
         ...context,
+        attributes: component.attributes,
         __bound: get(context, component.__bind) ||
           // @ts-ignore It's important to check possibly bound context too
           get(context.__bound, component.__bind),
@@ -220,7 +222,7 @@ async function renderComponent(
   return wrapInElement(
     component.element,
     await generateAttributes(
-      { ...pageUtilities, ...context },
+      { ...pageUtilities, attributes: component.attributes, ...context },
       klass
         ? {
           ...component.attributes,
@@ -232,13 +234,14 @@ async function renderComponent(
   );
 }
 
-function resolveContext(
+async function resolveContext(
   kv: Record<string, unknown>,
   context: Record<string, unknown>,
 ) {
   const ret: Record<string, unknown> = {};
+  const fields = await evaluateFields(context, kv);
 
-  Object.entries(kv).forEach(([k, v]) => {
+  fields.forEach(([k, v]) => {
     // @ts-ignore TODO: Assume this is fine for now
     ret[k] = get(context, v) || v;
   });
@@ -259,7 +262,8 @@ async function resolveClass(
         if (
           await evaluateExpression(expression, {
             attributes: component.attributes,
-            context: { ...pageUtilities, ...context },
+            // @ts-ignore: Figure out how to type __bound
+            context: { ...pageUtilities, ...context, ...context.__bound },
           })
         ) {
           classes.push(tw(klass));

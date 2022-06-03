@@ -33,15 +33,15 @@ A navigation component built on top of `link` could look like this:
 [
   {
     "element": "Link",
-    "children": "Blog",
-    "attributes": {
+    "__bind": {
+      "children": "Blog",
       "href": "/blog/"
     }
   },
   {
     "element": "Link",
-    "children": "About",
-    "attributes": {
+    "__bind": {
+      "children": "About",
       "href": "/about/"
     }
   }
@@ -78,9 +78,9 @@ The same idea of binding works for `children`. You can bind to the children of a
         {
           "element": "Link",
           "class": "w-full bg-gray-200 text-gray-800 p-4",
-          "__children": "title",
           "attributes": {
-            "__href": "url"
+            "children": "title",
+            "href": "url"
           }
         }
       ]
@@ -129,7 +129,7 @@ To apply an interpolation, i.e. combining data at the field level, there's `==` 
             {
               "element": "Link",
               "__children": "data.title",
-              "attributes": {
+              "__bind": {
                 "==href": "data.slug + '/'"
               }
             }

@@ -1,36 +1,36 @@
 [
   {
     "element": "Link",
-    "children": "Modes",
-    "attributes": {
+    "__bind": {
+      "children": "Modes",
       "href": "/modes/"
     }
   },
   {
     "element": "Link",
-    "children": "Configuration",
-    "attributes": {
+    "__bind": {
+      "children": "Configuration",
       "href": "/configuration/"
     }
   },
   {
     "element": "Link",
-    "children": "Routing",
-    "attributes": {
+    "__bind": {
+      "children": "Routing",
       "href": "/routing/"
     }
   },
   {
     "element": "Link",
-    "children": "Concepts",
-    "attributes": {
+    "__bind": {
+      "children": "Concepts",
       "href": "/concepts/"
     }
   },
   {
     "element": "Link",
-    "children": "Deployment",
-    "attributes": {
+    "__bind": {
+      "children": "Deployment",
       "href": "/deployment/"
     }
   }

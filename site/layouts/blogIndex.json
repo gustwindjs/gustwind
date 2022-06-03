@@ -22,8 +22,8 @@
               "children": [
                 {
                   "element": "Link",
-                  "__children": "data.title",
-                  "attributes": {
+                  "__bind": {
+                    "__children": "data.title",
                     "==href": "data.slug + '/'"
                   }
                 }

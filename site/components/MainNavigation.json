@@ -25,15 +25,15 @@
       "children": [
         {
           "element": "Link",
-          "children": "Blog",
-          "attributes": {
+          "__bind": {
+            "children": "Blog",
             "href": "/blog/"
           }
         },
         {
           "element": "Link",
-          "children": "GitHub",
-          "attributes": {
+          "__bind": {
+            "children": "GitHub",
             "href": "https://github.com/survivejs/gustwind"
           }
         }

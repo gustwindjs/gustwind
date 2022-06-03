@@ -2,6 +2,10 @@
   "element": "a",
   "class": "underline",
   "__class": {
-    "font-bold": "attributes.href === context.pathname"
+    "font-bold": "context.href === context.pathname"
+  },
+  "__children": "children",
+  "attributes": {
+    "__href": "href"
   }
 }
