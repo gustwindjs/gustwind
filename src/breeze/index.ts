@@ -2,10 +2,12 @@ import { get } from "../../utils/functional.ts";
 import { evaluateExpression } from "../evaluate.ts";
 import type { Component, Extension } from "./types.ts";
 
+type Context = Record<string, unknown>;
+
 async function render({ component, extensions, context }: {
   component: Component | Component[];
   extensions?: (Extension)[];
-  context?: Record<string, unknown>;
+  context?: Context;
 }): Promise<string> {
   if (Array.isArray(component)) {
     return (await Promise.all(
@@ -17,7 +19,7 @@ async function render({ component, extensions, context }: {
     ? extensions.reduce((a, b) => b(a), component)
     : component;
 
-  const attributes = generateAttributes(component.attributes);
+  const attributes = await generateAttributes(component.attributes, context);
 
   if (component.children) {
     let children = component.children;
@@ -70,14 +72,36 @@ async function render({ component, extensions, context }: {
   return "";
 }
 
-function generateAttributes(attributes: Component["attributes"]): string {
+async function generateAttributes(
+  attributes: Component["attributes"],
+  context?: Context,
+): Promise<string> {
   if (!attributes) {
     return "";
   }
 
-  return Object.entries(attributes).map(([k, v]) =>
-    isUndefined(v) ? "" : `${k}="${v}"`
-  ).join("");
+  return (await Promise.all(
+    Object.entries(attributes).map(async ([k, v]) => {
+      if (isUndefined(v)) {
+        return "";
+      }
+
+      let key = k;
+      let value = v;
+
+      if (k.startsWith("__")) {
+        key = k.split("__").slice(1).join("__");
+        value = get(context, v);
+      }
+
+      if (k.startsWith("==")) {
+        key = k.split("==").slice(1).join("==");
+        value = await evaluateExpression(v, context);
+      }
+
+      return `${key}="${value}"`;
+    }),
+  )).join("");
 }
 
 function isUndefined(str?: string) {

@@ -37,10 +37,14 @@ async function evaluateField(
 
 // From Sidewind
 function evaluateExpression(
-  expression: string,
+  expression: string | undefined,
   value: Record<string, unknown> = {},
   showErrors = true,
 ) {
+  if (!expression) {
+    return Promise.resolve("");
+  }
+
   try {
     return Promise.resolve(
       Function.apply(

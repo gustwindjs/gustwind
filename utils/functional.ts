@@ -5,7 +5,14 @@ function last<O>(array: O[]) {
 // deno-lint-ignore no-explicit-any
 const isObject = (a: any) => !Array.isArray(a) && typeof a === "object";
 
-function get<O = Record<string, unknown>>(dataContext: O, key: string): string {
+function get<O = Record<string, unknown>>(
+  dataContext: O,
+  key?: string,
+): string {
+  if (!key) {
+    return "";
+  }
+
   let value = dataContext;
 
   // TODO: What if the lookup fails?

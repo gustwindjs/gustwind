@@ -200,8 +200,106 @@ Deno.test("nested context binding without element", async () => {
   );
 });
 
+Deno.test("context binding for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { __title: "test" },
+        children: "test",
+      },
+      context: { test: "foobar" },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
+Deno.test("nested context binding for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { __title: "test.test" },
+        children: "test",
+      },
+      context: { test: { test: "foobar" } },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
+Deno.test("context evaluation for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { "==title": "test + 'bar'" },
+        children: "test",
+      },
+      context: { test: "foo" },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
+Deno.test("async context evaluation for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { "==title": "Promise.resolve('foobar')" },
+        "children": "test",
+      },
+      context: { test: "bar" },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
+Deno.test("nested context evaluation for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: {
+          "==title": "test.test + 'bar'",
+        },
+        children: "test",
+      },
+      context: { test: { test: "foo" } },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
+Deno.test("async context evaluation for attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        "==children": "Promise.resolve('foobar')",
+      },
+      context: { test: "bar" },
+    }),
+    "<span>foobar</span>",
+  );
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: {
+          "==title": "Promise.resolve('foobar')",
+        },
+        children: "test",
+      },
+      context: { test: { test: "foo" } },
+    }),
+    '<span title="foobar">test</span>',
+  );
+});
+
 // TODO: To test
-// Extension API (props)
-// __foo - getter for attributes
-// ==foo - evaluation for attributes
 // Component lookup
+// props extension
+// foreach: [string, Component | Component[]] -> extension
+// Test __class and ==class
