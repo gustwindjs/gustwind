@@ -1,9 +1,17 @@
 [
   {
+    "element": "?xml",
+    "attributes": {
+      "version": "1.0",
+      "encoding": "UTF-8"
+    },
+    "closingCharacter": "?"
+  },
+  {
     "element": "feed",
     "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
     "attributes": {
-      "xmlns":"http://www.w3.org/2005/Atom"
+      "xmlns": "http://www.w3.org/2005/Atom"
     },
     "children": [
       {

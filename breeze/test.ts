@@ -7,11 +7,6 @@ import * as extensions from "./extensions.ts";
 const onlyChildren = { children: "testing" };
 const emptySpan = { element: "span" };
 const span = { element: "span", children: "testing" };
-const hyperlink = {
-  element: "a",
-  attributes: { href: "testing" },
-  children: "testing",
-};
 const undefinedAttribute = {
   element: "a",
   attributes: { href: undefined },
@@ -166,8 +161,14 @@ Deno.test("multi-level nesting", async () => {
 
 Deno.test("attributes", async () => {
   assertEquals(
-    await breeze({ component: hyperlink }),
-    '<a href="testing">testing</a>',
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { href: "testing", empty: "" },
+        children: "testing",
+      },
+    }),
+    '<a href="testing" empty>testing</a>',
   );
 });
 
@@ -703,5 +704,42 @@ Deno.test("pass utilities to attributes", async () => {
       },
     }),
     '<div title="hello">test</div>',
+  );
+});
+
+Deno.test("allow customizing closing character", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "!DOCTYPE",
+        attributes: {
+          html: "",
+          __language: "context.meta.language",
+        },
+        closingCharacter: "",
+      },
+      context: {
+        meta: {
+          language: "en",
+        },
+      },
+    }),
+    '<!DOCTYPE html language="en" >',
+  );
+});
+
+Deno.test("allow rendering xml heading", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "?xml",
+        attributes: {
+          version: "1.0",
+          encoding: "UTF-8",
+        },
+        closingCharacter: "?",
+      },
+    }),
+    '<?xml version="1.0" encoding="UTF-8" ?>',
   );
 });

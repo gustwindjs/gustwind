@@ -1,0 +1,41 @@
+[
+  {
+    "element": "!DOCTYPE",
+    "attributes": {
+      "html": "",
+      "language": "context.meta.language"
+    },
+    "closingCharacter": ""
+  },
+  {
+    "element": "html",
+    "attributes": {},
+    "children": [
+      {
+        "element": "head",
+        "children": [
+          {
+            "element": "MetaFields"
+          }
+        ]
+      },
+      {
+        "element": "body",
+        "children": [
+          {
+            "element": "MainNavigation"
+          },
+          {
+            "==children": "render(content)"
+          },
+          {
+            "element": "MainFooter"
+          },
+          {
+            "element": "Scripts"
+          }
+        ]
+      }
+    ]
+  }
+]

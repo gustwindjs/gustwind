@@ -104,7 +104,7 @@ async function renderPage({
     );
 
     if (route.type === "xml") {
-      return [xmlTemplate(markup), context];
+      return [markup, context];
     }
 
     // https://web.dev/defer-non-critical-css/
@@ -118,10 +118,7 @@ async function renderPage({
     }
 
     return [
-      htmlTemplate(
-        route.meta?.language || projectMeta.meta?.language,
-        injectStyleTag(markup, styleTag),
-      ),
+      injectStyleTag(markup, styleTag),
       context,
       css,
     ];
@@ -162,20 +159,6 @@ function renderHTML(
     context: { ...pageData, pathname },
     utilities,
   });
-}
-
-function htmlTemplate(
-  language: string,
-  markup: string,
-) {
-  // TODO: Consider generalizing html attribute handling
-  return `<!DOCTYPE html><html${
-    language ? ' language="' + language + '"' : ""
-  }>${markup}</html$>`;
-}
-
-function xmlTemplate(bodyMarkup: string) {
-  return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
 }
 
 export { renderHTML, renderPage };

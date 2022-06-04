@@ -4,6 +4,7 @@ type BaseComponent = {
   element?: string;
   attributes?: Record<string, string | undefined>;
   props?: Context;
+  closingCharacter?: string;
 
   children?: string | Component[];
 

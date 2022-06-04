@@ -137,7 +137,11 @@ async function render(
   }
 
   if (component.element) {
-    return `<${component.element}${attributes ? " " + attributes : ""} />`;
+    return `<${component.element}${attributes ? " " + attributes : ""} ${
+      typeof component.closingCharacter === "string"
+        ? component.closingCharacter
+        : "/"
+    }>`;
   }
 
   return "";
@@ -172,7 +176,7 @@ async function generateAttributes(
         value = await evaluateExpression(v, context);
       }
 
-      return `${key}="${value}"`;
+      return value && value.length > 0 ? `${key}="${value}"` : key;
     }),
   )).join(" ");
 }
