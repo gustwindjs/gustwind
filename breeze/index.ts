@@ -148,11 +148,15 @@ async function render(
   }
 
   if (component.element) {
-    return `<${component.element}${attributes ? " " + attributes : ""} ${
-      typeof component.closingCharacter === "string"
-        ? component.closingCharacter
-        : "/"
-    }>`;
+    if (typeof component.closingCharacter === "string") {
+      return `<${component.element}${
+        attributes ? " " + attributes : ""
+      } ${component.closingCharacter}>`;
+    }
+
+    return `<${component.element}${
+      attributes ? " " + attributes : ""
+    }></${component.element}>`;
   }
 
   return "";

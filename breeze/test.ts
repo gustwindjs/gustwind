@@ -22,13 +22,13 @@ const stylesheet = virtualSheet();
 setupTwind({ sheet: stylesheet, mode: "silent" });
 
 Deno.test("empty element", async () => {
-  assertEquals(await breeze({ component: emptySpan }), "<span />");
+  assertEquals(await breeze({ component: emptySpan }), "<span></span>");
 });
 
 Deno.test("array of elements", async () => {
   assertEquals(
     await breeze({ component: [emptySpan, emptySpan] }),
-    "<span /><span />",
+    "<span></span><span></span>",
   );
 });
 
@@ -52,7 +52,7 @@ Deno.test("props binding without __children", async () => {
     await breeze({
       component: { element: "span", props: { value: "foobar" } },
     }),
-    "<span />",
+    "<span></span>",
   );
 });
 
@@ -109,7 +109,7 @@ Deno.test("props binding with attributes", async () => {
         },
       },
     }),
-    '<span title="demo" />',
+    '<span title="demo"></span>',
   );
 });
 
@@ -127,7 +127,7 @@ Deno.test("props binding with attributes using context", async () => {
         demo: "bar",
       },
     }),
-    '<span title="demobar" />',
+    '<span title="demobar"></span>',
   );
 });
 
@@ -182,7 +182,7 @@ Deno.test("undefined attributes", async () => {
 Deno.test("attributes without children", async () => {
   assertEquals(
     await breeze({ component: hyperlinkWithoutChildren }),
-    '<a href="testing" />',
+    '<a href="testing"></a>',
   );
 });
 
@@ -446,7 +446,7 @@ Deno.test("foreach extension without context", async () => {
       },
       extensions: [extensions.foreach],
     }),
-    "<ul />",
+    "<ul></ul>",
   );
 });
 
@@ -529,7 +529,7 @@ Deno.test("foreach extension with attributes", async () => {
         }],
       },
     }),
-    '<script type="text/javascript" src="sidewind.js" />',
+    '<script type="text/javascript" src="sidewind.js"></script>',
   );
 });
 
@@ -556,7 +556,7 @@ Deno.test("foreach extension with multiple scripts", async () => {
         }],
       },
     }),
-    '<script type="text/javascript" src="sidewind.js" /><script type="module" src="gustwind.js" />',
+    '<script type="text/javascript" src="sidewind.js"></script><script type="module" src="gustwind.js"></script>',
   );
 });
 
@@ -590,7 +590,7 @@ Deno.test("foreach extension with attributes and nesting", async () => {
         }],
       },
     }),
-    '<html><body><script type="text/javascript" src="sidewind.js" /></body></html>',
+    '<html><body><script type="text/javascript" src="sidewind.js"></script></body></html>',
   );
 });
 
@@ -644,7 +644,7 @@ Deno.test("component lookup with a complex structure", async () => {
         ],
       },
     }),
-    '<head><link rel="icon" href="bar" /></head>',
+    '<head><link rel="icon" href="bar"></link></head>',
   );
 });
 
@@ -782,7 +782,7 @@ Deno.test("visibleIf shows element based on context", async () => {
       extensions: [extensions.visibleIf],
       context: { visible: true },
     }),
-    "<span />",
+    "<span></span>",
   );
 });
 
@@ -807,7 +807,7 @@ Deno.test("visibleIf shows element based on prop", async () => {
       },
       extensions: [extensions.visibleIf],
     }),
-    "<span />",
+    "<span></span>",
   );
 });
 
@@ -836,7 +836,7 @@ Deno.test("visibleIf shows element based on context and prop", async () => {
       extensions: [extensions.visibleIf],
       context: { visible: true },
     }),
-    "<span />",
+    "<span></span>",
   );
 });
 
