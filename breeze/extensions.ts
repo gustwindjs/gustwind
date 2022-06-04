@@ -1,5 +1,5 @@
-import { get, isObject } from "../../utils/functional.ts";
-import { evaluateExpression } from "../evaluate.ts";
+import { get, isObject } from "../utils/functional.ts";
+import { evaluateExpression } from "../src/evaluate.ts";
 import type {
   ClassComponent,
   Component,

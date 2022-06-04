@@ -1,5 +1,5 @@
-import { get } from "../../utils/functional.ts";
-import { evaluateExpression } from "../evaluate.ts";
+import { get } from "../utils/functional.ts";
+import { evaluateExpression } from "../src/evaluate.ts";
 import type { Component, Context, Extension } from "./types.ts";
 
 async function render(
