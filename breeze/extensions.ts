@@ -11,6 +11,7 @@ import type {
   VisibleIfComponent,
 } from "./types.ts";
 
+// TODO: Consider extracting tw from this to generalize the extension
 async function classShortcut(
   component: ClassComponent,
   context: Context,
