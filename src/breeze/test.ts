@@ -327,3 +327,10 @@ Deno.test("class shortcut extension with evaluation", async () => {
 // Component lookup
 // props extension
 // foreach: [string, Component | Component[]] -> extension
+// object notation for classes?
+/*
+class: 'my-4',
+==class: {
+  'font-bold': 'test',
+}
+*/
