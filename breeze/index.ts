@@ -103,7 +103,10 @@ async function render(
     }
   }
 
-  if (context && component.__children) {
+  if (
+    context && component.__children && typeof component.__children === "string"
+  ) {
+    // TODO: What if this fails?
     const value = get(context, component.__children);
 
     if (component.element) {
