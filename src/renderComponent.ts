@@ -148,6 +148,7 @@ async function renderComponent(
     if (typeof boundChildren === "string") {
       // TODO: Maybe it's better to do an existence check here to avoid trouble
       // with nullables
+      // @ts-ignore Figure out how to type
       children = get(ctx, boundChildren) || get(context, boundChildren);
     } else {
       children = (

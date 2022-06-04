@@ -1,4 +1,10 @@
-import type { ClassComponent, Component } from "./types.ts";
+import { get } from "../../utils/functional.ts";
+import type {
+  ClassComponent,
+  Component,
+  Context,
+  ForEachComponent,
+} from "./types.ts";
 
 function classShortcut(component: ClassComponent): Component {
   return {
@@ -12,4 +18,26 @@ function classShortcut(component: ClassComponent): Component {
   };
 }
 
-export { classShortcut };
+function foreach(component: ForEachComponent, context?: Context): Component {
+  if (!context || !component.foreach) {
+    return component;
+  }
+
+  const [key, childComponent] = component.foreach;
+  const values = get(context, key);
+
+  if (!Array.isArray(values)) {
+    return component;
+  }
+
+  return {
+    ...component,
+    children: values.flatMap((v) =>
+      Array.isArray(childComponent)
+        ? childComponent.map((c) => ({ ...c, __value: v }))
+        : ({ ...childComponent, __value: v })
+    ),
+  };
+}
+
+export { classShortcut, foreach };

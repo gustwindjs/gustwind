@@ -8,9 +8,9 @@ const isObject = (a: any) => !Array.isArray(a) && typeof a === "object";
 function get<O = Record<string, unknown>>(
   dataContext: O,
   key?: string,
-): string {
+): unknown {
   if (!key) {
-    return "";
+    return;
   }
 
   let value = dataContext;
@@ -24,8 +24,7 @@ function get<O = Record<string, unknown>>(
     }
   });
 
-  // TODO: How to type
-  return value as unknown as string;
+  return value;
 }
 
 export { get, isObject, last };

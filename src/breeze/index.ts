@@ -1,8 +1,6 @@
 import { get } from "../../utils/functional.ts";
 import { evaluateExpression } from "../evaluate.ts";
-import type { Component, Extension } from "./types.ts";
-
-type Context = Record<string, unknown>;
+import type { Component, Context, Extension } from "./types.ts";
 
 async function render({ component, extensions, context }: {
   component: Component | Component[];
@@ -16,7 +14,7 @@ async function render({ component, extensions, context }: {
   }
 
   component = extensions
-    ? extensions.reduce((a, b) => b(a), component)
+    ? extensions.reduce((a, b) => b(a, context), component)
     : component;
 
   const attributes = await generateAttributes(component.attributes, context);
@@ -65,6 +63,14 @@ async function render({ component, extensions, context }: {
     }
   }
 
+  if (component.__value && component.__children) {
+    const value = get(component.__value, component.__children);
+
+    return `<${component.element}${
+      attributes ? " " + attributes : ""
+    }>${value}</${component.element}>`;
+  }
+
   if (component.element) {
     return `<${component.element}${attributes ? " " + attributes : ""} />`;
   }
@@ -91,7 +97,9 @@ async function generateAttributes(
 
       if (k.startsWith("__")) {
         key = k.split("__").slice(1).join("__");
-        value = get(context, v);
+
+        // TODO: What if value isn't found?
+        value = get(context, v) as string;
       }
 
       if (k.startsWith("==")) {

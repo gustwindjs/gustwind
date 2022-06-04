@@ -47,6 +47,50 @@ Deno.test("nested element", async () => {
   );
 });
 
+Deno.test("value binding without __children", async () => {
+  assertEquals(
+    await breeze({ component: { element: "span", __value: "foobar" } }),
+    "<span />",
+  );
+});
+
+Deno.test("value binding to __children", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        __value: { title: "foobar" },
+        __children: "title",
+      },
+    }),
+    "<span>foobar</span>",
+  );
+});
+// TODO: ==children with value binding
+
+Deno.test("value binding with attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { title: "demo" },
+        __value: "foobar",
+      },
+    }),
+    '<span title="demo" />',
+  );
+});
+
+Deno.test("value binding with context", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", __value: "foobar", __children: "value" },
+      context: { value: "demo" },
+    }),
+    "<span>demo</span>",
+  );
+});
+
 Deno.test("nested siblings", async () => {
   assertEquals(
     await breeze({ component: { element: "div", children: [span, span] } }),
@@ -323,10 +367,81 @@ Deno.test("class shortcut extension with evaluation", async () => {
   );
 });
 
+Deno.test("foreach extension without context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "ul",
+        foreach: ["items", { element: "li", __children: "value" }],
+      },
+      extensions: [extensions.foreach],
+    }),
+    "<ul />",
+  );
+});
+
+Deno.test("foreach extension with an array", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "ul",
+        foreach: ["items", { element: "li", __children: "value" }],
+      },
+      extensions: [extensions.foreach],
+      context: { items: ["foo", "bar"] },
+    }),
+    "<ul><li>foo</li><li>bar</li></ul>",
+  );
+});
+
+Deno.test("foreach extension with multiple children", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "ul",
+        foreach: ["items", [{ element: "li", __children: "value" }, {
+          element: "li",
+          __children: "value",
+        }]],
+      },
+      extensions: [extensions.foreach],
+      context: { items: ["foo", "bar"] },
+    }),
+    "<ul><li>foo</li><li>foo</li><li>bar</li><li>bar</li></ul>",
+  );
+});
+
+Deno.test("foreach extension with an array with a nested key", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "ul",
+        foreach: ["test.items", { element: "li", __children: "value" }],
+      },
+      extensions: [extensions.foreach],
+      context: { test: { items: ["foo", "bar"] } },
+    }),
+    "<ul><li>foo</li><li>bar</li></ul>",
+  );
+});
+
+Deno.test("foreach extension with an array of objects", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "ul",
+        foreach: ["items", { element: "li", __children: "title" }],
+      },
+      extensions: [extensions.foreach],
+      context: { items: [{ title: "foo" }, { title: "bar" }] },
+    }),
+    "<ul><li>foo</li><li>bar</li></ul>",
+  );
+});
+
 // TODO: To test
 // Component lookup
 // props extension
-// foreach: [string, Component | Component[]] -> extension
 // object notation for classes?
 /*
 class: 'my-4',

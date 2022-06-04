@@ -1,8 +1,13 @@
+type Context = Record<string, unknown>;
+
 type BaseComponent = {
   element?: string;
   attributes?: Record<string, string | undefined>;
 
   children?: string | Component[];
+
+  // Value binding
+  __value?: string | Context;
 
   // Getter binding
   __children?: string;
@@ -15,8 +20,11 @@ type ClassComponent = BaseComponent & {
   __class?: string;
   "==class"?: string;
 };
-type Component = BaseComponent | ClassComponent;
+type ForEachComponent = BaseComponent & {
+  foreach?: [string, Component | Component[]];
+};
+type Component = BaseComponent | ClassComponent | ForEachComponent;
 
-type Extension = (component: Component) => BaseComponent;
+type Extension = (component: Component, context?: Context) => BaseComponent;
 
-export type { ClassComponent, Component, Extension };
+export type { ClassComponent, Component, Context, Extension, ForEachComponent };
