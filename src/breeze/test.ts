@@ -638,7 +638,6 @@ Deno.test("pass utilities to attributes", async () => {
 });
 
 // TODO: To test
-// Figure out how to deal with transforms -> extension?
 // object notation for classes?
 /*
 class: 'my-4',
