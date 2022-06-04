@@ -765,6 +765,8 @@ Deno.test("pass render() to ==children with props in a component", async () => {
   );
 });
 
+// TODO: Test props (Link) within composition (siteIndex -> BaseLayout)
+
 Deno.test("visibleIf causes empty render", async () => {
   assertEquals(
     await breeze({
