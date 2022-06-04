@@ -21,8 +21,23 @@ type ClassComponent = BaseComponent & {
 type ForEachComponent = BaseComponent & {
   foreach?: [string, Component | Component[]];
 };
-type Component = BaseComponent | ClassComponent | ForEachComponent;
+type VisibleIfComponent = BaseComponent & { visibleIf?: string };
+type Component =
+  | BaseComponent
+  | ClassComponent
+  | ForEachComponent
+  | VisibleIfComponent;
 
-type Extension = (component: Component, context?: Context) => BaseComponent;
+type Extension = (
+  component: Component,
+  context: Context,
+) => Promise<BaseComponent>;
 
-export type { ClassComponent, Component, Context, Extension, ForEachComponent };
+export type {
+  ClassComponent,
+  Component,
+  Context,
+  Extension,
+  ForEachComponent,
+  VisibleIfComponent,
+};

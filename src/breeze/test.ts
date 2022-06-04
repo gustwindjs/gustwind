@@ -529,8 +529,82 @@ Deno.test("pass render() to ==children with props", async () => {
   );
 });
 
+Deno.test("visibleIf causes empty render", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", visibleIf: "" },
+      extensions: [extensions.visibleIf],
+    }),
+    "",
+  );
+});
+
+Deno.test("visibleIf shows element based on context", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", visibleIf: "context.visible" },
+      extensions: [extensions.visibleIf],
+      context: { visible: true },
+    }),
+    "<span />",
+  );
+});
+
+Deno.test("visibleIf hides element based on context", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", visibleIf: "context.visible" },
+      extensions: [extensions.visibleIf],
+      context: { visible: false },
+    }),
+    "",
+  );
+});
+
+Deno.test("visibleIf shows element based on prop", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        props: { foo: true },
+        visibleIf: "foo",
+      },
+      extensions: [extensions.visibleIf],
+    }),
+    "<span />",
+  );
+});
+
+Deno.test("visibleIf hides element based on prop", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        props: { foo: false },
+        visibleIf: "foo",
+      },
+      extensions: [extensions.visibleIf],
+    }),
+    "",
+  );
+});
+
+Deno.test("visibleIf shows element based on context and prop", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        props: { foo: true },
+        visibleIf: "context.visible && foo",
+      },
+      extensions: [extensions.visibleIf],
+      context: { visible: true },
+    }),
+    "<span />",
+  );
+});
+
 // TODO: To test
-// Add visibleIf -> extension?
 // Expose utilities to evaluation
 // Figure out how to deal with transforms -> extension?
 // object notation for classes?

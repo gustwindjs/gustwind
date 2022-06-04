@@ -25,9 +25,11 @@ async function render({ component, components, extensions, context }: {
     });
   }
 
-  component = extensions
-    ? extensions.reduce((a, b) => b(a, context), component)
-    : component;
+  if (extensions) {
+    for (const extension of extensions) {
+      component = await extension(component, context || {});
+    }
+  }
 
   const evalRender = (component: Component | Component[]) =>
     render({ component, components, extensions, context });
