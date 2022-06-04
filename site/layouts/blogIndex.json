@@ -16,25 +16,22 @@
       {
         "element": "div",
         "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-        "__bind": "blogPosts",
         "children": [
           {
             "element": "ul",
-            "__children": [
-              {
-                "element": "li",
-                "class": "inline",
-                "children": [
-                  {
-                    "element": "Link",
-                    "__bind": {
-                      "__children": "data.title",
-                      "==href": "data.slug + '/'"
-                    }
+            "foreach": ["dataSource.blogPosts", {
+              "element": "li",
+              "class": "inline",
+              "children": [
+                {
+                  "element": "Link",
+                  "props": {
+                    "__children": "data.title",
+                    "==href": "data.slug + '/'"
                   }
-                ]
-              }
-            ]
+                }
+              ]
+            }]
           }
         ]
       },
@@ -42,8 +39,7 @@
         "element": "MainFooter"
       },
       {
-        "element": "Scripts",
-        "__bind": "scripts"
+        "element": "Scripts"
       }
     ]
   }

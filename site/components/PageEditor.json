@@ -28,7 +28,7 @@
             {
               "element": "DynamicList",
               "class": "flex flex-col gap-2",
-              "__bind": {
+              "props": {
                 "dataSource": "Object.entries(editor.meta)",
                 "oninput": "metaChanged(this, this.value)"
               }
@@ -55,7 +55,7 @@
                     {
                       "element": "DynamicList",
                       "class": "flex flex-col gap-2",
-                      "__bind": {
+                      "props": {
                         "dataSource": "state.value ? Object.entries(state.value) : []"
                       }
                     }

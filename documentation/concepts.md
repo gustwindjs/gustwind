@@ -33,14 +33,14 @@ A navigation component built on top of `link` could look like this:
 [
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Blog",
       "href": "/blog/"
     }
   },
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "About",
       "href": "/about/"
     }
@@ -70,7 +70,8 @@ The same idea of binding works for `children`. You can bind to the children of a
 {
   "element": "ul",
   "class": "grid grid-cols-3 gap-8",
-  "__children": [
+  "foreach": [
+    "libraries",
     {
       "element": "li",
       "class": "my-4",
@@ -89,21 +90,23 @@ The same idea of binding works for `children`. You can bind to the children of a
 }
 ```
 
-In order to bind data, `__bind` has to be used. To bind `libraries` to the component above, you could do the following:
+To use, pass libraries as props:
 
 ```json
 {
   "element": "AllLibraries",
-  "__bind": "libraries"
+  "props": {
+    "libraries": "dataSources.libraries"
+  }
 }
 ```
 
-In addition to binding data from a source, you can do static bindings to pass data to components:
+In addition to binding data from a source, you can pass static data:
 
 ```json
 {
   "element": "GitHubCorner",
-  "__bind": {
+  "props": {
     "url": "https://github.com/survivejs/gustwind"
   }
 }
@@ -117,19 +120,19 @@ To apply an interpolation, i.e. combining data at the field level, there's `==` 
 {
   "element": "div",
   "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-  "__bind": "blogPosts.content",
   "children": [
     {
       "element": "ul",
-      "__children": [
+      "forEach": [
+        "dataSources.blogPosts.content",
         {
           "element": "li",
           "class": "inline",
           "children": [
             {
               "element": "Link",
-              "__children": "data.title",
-              "__bind": {
+              "props": {
+                "__children": "data.title",
                 "==href": "data.slug + '/'"
               }
             }
@@ -360,8 +363,7 @@ The same idea can be used to implement an RSS feed.
         "==children": "(new Date(meta.built)).toISOString()"
       },
       {
-        "__bind": "blogPosts",
-        "__children": [
+        "foreach": ["dataSources.blogPosts",
           {
             "element": "entry",
             "children": [

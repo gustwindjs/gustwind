@@ -1,35 +1,35 @@
 [
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Modes",
       "href": "/modes/"
     }
   },
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Configuration",
       "href": "/configuration/"
     }
   },
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Routing",
       "href": "/routing/"
     }
   },
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Concepts",
       "href": "/concepts/"
     }
   },
   {
     "element": "Link",
-    "__bind": {
+    "props": {
       "children": "Deployment",
       "href": "/deployment/"
     }
