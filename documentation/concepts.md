@@ -338,7 +338,7 @@ The same idea can be used to implement an RSS feed.
     "children": [
       {
         "element": "title",
-        "__children": "meta.siteName"
+        "__children": "context.meta.siteName"
       },
       {
         "element": "id",

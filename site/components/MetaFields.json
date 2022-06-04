@@ -32,7 +32,7 @@
     "element": "meta",
     "attributes": {
       "name": "pagepath",
-      "__content": "meta.pagePath"
+      "__content": "context.meta.pagePath"
     }
   },
   {
@@ -47,60 +47,60 @@
     "element": "meta",
     "attributes": {
       "name": "og:site_name",
-      "__content": "meta.siteName"
+      "__content": "context.meta.siteName"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "twitter:site",
-      "__content": "meta.siteName"
+      "__content": "context.meta.siteName"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "og:title",
-      "__content": "meta.title"
+      "__content": "context.meta.title"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "twitter:title",
-      "__content": "meta.title"
+      "__content": "context.meta.title"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "description",
-      "__content": "meta.description"
+      "__content": "context.meta.description"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "og:description",
-      "__content": "meta.description"
+      "__content": "context.meta.description"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "twitter:description",
-      "__content": "meta.description"
+      "__content": "context.meta.description"
     }
   },
   {
     "element": "meta",
     "attributes": {
       "name": "built",
-      "__content": "meta.built"
+      "__content": "context.meta.built"
     }
   },
   {
     "element": "title",
-    "__children": "meta.title"
+    "__children": "context.meta.title"
   }
 ]
