@@ -1,10 +1,20 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 
 import breeze from "./index.ts";
+import * as extensions from "./extensions.ts";
 
 const onlyChildren = { children: "testing" };
 const emptySpan = { element: "span" };
 const span = { element: "span", children: "testing" };
+const hyperlink = {
+  element: "a",
+  attributes: { href: "testing" },
+  children: "testing",
+};
+const hyperlinkWithoutChildren = {
+  element: "a",
+  attributes: { href: "testing" },
+};
 
 Deno.test("empty element", () => {
   assertEquals(breeze(emptySpan), "<span />");
@@ -52,3 +62,24 @@ Deno.test("multi-level nesting", () => {
     "<div><div><span>testing</span></div></div>",
   );
 });
+
+Deno.test("attributes", () => {
+  assertEquals(
+    breeze(hyperlink),
+    '<a href="testing">testing</a>',
+  );
+});
+
+Deno.test("attributes without children", () => {
+  assertEquals(
+    breeze(hyperlinkWithoutChildren),
+    '<a href="testing" />',
+  );
+});
+
+// TODO: To test
+// Extension API (class, props)
+// Context handling
+// __foo - getter
+// ==foo - evaluation
+// Component lookup
