@@ -23,38 +23,43 @@ const hyperlinkWithoutChildren = {
 };
 
 Deno.test("empty element", () => {
-  assertEquals(breeze(emptySpan), "<span />");
+  assertEquals(breeze({ component: emptySpan }), "<span />");
 });
 
 Deno.test("array of elements", () => {
-  assertEquals(breeze([emptySpan, emptySpan]), "<span /><span />");
+  assertEquals(
+    breeze({ component: [emptySpan, emptySpan] }),
+    "<span /><span />",
+  );
 });
 
 Deno.test("simple element", () => {
-  assertEquals(breeze(span), "<span>testing</span>");
+  assertEquals(breeze({ component: span }), "<span>testing</span>");
 });
 
 Deno.test("children element", () => {
-  assertEquals(breeze(onlyChildren), "testing");
+  assertEquals(breeze({ component: onlyChildren }), "testing");
 });
 
 Deno.test("nested element", () => {
   assertEquals(
-    breeze({ element: "div", children: [span] }),
+    breeze({ component: { element: "div", children: [span] } }),
     "<div><span>testing</span></div>",
   );
 });
 
 Deno.test("nested siblings", () => {
   assertEquals(
-    breeze({ element: "div", children: [span, span] }),
+    breeze({ component: { element: "div", children: [span, span] } }),
     "<div><span>testing</span><span>testing</span></div>",
   );
 });
 
 Deno.test("nested children siblings", () => {
   assertEquals(
-    breeze({ element: "div", children: [onlyChildren, onlyChildren] }),
+    breeze({
+      component: { element: "div", children: [onlyChildren, onlyChildren] },
+    }),
     "<div>testingtesting</div>",
   );
 });
@@ -62,8 +67,10 @@ Deno.test("nested children siblings", () => {
 Deno.test("multi-level nesting", () => {
   assertEquals(
     breeze({
-      element: "div",
-      children: [{ element: "div", children: [span] }],
+      component: {
+        element: "div",
+        children: [{ element: "div", children: [span] }],
+      },
     }),
     "<div><div><span>testing</span></div></div>",
   );
@@ -71,35 +78,68 @@ Deno.test("multi-level nesting", () => {
 
 Deno.test("attributes", () => {
   assertEquals(
-    breeze(hyperlink),
+    breeze({ component: hyperlink }),
     '<a href="testing">testing</a>',
   );
 });
 
 Deno.test("undefined attributes", () => {
   assertEquals(
-    breeze(undefinedAttribute),
+    breeze({ component: undefinedAttribute }),
     "<a>testing</a>",
   );
 });
 
 Deno.test("attributes without children", () => {
   assertEquals(
-    breeze(hyperlinkWithoutChildren),
+    breeze({ component: hyperlinkWithoutChildren }),
     '<a href="testing" />',
   );
 });
 
 Deno.test("class shortcut extension", () => {
   assertEquals(
-    breeze(classShortcut, [extensions.classShortcut]),
+    breeze({
+      component: classShortcut,
+      extensions: [extensions.classShortcut],
+    }),
     '<span class="demo">testing</span>',
+  );
+});
+
+Deno.test("context binding", () => {
+  assertEquals(
+    breeze({
+      component: { element: "span", __children: "test" },
+      context: { test: "foobar" },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("nested context binding", () => {
+  assertEquals(
+    breeze({
+      component: { element: "span", __children: "test.test" },
+      context: { test: { test: "foobar" } },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("context binding without element", () => {
+  assertEquals(
+    breeze({
+      component: { __children: "test" },
+      context: { test: "foobar" },
+    }),
+    "foobar",
   );
 });
 
 // TODO: To test
 // Extension API (props)
-// Context handling
-// __foo - getter
-// ==foo - evaluation
+// __foo - getter for attributes
+// ==foo - evaluation for children
+// ==foo - evaluation for attributes
 // Component lookup

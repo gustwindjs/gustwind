@@ -1,7 +1,10 @@
 type Component = {
   element?: string;
-  children?: string | Component[];
   attributes?: Record<string, string | undefined>;
+
+  children?: string | Component[];
+  // Getter binding
+  __children?: string;
 };
 type ClassComponent = Component & { class?: string };
 
