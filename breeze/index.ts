@@ -22,13 +22,20 @@ async function render(
   const foundComponent = component.element && components?.[component.element];
 
   if (foundComponent) {
-    return await render({
-      component: foundComponent,
-      components,
-      extensions,
-      context: { ...context, ...component.props },
-      utilities,
-    });
+    return (await Promise.all(
+      (Array.isArray(foundComponent) ? foundComponent : [foundComponent]).map((
+        c,
+      ) =>
+        render({
+          // @ts-ignore: component is Component now for sure
+          component: { ...c, props: component.props },
+          components,
+          extensions,
+          context,
+          utilities,
+        })
+      ),
+    )).join("");
   }
 
   const evalRender = (component: Component | Component[]) =>
@@ -57,7 +64,11 @@ async function render(
 
     if (Array.isArray(children)) {
       children = await render({
-        component: children,
+        component: children.map((c) => ({
+          ...c,
+          // @ts-ignore: component is Component now for sure
+          props: c.props || component.props,
+        })),
         components,
         extensions,
         context,
