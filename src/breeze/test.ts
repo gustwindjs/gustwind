@@ -381,6 +381,26 @@ Deno.test("class shortcut extension", async () => {
   );
 });
 
+Deno.test("class shortcut visibility extension with evaluation", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        class: {
+          "font-bold": "context.href === context.pathname",
+        },
+        children: "testing",
+      },
+      extensions: [extensions.classShortcut],
+      context: {
+        href: "foo",
+        pathname: "foo",
+      },
+    }),
+    '<span class="font-bold">testing</span>',
+  );
+});
+
 Deno.test("class shortcut extension with getter", async () => {
   assertEquals(
     await breeze({
@@ -636,12 +656,3 @@ Deno.test("pass utilities to attributes", async () => {
     '<div title="hello">test</div>',
   );
 });
-
-// TODO: To test
-// object notation for classes?
-/*
-class: 'my-4',
-==class: {
-  'font-bold': 'test',
-}
-*/

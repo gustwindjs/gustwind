@@ -14,7 +14,7 @@ type BaseComponent = {
   "==children"?: string;
 };
 type ClassComponent = BaseComponent & {
-  class?: string;
+  class?: string | Record<string, string>;
   __class?: string;
   "==class"?: string;
 };

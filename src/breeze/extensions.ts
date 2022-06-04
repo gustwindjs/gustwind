@@ -1,4 +1,4 @@
-import { get } from "../../utils/functional.ts";
+import { get, isObject } from "../../utils/functional.ts";
 import { evaluateExpression } from "../evaluate.ts";
 import type {
   ClassComponent,
@@ -8,7 +8,29 @@ import type {
   VisibleIfComponent,
 } from "./types.ts";
 
-function classShortcut(component: ClassComponent): Promise<Component> {
+async function classShortcut(
+  component: ClassComponent,
+  context: Context,
+): Promise<Component> {
+  if (isObject(component.class)) {
+    const className = (await Promise.all(
+      // TODO: Somehow component.class isn't inferred correctly here
+      Object.entries(component.class as Record<string, string>).map(
+        async ([k, v]) => {
+          const isVisible = await evaluateExpression(v, { context });
+
+          return isVisible && k;
+        },
+      ),
+    )).filter(Boolean).join(" ");
+
+    return Promise.resolve({
+      ...component,
+      attributes: { ...component.attributes, class: className },
+    });
+  }
+
+  // @ts-ignore: TODO: Somehow the type check fails above
   return Promise.resolve({
     ...component,
     attributes: {
