@@ -453,6 +453,8 @@ Deno.test("foreach extension with an array of objects", async () => {
 
 // TODO: To test
 // Component lookup
+// Expose utilities to evaluation
+// Figure out how to deal with transforms -> extension?
 // object notation for classes?
 /*
 class: 'my-4',
