@@ -3,8 +3,12 @@ type Component = {
   attributes?: Record<string, string | undefined>;
 
   children?: string | Component[];
+
   // Getter binding
   __children?: string;
+
+  // Evaluation binding
+  "==children"?: string;
 };
 type ClassComponent = Component & { class?: string };
 

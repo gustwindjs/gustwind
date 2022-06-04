@@ -1,13 +1,16 @@
 import { get } from "../../utils/functional.ts";
+import { evaluateExpression } from "../evaluate.ts";
 import type { Component, Extension } from "./types.ts";
 
-function render({ component, extensions, context }: {
+async function render({ component, extensions, context }: {
   component: Component | Component[];
   extensions?: (Extension)[];
   context?: Record<string, unknown>;
-}): string {
+}): Promise<string> {
   if (Array.isArray(component)) {
-    return component.map((c) => render({ component: c, extensions })).join("");
+    return (await Promise.all(
+      component.map((c) => render({ component: c, extensions })),
+    )).join("");
   }
 
   component = extensions
@@ -20,7 +23,7 @@ function render({ component, extensions, context }: {
     let children = component.children;
 
     if (Array.isArray(children)) {
-      children = render({ component: children, extensions });
+      children = await render({ component: children, extensions });
     }
 
     if (component.element) {
@@ -32,16 +35,32 @@ function render({ component, extensions, context }: {
     return children;
   }
 
-  if (context && component.__children) {
-    const value = get(context, component.__children);
+  if (context) {
+    if (component.__children) {
+      const value = get(context, component.__children);
 
-    if (component.element) {
-      return `<${component.element}${
-        attributes ? " " + attributes : ""
-      }>${value}</${component.element}>`;
+      if (component.element) {
+        return `<${component.element}${
+          attributes ? " " + attributes : ""
+        }>${value}</${component.element}>`;
+      }
+
+      return (value as string) || "";
     }
 
-    return (value as string) || "";
+    const expression = component["==children"];
+
+    if (expression) {
+      const value = await evaluateExpression(expression, context);
+
+      if (component.element) {
+        return `<${component.element}${
+          attributes ? " " + attributes : ""
+        }>${value}</${component.element}>`;
+      }
+
+      return (value as string) || "";
+    }
   }
 
   if (component.element) {

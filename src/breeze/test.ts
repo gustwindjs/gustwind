@@ -22,51 +22,51 @@ const hyperlinkWithoutChildren = {
   attributes: { href: "testing" },
 };
 
-Deno.test("empty element", () => {
-  assertEquals(breeze({ component: emptySpan }), "<span />");
+Deno.test("empty element", async () => {
+  assertEquals(await breeze({ component: emptySpan }), "<span />");
 });
 
-Deno.test("array of elements", () => {
+Deno.test("array of elements", async () => {
   assertEquals(
-    breeze({ component: [emptySpan, emptySpan] }),
+    await breeze({ component: [emptySpan, emptySpan] }),
     "<span /><span />",
   );
 });
 
-Deno.test("simple element", () => {
-  assertEquals(breeze({ component: span }), "<span>testing</span>");
+Deno.test("simple element", async () => {
+  assertEquals(await breeze({ component: span }), "<span>testing</span>");
 });
 
-Deno.test("children element", () => {
-  assertEquals(breeze({ component: onlyChildren }), "testing");
+Deno.test("children element", async () => {
+  assertEquals(await breeze({ component: onlyChildren }), "testing");
 });
 
-Deno.test("nested element", () => {
+Deno.test("nested element", async () => {
   assertEquals(
-    breeze({ component: { element: "div", children: [span] } }),
+    await breeze({ component: { element: "div", children: [span] } }),
     "<div><span>testing</span></div>",
   );
 });
 
-Deno.test("nested siblings", () => {
+Deno.test("nested siblings", async () => {
   assertEquals(
-    breeze({ component: { element: "div", children: [span, span] } }),
+    await breeze({ component: { element: "div", children: [span, span] } }),
     "<div><span>testing</span><span>testing</span></div>",
   );
 });
 
-Deno.test("nested children siblings", () => {
+Deno.test("nested children siblings", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: { element: "div", children: [onlyChildren, onlyChildren] },
     }),
     "<div>testingtesting</div>",
   );
 });
 
-Deno.test("multi-level nesting", () => {
+Deno.test("multi-level nesting", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: {
         element: "div",
         children: [{ element: "div", children: [span] }],
@@ -76,30 +76,30 @@ Deno.test("multi-level nesting", () => {
   );
 });
 
-Deno.test("attributes", () => {
+Deno.test("attributes", async () => {
   assertEquals(
-    breeze({ component: hyperlink }),
+    await breeze({ component: hyperlink }),
     '<a href="testing">testing</a>',
   );
 });
 
-Deno.test("undefined attributes", () => {
+Deno.test("undefined attributes", async () => {
   assertEquals(
-    breeze({ component: undefinedAttribute }),
+    await breeze({ component: undefinedAttribute }),
     "<a>testing</a>",
   );
 });
 
-Deno.test("attributes without children", () => {
+Deno.test("attributes without children", async () => {
   assertEquals(
-    breeze({ component: hyperlinkWithoutChildren }),
+    await breeze({ component: hyperlinkWithoutChildren }),
     '<a href="testing" />',
   );
 });
 
-Deno.test("class shortcut extension", () => {
+Deno.test("class shortcut extension", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: classShortcut,
       extensions: [extensions.classShortcut],
     }),
@@ -107,9 +107,9 @@ Deno.test("class shortcut extension", () => {
   );
 });
 
-Deno.test("context binding", () => {
+Deno.test("context binding", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: { element: "span", __children: "test" },
       context: { test: "foobar" },
     }),
@@ -117,9 +117,9 @@ Deno.test("context binding", () => {
   );
 });
 
-Deno.test("nested context binding", () => {
+Deno.test("nested context binding", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: { element: "span", __children: "test.test" },
       context: { test: { test: "foobar" } },
     }),
@@ -127,11 +127,74 @@ Deno.test("nested context binding", () => {
   );
 });
 
-Deno.test("context binding without element", () => {
+Deno.test("context binding without element", async () => {
   assertEquals(
-    breeze({
+    await breeze({
       component: { __children: "test" },
       context: { test: "foobar" },
+    }),
+    "foobar",
+  );
+});
+
+Deno.test("nested context binding without element", async () => {
+  assertEquals(
+    await breeze({
+      component: { __children: "test.test" },
+      context: { test: { test: "foobar" } },
+    }),
+    "foobar",
+  );
+});
+
+Deno.test("context evaluation", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", "==children": "test + 'bar'" },
+      context: { test: "foo" },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("async context evaluation", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        "==children": "Promise.resolve('foobar')",
+      },
+      context: { test: "bar" },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("nested context evaluation", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", "==children": "test.test + 'bar'" },
+      context: { test: { test: "foo" } },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("context evaluation without element", async () => {
+  assertEquals(
+    await breeze({
+      component: { "==children": "test + 'bar'" },
+      context: { test: "foo" },
+    }),
+    "foobar",
+  );
+});
+
+Deno.test("nested context binding without element", async () => {
+  assertEquals(
+    await breeze({
+      component: { "==children": "test.test + 'bar'" },
+      context: { test: { test: "foo" } },
     }),
     "foobar",
   );
@@ -140,6 +203,5 @@ Deno.test("context binding without element", () => {
 // TODO: To test
 // Extension API (props)
 // __foo - getter for attributes
-// ==foo - evaluation for children
 // ==foo - evaluation for attributes
 // Component lookup
