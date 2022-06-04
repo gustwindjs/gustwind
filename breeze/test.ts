@@ -518,6 +518,21 @@ Deno.test("component lookup", async () => {
   );
 });
 
+Deno.test("component lookup with an array", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "Button" },
+      components: {
+        Button: [{ element: "button", children: "foo" }, {
+          element: "button",
+          children: "bar",
+        }],
+      },
+    }),
+    "<button>foo</button><button>bar</button>",
+  );
+});
+
 Deno.test("component with props", async () => {
   assertEquals(
     await breeze({

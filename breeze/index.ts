@@ -5,7 +5,7 @@ import type { Component, Context, Extension, Utilities } from "./types.ts";
 async function render(
   { component, components, extensions, context, utilities }: {
     component: Component | Component[];
-    components?: Record<string, Component>;
+    components?: Record<string, Component | Component[]>;
     extensions?: (Extension)[];
     context?: Context;
     utilities?: Utilities;
