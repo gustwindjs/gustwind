@@ -1,4 +1,4 @@
-import { get } from "../utils/functional.ts";
+import { get, isUndefined } from "../utils/functional.ts";
 import { evaluateExpression } from "../utils/evaluate.ts";
 import type { Component, Context, Extension } from "./types.ts";
 
@@ -164,10 +164,6 @@ async function generateAttributes(
       return `${key}="${value}"`;
     }),
   )).join("");
-}
-
-function isUndefined(str?: string) {
-  return typeof str == "undefined";
 }
 
 export default render;

@@ -1,7 +1,7 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
 import { tw } from "../client-deps.ts";
-import { get, isObject } from "../utils/functional.ts";
+import { get, isObject, isUndefined } from "../utils/functional.ts";
 import type {
   Attributes,
   Component,
@@ -318,10 +318,6 @@ async function generateAttributes(
 
   return fields.map(([k, v]) => isUndefined(v) ? "" : `${k}="${v}"`)
     .join(" ");
-}
-
-function isUndefined(str: string) {
-  return typeof str == "undefined";
 }
 
 export { renderComponent };
