@@ -3,7 +3,11 @@ type Component = {
   children?: string | Component[];
 };
 
-function render(component: Component): string {
+function render(component: Component | Component[]): string {
+  if (Array.isArray(component)) {
+    return component.map(render).join("");
+  }
+
   if (component.children) {
     let children = component.children;
 

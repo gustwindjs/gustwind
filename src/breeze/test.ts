@@ -10,8 +10,16 @@ Deno.test("empty element", () => {
   assertEquals(breeze(emptySpan), "<span />");
 });
 
+Deno.test("array of elements", () => {
+  assertEquals(breeze([emptySpan, emptySpan]), "<span /><span />");
+});
+
 Deno.test("simple element", () => {
   assertEquals(breeze(span), "<span>testing</span>");
+});
+
+Deno.test("children element", () => {
+  assertEquals(breeze(onlyChildren), "testing");
 });
 
 Deno.test("nested element", () => {
