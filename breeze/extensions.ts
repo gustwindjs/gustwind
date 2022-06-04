@@ -1,5 +1,8 @@
+// This file is loaded both on client and server so it's important
+// to keep related imports at minimum.
+import { tw } from "../client-deps.ts";
 import { get, isObject } from "../utils/functional.ts";
-import { evaluateExpression } from "../src/evaluate.ts";
+import { evaluateExpression } from "../utils/evaluate.ts";
 import type {
   ClassComponent,
   Component,
@@ -17,7 +20,7 @@ async function classShortcut(
       // TODO: Somehow component.class isn't inferred correctly here
       Object.entries(component.class as Record<string, string>).map(
         async ([k, v]) => {
-          const isVisible = await evaluateExpression(v, { context });
+          const isVisible = await evaluateExpression(v, context);
 
           return isVisible && k;
         },
@@ -26,20 +29,42 @@ async function classShortcut(
 
     return Promise.resolve({
       ...component,
-      attributes: { ...component.attributes, class: className },
+      attributes: { ...component.attributes, class: tw(className) },
     });
   }
 
-  // @ts-ignore: TODO: Somehow the type check fails above
-  return Promise.resolve({
-    ...component,
-    attributes: {
-      ...component.attributes,
-      class: component.class,
-      __class: component.__class,
-      "==class": component["==class"],
-    },
-  });
+  if (typeof component.class === "string") {
+    return Promise.resolve({
+      ...component,
+      attributes: { ...component.attributes, class: component.class },
+    });
+  }
+
+  if (typeof component.__class === "string") {
+    return Promise.resolve({
+      ...component,
+      attributes: {
+        ...component.attributes,
+        class: tw(
+          get(context, component.__class),
+        ),
+      },
+    });
+  }
+
+  if (typeof component["==class"] === "string") {
+    return Promise.resolve({
+      ...component,
+      attributes: {
+        ...component.attributes,
+        class: tw(
+          await evaluateExpression(component["==class"], context),
+        ),
+      },
+    });
+  }
+
+  return Promise.resolve(component);
 }
 
 function foreach(
@@ -71,10 +96,11 @@ async function visibleIf(
   component: VisibleIfComponent,
   context: Context,
 ): Promise<Component> {
-  const isVisible = await evaluateExpression(component.visibleIf, {
-    ...component.props,
-    context,
-  });
+  if (typeof component.visibleIf !== "string") {
+    return Promise.resolve(component);
+  }
+
+  const isVisible = await evaluateExpression(component.visibleIf, context);
 
   return isVisible ? component : {};
 }

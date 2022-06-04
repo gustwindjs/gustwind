@@ -3,9 +3,9 @@
 import {
   getStyleTag,
   getStyleTagProperties,
+  setupTwind,
   virtualSheet,
 } from "../client-deps.ts";
-import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import type {
   Components,
   DataContext,
@@ -17,7 +17,7 @@ import type {
 } from "../types.ts";
 import { renderComponent } from "./renderComponent.ts";
 import { getContext } from "./getContext.ts";
-import { evaluateFields } from "./evaluate.ts";
+import { evaluateFields } from "../utils/evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 

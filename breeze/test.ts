@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 
+import { setupTwind, virtualSheet } from "../client-deps.ts";
 import breeze from "./index.ts";
 import * as extensions from "./extensions.ts";
 
@@ -20,6 +21,10 @@ const hyperlinkWithoutChildren = {
   element: "a",
   attributes: { href: "testing" },
 };
+
+const stylesheet = virtualSheet();
+
+setupTwind({ sheet: stylesheet, mode: "silent" });
 
 Deno.test("empty element", async () => {
   assertEquals(await breeze({ component: emptySpan }), "<span />");
@@ -449,7 +454,7 @@ Deno.test("foreach extension with an array", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["items", { element: "li", __children: "value" }],
+        foreach: ["context.items", { element: "li", __children: "value" }],
       },
       extensions: [extensions.foreach],
       context: { items: ["foo", "bar"] },
@@ -463,7 +468,7 @@ Deno.test("foreach extension with multiple children", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["items", [{ element: "li", __children: "value" }, {
+        foreach: ["context.items", [{ element: "li", __children: "value" }, {
           element: "li",
           __children: "value",
         }]],
@@ -480,7 +485,7 @@ Deno.test("foreach extension with an array with a nested key", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["test.items", { element: "li", __children: "value" }],
+        foreach: ["context.test.items", { element: "li", __children: "value" }],
       },
       extensions: [extensions.foreach],
       context: { test: { items: ["foo", "bar"] } },
@@ -494,7 +499,7 @@ Deno.test("foreach extension with an array of objects", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["items", { element: "li", __children: "title" }],
+        foreach: ["context.items", { element: "li", __children: "title" }],
       },
       extensions: [extensions.foreach],
       context: { items: [{ title: "foo" }, { title: "bar" }] },

@@ -1,5 +1,5 @@
 import { get } from "../utils/functional.ts";
-import { evaluateExpression } from "../src/evaluate.ts";
+import { evaluateExpression } from "../utils/evaluate.ts";
 import type { Component, Context, Extension } from "./types.ts";
 
 async function render(
@@ -29,14 +29,19 @@ async function render(
     });
   }
 
-  if (extensions) {
-    for (const extension of extensions) {
-      component = await extension(component, context || {});
-    }
-  }
-
   const evalRender = (component: Component | Component[]) =>
     render({ component, components, extensions, context, utilities });
+
+  if (extensions) {
+    for (const extension of extensions) {
+      component = await extension(component, {
+        ...component.props,
+        render: evalRender,
+        context,
+        utilities,
+      });
+    }
+  }
 
   const attributes = await generateAttributes(
     component.attributes,
@@ -151,7 +156,7 @@ async function generateAttributes(
         value = get(context, v) as string;
       }
 
-      if (k.startsWith("==")) {
+      if (k.startsWith("==") && typeof v === "string") {
         key = k.split("==").slice(1).join("==");
         value = await evaluateExpression(v, context);
       }

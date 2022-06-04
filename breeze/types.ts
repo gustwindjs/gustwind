@@ -15,7 +15,7 @@ type BaseComponent = {
 };
 type ClassComponent = BaseComponent & {
   class?: string | Record<string, string>;
-  __class?: string;
+  "__class"?: string;
   "==class"?: string;
 };
 type ForEachComponent = BaseComponent & {
