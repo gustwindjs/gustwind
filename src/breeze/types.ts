@@ -1,4 +1,4 @@
-type Component = {
+type BaseComponent = {
   element?: string;
   attributes?: Record<string, string | undefined>;
 
@@ -10,8 +10,13 @@ type Component = {
   // Evaluation binding
   "==children"?: string;
 };
-type ClassComponent = Component & { class?: string };
+type ClassComponent = BaseComponent & {
+  class?: string;
+  __class?: string;
+  "==class"?: string;
+};
+type Component = BaseComponent | ClassComponent;
 
-type Extension = (component: Component | ClassComponent) => Component;
+type Extension = (component: Component) => BaseComponent;
 
 export type { ClassComponent, Component, Extension };

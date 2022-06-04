@@ -6,7 +6,6 @@ import * as extensions from "./extensions.ts";
 const onlyChildren = { children: "testing" };
 const emptySpan = { element: "span" };
 const span = { element: "span", children: "testing" };
-const classShortcut = { element: "span", class: "demo", children: "testing" };
 const hyperlink = {
   element: "a",
   attributes: { href: "testing" },
@@ -94,16 +93,6 @@ Deno.test("attributes without children", async () => {
   assertEquals(
     await breeze({ component: hyperlinkWithoutChildren }),
     '<a href="testing" />',
-  );
-});
-
-Deno.test("class shortcut extension", async () => {
-  assertEquals(
-    await breeze({
-      component: classShortcut,
-      extensions: [extensions.classShortcut],
-    }),
-    '<span class="demo">testing</span>',
   );
 });
 
@@ -298,8 +287,43 @@ Deno.test("async context evaluation for attributes", async () => {
   );
 });
 
+Deno.test("class shortcut extension", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", class: "demo", children: "testing" },
+      extensions: [extensions.classShortcut],
+    }),
+    '<span class="demo">testing</span>',
+  );
+});
+
+Deno.test("class shortcut extension with getter", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "span", __class: "demo", children: "testing" },
+      extensions: [extensions.classShortcut],
+      context: { demo: "foobar" },
+    }),
+    '<span class="foobar">testing</span>',
+  );
+});
+
+Deno.test("class shortcut extension with evaluation", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        "==class": "demo + 'bar'",
+        children: "testing",
+      },
+      extensions: [extensions.classShortcut],
+      context: { demo: "foo" },
+    }),
+    '<span class="foobar">testing</span>',
+  );
+});
+
 // TODO: To test
 // Component lookup
 // props extension
 // foreach: [string, Component | Component[]] -> extension
-// Test __class and ==class
