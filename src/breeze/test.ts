@@ -483,8 +483,28 @@ Deno.test("foreach extension with an array of objects", async () => {
   );
 });
 
+Deno.test("component lookup", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "Button" },
+      components: { Button: { element: "button", children: "demo" } },
+    }),
+    "<button>demo</button>",
+  );
+});
+
+Deno.test("component with props", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "Button", __props: { children: "demo" } },
+      components: { Button: { element: "button", __children: "children" } },
+    }),
+    "<button>demo</button>",
+  );
+});
+
 // TODO: To test
-// Component lookup
+// Expose render() via context
 // Expose utilities to evaluation
 // Figure out how to deal with transforms -> extension?
 // object notation for classes?

@@ -2,8 +2,9 @@ import { get } from "../../utils/functional.ts";
 import { evaluateExpression } from "../evaluate.ts";
 import type { Component, Context, Extension } from "./types.ts";
 
-async function render({ component, extensions, context }: {
+async function render({ component, components, extensions, context }: {
   component: Component | Component[];
+  components?: Record<string, Component>;
   extensions?: (Extension)[];
   context?: Context;
 }): Promise<string> {
@@ -11,6 +12,17 @@ async function render({ component, extensions, context }: {
     return (await Promise.all(
       component.map((c) => render({ component: c, extensions })),
     )).join("");
+  }
+
+  const foundComponent = component.element && components?.[component.element];
+
+  if (foundComponent) {
+    return await render({
+      component: foundComponent,
+      components,
+      extensions,
+      context: { ...context, ...component.__props },
+    });
   }
 
   component = extensions
