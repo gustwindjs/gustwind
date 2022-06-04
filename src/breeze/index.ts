@@ -29,10 +29,13 @@ async function render({ component, components, extensions, context }: {
     ? extensions.reduce((a, b) => b(a, context), component)
     : component;
 
+  const evalRender = (component: Component | Component[]) =>
+    render({ component, components, extensions, context });
+
   const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
-      ? { ...component.props, context }
+      ? { ...component.props, render: evalRender, context }
       : context,
   );
 
@@ -66,6 +69,7 @@ async function render({ component, components, extensions, context }: {
     if (expression) {
       const value = await evaluateExpression(expression, {
         ...component.props,
+        render: evalRender,
         context,
       });
 
@@ -95,7 +99,10 @@ async function render({ component, components, extensions, context }: {
     const expression = component["==children"];
 
     if (expression) {
-      const value = await evaluateExpression(expression, context);
+      const value = await evaluateExpression(expression, {
+        render: evalRender,
+        context,
+      });
 
       if (component.element) {
         return `<${component.element}${

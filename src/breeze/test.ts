@@ -223,7 +223,7 @@ Deno.test("nested context binding without element", async () => {
 Deno.test("context evaluation", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", "==children": "test + 'bar'" },
+      component: { element: "span", "==children": "context.test + 'bar'" },
       context: { test: "foo" },
     }),
     "<span>foobar</span>",
@@ -246,7 +246,7 @@ Deno.test("async context evaluation", async () => {
 Deno.test("nested context evaluation", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", "==children": "test.test + 'bar'" },
+      component: { element: "span", "==children": "context.test.test + 'bar'" },
       context: { test: { test: "foo" } },
     }),
     "<span>foobar</span>",
@@ -256,7 +256,7 @@ Deno.test("nested context evaluation", async () => {
 Deno.test("context evaluation without element", async () => {
   assertEquals(
     await breeze({
-      component: { "==children": "test + 'bar'" },
+      component: { "==children": "context.test + 'bar'" },
       context: { test: "foo" },
     }),
     "foobar",
@@ -266,7 +266,7 @@ Deno.test("context evaluation without element", async () => {
 Deno.test("nested context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { "==children": "test.test + 'bar'" },
+      component: { "==children": "context.test.test + 'bar'" },
       context: { test: { test: "foo" } },
     }),
     "foobar",
@@ -503,8 +503,34 @@ Deno.test("component with props", async () => {
   );
 });
 
+Deno.test("pass render() to ==children with context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "div",
+        "==children": "render(context.demo)",
+      },
+      context: { demo: { element: "span", children: "foobar" } },
+    }),
+    "<div><span>foobar</span></div>",
+  );
+});
+
+Deno.test("pass render() to ==children with props", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "div",
+        props: { demo: { element: "span", children: "foobar" } },
+        "==children": "render(demo)",
+      },
+    }),
+    "<div><span>foobar</span></div>",
+  );
+});
+
 // TODO: To test
-// Expose render() via context
+// Add visibleIf -> extension?
 // Expose utilities to evaluation
 // Figure out how to deal with transforms -> extension?
 // object notation for classes?
