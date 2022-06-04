@@ -189,7 +189,7 @@ Deno.test("attributes without children", async () => {
 Deno.test("context binding", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __children: "test" },
+      component: { element: "span", __children: "context.test" },
       context: { test: "foobar" },
     }),
     "<span>foobar</span>",
@@ -199,17 +199,44 @@ Deno.test("context binding", async () => {
 Deno.test("nested context binding", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __children: "test.test" },
-      context: { test: { test: "foobar" } },
+      component: { element: "span", __children: "context.meta.title" },
+      context: { meta: { title: "foobar" } },
     }),
     "<span>foobar</span>",
+  );
+});
+
+Deno.test("nested context binding within an array", async () => {
+  assertEquals(
+    await breeze({
+      component: [{ element: "span", __children: "context.meta.title" }],
+      context: { meta: { title: "foobar" } },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("nested context binding within components", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "BaseLayout", props: { content: "demo" } },
+      components: {
+        BaseLayout: [{
+          element: "html",
+          children: [{ element: "MetaFields" }],
+        }],
+        MetaFields: [{ element: "span", __children: "context.meta.title" }],
+      },
+      context: { meta: { title: "foobar" } },
+    }),
+    "<html><span>foobar</span></html>",
   );
 });
 
 Deno.test("context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { __children: "test" },
+      component: { __children: "context.test" },
       context: { test: "foobar" },
     }),
     "foobar",
@@ -219,7 +246,7 @@ Deno.test("context binding without element", async () => {
 Deno.test("nested context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { __children: "test.test" },
+      component: { __children: "context.test.test" },
       context: { test: { test: "foobar" } },
     }),
     "foobar",
