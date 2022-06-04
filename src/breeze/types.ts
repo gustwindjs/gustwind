@@ -3,11 +3,9 @@ type Context = Record<string, unknown>;
 type BaseComponent = {
   element?: string;
   attributes?: Record<string, string | undefined>;
+  props?: Context;
 
   children?: string | Component[];
-
-  // Prop binding
-  __props?: Context;
 
   // Getter binding
   __children?: string;

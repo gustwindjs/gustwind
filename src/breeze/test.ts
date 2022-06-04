@@ -50,7 +50,7 @@ Deno.test("nested element", async () => {
 Deno.test("props binding without __children", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __props: { value: "foobar" } },
+      component: { element: "span", props: { value: "foobar" } },
     }),
     "<span />",
   );
@@ -61,7 +61,7 @@ Deno.test("props binding to __children", async () => {
     await breeze({
       component: {
         element: "span",
-        __props: { title: "foobar" },
+        props: { title: "foobar" },
         __children: "title",
       },
     }),
@@ -74,7 +74,7 @@ Deno.test("props binding to ==children", async () => {
     await breeze({
       component: {
         element: "span",
-        __props: { title: "foo" },
+        props: { title: "foo" },
         "==children": "title + 'bar'",
       },
     }),
@@ -87,7 +87,7 @@ Deno.test("props binding to ==children using context", async () => {
     await breeze({
       component: {
         element: "span",
-        __props: { title: "foo" },
+        props: { title: "foo" },
         "==children": "title + context.demo",
       },
       context: {
@@ -104,7 +104,7 @@ Deno.test("props binding with attributes", async () => {
       component: {
         element: "span",
         attributes: { __title: "title" },
-        __props: {
+        props: {
           title: "demo",
         },
       },
@@ -119,7 +119,7 @@ Deno.test("props binding with attributes using context", async () => {
       component: {
         element: "span",
         attributes: { "==title": "title + context.demo" },
-        __props: {
+        props: {
           title: "demo",
         },
       },
@@ -496,7 +496,7 @@ Deno.test("component lookup", async () => {
 Deno.test("component with props", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button", __props: { children: "demo" } },
+      component: { element: "Button", props: { children: "demo" } },
       components: { Button: { element: "button", __children: "children" } },
     }),
     "<button>demo</button>",

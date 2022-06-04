@@ -21,7 +21,7 @@ async function render({ component, components, extensions, context }: {
       component: foundComponent,
       components,
       extensions,
-      context: { ...context, ...component.__props },
+      context: { ...context, ...component.props },
     });
   }
 
@@ -31,8 +31,8 @@ async function render({ component, components, extensions, context }: {
 
   const attributes = await generateAttributes(
     component.attributes,
-    typeof component.__props !== "string"
-      ? { ...component.__props, context }
+    typeof component.props !== "string"
+      ? { ...component.props, context }
       : context,
   );
 
@@ -52,9 +52,9 @@ async function render({ component, components, extensions, context }: {
     return children;
   }
 
-  if (component.__props) {
+  if (component.props) {
     if (component.__children) {
-      const value = get(component.__props, component.__children);
+      const value = get(component.props, component.__children);
 
       return `<${component.element}${
         attributes ? " " + attributes : ""
@@ -65,7 +65,7 @@ async function render({ component, components, extensions, context }: {
 
     if (expression) {
       const value = await evaluateExpression(expression, {
-        ...component.__props,
+        ...component.props,
         context,
       });
 
