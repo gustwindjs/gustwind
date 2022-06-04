@@ -533,6 +533,33 @@ Deno.test("foreach extension with attributes", async () => {
   );
 });
 
+Deno.test("foreach extension with multiple scripts", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        foreach: ["context.scripts", {
+          element: "script",
+          attributes: {
+            __type: "type",
+            __src: "src",
+          },
+        }],
+      },
+      extensions: [extensions.foreach],
+      context: {
+        scripts: [{
+          "type": "text/javascript",
+          "src": "sidewind.js",
+        }, {
+          "type": "module",
+          "src": "gustwind.js",
+        }],
+      },
+    }),
+    '<script type="text/javascript" src="sidewind.js" /><script type="module" src="gustwind.js" />',
+  );
+});
+
 Deno.test("foreach extension with attributes and nesting", async () => {
   assertEquals(
     await breeze({
