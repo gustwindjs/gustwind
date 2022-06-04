@@ -34,8 +34,8 @@ function foreach(component: ForEachComponent, context?: Context): Component {
     ...component,
     children: values.flatMap((v) =>
       Array.isArray(childComponent)
-        ? childComponent.map((c) => ({ ...c, __value: v }))
-        : ({ ...childComponent, __value: v })
+        ? childComponent.map((c) => ({ ...c, __props: v }))
+        : ({ ...childComponent, __props: v })
     ),
   };
 }

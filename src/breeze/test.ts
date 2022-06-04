@@ -49,7 +49,7 @@ Deno.test("nested element", async () => {
 
 Deno.test("value binding without __children", async () => {
   assertEquals(
-    await breeze({ component: { element: "span", __value: "foobar" } }),
+    await breeze({ component: { element: "span", __props: "foobar" } }),
     "<span />",
   );
 });
@@ -59,14 +59,26 @@ Deno.test("value binding to __children", async () => {
     await breeze({
       component: {
         element: "span",
-        __value: { title: "foobar" },
+        __props: { title: "foobar" },
         __children: "title",
       },
     }),
     "<span>foobar</span>",
   );
 });
-// TODO: ==children with value binding
+
+Deno.test("value binding to ==children", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        __props: { title: "foo" },
+        "==children": "title + 'bar'",
+      },
+    }),
+    "<span>foobar</span>",
+  );
+});
 
 Deno.test("value binding with attributes", async () => {
   assertEquals(
@@ -74,7 +86,7 @@ Deno.test("value binding with attributes", async () => {
       component: {
         element: "span",
         attributes: { title: "demo" },
-        __value: "foobar",
+        __props: "foobar",
       },
     }),
     '<span title="demo" />',
@@ -84,7 +96,7 @@ Deno.test("value binding with attributes", async () => {
 Deno.test("value binding with context", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __value: "foobar", __children: "value" },
+      component: { element: "span", __props: "foobar", __children: "value" },
       context: { value: "demo" },
     }),
     "<span>demo</span>",
@@ -441,7 +453,6 @@ Deno.test("foreach extension with an array of objects", async () => {
 
 // TODO: To test
 // Component lookup
-// props extension
 // object notation for classes?
 /*
 class: 'my-4',

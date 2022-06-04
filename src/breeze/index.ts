@@ -63,12 +63,28 @@ async function render({ component, extensions, context }: {
     }
   }
 
-  if (component.__value && component.__children) {
-    const value = get(component.__value, component.__children);
+  if (component.__props) {
+    if (component.__children) {
+      const value = get(component.__props, component.__children);
 
-    return `<${component.element}${
-      attributes ? " " + attributes : ""
-    }>${value}</${component.element}>`;
+      return `<${component.element}${
+        attributes ? " " + attributes : ""
+      }>${value}</${component.element}>`;
+    }
+
+    const expression = component["==children"];
+
+    if (expression && typeof component.__props !== "string") {
+      const value = await evaluateExpression(expression, component.__props);
+
+      if (component.element) {
+        return `<${component.element}${
+          attributes ? " " + attributes : ""
+        }>${value}</${component.element}>`;
+      }
+
+      return (value as string) || "";
+    }
   }
 
   if (component.element) {
