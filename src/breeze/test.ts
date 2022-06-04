@@ -47,14 +47,16 @@ Deno.test("nested element", async () => {
   );
 });
 
-Deno.test("value binding without __children", async () => {
+Deno.test("props binding without __children", async () => {
   assertEquals(
-    await breeze({ component: { element: "span", __props: "foobar" } }),
+    await breeze({
+      component: { element: "span", __props: { value: "foobar" } },
+    }),
     "<span />",
   );
 });
 
-Deno.test("value binding to __children", async () => {
+Deno.test("props binding to __children", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -67,7 +69,7 @@ Deno.test("value binding to __children", async () => {
   );
 });
 
-Deno.test("value binding to ==children", async () => {
+Deno.test("props binding to ==children", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -80,26 +82,52 @@ Deno.test("value binding to ==children", async () => {
   );
 });
 
-Deno.test("value binding with attributes", async () => {
+Deno.test("props binding to ==children using context", async () => {
   assertEquals(
     await breeze({
       component: {
         element: "span",
-        attributes: { title: "demo" },
-        __props: "foobar",
+        __props: { title: "foo" },
+        "==children": "title + context.demo",
+      },
+      context: {
+        demo: "bar",
+      },
+    }),
+    "<span>foobar</span>",
+  );
+});
+
+Deno.test("props binding with attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        attributes: { __title: "title" },
+        __props: {
+          title: "demo",
+        },
       },
     }),
     '<span title="demo" />',
   );
 });
 
-Deno.test("value binding with context", async () => {
+Deno.test("props binding with attributes using context", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __props: "foobar", __children: "value" },
-      context: { value: "demo" },
+      component: {
+        element: "span",
+        attributes: { "==title": "title + context.demo" },
+        __props: {
+          title: "demo",
+        },
+      },
+      context: {
+        demo: "bar",
+      },
     }),
-    "<span>demo</span>",
+    '<span title="demobar" />',
   );
 });
 
@@ -250,7 +278,7 @@ Deno.test("context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { __title: "test" },
+        attributes: { __title: "context.test" },
         children: "test",
       },
       context: { test: "foobar" },
@@ -264,7 +292,7 @@ Deno.test("nested context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { __title: "test.test" },
+        attributes: { __title: "context.test.test" },
         children: "test",
       },
       context: { test: { test: "foobar" } },
@@ -278,7 +306,7 @@ Deno.test("context evaluation for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { "==title": "test + 'bar'" },
+        attributes: { "==title": "context.test + 'bar'" },
         children: "test",
       },
       context: { test: "foo" },
@@ -307,7 +335,7 @@ Deno.test("nested context evaluation for attributes", async () => {
       component: {
         element: "span",
         attributes: {
-          "==title": "test.test + 'bar'",
+          "==title": "context.test.test + 'bar'",
         },
         children: "test",
       },
@@ -356,7 +384,11 @@ Deno.test("class shortcut extension", async () => {
 Deno.test("class shortcut extension with getter", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __class: "demo", children: "testing" },
+      component: {
+        element: "span",
+        __class: "context.demo",
+        children: "testing",
+      },
       extensions: [extensions.classShortcut],
       context: { demo: "foobar" },
     }),
@@ -369,7 +401,7 @@ Deno.test("class shortcut extension with evaluation", async () => {
     await breeze({
       component: {
         element: "span",
-        "==class": "demo + 'bar'",
+        "==class": "context.demo + 'bar'",
         children: "testing",
       },
       extensions: [extensions.classShortcut],

@@ -7,7 +7,7 @@ type BaseComponent = {
   children?: string | Component[];
 
   // Prop binding
-  __props?: string | Context;
+  __props?: Context;
 
   // Getter binding
   __children?: string;

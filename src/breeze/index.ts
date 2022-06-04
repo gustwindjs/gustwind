@@ -17,7 +17,12 @@ async function render({ component, extensions, context }: {
     ? extensions.reduce((a, b) => b(a, context), component)
     : component;
 
-  const attributes = await generateAttributes(component.attributes, context);
+  const attributes = await generateAttributes(
+    component.attributes,
+    typeof component.__props !== "string"
+      ? { ...component.__props, context }
+      : context,
+  );
 
   if (component.children) {
     let children = component.children;
@@ -33,6 +38,33 @@ async function render({ component, extensions, context }: {
     }
 
     return children;
+  }
+
+  if (component.__props) {
+    if (component.__children) {
+      const value = get(component.__props, component.__children);
+
+      return `<${component.element}${
+        attributes ? " " + attributes : ""
+      }>${value}</${component.element}>`;
+    }
+
+    const expression = component["==children"];
+
+    if (expression) {
+      const value = await evaluateExpression(expression, {
+        ...component.__props,
+        context,
+      });
+
+      if (component.element) {
+        return `<${component.element}${
+          attributes ? " " + attributes : ""
+        }>${value}</${component.element}>`;
+      }
+
+      return (value as string) || "";
+    }
   }
 
   if (context) {
@@ -52,30 +84,6 @@ async function render({ component, extensions, context }: {
 
     if (expression) {
       const value = await evaluateExpression(expression, context);
-
-      if (component.element) {
-        return `<${component.element}${
-          attributes ? " " + attributes : ""
-        }>${value}</${component.element}>`;
-      }
-
-      return (value as string) || "";
-    }
-  }
-
-  if (component.__props) {
-    if (component.__children) {
-      const value = get(component.__props, component.__children);
-
-      return `<${component.element}${
-        attributes ? " " + attributes : ""
-      }>${value}</${component.element}>`;
-    }
-
-    const expression = component["==children"];
-
-    if (expression && typeof component.__props !== "string") {
-      const value = await evaluateExpression(expression, component.__props);
 
       if (component.element) {
         return `<${component.element}${
