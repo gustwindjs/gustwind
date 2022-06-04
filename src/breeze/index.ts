@@ -2,15 +2,18 @@ import { get } from "../../utils/functional.ts";
 import { evaluateExpression } from "../evaluate.ts";
 import type { Component, Context, Extension } from "./types.ts";
 
-async function render({ component, components, extensions, context }: {
-  component: Component | Component[];
-  components?: Record<string, Component>;
-  extensions?: (Extension)[];
-  context?: Context;
-}): Promise<string> {
+async function render(
+  { component, components, extensions, context, utilities }: {
+    component: Component | Component[];
+    components?: Record<string, Component>;
+    extensions?: (Extension)[];
+    context?: Context;
+    utilities?: Record<string, (args: unknown) => string>;
+  },
+): Promise<string> {
   if (Array.isArray(component)) {
     return (await Promise.all(
-      component.map((c) => render({ component: c, extensions })),
+      component.map((c) => render({ component: c, extensions, utilities })),
     )).join("");
   }
 
@@ -22,6 +25,7 @@ async function render({ component, components, extensions, context }: {
       components,
       extensions,
       context: { ...context, ...component.props },
+      utilities,
     });
   }
 
@@ -32,12 +36,12 @@ async function render({ component, components, extensions, context }: {
   }
 
   const evalRender = (component: Component | Component[]) =>
-    render({ component, components, extensions, context });
+    render({ component, components, extensions, context, utilities });
 
   const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
-      ? { ...component.props, render: evalRender, context }
+      ? { ...component.props, render: evalRender, context, utilities }
       : context,
   );
 
@@ -45,7 +49,7 @@ async function render({ component, components, extensions, context }: {
     let children = component.children;
 
     if (Array.isArray(children)) {
-      children = await render({ component: children, extensions });
+      children = await render({ component: children, extensions, utilities });
     }
 
     if (component.element) {
@@ -73,6 +77,7 @@ async function render({ component, components, extensions, context }: {
         ...component.props,
         render: evalRender,
         context,
+        utilities,
       });
 
       if (component.element) {
@@ -85,35 +90,34 @@ async function render({ component, components, extensions, context }: {
     }
   }
 
-  if (context) {
-    if (component.__children) {
-      const value = get(context, component.__children);
+  if (context && component.__children) {
+    const value = get(context, component.__children);
 
-      if (component.element) {
-        return `<${component.element}${
-          attributes ? " " + attributes : ""
-        }>${value}</${component.element}>`;
-      }
-
-      return (value as string) || "";
+    if (component.element) {
+      return `<${component.element}${
+        attributes ? " " + attributes : ""
+      }>${value}</${component.element}>`;
     }
 
-    const expression = component["==children"];
+    return (value as string) || "";
+  }
 
-    if (expression) {
-      const value = await evaluateExpression(expression, {
-        render: evalRender,
-        context,
-      });
+  const expression = component["==children"];
 
-      if (component.element) {
-        return `<${component.element}${
-          attributes ? " " + attributes : ""
-        }>${value}</${component.element}>`;
-      }
+  if (expression) {
+    const value = await evaluateExpression(expression, {
+      render: evalRender,
+      context,
+      utilities,
+    });
 
-      return (value as string) || "";
+    if (component.element) {
+      return `<${component.element}${
+        attributes ? " " + attributes : ""
+      }>${value}</${component.element}>`;
     }
+
+    return (value as string) || "";
   }
 
   if (component.element) {

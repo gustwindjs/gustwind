@@ -604,8 +604,40 @@ Deno.test("visibleIf shows element based on context and prop", async () => {
   );
 });
 
+Deno.test("pass utilities to ==children", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "div",
+        "==children": "utilities.hello()",
+      },
+      utilities: {
+        hello: () => "hello",
+      },
+    }),
+    "<div>hello</div>",
+  );
+});
+
+Deno.test("pass utilities to attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "div",
+        attributes: {
+          "==title": "utilities.hello()",
+        },
+        "children": "test",
+      },
+      utilities: {
+        hello: () => "hello",
+      },
+    }),
+    '<div title="hello">test</div>',
+  );
+});
+
 // TODO: To test
-// Expose utilities to evaluation
 // Figure out how to deal with transforms -> extension?
 // object notation for classes?
 /*
