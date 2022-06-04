@@ -6,9 +6,15 @@ import * as extensions from "./extensions.ts";
 const onlyChildren = { children: "testing" };
 const emptySpan = { element: "span" };
 const span = { element: "span", children: "testing" };
+const classShortcut = { element: "span", class: "demo", children: "testing" };
 const hyperlink = {
   element: "a",
   attributes: { href: "testing" },
+  children: "testing",
+};
+const undefinedAttribute = {
+  element: "a",
+  attributes: { href: undefined },
   children: "testing",
 };
 const hyperlinkWithoutChildren = {
@@ -70,6 +76,13 @@ Deno.test("attributes", () => {
   );
 });
 
+Deno.test("undefined attributes", () => {
+  assertEquals(
+    breeze(undefinedAttribute),
+    "<a>testing</a>",
+  );
+});
+
 Deno.test("attributes without children", () => {
   assertEquals(
     breeze(hyperlinkWithoutChildren),
@@ -77,8 +90,15 @@ Deno.test("attributes without children", () => {
   );
 });
 
+Deno.test("class shortcut extension", () => {
+  assertEquals(
+    breeze(classShortcut, [extensions.classShortcut]),
+    '<span class="demo">testing</span>',
+  );
+});
+
 // TODO: To test
-// Extension API (class, props)
+// Extension API (props)
 // Context handling
 // __foo - getter
 // ==foo - evaluation

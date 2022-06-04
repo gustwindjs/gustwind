@@ -1,8 +1,10 @@
 type Component = {
   element?: string;
   children?: string | Component[];
-  attributes?: Record<string, string>;
+  attributes?: Record<string, string | undefined>;
 };
-type Extension = (component: Component) => string;
+type ClassComponent = Component & { class?: string };
 
-export type { Component, Extension };
+type Extension = (component: Component | ClassComponent) => Component;
+
+export type { ClassComponent, Component, Extension };
