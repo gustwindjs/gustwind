@@ -509,6 +509,30 @@ Deno.test("foreach extension with an array of objects", async () => {
   );
 });
 
+Deno.test("foreach extension with attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        foreach: ["context.scripts", {
+          element: "script",
+          attributes: {
+            __type: "type",
+            __src: "src",
+          },
+        }],
+      },
+      extensions: [extensions.foreach],
+      context: {
+        scripts: [{
+          "type": "text/javascript",
+          "src": "sidewind.js",
+        }],
+      },
+    }),
+    '<script type="text/javascript" src="sidewind.js" />',
+  );
+});
+
 Deno.test("component lookup", async () => {
   assertEquals(
     await breeze({
