@@ -2,7 +2,8 @@
 import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
 import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
-import { renderComponent } from "../src/renderComponent.ts";
+import breeze from "../breeze/index.ts";
+import * as breezeExtensions from "../breeze/extensions.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
 import type {
   Component,
@@ -12,6 +13,7 @@ import type {
   Route,
 } from "../types.ts";
 
+// TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
@@ -154,12 +156,17 @@ async function createPageEditor(
 
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
-  treeElement.innerHTML = await renderComponent(
-    "",
-    components.PageEditor,
+  treeElement.innerHTML = await breeze({
+    component: components.PageEditor,
     components,
+    // @ts-ignore: TODO: Fix type
     context,
-  );
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+  });
 
   const aside = treeElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
@@ -174,12 +181,17 @@ async function createComponentEditor(
 ) {
   const controlsElement = document.createElement("div");
   controlsElement.id = controlsElementId;
-  controlsElement.innerHTML = await renderComponent(
-    "",
-    components.ComponentEditor,
+  controlsElement.innerHTML = await breeze({
+    component: components.ComponentEditor,
     components,
+    // @ts-ignore: TODO: Fix type
     context,
-  );
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+  });
 
   const aside = controlsElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;

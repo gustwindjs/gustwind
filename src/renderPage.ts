@@ -15,7 +15,9 @@ import type {
   ProjectMeta,
   Route,
 } from "../types.ts";
-import { renderComponent } from "./renderComponent.ts";
+import type { Utilities } from "../breeze/types.ts";
+import breeze from "../breeze/index.ts";
+import * as breezeExtensions from "../breeze/extensions.ts";
 import { getContext } from "./getContext.ts";
 import { evaluateFields } from "../utils/evaluate.ts";
 
@@ -41,7 +43,7 @@ async function renderPage({
   route: Route;
   mode: Mode;
   pagePath: string;
-  pageUtilities: Record<string, unknown>;
+  pageUtilities: Utilities;
   twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
@@ -94,7 +96,6 @@ async function renderPage({
 
   try {
     const markup = await renderHTML(
-      projectPaths.transforms,
       layout,
       components,
       context,
@@ -138,24 +139,29 @@ function injectStyleTag(markup: string, styleTag: string) {
 }
 
 function renderHTML(
-  transformsPath: string,
+  // TODO: Load transforms beforehand and connect them with utilities here
+  // transformsPath: string,
   children: Layout,
   components: Components,
   pageData: DataContext,
   pathname: string,
-  pageUtilities: Record<string, unknown>,
+  utilities: Utilities,
 ) {
   if (!children) {
     return "";
   }
 
-  return renderComponent(
-    transformsPath,
-    { children },
+  return breeze({
+    component: children,
     components,
-    { ...pageData, pathname },
-    pageUtilities,
-  );
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+    context: { ...pageData, pathname },
+    utilities,
+  });
 }
 
 function htmlTemplate(

@@ -33,11 +33,14 @@ type Extension = (
   context: Context,
 ) => Promise<BaseComponent>;
 
+type Utilities = Record<string, (args: unknown) => string>;
+
 export type {
   ClassComponent,
   Component,
   Context,
   Extension,
   ForEachComponent,
+  Utilities,
   VisibleIfComponent,
 };

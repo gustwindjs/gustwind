@@ -1,6 +1,6 @@
 import { get, isUndefined } from "../utils/functional.ts";
 import { evaluateExpression } from "../utils/evaluate.ts";
-import type { Component, Context, Extension } from "./types.ts";
+import type { Component, Context, Extension, Utilities } from "./types.ts";
 
 async function render(
   { component, components, extensions, context, utilities }: {
@@ -8,7 +8,7 @@ async function render(
     components?: Record<string, Component>;
     extensions?: (Extension)[];
     context?: Context;
-    utilities?: Record<string, (args: unknown) => string>;
+    utilities?: Utilities;
   },
 ): Promise<string> {
   if (Array.isArray(component)) {
