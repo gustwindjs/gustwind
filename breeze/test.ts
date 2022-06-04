@@ -533,6 +533,40 @@ Deno.test("foreach extension with attributes", async () => {
   );
 });
 
+Deno.test("foreach extension with attributes and nesting", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        "element": "html",
+        "children": [
+          {
+            "element": "body",
+            "children": [
+              {
+                foreach: ["context.scripts", {
+                  element: "script",
+                  attributes: {
+                    __type: "type",
+                    __src: "src",
+                  },
+                }],
+              },
+            ],
+          },
+        ],
+      },
+      extensions: [extensions.foreach],
+      context: {
+        scripts: [{
+          "type": "text/javascript",
+          "src": "sidewind.js",
+        }],
+      },
+    }),
+    '<html><body><script type="text/javascript" src="sidewind.js" /></body></html>',
+  );
+});
+
 Deno.test("component lookup", async () => {
   assertEquals(
     await breeze({
