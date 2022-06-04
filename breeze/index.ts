@@ -13,7 +13,9 @@ async function render(
 ): Promise<string> {
   if (Array.isArray(component)) {
     return (await Promise.all(
-      component.map((c) => render({ component: c, extensions, utilities })),
+      component.map((c) =>
+        render({ component: c, components, extensions, context, utilities })
+      ),
     )).join("");
   }
 
@@ -54,7 +56,13 @@ async function render(
     let children = component.children;
 
     if (Array.isArray(children)) {
-      children = await render({ component: children, extensions, utilities });
+      children = await render({
+        component: children,
+        components,
+        extensions,
+        context,
+        utilities,
+      });
     }
 
     if (component.element) {
@@ -163,7 +171,7 @@ async function generateAttributes(
 
       return `${key}="${value}"`;
     }),
-  )).join("");
+  )).join(" ");
 }
 
 export default render;

@@ -533,6 +533,35 @@ Deno.test("component lookup with an array", async () => {
   );
 });
 
+Deno.test("component lookup with a complex structure", async () => {
+  assertEquals(
+    await breeze({
+      component: [
+        {
+          "element": "head",
+          "children": [
+            {
+              "element": "MetaFields",
+            },
+          ],
+        },
+      ],
+      components: {
+        MetaFields: [
+          {
+            "element": "link",
+            "attributes": {
+              "rel": "icon",
+              "href": "bar",
+            },
+          },
+        ],
+      },
+    }),
+    '<head><link rel="icon" href="bar" /></head>',
+  );
+});
+
 Deno.test("component with props", async () => {
   assertEquals(
     await breeze({
