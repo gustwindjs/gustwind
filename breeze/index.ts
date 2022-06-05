@@ -98,10 +98,7 @@ async function render(
     return toHTML(element, attributes, children);
   }
 
-  if (
-    component.__children &&
-    typeof component.__children === "string"
-  ) {
+  if (component.__children) {
     // TODO: What if get fails?
     return toHTML(
       element,
