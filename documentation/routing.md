@@ -24,8 +24,7 @@ The example below shows how the structure of this site has been defined:
       {
         "id": "readme",
         "operation": "file",
-        "input": "./README.md",
-        "transformWith": ["markdown"]
+        "==children": "utilities.markdown('./README.md').content"
       }
     ],
     "expand": {

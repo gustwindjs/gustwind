@@ -19,13 +19,11 @@
         "children": [
           {
             "element": "h1",
-            "__children": "match.data.title"
+            "__children": "context.match.data.title"
           },
           {
             "element": "p",
-            "inputProperty": "match.content",
-            "transformWith": ["markdown"],
-            "__children": "content"
+            "==children": "utilities.markdown(context.match.content).content"
           }
         ]
       },

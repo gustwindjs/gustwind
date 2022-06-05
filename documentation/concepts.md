@@ -305,9 +305,7 @@ For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
           },
           {
             "element": "p",
-            "inputProperty": "match.content",
-            "transformWith": ["markdown"],
-            "__children": "content"
+            "==children": "utilities.markdown(context.match.content).content"
           }
         ]
       },
