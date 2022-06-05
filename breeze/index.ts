@@ -95,43 +95,33 @@ async function render(
       });
     }
 
-    if (element) {
-      return `<${element}${
-        attributes ? " " + attributes : ""
-      }>${children}</${element}>`;
-    }
-
-    return children;
+    return toHTML(element, attributes, children);
   }
 
   if (component.props) {
     const children = component.__children;
 
     if (children) {
-      const value = get({ context, props: component.props }, children);
-
-      return `<${element}${
-        attributes ? " " + attributes : ""
-      }>${value}</${element}>`;
+      return toHTML(
+        element,
+        attributes,
+        get({ context, props: component.props }, children),
+      );
     }
 
     const expression = component["==children"];
 
     if (expression) {
-      const value = await evaluateExpression(expression, {
-        render: evalRender,
-        props: component.props,
-        context,
-        utilities,
-      });
-
-      if (element) {
-        return `<${element}${
-          attributes ? " " + attributes : ""
-        }>${value}</${element}>`;
-      }
-
-      return (value as string) || "";
+      return toHTML(
+        element,
+        attributes,
+        await evaluateExpression(expression, {
+          render: evalRender,
+          props: component.props,
+          context,
+          utilities,
+        }),
+      );
     }
   }
 
@@ -139,35 +129,27 @@ async function render(
     (context || props) && component.__children &&
     typeof component.__children === "string"
   ) {
-    // TODO: What if this fails?
-    const value = get({ context, props }, component.__children);
-
-    if (element) {
-      return `<${element}${
-        attributes ? " " + attributes : ""
-      }>${value}</${element}>`;
-    }
-
-    return (value as string) || "";
+    // TODO: What if get fails?
+    return toHTML(
+      element,
+      attributes,
+      get({ context, props }, component.__children),
+    );
   }
 
   const expression = component["==children"];
 
   if (expression) {
-    const value = await evaluateExpression(expression, {
-      render: evalRender,
-      props,
-      context,
-      utilities,
-    });
-
-    if (element) {
-      return `<${element}${
-        attributes ? " " + attributes : ""
-      }>${value}</${element}>`;
-    }
-
-    return (value as string) || "";
+    return toHTML(
+      element,
+      attributes,
+      await evaluateExpression(expression, {
+        render: evalRender,
+        props,
+        context,
+        utilities,
+      }),
+    );
   }
 
   if (element) {
@@ -181,6 +163,20 @@ async function render(
   }
 
   return "";
+}
+
+function toHTML(
+  element: Component["element"],
+  attributes: string,
+  value?: unknown,
+) {
+  if (element) {
+    return `<${element}${
+      attributes ? " " + attributes : ""
+    }>${value}</${element}>`;
+  }
+
+  return (value as string) || "";
 }
 
 async function generateAttributes(
