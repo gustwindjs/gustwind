@@ -31,8 +31,10 @@ async function render(
   const foundComponent = element && components?.[element];
 
   const scopedProps = Object.fromEntries(
-    // @ts-ignore TODO: Figure out how to type this
-    await evaluateFields(component.props || props, { context }),
+    await evaluateFields(component.props || props, {
+      context,
+      props: props,
+    }),
   );
 
   if (foundComponent) {
@@ -175,7 +177,7 @@ async function evaluateFields(props?: Context, context?: Context) {
     Object.entries(props).map(async ([k, v]) => {
       // @ts-ignore This is ok
       if (isUndefined(v)) {
-        return "";
+        return [];
       }
 
       let key = k;
