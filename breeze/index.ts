@@ -108,21 +108,6 @@ async function render(
         get({ context, props: component.props }, children),
       );
     }
-
-    const expression = component["==children"];
-
-    if (expression) {
-      return toHTML(
-        element,
-        attributes,
-        await evaluateExpression(expression, {
-          render: evalRender,
-          props: component.props,
-          context,
-          utilities,
-        }),
-      );
-    }
   }
 
   if (
@@ -145,7 +130,7 @@ async function render(
       attributes,
       await evaluateExpression(expression, {
         render: evalRender,
-        props,
+        props: component.props || props,
         context,
         utilities,
       }),
