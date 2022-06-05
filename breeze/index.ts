@@ -105,9 +105,10 @@ async function render(
   }
 
   if (component.props) {
-    if (component.__children) {
-      const value = get({ props: component.props }, component.__children) ||
-        get({ context }, component.__children);
+    const children = component.__children;
+
+    if (children) {
+      const value = get({ context, props: component.props }, children);
 
       return `<${element}${
         attributes ? " " + attributes : ""
@@ -139,8 +140,7 @@ async function render(
     typeof component.__children === "string"
   ) {
     // TODO: What if this fails?
-    const value = get({ props }, component.__children) ||
-      get({ context }, component.__children);
+    const value = get({ context, props }, component.__children);
 
     if (element) {
       return `<${element}${
