@@ -352,20 +352,20 @@ The same idea can be used to implement an RSS feed.
       },
       {
         "element": "id",
-        "children": "https://gustwind.js.org/"
+        "__children": "context.meta.url"
       },
       {
         "element": "link",
         "attributes": {
           "rel": "alternate",
-          "href": "https://gustwind.js.org/"
+          "__href": "context.meta.url"
         }
       },
       {
         "element": "link",
         "attributes": {
           "rel": "self",
-          "href": "https://gustwind.js.org/atom.xml"
+          "==href": "context.meta.url + 'atom.xml'"
         }
       },
       {
@@ -385,7 +385,7 @@ The same idea can be used to implement an RSS feed.
               "attributes": {
                 "rel": "alternate",
                 "type": "text/html",
-                "==href": "'https://gustwind.js.org/blog/' + props.data.slug + '/'"
+                "==href": "context.meta.url + 'blog/' + props.data.slug + '/'"
               }
             },
             {
@@ -409,7 +409,6 @@ The same idea can be used to implement an RSS feed.
     ]
   }
 ]
-
 ```
 
 The route configuration could look like this:

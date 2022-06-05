@@ -3,7 +3,8 @@
   "amountOfBuildThreads": 1,
   "meta": {
     "language": "en",
-    "siteName": "Gustwind"
+    "siteName": "Gustwind",
+    "url": "https://gustwind.js.org/"
   },
   "scripts": [
     {

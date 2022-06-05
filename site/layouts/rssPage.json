@@ -20,20 +20,20 @@
       },
       {
         "element": "id",
-        "children": "https://gustwind.js.org/"
+        "__children": "context.meta.url"
       },
       {
         "element": "link",
         "attributes": {
           "rel": "alternate",
-          "href": "https://gustwind.js.org/"
+          "__href": "context.meta.url"
         }
       },
       {
         "element": "link",
         "attributes": {
           "rel": "self",
-          "href": "https://gustwind.js.org/atom.xml"
+          "==href": "context.meta.url + 'atom.xml'"
         }
       },
       {
@@ -53,7 +53,7 @@
               "attributes": {
                 "rel": "alternate",
                 "type": "text/html",
-                "==href": "'https://gustwind.js.org/blog/' + props.data.slug + '/'"
+                "==href": "context.meta.url + 'blog/' + props.data.slug + '/'"
               }
             },
             {
