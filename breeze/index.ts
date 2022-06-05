@@ -27,7 +27,8 @@ async function render(
     )).join("");
   }
 
-  const foundComponent = component.element && components?.[component.element];
+  let element = component.element;
+  const foundComponent = element && components?.[element];
 
   if (foundComponent) {
     return (await Promise.all(
@@ -59,6 +60,13 @@ async function render(
         utilities,
       });
     }
+
+    element = component.element;
+  }
+
+  if (component.__element) {
+    element = (get({ props: component.props }, component.__element) ||
+      get({ context, props }, component.__element) || element) as string;
   }
 
   const attributes = await generateAttributes(
@@ -87,10 +95,10 @@ async function render(
       });
     }
 
-    if (component.element) {
-      return `<${component.element}${
+    if (element) {
+      return `<${element}${
         attributes ? " " + attributes : ""
-      }>${children}</${component.element}>`;
+      }>${children}</${element}>`;
     }
 
     return children;
@@ -101,9 +109,9 @@ async function render(
       const value = get({ props: component.props }, component.__children) ||
         get({ context }, component.__children);
 
-      return `<${component.element}${
+      return `<${element}${
         attributes ? " " + attributes : ""
-      }>${value}</${component.element}>`;
+      }>${value}</${element}>`;
     }
 
     const expression = component["==children"];
@@ -116,10 +124,10 @@ async function render(
         utilities,
       });
 
-      if (component.element) {
-        return `<${component.element}${
+      if (element) {
+        return `<${element}${
           attributes ? " " + attributes : ""
-        }>${value}</${component.element}>`;
+        }>${value}</${element}>`;
       }
 
       return (value as string) || "";
@@ -134,10 +142,10 @@ async function render(
     const value = get({ props }, component.__children) ||
       get({ context }, component.__children);
 
-    if (component.element) {
-      return `<${component.element}${
+    if (element) {
+      return `<${element}${
         attributes ? " " + attributes : ""
-      }>${value}</${component.element}>`;
+      }>${value}</${element}>`;
     }
 
     return (value as string) || "";
@@ -153,25 +161,23 @@ async function render(
       utilities,
     });
 
-    if (component.element) {
-      return `<${component.element}${
+    if (element) {
+      return `<${element}${
         attributes ? " " + attributes : ""
-      }>${value}</${component.element}>`;
+      }>${value}</${element}>`;
     }
 
     return (value as string) || "";
   }
 
-  if (component.element) {
+  if (element) {
     if (typeof component.closingCharacter === "string") {
-      return `<${component.element}${
+      return `<${element}${
         attributes ? " " + attributes : ""
       } ${component.closingCharacter}>`;
     }
 
-    return `<${component.element}${
-      attributes ? " " + attributes : ""
-    }></${component.element}>`;
+    return `<${element}${attributes ? " " + attributes : ""}></${element}>`;
   }
 
   return "";

@@ -1,0 +1,5 @@
+{
+  "__element": "props.element",
+  "__class": "props.class",
+  "==children": "utilities.markdown(props.inputText).content"
+}

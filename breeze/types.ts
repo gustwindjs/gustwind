@@ -2,17 +2,15 @@ type Context = Record<string, unknown>;
 
 type BaseComponent = {
   element?: string;
+  __element?: string; // Getter binding
+
   attributes?: Record<string, string | undefined>;
   props?: Context;
   closingCharacter?: string;
 
   children?: string | Component[];
-
-  // Getter binding
-  __children?: string;
-
-  // Evaluation binding
-  "==children"?: string;
+  __children?: string; // Getter binding
+  "==children"?: string; // Evaluation binding
 };
 type ClassComponent = BaseComponent & {
   classList?: Record<string, string>;
