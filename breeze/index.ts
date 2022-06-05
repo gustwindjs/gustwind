@@ -29,21 +29,11 @@ async function render(
 
   let element = component.element;
   const foundComponent = element && components?.[element];
-  const scopedProps = (component.props || props)
-    ? Object.fromEntries(
-      // @ts-ignore: Props are always an object if they exist
-      Object.entries(component.props || props).map(([k, v]) => {
-        if (k.startsWith("__")) {
-          return [
-            k.split("__").slice(1).join("__"),
-            get({ context }, v as string),
-          ];
-        }
 
-        return [k, v];
-      }),
-    )
-    : {};
+  const scopedProps = Object.fromEntries(
+    // @ts-ignore TODO: Figure out how to type this
+    await evaluateFields(component.props || props, { context }),
+  );
 
   if (foundComponent) {
     return (await Promise.all(
@@ -171,8 +161,19 @@ async function generateAttributes(
     return "";
   }
 
+  return (await evaluateFields(attributes, context)).map(([k, v]) =>
+    v && (v as string).length > 0 ? `${k}="${v}"` : k
+  ).join(" ");
+}
+
+async function evaluateFields(props?: Context, context?: Context) {
+  if (!props) {
+    return Promise.resolve([]);
+  }
+
   return (await Promise.all(
-    Object.entries(attributes).map(async ([k, v]) => {
+    Object.entries(props).map(async ([k, v]) => {
+      // @ts-ignore This is ok
       if (isUndefined(v)) {
         return "";
       }
@@ -184,6 +185,7 @@ async function generateAttributes(
         key = k.split("__").slice(1).join("__");
 
         // TODO: What if value isn't found?
+        // @ts-ignore This is ok
         value = get(context, v) as string;
       }
 
@@ -192,9 +194,9 @@ async function generateAttributes(
         value = await evaluateExpression(v, context);
       }
 
-      return value && value.length > 0 ? `${key}="${value}"` : key;
+      return [key, value];
     }),
-  )).join(" ");
+  ));
 }
 
 export default render;

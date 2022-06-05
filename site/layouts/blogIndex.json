@@ -19,15 +19,15 @@
         "children": [
           {
             "element": "ul",
-            "foreach": ["dataSource.blogPosts", {
+            "foreach": ["context.blogPosts", {
               "element": "li",
               "class": "inline",
               "children": [
                 {
                   "element": "Link",
                   "props": {
-                    "__children": "data.title",
-                    "==href": "data.slug + '/'"
+                    "__children": "props.title",
+                    "==href": "props.slug + '/'"
                   }
                 }
               ]
