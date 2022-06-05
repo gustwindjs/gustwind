@@ -55,9 +55,10 @@
                 {
                   "element": "div",
                   "class": "font-thin",
-                  "inputText": "Gustwind was developed by [Juho Vepsäläinen](https://github.com/bebraw).",
-                  "transformWith": ["markdown"],
-                  "__children": "content"
+                  "props": {
+                    "inputText": "Gustwind was developed by [Juho Vepsäläinen](https://github.com/bebraw)."
+                  },
+                  "==children": "utilities.markdown(props.inputText).content"
                 }
               ]
             }
