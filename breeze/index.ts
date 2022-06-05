@@ -98,27 +98,15 @@ async function render(
     return toHTML(element, attributes, children);
   }
 
-  if (component.props) {
-    const children = component.__children;
-
-    if (children) {
-      return toHTML(
-        element,
-        attributes,
-        get({ context, props: component.props }, children),
-      );
-    }
-  }
-
   if (
-    (context || props) && component.__children &&
+    component.__children &&
     typeof component.__children === "string"
   ) {
     // TODO: What if get fails?
     return toHTML(
       element,
       attributes,
-      get({ context, props }, component.__children),
+      get({ context, props: component.props || props }, component.__children),
     );
   }
 
