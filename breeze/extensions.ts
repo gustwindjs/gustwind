@@ -16,10 +16,23 @@ async function classShortcut(
   component: ClassComponent,
   context: Context,
 ): Promise<Component> {
-  if (isObject(component.class)) {
+  const classes: string[] = [];
+
+  if (typeof component.class === "string") {
+    classes.push(component.class);
+  }
+
+  if (typeof component.__class === "string") {
+    classes.push(get(context, component.__class) as string);
+  }
+
+  if (typeof component["==class"] === "string") {
+    classes.push(await evaluateExpression(component["==class"], context));
+  }
+
+  if (isObject(component.classList)) {
     const className = (await Promise.all(
-      // TODO: Somehow component.class isn't inferred correctly here
-      Object.entries(component.class as Record<string, string>).map(
+      Object.entries(component.classList as Record<string, string>).map(
         async ([k, v]) => {
           const isVisible = await evaluateExpression(v, context);
 
@@ -28,44 +41,16 @@ async function classShortcut(
       ),
     )).filter(Boolean).join(" ");
 
-    return Promise.resolve({
-      ...component,
-      attributes: { ...component.attributes, class: tw(className) },
-    });
+    classes.push(className);
   }
 
-  if (typeof component.class === "string") {
-    return Promise.resolve({
-      ...component,
-      attributes: { ...component.attributes, class: component.class },
-    });
-  }
-
-  if (typeof component.__class === "string") {
-    return Promise.resolve({
-      ...component,
-      attributes: {
-        ...component.attributes,
-        class: tw(
-          get(context, component.__class),
-        ),
-      },
-    });
-  }
-
-  if (typeof component["==class"] === "string") {
-    return Promise.resolve({
-      ...component,
-      attributes: {
-        ...component.attributes,
-        class: tw(
-          await evaluateExpression(component["==class"], context),
-        ),
-      },
-    });
-  }
-
-  return Promise.resolve(component);
+  return Promise.resolve({
+    ...component,
+    attributes: {
+      ...component.attributes,
+      class: classes.map((c) => tw(c)).join(" "),
+    },
+  });
 }
 
 function foreach(
