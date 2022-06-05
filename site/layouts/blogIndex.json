@@ -26,8 +26,8 @@
                 {
                   "element": "Link",
                   "props": {
-                    "__children": "props.title",
-                    "==href": "props.slug + '/'"
+                    "__children": "props.data.title",
+                    "==href": "props.data.slug + '/'"
                   }
                 }
               ]
