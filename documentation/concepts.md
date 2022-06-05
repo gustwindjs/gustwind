@@ -17,13 +17,17 @@ To give you a simple example of a component, consider the following example for 
 {
   "element": "a",
   "class": "underline",
-  "__class": {
-    "font-bold": "attributes.href === context.pathname"
+  "classList": {
+    "font-bold": "props.href === context.pathname"
+  },
+  "__children": "props.children",
+  "attributes": {
+    "__href": "props.href"
   }
 }
 ```
 
-The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `__class`. That `__` means the field should be evaluated and in this case we'll check if the `href` attribute passed to the link is matching to the current path. In short, this is how you would bold the the link to signify it's the current page.
+The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `classList`.
 
 A navigation component built on top of `link` could look like this:
 
@@ -34,15 +38,15 @@ A navigation component built on top of `link` could look like this:
   {
     "element": "Link",
     "props": {
-      "children": "Blog",
-      "href": "/blog/"
+      "children": "Modes",
+      "href": "/modes/"
     }
   },
   {
     "element": "Link",
     "props": {
-      "children": "About",
-      "href": "/about/"
+      "children": "Configuration",
+      "href": "/configuration/"
     }
   }
 ]
