@@ -184,4 +184,32 @@ Deno.test("evaluate to context in a prop", async () => {
     "<span>demobar</span>",
   );
 });
-// TODO: Test evaluate to a prop in a prop
+
+Deno.test("bind to a prop in a prop", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "div",
+        props: { __title: "context.value" },
+        children: [
+          {
+            element: "Button",
+            props: {
+              "==children": "props.title + 'bar'",
+            },
+          },
+        ],
+      },
+      components: {
+        Button: {
+          element: "button",
+          __children: "props.children",
+        },
+      },
+      context: {
+        value: "propinpropdemo",
+      },
+    }),
+    "<div><button>propinpropdemobar</button></div>",
+  );
+});
