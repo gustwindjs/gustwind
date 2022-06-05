@@ -3,18 +3,26 @@ import { evaluateExpression } from "../utils/evaluate.ts";
 import type { Component, Context, Extension, Utilities } from "./types.ts";
 
 async function render(
-  { component, components, extensions, context, utilities }: {
+  { component, components, extensions, context, props, utilities }: {
     component: Component | Component[];
     components?: Record<string, Component | Component[]>;
     extensions?: (Extension)[];
     context?: Context;
+    props?: Context;
     utilities?: Utilities;
   },
 ): Promise<string> {
   if (Array.isArray(component)) {
     return (await Promise.all(
       component.map((c) =>
-        render({ component: c, components, extensions, context, utilities })
+        render({
+          component: c,
+          components,
+          extensions,
+          context,
+          props,
+          utilities,
+        })
       ),
     )).join("");
   }
@@ -27,11 +35,12 @@ async function render(
         c,
       ) =>
         render({
-          // @ts-ignore: component is Component now for sure
-          component: { ...c, props: component.props },
+          component: c,
           components,
           extensions,
           context,
+          // @ts-ignore: component is Component now for sure
+          props: component.props || props,
           utilities,
         })
       ),
@@ -44,7 +53,7 @@ async function render(
   if (extensions) {
     for (const extension of extensions) {
       component = await extension(component, {
-        ...component.props,
+        props: component.props || props,
         render: evalRender,
         context,
         utilities,
@@ -55,7 +64,12 @@ async function render(
   const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
-      ? { ...component.props, render: evalRender, context, utilities }
+      ? {
+        props: component.props || props,
+        render: evalRender,
+        context,
+        utilities,
+      }
       : context,
   );
 
@@ -64,11 +78,8 @@ async function render(
 
     if (Array.isArray(children)) {
       children = await render({
-        component: children.map((c) => ({
-          ...c,
-          // @ts-ignore: component is Component now for sure
-          props: c.props || component.props,
-        })),
+        component: children,
+        props: component.props || props,
         components,
         extensions,
         context,
@@ -87,7 +98,7 @@ async function render(
 
   if (component.props) {
     if (component.__children) {
-      const value = get(component.props, component.__children) ||
+      const value = get({ props: component.props }, component.__children) ||
         get({ context }, component.__children);
 
       return `<${component.element}${
@@ -99,8 +110,8 @@ async function render(
 
     if (expression) {
       const value = await evaluateExpression(expression, {
-        ...component.props,
         render: evalRender,
+        props: component.props,
         context,
         utilities,
       });
@@ -116,10 +127,12 @@ async function render(
   }
 
   if (
-    context && component.__children && typeof component.__children === "string"
+    (context || props) && component.__children &&
+    typeof component.__children === "string"
   ) {
     // TODO: What if this fails?
-    const value = get({ context }, component.__children);
+    const value = get({ props }, component.__children) ||
+      get({ context }, component.__children);
 
     if (component.element) {
       return `<${component.element}${
@@ -135,6 +148,7 @@ async function render(
   if (expression) {
     const value = await evaluateExpression(expression, {
       render: evalRender,
+      props,
       context,
       utilities,
     });

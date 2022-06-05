@@ -17,7 +17,7 @@ Deno.test("props binding to children", async () => {
       component: {
         element: "span",
         props: { title: "foobar" },
-        __children: "title",
+        __children: "props.title",
       },
     }),
     "<span>foobar</span>",
@@ -30,7 +30,7 @@ Deno.test("props binding to ==children", async () => {
       component: {
         element: "span",
         props: { title: "foo" },
-        "==children": "title + 'bar'",
+        "==children": "props.title + 'bar'",
       },
     }),
     "<span>foobar</span>",
@@ -43,7 +43,7 @@ Deno.test("props binding to ==children using context", async () => {
       component: {
         element: "span",
         props: { title: "foo" },
-        "==children": "title + context.demo",
+        "==children": "props.title + context.demo",
       },
       context: {
         demo: "bar",
@@ -58,7 +58,7 @@ Deno.test("props binding with attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { __title: "title" },
+        attributes: { __title: "props.title" },
         props: {
           title: "demo",
         },
@@ -73,7 +73,7 @@ Deno.test("props binding with attributes using context", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { "==title": "title + context.demo" },
+        attributes: { "==title": "props.title + context.demo" },
         props: {
           title: "demo",
         },
@@ -89,11 +89,25 @@ Deno.test("props binding with attributes using context", async () => {
 Deno.test("component with props", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button", props: { children: "demo" } },
-      components: { Button: { element: "button", __children: "children" } },
+      component: { element: "Button", props: { children: "demobutton" } },
+      components: {
+        Button: { element: "button", __children: "props.children" },
+      },
     }),
-    "<button>demo</button>",
+    "<button>demobutton</button>",
   );
 });
 
-// TODO: Test props (Link) within composition (siteIndex -> BaseLayout)
+Deno.test("component with props with another element", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "Layout" },
+      components: {
+        Layout: { element: "div", children: [{ element: "Navigation" }] },
+        Link: { element: "a", __children: "props.children" },
+        Navigation: [{ element: "Link", props: { children: "zoozoo" } }],
+      },
+    }),
+    "<div><a>zoozoo</a></div>",
+  );
+});

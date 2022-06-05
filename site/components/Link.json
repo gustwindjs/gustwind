@@ -4,8 +4,8 @@
     "underline": true,
     "font-bold": "context.href === context.pathname"
   },
-  "__children": "children",
+  "__children": "props.children",
   "attributes": {
-    "__href": "href"
+    "__href": "props.href"
   }
 }

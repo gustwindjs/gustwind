@@ -12,7 +12,7 @@ Deno.test("component with object props and render()", async () => {
       components: {
         BaseLayout: {
           element: "body",
-          "==children": "render(content)",
+          "==children": "render(props.content)",
         },
       },
     }),
@@ -31,7 +31,7 @@ Deno.test("component with array props and render()", async () => {
         BaseLayout: [
           {
             element: "body",
-            "==children": "render(content)",
+            "==children": "render(props.content)",
           },
         ],
       },
@@ -54,7 +54,7 @@ Deno.test("component with array props, render(), and nested usage", async () => 
             children: [
               {
                 element: "body",
-                "==children": "render(content)",
+                "==children": "render(props.content)",
               },
             ],
           },
@@ -84,7 +84,7 @@ Deno.test("pass render() to ==children with props", async () => {
       component: {
         element: "div",
         props: { demo: { element: "span", children: "foobar" } },
-        "==children": "render(demo)",
+        "==children": "render(props.demo)",
       },
     }),
     "<div><span>foobar</span></div>",
@@ -101,7 +101,7 @@ Deno.test("pass render() to ==children with props in a component", async () => {
       components: {
         Test: {
           element: "div",
-          "==children": "render(demo)",
+          "==children": "render(props.demo)",
         },
       },
     }),

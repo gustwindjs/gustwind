@@ -41,7 +41,7 @@ Deno.test("visibleIf shows element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: true },
-        visibleIf: "foo",
+        visibleIf: "props.foo",
       },
       extensions: [extensions.visibleIf],
     }),
@@ -55,7 +55,7 @@ Deno.test("visibleIf hides element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: false },
-        visibleIf: "foo",
+        visibleIf: "props.foo",
       },
       extensions: [extensions.visibleIf],
     }),
@@ -69,7 +69,7 @@ Deno.test("visibleIf shows element based on context and prop", async () => {
       component: {
         element: "span",
         props: { foo: true },
-        visibleIf: "context.visible && foo",
+        visibleIf: "context.visible && props.foo",
       },
       extensions: [extensions.visibleIf],
       context: { visible: true },
