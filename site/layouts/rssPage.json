@@ -38,38 +38,38 @@
       },
       {
         "element": "updated",
-        "==children": "(new Date(meta.built)).toISOString()"
+        "==children": "(new Date(context.meta.built)).toISOString()"
       },
       {
-        "foreach": ["dataSources.blogPosts", {
+        "foreach": ["context.blogPosts", {
           "element": "entry",
           "children": [
             {
               "element": "title",
-              "__children": "title"
+              "__children": "props.data.title"
             },
             {
               "element": "link",
               "attributes": {
                 "rel": "alternate",
                 "type": "text/html",
-                "==href": "'https://gustwind.js.org/blog/' + slug + '/'"
+                "==href": "'https://gustwind.js.org/blog/' + props.data.slug + '/'"
               }
             },
             {
               "element": "id",
-              "__children": "slug"
+              "__children": "props.data.slug"
             },
             {
               "element": "published",
-              "==children": "(new Date(date)).toISOString()"
+              "==children": "(new Date(props.data.date)).toISOString()"
             },
             {
               "element": "content",
               "attributes": {
                 "type": "html"
               },
-              "__children": "description"
+              "__children": "props.data.description"
             }
           ]
         }]

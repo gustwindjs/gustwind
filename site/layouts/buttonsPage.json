@@ -23,9 +23,9 @@
           },
           {
             "element": "div",
-            "==children": "testUtility('hello') + ' ' + 'world!'",
+            "==children": "utilities.testUtility('hello') + ' ' + 'world!'",
             "attributes": {
-              "==title": "testUtility('hello') + ' ' + 'world!'"
+              "==title": "utilities.testUtility('hello') + ' ' + 'world!'"
             }
           },
           {

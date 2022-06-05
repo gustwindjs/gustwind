@@ -332,10 +332,18 @@ The same idea can be used to implement an RSS feed.
 ```json
 [
   {
+    "element": "?xml",
+    "attributes": {
+      "version": "1.0",
+      "encoding": "UTF-8"
+    },
+    "closingCharacter": "?"
+  },
+  {
     "element": "feed",
     "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
     "attributes": {
-      "xmlns":"http://www.w3.org/2005/Atom"
+      "xmlns": "http://www.w3.org/2005/Atom"
     },
     "children": [
       {
@@ -362,47 +370,46 @@ The same idea can be used to implement an RSS feed.
       },
       {
         "element": "updated",
-        "==children": "(new Date(meta.built)).toISOString()"
+        "==children": "(new Date(context.meta.built)).toISOString()"
       },
       {
-        "foreach": ["dataSources.blogPosts",
-          {
-            "element": "entry",
-            "children": [
-              {
-                "element": "title",
-                "__children": "title"
-              },
-              {
-                "element": "link",
-                "attributes": {
-                  "rel": "alternate",
-                  "type": "text/html",
-                  "==href": "'https://gustwind.js.org/blog/' + slug + '/'"
-                }
-              },
-              {
-                "element": "id",
-                "__children": "slug"
-              },
-              {
-                "element": "published",
-                "==children": "(new Date(date)).toISOString()"
-              },
-              {
-                "element": "content",
-                "attributes": {
-                  "type": "html"
-                },
-                "__children": "description"
+        "foreach": ["context.blogPosts", {
+          "element": "entry",
+          "children": [
+            {
+              "element": "title",
+              "__children": "props.data.title"
+            },
+            {
+              "element": "link",
+              "attributes": {
+                "rel": "alternate",
+                "type": "text/html",
+                "==href": "'https://gustwind.js.org/blog/' + props.data.slug + '/'"
               }
-            ]
-          }
-        ]
+            },
+            {
+              "element": "id",
+              "__children": "props.data.slug"
+            },
+            {
+              "element": "published",
+              "==children": "(new Date(props.data.date)).toISOString()"
+            },
+            {
+              "element": "content",
+              "attributes": {
+                "type": "html"
+              },
+              "__children": "props.data.description"
+            }
+          ]
+        }]
       }
     ]
   }
 ]
+
 ```
 
 The route configuration could look like this:

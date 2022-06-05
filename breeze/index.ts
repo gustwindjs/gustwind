@@ -196,6 +196,12 @@ async function evaluateFields(props?: Context, context?: Context) {
         value = await evaluateExpression(v, context);
       }
 
+      // TODO: Add a test against this case
+      // @ts-ignore This is ok
+      if (isUndefined(value) || value === "") {
+        return [];
+      }
+
       return [key, value];
     }),
   ));
