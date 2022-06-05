@@ -31,13 +31,14 @@
         "children": [
           {
             "element": "h1",
-            "__children": "match.data.title"
+            "__children": "context.match.data.title"
           },
           {
-            "element": "p",
-            "inputProperty": "match.content",
-            "transformWith": ["markdown"],
-            "__children": "content"
+            "element": "Markdown",
+            "props": {
+              "element": "div",
+              "__inputText": "context.match.content"
+            }
           }
         ]
       },

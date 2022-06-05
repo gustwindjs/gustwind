@@ -11,6 +11,7 @@ function evaluateFields(context?: DataContext, attributes?: Attributes) {
   );
 }
 
+// TODO: Drop references to __bound as that's not used anymore
 async function evaluateField(
   context: DataContext,
   k: string,

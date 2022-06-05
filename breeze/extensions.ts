@@ -72,8 +72,11 @@ function foreach(
     ...component,
     children: values.flatMap((v) =>
       Array.isArray(childComponent)
-        ? childComponent.map((c) => ({ ...c, props: v }))
-        : ({ ...childComponent, props: v })
+        ? childComponent.map((c) => ({
+          ...c,
+          props: isObject(v) ? v : { value: v },
+        }))
+        : ({ ...childComponent, props: isObject(v) ? v : { value: v } })
     ),
   });
 }

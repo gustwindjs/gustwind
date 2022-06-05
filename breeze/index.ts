@@ -29,6 +29,21 @@ async function render(
 
   let element = component.element;
   const foundComponent = element && components?.[element];
+  const scopedProps = (component.props || props)
+    ? Object.fromEntries(
+      // @ts-ignore: Props are always an object if they exist
+      Object.entries(component.props || props).map(([k, v]) => {
+        if (k.startsWith("__")) {
+          return [
+            k.split("__").slice(1).join("__"),
+            get({ context }, v as string),
+          ];
+        }
+
+        return [k, v];
+      }),
+    )
+    : {};
 
   if (foundComponent) {
     return (await Promise.all(
@@ -40,8 +55,7 @@ async function render(
           components,
           extensions,
           context,
-          // @ts-ignore: component is Component now for sure
-          props: component.props || props,
+          props: scopedProps,
           utilities,
         })
       ),
@@ -54,7 +68,7 @@ async function render(
   if (extensions) {
     for (const extension of extensions) {
       component = await extension(component, {
-        props: component.props || props,
+        props: scopedProps,
         render: evalRender,
         context,
         utilities,
@@ -65,15 +79,15 @@ async function render(
   }
 
   if (component.__element) {
-    element = (get({ props: component.props }, component.__element) ||
-      get({ context, props }, component.__element) || element) as string;
+    element = (get({ context, props: scopedProps }, component.__element) ||
+      element) as string;
   }
 
   const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
       ? {
-        props: component.props || props,
+        props: scopedProps,
         render: evalRender,
         context,
         utilities,
@@ -87,7 +101,7 @@ async function render(
     if (Array.isArray(children)) {
       children = await render({
         component: children,
-        props: component.props || props,
+        props: scopedProps,
         components,
         extensions,
         context,
@@ -103,7 +117,7 @@ async function render(
     return toHTML(
       element,
       attributes,
-      get({ context, props: component.props || props }, component.__children),
+      get({ context, props: scopedProps }, component.__children),
     );
   }
 
@@ -115,7 +129,7 @@ async function render(
       attributes,
       await evaluateExpression(expression, {
         render: evalRender,
-        props: component.props || props,
+        props: scopedProps,
         context,
         utilities,
       }),
