@@ -59,8 +59,8 @@
       },
       "layout": "blogPage",
       "meta": {
-        "__title": "match.name",
-        "__description": "match.description"
+        "__title": "match.data.title",
+        "__description": "match.data.description"
       }
     }
   },
