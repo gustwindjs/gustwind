@@ -13,19 +13,8 @@ To give you a simple example of a component, consider the following example for 
 
 **components/Link.json**
 
-```json
-{
-  "element": "a",
-  "class": "underline",
-  "classList": {
-    "font-bold": "props.href === context.pathname"
-  },
-  "__children": "props.children",
-  "attributes": {
-    "__href": "props.href"
-  }
-}
-```
+[<file>](site/components/Link.json)
+
 
 The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `classList`.
 
@@ -33,120 +22,16 @@ A navigation component built on top of `link` could look like this:
 
 **components/Navigation.json**
 
-```json
-[
-  {
-    "element": "Link",
-    "props": {
-      "children": "Modes",
-      "href": "/modes/"
-    }
-  },
-  {
-    "element": "Link",
-    "props": {
-      "children": "Configuration",
-      "href": "/configuration/"
-    }
-  }
-]
-```
+[<file>](site/components/Navigation.json)
 
-To build a subscription widget, you would do something along this:
 
-**components/Subscribe.json**
+### Getters and interpolation
 
-```json
-{
-  "element": "button",
-  "children": "Subscribe to the mailing list",
-  "attributes": {
-    "onclick": "subscribe()"
-  }
-}
-```
-
-The same idea of binding works for `children`. You can bind to the children of an element using `__children`. I.e. `"__children": "Link"` would bind the value of the `link` property to `children`. Consider the example below:
-
-**components/Libraries.json**
-
-```json
-{
-  "element": "ul",
-  "class": "grid grid-cols-3 gap-8",
-  "foreach": [
-    "libraries",
-    {
-      "element": "li",
-      "class": "my-4",
-      "children": [
-        {
-          "element": "Link",
-          "class": "w-full bg-gray-200 text-gray-800 p-4",
-          "attributes": {
-            "children": "title",
-            "href": "url"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-To use, pass libraries as props:
-
-```json
-{
-  "element": "AllLibraries",
-  "props": {
-    "libraries": "dataSources.libraries"
-  }
-}
-```
-
-In addition to binding data from a source, you can pass static data:
-
-```json
-{
-  "element": "Link",
-  "props": {
-    "href": "https://github.com/survivejs/gustwind"
-  }
-}
-```
-
-To apply an interpolation, i.e. combining data at the field level, there's `==` syntax:
+The following example illustrates the usage of getters (`__`) and interpolation (`==`):
 
 **layouts/blogIndex.json**
 
-```json
-{
-  "element": "div",
-  "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-  "children": [
-    {
-      "element": "ul",
-      "forEach": [
-        "dataSources.blogPosts.content",
-        {
-          "element": "li",
-          "class": "inline",
-          "children": [
-            {
-              "element": "Link",
-              "props": {
-                "__children": "data.title",
-                "==href": "data.slug + '/'"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
+[<file>](site/layouts/blogIndex.json)
 
 In this case we add `/` to each slug.
 
@@ -156,23 +41,7 @@ In the examples above, data coming from **data sources** has been connected, or 
 
 **dataSources/indexMarkdown.ts**
 
-```typescript
-import { parse } from "../utils/frontmatter.ts";
-import { dir } from "../utils/fs.ts";
-import type { BlogPost } from "../types.ts";
-
-async function indexMarkdown(directory: string) {
-  const blogFiles = await dir(directory, ".md");
-
-  return Promise.all(
-    blogFiles.map(({ path }) =>
-      Deno.readTextFile(path).then((d) => parse(d) as BlogPost)
-    ),
-  );
-}
-
-export default indexMarkdown;
-```
+[<file>](site/layouts/blogIndex.json)
 
 Data sources are asynchronous functions returning objects. Then, when bound, you
 can access the content. This would be a good spot to connect to a database,
@@ -191,15 +60,7 @@ Transforms accept data and then perform a manipulation on it. It could for examp
 
 **transforms/reverse.ts**
 
-```typescript
-function reverse(arr: unknown[]) {
-  return [...arr].reverse();
-}
-
-export default reverse;
-```
-
-Both transforms and data sources are used in [the route definition](/routing/).
+[<file>](site/transforms/reverse.ts)
 
 ## Layouts
 
@@ -207,230 +68,17 @@ Gustwind layouts are comparable to components:
 
 **layouts/siteIndex.json**
 
-```json
-[
-  {
-    "element": "head",
-    "children": [
-      {
-        "element": "MetaFields"
-      }
-    ]
-  },
-  {
-    "element": "body",
-    "children": [
-      {
-        "element": "MainNavigation"
-      },
-      {
-        "element": "header",
-        "class": "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
-        "children": [
-          {
-            "element": "div",
-            "class": "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
-            "children": [
-              {
-                "element": "div",
-                "class": "flex flex-col gap-8",
-                "children": [
-                  {
-                    "element": "h1",
-                    "class": "text-4xl md:text-8xl",
-                    "children": [
-                      {
-                        "element": "span",
-                        "class": "whitespace-nowrap pr-4",
-                        "children": "🐳💨"
-                      },
-                      {
-                        "element": "span",
-                        "children": "Gustwind"
-                      }
-                    ]
-                  },
-                  {
-                    "element": "h2",
-                    "class": "text-xl md:text-4xl font-extralight",
-                    "children": "Deno powered JSON oriented site generator"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "element": "div",
-        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-        "__bind": "readme",
-        "__children": "content"
-      },
-      {
-        "element": "MainFooter"
-      },
-      {
-        "element": "Scripts",
-        "__bind": "scripts"
-      }
-    ]
-  }
-]
-```
+[<file>](site/layouts/siteIndex.json)
 
 For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
 
 **layouts/blogPage.json**
 
-```json
-[
-  {
-    "element": "head",
-    "children": [
-      {
-        "element": "MetaFields"
-      }
-    ]
-  },
-  {
-    "element": "body",
-    "children": [
-      {
-        "element": "MainNavigation"
-      },
-      {
-        "element": "div",
-        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-        "children": [
-          {
-            "element": "h1",
-            "__children": "match.data.title"
-          },
-          {
-            "element": "p",
-            "==children": "utilities.markdown(context.match.content).content"
-          }
-        ]
-      },
-      {
-        "element": "MainFooter"
-      },
-      {
-        "element": "Scripts",
-        "__bind": "scripts"
-      }
-    ]
-  }
-]
-```
+[<file>](site/layouts/blogPage.json)
 
 The same idea can be used to implement an RSS feed.
 
 **layouts/rssPage.json**
 
-```json
-[
-  {
-    "element": "?xml",
-    "attributes": {
-      "version": "1.0",
-      "encoding": "UTF-8"
-    },
-    "closingCharacter": "?"
-  },
-  {
-    "element": "feed",
-    "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
-    "attributes": {
-      "xmlns": "http://www.w3.org/2005/Atom"
-    },
-    "children": [
-      {
-        "element": "title",
-        "__children": "context.meta.siteName"
-      },
-      {
-        "element": "id",
-        "__children": "context.meta.url"
-      },
-      {
-        "element": "link",
-        "attributes": {
-          "rel": "alternate",
-          "__href": "context.meta.url"
-        }
-      },
-      {
-        "element": "link",
-        "attributes": {
-          "rel": "self",
-          "==href": "context.meta.url + 'atom.xml'"
-        }
-      },
-      {
-        "element": "updated",
-        "==children": "(new Date(context.meta.built)).toISOString()"
-      },
-      {
-        "foreach": ["context.blogPosts", {
-          "element": "entry",
-          "children": [
-            {
-              "element": "title",
-              "__children": "props.data.title"
-            },
-            {
-              "element": "link",
-              "attributes": {
-                "rel": "alternate",
-                "type": "text/html",
-                "==href": "context.meta.url + 'blog/' + props.data.slug + '/'"
-              }
-            },
-            {
-              "element": "id",
-              "__children": "props.data.slug"
-            },
-            {
-              "element": "published",
-              "==children": "(new Date(props.data.date)).toISOString()"
-            },
-            {
-              "element": "content",
-              "attributes": {
-                "type": "html"
-              },
-              "__children": "props.data.description"
-            }
-          ]
-        }]
-      }
-    ]
-  }
-]
-```
+[<file>](site/layouts/rssPage.json)
 
-The route configuration could look like this:
-
-**routes.json**
-
-```json
-{
-  "atom.xml": {
-    "layout": "rssPage",
-    "type": "xml",
-    "meta": {
-      "title": "Gustwind",
-      "description": "Gustwind blog"
-    },
-    "dataSources": [
-      {
-        "id": "blogPosts",
-        "operation": "indexMarkdown",
-        "input": "./blogPosts"
-      }
-    ]
-  }
-}
-```
