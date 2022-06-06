@@ -72,32 +72,72 @@
             {
               "element": "ul",
               "attributes": {
-                "x-template": "",
-                "x-each": "editor.layout"
+                "x-each": "Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
               },
               "children": [
                 {
                   "element": "li",
                   "class": "my-2",
                   "attributes": {
+                    "x-template": "",
                     "x-attr": "",
                     "onclick": "elementClicked(this, this.state.value._id)",
                     "@class": "state.level > 0 && 'ml-2'"
                   },
                   "children": [
                     {
-                      "element": "label",
+                      "element": "div",
                       "attributes": {
                         "x-attr": "",
-                        "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')",
                         "@class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._id === selected.componentId && 'font-bold']"
-                      }
-                    },
-                    {
-                      "element": "ul",
-                      "attributes": {
-                        "x-recurse": "state.value.children"
-                      }
+                      },
+                      "children": [
+                        {
+                          "element": "label",
+                          "attributes": {
+                            "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')"
+                          }
+                        },
+                        {
+                          "element": "div",
+                          "class": "ml-2",
+                          "children": [
+                            {
+                              "element": "label",
+                              "children": "Props"
+                            },
+                            {
+                              "element": "ul",
+                              "attributes": {
+                                "x-each": "state.value.props ? Object.entries(state.value.props) : []"
+                              },
+                              "children": [
+                                {
+                                  "element": "li",
+                                  "attributes": {
+                                    "x-template": ""
+                                  },
+                                  "children": [
+                                    {
+                                      "element": "span",
+                                      "attributes": {
+                                        "x": "state.value[0]"
+                                      }
+                                    },
+                                    {
+                                      "element": "ul",
+                                      "attributes": {
+                                        "todo": "make recursion point two levels up in the render tree",
+                                        "x-recurse": "state.value[1]"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }

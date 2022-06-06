@@ -67,8 +67,9 @@ async function createEditor() {
   );
   selectionContainer.append(pageEditor);
 
-  const componentEditor = await createComponentEditor(components, context);
-  selectionContainer.append(componentEditor);
+  // TODO: Restore
+  // const componentEditor = await createComponentEditor(components, context);
+  // selectionContainer.append(componentEditor);
 
   // TODO: Re-enable the side effect to update FS
   // Likely this should send patches, not whole structures
@@ -486,10 +487,12 @@ function findElement(
   return recurse(element?.firstElementChild, body);
 }
 
+// TODO: Restore
 function getSelectedComponent(
   editorState: EditorState,
   selectedState: SelectedState,
 ) {
+  /*
   let match = {};
   const { componentId } = selectedState;
 
@@ -500,6 +503,7 @@ function getSelectedComponent(
   });
 
   return match;
+  */
 }
 
 function traverseComponents(
