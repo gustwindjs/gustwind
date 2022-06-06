@@ -1,6 +1,5 @@
 /// <reference lib="dom" />
 import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
-import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
 import breeze from "../breeze/index.ts";
 import * as breezeExtensions from "../breeze/extensions.ts";
@@ -95,8 +94,8 @@ function createEditorContainer(layout: Layout, route: Route) {
   editorsElement.setAttribute(
     "x-state",
     JSON.stringify({
-      ...layout,
-      body: initializeBody(layout),
+      // TODO: Make sure layout contains data-id's already!
+      layout,
       meta: route.meta,
     }),
   );
@@ -114,23 +113,6 @@ function toggleEditorVisibility() {
 
   editorsElement.style.visibility =
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
-}
-
-function initializeBody(layout: EditorComponent) {
-  const body = "";
-
-  // TODO: Find body element from the layout
-  if (!body) {
-    console.error("initializeBody - missing body");
-
-    return;
-  }
-
-  return produce(body, (draftBody: EditorComponent) => {
-    traverseComponents(draftBody, (p) => {
-      p._id = nanoid();
-    });
-  });
 }
 
 function updateFileSystem(state: Layout) {
