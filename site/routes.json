@@ -70,13 +70,15 @@
       "title": "Gustwind buttons",
       "description": "Secret buttons page"
     },
+    "scripts": ["hello"],
     "routes": {
       "more": {
         "layout": "buttonsPage",
         "meta": {
           "title": "More Gustwind buttons",
           "description": "Another secret buttons page"
-        }
+        },
+        "scripts": ["hello"]
       }
     }
   },

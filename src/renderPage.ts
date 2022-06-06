@@ -56,7 +56,11 @@ async function renderPage({
   const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
-  let pageScripts = route.scripts?.slice(0) || [];
+  // The assumption here is that all the page scripts are compiled with Gustwind.
+  // TODO: It might be a good idea to support third party scripts here as well
+  let pageScripts =
+    route.scripts?.slice(0).map((s) => ({ type: "module", src: `/${s}.js` })) ||
+    [];
 
   if (projectMeta.scripts) {
     pageScripts = pageScripts.concat(projectMeta.scripts);
