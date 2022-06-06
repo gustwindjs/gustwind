@@ -2,12 +2,14 @@
   "element": "ul",
   "class": "flex flex-col gap-2",
   "attributes": {
-    "x-template": "",
     "__x-each": "props.dataSource"
   },
   "children": [
     {
       "element": "li",
+      "attributes": {
+        "x-template": ""
+      },
       "class": "flex gap-2",
       "children": [
         {

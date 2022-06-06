@@ -32,12 +32,6 @@
                 "dataSource": "Object.entries(editor.meta)",
                 "oninput": "metaChanged(this, this.value)"
               }
-            },
-            {
-              "element": "div",
-              "props": {
-                "x": "JSON.stringify(editor.meta)"
-              }
             }
           ]
         },

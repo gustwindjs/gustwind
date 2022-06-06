@@ -44,13 +44,18 @@ async function classShortcut(
     classes.push(className);
   }
 
-  return Promise.resolve({
-    ...component,
-    attributes: {
-      ...component.attributes,
-      class: classes.map((c) => tw(c)).join(" "),
-    },
-  });
+  if (classes.length) {
+    return Promise.resolve({
+      ...component,
+      attributes: {
+        ...component.attributes,
+        class: classes.map((c) => tw(c)).join(" "),
+      },
+    });
+  }
+
+  // TODO: Test this case
+  return Promise.resolve(component);
 }
 
 function foreach(
