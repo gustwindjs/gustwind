@@ -109,9 +109,9 @@ In addition to binding data from a source, you can pass static data:
 
 ```json
 {
-  "element": "GitHubCorner",
+  "element": "Link",
   "props": {
-    "url": "https://github.com/survivejs/gustwind"
+    "href": "https://github.com/survivejs/gustwind"
   }
 }
 ```
