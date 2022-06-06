@@ -92,6 +92,11 @@ function transformMarkdown(input: string) {
         if (href === null) {
           return text;
         }
+
+        if (text === "<file>") {
+          return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
+        }
+
         let out = '<a class="' + tw`underline` + '" href="' + href + '"';
         if (title) {
           out += ' title="' + title + '"';
