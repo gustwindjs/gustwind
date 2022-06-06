@@ -36,6 +36,8 @@
           ]
         },
         {
+          "visibleIf": "false",
+          "todo": "The data source portion has been disabled for now",
           "element": "div",
           "children": [
             {
