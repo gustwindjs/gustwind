@@ -6,11 +6,7 @@ type Transform = "markdown" | "reverse";
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Component = BreezeComponent & {
-  // Page editor - TODO: Consider decoupling this somehow
-  // maybe there can be an "enhanced" structure that's adding the id?
-  _id?: string;
-};
+type Component = BreezeComponent;
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
 type Library = {
@@ -84,7 +80,7 @@ type ProjectMeta = {
   };
 };
 
-type Layout = Component[];
+type Layout = Component;
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type BuildWorkerEvent =

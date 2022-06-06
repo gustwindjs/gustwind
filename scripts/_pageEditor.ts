@@ -17,6 +17,10 @@ import type {
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
+type EditorComponent = Component & {
+  _id?: string;
+};
+
 type StateName = "editor" | "selected";
 
 // TODO: Push these types to sidewind
@@ -92,7 +96,7 @@ function createEditorContainer(layout: Layout, route: Route) {
     "x-state",
     JSON.stringify({
       ...layout,
-      body: initializeBody(layout.body),
+      body: initializeBody(layout),
       meta: route.meta,
     }),
   );
@@ -112,14 +116,17 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
-function initializeBody(body: Layout["body"]) {
+function initializeBody(layout: EditorComponent) {
+  const body = "";
+
+  // TODO: Find body element from the layout
   if (!body) {
     console.error("initializeBody - missing body");
 
     return;
   }
 
-  return produce(body, (draftBody: Layout["body"]) => {
+  return produce(body, (draftBody: EditorComponent) => {
     traverseComponents(draftBody, (p) => {
       p._id = nanoid();
     });
@@ -127,7 +134,7 @@ function initializeBody(body: Layout["body"]) {
 }
 
 function updateFileSystem(state: Layout) {
-  const nextBody = produce(state.body, (draftBody: Layout["body"]) => {
+  const nextBody = produce(state.body, (draftBody: Layout) => {
     traverseComponents(draftBody, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -295,7 +302,10 @@ function metaChanged(
 
 const hoveredElements = new Set<HTMLElement>();
 
-function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
+function elementClicked(
+  element: HTMLElement,
+  componentId: EditorComponent["_id"],
+) {
   // Stop bubbling as we're within a recursive HTML structure
   event?.stopPropagation();
 
@@ -426,8 +436,8 @@ function classChanged(
 
 function produceNextBody(
   body: Layout["body"],
-  componentId: Component["_id"],
-  matched: (p: Component, element: HTMLElement) => void,
+  componentId: EditorComponent["_id"],
+  matched: (p: EditorComponent, element: HTMLElement) => void,
 ) {
   return produce(body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p, i) => {
@@ -511,14 +521,14 @@ function getSelectedComponent(
 }
 
 function traverseComponents(
-  components: Component[],
-  operation: (c: Component, index: number) => void,
+  components: EditorComponent[],
+  operation: (c: EditorComponent, index: number) => void,
 ) {
   let i = 0;
 
   function recurse(
-    components: Component[] | Component,
-    operation: (c: Component, index: number) => void,
+    components: EditorComponent,
+    operation: (c: EditorComponent, index: number) => void,
   ) {
     if (Array.isArray(components)) {
       components.forEach((p) => recurse(p, operation));
