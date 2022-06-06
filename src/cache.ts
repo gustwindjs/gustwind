@@ -1,4 +1,5 @@
 import type { Component, DataContext, Layout, Route } from "../types.ts";
+import type { Utilities } from "../breeze/types.ts";
 
 type ServeCache = {
   contexts: Record<string, DataContext>;
@@ -9,7 +10,7 @@ type ServeCache = {
   styles: Record<string, string>;
   routes: Record<string, Route>;
   routeDefinitions: Record<string, Route>;
-  pageUtilities: Record<string, unknown>;
+  pageUtilities: Utilities;
   // TODO: Does twind setup have a better type?
   twindSetup: Record<string, unknown>;
 };
