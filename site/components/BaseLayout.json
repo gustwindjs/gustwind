@@ -26,6 +26,17 @@
             "element": "MainNavigation"
           },
           {
+            "visibleIf": "props.showToc",
+            "element": "aside",
+            "class": "fixed top-16 pl-4 hidden lg:inline",
+            "children": [
+              {
+                "element": "TableOfContents"
+              }
+            ]
+          },
+          {
+            "element": "main",
             "==children": "render(props.content)"
           },
           {

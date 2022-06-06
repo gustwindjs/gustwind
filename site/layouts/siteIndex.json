@@ -1,6 +1,7 @@
 {
   "element": "BaseLayout",
   "props": {
+    "showToc": false,
     "content": [
       {
         "element": "header",

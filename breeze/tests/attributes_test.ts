@@ -39,3 +39,27 @@ Deno.test("attributes without children", async () => {
     '<a href="testing"></a>',
   );
 });
+
+Deno.test("retains empty attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { href: "" },
+      },
+    }),
+    "<a href></a>",
+  );
+});
+
+Deno.test("removes undefined attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { href: undefined },
+      },
+    }),
+    "<a></a>",
+  );
+});
