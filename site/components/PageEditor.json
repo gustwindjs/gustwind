@@ -70,6 +70,7 @@
               "children": "Layout"
             },
             {
+              "visibleIf": "false",
               "element": "div",
               "attributes": {
                 "x": "'Selection id: ' + editor.selected"
@@ -87,7 +88,7 @@
                   "attributes": {
                     "x-template": "",
                     "x-attr": "",
-                    "@class": "state.level > 0 && 'ml-2'"
+                    "@class": "[state.level > 0 && 'ml-2', editor.selected === state.value.attributes['data-id'] && 'underline']"
                   },
                   "children": [
                     {
