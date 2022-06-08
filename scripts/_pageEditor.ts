@@ -85,6 +85,11 @@ async function createEditor() {
       ? t
       : getParents(t, "data-id")[0];
 
+    // Likely the user clicked on something within an editor panel for example
+    if (!closestElement) {
+      return;
+    }
+
     setState({ selected: closestElement.getAttribute("data-id") }, {
       // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
       element: editorContainer.children[0],
@@ -593,7 +598,7 @@ function traverseComponents(
   let i = 0;
 
   function recurse(
-    components: EditorComponent,
+    components: EditorComponent | EditorComponent[],
     operation: (c: EditorComponent, index: number) => void,
   ) {
     if (Array.isArray(components)) {
