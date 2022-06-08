@@ -117,8 +117,124 @@ function getParents(
   return ret;
 }
 
+let editedElement: Element;
+
 function elementSelected(target: Element) {
-  console.log("element selected", target);
+  const focusOutListener = (e: Event) => {
+    const inputElement = (e.target as HTMLElement);
+
+    if (!inputElement) {
+      console.warn("inputListener - No element found");
+
+      return;
+    }
+
+    e.preventDefault();
+
+    console.log("content changed", inputElement.textContent);
+
+    // TODO: Handle content change. I.e. update the original data.
+    // This is where having data-id comes in handy as the children
+    // field needs to be replaced based on that
+  };
+
+  if (editedElement) {
+    editedElement.classList.remove("border");
+    editedElement.classList.remove("border-red-800");
+    editedElement.removeAttribute("contenteditable");
+    editedElement.removeEventListener("focusout", focusOutListener);
+  }
+
+  editedElement = target;
+
+  target.classList.add("border");
+  target.classList.add("border-red-800");
+
+  // If element has children, enabling contenteditable on it will mess
+  // up logic due to DOM change.
+  if (target.children.length === 0) {
+    target.setAttribute("contenteditable", "true");
+    target.addEventListener("focusout", focusOutListener);
+
+    // @ts-ignore TODO: Maybe target has to become HTMLElement?
+    target.focus();
+  }
+}
+
+function contentChanged(
+  element: HTMLElement,
+  value: string,
+) {
+  const { editor: { body }, selected: { componentId } } = getState<PageState>(
+    element,
+  );
+  const nextBody = produceNextBody(body, componentId, (p, element) => {
+    if (element) {
+      element.innerHTML = value;
+    }
+
+    p.children = value;
+  });
+
+  setState({ body: nextBody }, { element, parent: "editor" });
+}
+
+const hoveredElements = new Set<HTMLElement>();
+
+function elementClicked(
+  element: HTMLElement,
+  componentId: EditorComponent["_id"],
+) {
+  // Stop bubbling as we're within a recursive HTML structure
+  event?.stopPropagation();
+
+  const { editor: { body } } = getState<PageState>(element);
+
+  const focusOutListener = (e: Event) => {
+    const inputElement = (e.target as HTMLElement);
+
+    if (!inputElement) {
+      console.warn("inputListener - No element found");
+
+      return;
+    }
+
+    e.preventDefault();
+
+    contentChanged(element, inputElement.textContent as string);
+  };
+
+  for (const element of hoveredElements.values()) {
+    element.classList.remove("border");
+    element.classList.remove("border-red-800");
+    element.removeAttribute("contenteditable");
+    element.removeEventListener("focusout", focusOutListener);
+
+    hoveredElements.delete(element);
+  }
+
+  traverseComponents(body, (p, i) => {
+    if (p._id === componentId) {
+      const matchedElement = findElement(
+        document.body,
+        i,
+        body,
+      ) as HTMLElement;
+
+      matchedElement.classList.add("border");
+      matchedElement.classList.add("border-red-800");
+      hoveredElements.add(matchedElement);
+
+      // If element has children, enabling contenteditable on it will mess
+      // up logic due to DOM change.
+      if (!Array.isArray(p.children)) {
+        matchedElement.setAttribute("contenteditable", "true");
+        matchedElement.addEventListener("focusout", focusOutListener);
+      }
+    }
+  });
+
+  setState({ componentId }, { element, parent: "selected" });
 }
 
 const editorsId = "editors";
@@ -322,64 +438,6 @@ function metaChanged(
   });
 }
 
-const hoveredElements = new Set<HTMLElement>();
-
-function elementClicked(
-  element: HTMLElement,
-  componentId: EditorComponent["_id"],
-) {
-  // Stop bubbling as we're within a recursive HTML structure
-  event?.stopPropagation();
-
-  const { editor: { body } } = getState<PageState>(element);
-
-  const focusOutListener = (e: Event) => {
-    const inputElement = (e.target as HTMLElement);
-
-    if (!inputElement) {
-      console.warn("inputListener - No element found");
-
-      return;
-    }
-
-    e.preventDefault();
-
-    contentChanged(element, inputElement.textContent as string);
-  };
-
-  for (const element of hoveredElements.values()) {
-    element.classList.remove("border");
-    element.classList.remove("border-red-800");
-    element.removeAttribute("contenteditable");
-    element.removeEventListener("focusout", focusOutListener);
-
-    hoveredElements.delete(element);
-  }
-
-  traverseComponents(body, (p, i) => {
-    if (p._id === componentId) {
-      const matchedElement = findElement(
-        document.body,
-        i,
-        body,
-      ) as HTMLElement;
-
-      matchedElement.classList.add("border");
-      matchedElement.classList.add("border-red-800");
-      hoveredElements.add(matchedElement);
-
-      // If element has children, enabling contenteditable on it will mess
-      // up logic due to DOM change.
-      if (!Array.isArray(p.children)) {
-        matchedElement.setAttribute("contenteditable", "true");
-        matchedElement.addEventListener("focusout", focusOutListener);
-      }
-    }
-  });
-
-  setState({ componentId }, { element, parent: "selected" });
-}
-
 function elementChanged(
   element: HTMLElement,
   value: string,
@@ -413,24 +471,6 @@ function changeTag(element: HTMLElement, tag: string) {
     newElem.setAttribute(attr.name, attr.value);
   }
   return newElem;
-}
-
-function contentChanged(
-  element: HTMLElement,
-  value: string,
-) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
-    element,
-  );
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    if (element) {
-      element.innerHTML = value;
-    }
-
-    p.children = value;
-  });
-
-  setState({ body: nextBody }, { element, parent: "editor" });
 }
 
 function classChanged(
@@ -575,7 +615,6 @@ declare global {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
     classChanged: typeof classChanged;
-    elementClicked: typeof elementClicked;
     elementChanged: typeof elementChanged;
     contentChanged: typeof contentChanged;
     getSelectedComponent: typeof getSelectedComponent;
@@ -589,7 +628,6 @@ if (!("Deno" in globalThis)) {
   window.createEditor = createEditor;
   window.metaChanged = metaChanged;
   window.classChanged = debounce<typeof classChanged>(classChanged);
-  window.elementClicked = elementClicked;
   window.elementChanged = elementChanged;
   window.contentChanged = debounce<typeof contentChanged>(contentChanged);
   window.getSelectedComponent = getSelectedComponent;
