@@ -70,6 +70,7 @@
               "children": "Layout"
             },
             {
+              "visibleIf": false,
               "element": "div",
               "attributes": {
                 "x": "'Selection id: ' + editor.selected"
@@ -90,6 +91,13 @@
                     "@class": "state.level > 0 && 'ml-2'"
                   },
                   "children": [
+                    {
+                      "visibleIf": "false",
+                      "element": "div",
+                      "attributes": {
+                        "x": "JSON.stringify(state.value, null, 2)"
+                      }
+                    },
                     {
                       "element": "div",
                       "class": "flex flex-row gap-2",

@@ -150,6 +150,8 @@ async function serveGustwind({
           // TODO: Store context and css so that subsequent requests can find the data
           const [html, context, css] = await renderPage({
             projectMeta,
+            // TODO: Attach ids to layout here already (renderPage is too late)
+            // TODO: The same needs to be done at buildWorker
             layout,
             route: matchedRoute, // TODO: Cache?
             mode,
