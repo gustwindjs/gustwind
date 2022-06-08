@@ -1,6 +1,5 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
-import { nanoid } from "https://esm.sh/nanoid@4.0.0";
 import {
   getStyleTag,
   getStyleTagProperties,
@@ -107,7 +106,6 @@ async function renderPage({
       context,
       pathname,
       pageUtilities,
-      showEditor,
     );
 
     if (route.type === "xml") {
@@ -150,7 +148,6 @@ function renderHTML(
   pageData: DataContext,
   pathname: string,
   utilities: Utilities,
-  showEditor?: boolean,
 ) {
   if (!children) {
     return "";
@@ -163,16 +160,7 @@ function renderHTML(
       breezeExtensions.classShortcut,
       breezeExtensions.foreach,
       breezeExtensions.visibleIf,
-    ].concat(
-      // If editor is used, then generate unique data-ids to allow easy operations
-      // at the frontend for altering the data.
-      showEditor
-        ? breezeExtensions.inject((c) => ({
-          ...c,
-          attributes: { ...c.attributes, "data-id": nanoid() },
-        }))
-        : [],
-    ),
+    ],
     context: { ...pageData, pathname },
     utilities,
   });

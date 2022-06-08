@@ -152,11 +152,13 @@ async function serveGustwind({
             projectMeta,
             // TODO: Attach ids to layout here already (renderPage is too late)
             // TODO: The same needs to be done at buildWorker
+            //
             layout,
             route: matchedRoute, // TODO: Cache?
             mode,
             pagePath: "todo", // TODO: figure out the path of the page in the system
             twindSetup: cache.twindSetup,
+            // TODO: Attach ids to components as well so they can be located
             components: cache.components,
             pageUtilities: cache.pageUtilities,
             pathname,
