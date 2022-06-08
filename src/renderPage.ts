@@ -55,6 +55,7 @@ async function renderPage({
 
   const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
+  const showEditor = projectMeta.features?.showEditorAlways;
 
   // The assumption here is that all the page scripts are compiled with Gustwind.
   // TODO: It might be a good idea to support third party scripts here as well
@@ -69,7 +70,7 @@ async function renderPage({
     runtimeMeta.pagePath = pagePath;
     pageScripts.push({ type: "module", src: "/_webSocketClient.js" });
   }
-  if (mode === "development" || projectMeta.features?.showEditorAlways) {
+  if (mode === "development" || showEditor) {
     pageScripts.push({ type: "module", src: "/_twindRuntime.js" });
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
@@ -105,6 +106,7 @@ async function renderPage({
       context,
       pathname,
       pageUtilities,
+      showEditor,
     );
 
     if (route.type === "xml") {
@@ -147,6 +149,7 @@ function renderHTML(
   pageData: DataContext,
   pathname: string,
   utilities: Utilities,
+  showEditor?: boolean,
 ) {
   if (!children) {
     return "";
@@ -159,6 +162,7 @@ function renderHTML(
       breezeExtensions.classShortcut,
       breezeExtensions.foreach,
       breezeExtensions.visibleIf,
+      // TODO: if showEditor -> inject data-id per each element
     ],
     context: { ...pageData, pathname },
     utilities,
