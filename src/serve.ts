@@ -46,6 +46,8 @@ async function serveGustwind({
   });
 
   if (mode === "development") {
+    // TODO: This branch might be safe to eliminate since
+    // meta.json scripts is capturing the dev scripts.
     if (import.meta.url.startsWith("file:///")) {
       DEBUG && console.log("Compiling local scripts");
 
@@ -83,8 +85,12 @@ async function serveGustwind({
   if (projectPaths.scripts) {
     DEBUG && console.log("Compiling project scripts");
 
-    const customScripts = await compileScriptsToJavaScript(
-      projectPaths.scripts,
+    const customScripts = Object.fromEntries(
+      await Promise.all(
+        projectPaths.scripts.map(async (s) =>
+          Object.entries(await compileScriptsToJavaScript(s))
+        ),
+      ),
     );
 
     cache.scripts = { ...cache.scripts, ...customScripts };

@@ -132,7 +132,9 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     }
 
     if (projectPaths.scripts) {
-      const projectScripts = await dir(projectPaths.scripts, ".ts");
+      const projectScripts = (await Promise.all(
+        projectPaths.scripts.map((p) => dir(p, ".ts")),
+      )).flat();
 
       DEBUG && console.log("found project scripts", projectScripts);
 

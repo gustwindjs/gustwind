@@ -150,9 +150,13 @@ function watchTransforms(
 function watchScripts(
   wss: ReturnType<typeof getWebsocketServer>,
   cache: ServeCache,
-  path?: string,
+  directories?: string[],
 ) {
-  path &&
+  if (!directories) {
+    return;
+  }
+
+  directories.forEach((path) =>
     watch(path, ".ts", async (matchedPath) => {
       const scriptName = _path.basename(
         matchedPath,
@@ -177,7 +181,8 @@ function watchScripts(
           );
         }
       });
-    });
+    })
+  );
 }
 
 function watchAll(

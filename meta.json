@@ -19,7 +19,7 @@
     "layouts": "./site/layouts",
     "output": "./build",
     "routes": "./site/routes.json",
-    "scripts": "./site/scripts",
+    "scripts": ["./scripts", "./site/scripts"],
     "transforms": "./site/transforms",
     "pageUtilities": "./site/pageUtilities.ts",
     "twindSetup": "./site/twindSetup.ts"

@@ -69,7 +69,7 @@ type ProjectMeta = {
     layouts: string;
     output: string;
     routes: string;
-    scripts?: string;
+    scripts?: string[];
     transforms: string;
     pageUtilities?: string;
     twindSetup?: string;
