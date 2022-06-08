@@ -82,11 +82,43 @@ async function createEditor() {
   evaluateAllDirectives();
 
   // https://stackoverflow.com/questions/9012537/how-to-get-the-element-clicked-for-the-whole-document
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
   globalThis.onclick = ({ target }) => {
-    // TODO: Track selection. This is the spot where to get data-id,
-    // handle manipulations, and show UI
-    console.log("target", target);
+    // TODO: How to know this is Element during runtime?
+    const t = target as Element;
+    const closestElement = t.hasAttribute("data-id")
+      ? t
+      : getParents(t, "data-id")[0];
+
+    closestElement && elementSelected(closestElement);
   };
+}
+
+// Adapted from Sidewind
+function getParents(
+  element: Element,
+  attribute: string,
+) {
+  const ret = [];
+  let parent = element.parentElement;
+
+  while (true) {
+    if (!parent) {
+      break;
+    }
+
+    if (parent.hasAttribute(attribute)) {
+      ret.push(parent);
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return ret;
+}
+
+function elementSelected(target: Element) {
+  console.log("element selected", target);
 }
 
 const editorsId = "editors";
