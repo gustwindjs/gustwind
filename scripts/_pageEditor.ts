@@ -61,10 +61,6 @@ async function createEditor() {
   );
   editorContainer.append(pageEditor);
 
-  // TODO: Restore
-  // const componentEditor = await createComponentEditor(components, context);
-  // selectionContainer.append(componentEditor);
-
   // TODO: Re-enable the side effect to update FS
   // Likely this should send patches, not whole structures
   //const updateElement = document.createElement("div");
@@ -125,6 +121,13 @@ let editedElement: Element;
 
 function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
   let previousContent: string;
+  let selectionId = target.dataset.id;
+
+  if (!selectionId) {
+    console.log("target doesn't have a selection id");
+
+    return;
+  }
 
   // TODO: Compare textContent of target and fo
   const focusOutListener = (e: Event) => {
@@ -158,16 +161,13 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
 
     console.log("editor state", layout, selected);
 
-    // TODO: Handle content change. I.e. update the original data.
-    // This is where having data-id comes in handy as the children
-    // field needs to be replaced based on that
-    /*produce(body, (draftBody: Layout["body"]) => {
-      traverseComponents(editorState.body, (p) => {
-        if (p._id === componentId) {
+    produce(layout, (draftLayout: Layout) => {
+      traverseComponents(draftLayout, (p) => {
+        /*if (draftLayout?.attributes?['data-id'] === selectionId) {
           match = p;
-        }
+        }*/
       });
-    });*/
+    });
   };
 
   if (editedElement) {
@@ -193,80 +193,29 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
   }
 }
 
-function contentChanged(
-  element: HTMLElement,
-  value: string,
+function traverseComponents(
+  components: Component,
+  operation: (c: Component, index: number) => void,
 ) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
-    element,
-  );
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    if (element) {
-      element.innerHTML = value;
-    }
+  let i = 0;
 
-    p.children = value;
-  });
+  function recurse(
+    components: EditorComponent | EditorComponent[],
+    operation: (c: EditorComponent, index: number) => void,
+  ) {
+    if (Array.isArray(components)) {
+      components.forEach((p) => recurse(p, operation));
+    } else {
+      operation(components, i);
+      i++;
 
-  setState({ body: nextBody }, { element, parent: "editor" });
-}
-
-const hoveredElements = new Set<HTMLElement>();
-
-function elementClicked(
-  element: HTMLElement,
-  componentId: EditorComponent["_id"],
-) {
-  // Stop bubbling as we're within a recursive HTML structure
-  event?.stopPropagation();
-
-  const { editor: { body } } = getState<PageState>(element);
-
-  const focusOutListener = (e: Event) => {
-    const inputElement = (e.target as HTMLElement);
-
-    if (!inputElement) {
-      console.warn("inputListener - No element found");
-
-      return;
-    }
-
-    e.preventDefault();
-
-    contentChanged(element, inputElement.textContent as string);
-  };
-
-  for (const element of hoveredElements.values()) {
-    element.classList.remove("border");
-    element.classList.remove("border-red-800");
-    element.removeAttribute("contenteditable");
-    element.removeEventListener("focusout", focusOutListener);
-
-    hoveredElements.delete(element);
-  }
-
-  traverseComponents(body, (p, i) => {
-    if (p._id === componentId) {
-      const matchedElement = findElement(
-        document.body,
-        i,
-        body,
-      ) as HTMLElement;
-
-      matchedElement.classList.add("border");
-      matchedElement.classList.add("border-red-800");
-      hoveredElements.add(matchedElement);
-
-      // If element has children, enabling contenteditable on it will mess
-      // up logic due to DOM change.
-      if (!Array.isArray(p.children)) {
-        matchedElement.setAttribute("contenteditable", "true");
-        matchedElement.addEventListener("focusout", focusOutListener);
+      if (Array.isArray(components.children)) {
+        recurse(components.children, operation);
       }
     }
-  });
+  }
 
-  setState({ componentId }, { element, parent: "selected" });
+  recurse(components, operation);
 }
 
 const editorsId = "editors";
@@ -505,29 +454,6 @@ function changeTag(element: HTMLElement, tag: string) {
   return newElem;
 }
 
-function classChanged(
-  element: HTMLElement,
-  value: string,
-) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
-    element,
-  );
-
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    if (element) {
-      element.setAttribute("class", value);
-
-      // TODO: Is there a nicer way to retain selection?
-      element.classList.add("border");
-      element.classList.add("border-red-800");
-    }
-
-    p.class = value;
-  });
-
-  setState({ body: nextBody }, { element, parent: "editor" });
-}
-
 function produceNextBody(
   body: Layout["body"],
   componentId: EditorComponent["_id"],
@@ -598,58 +524,11 @@ function findElement(
   return recurse(element?.firstElementChild, body);
 }
 
-// TODO: Restore
-function getSelectedComponent(
-  editorState: EditorState,
-  selectedState: SelectedState,
-) {
-  /*
-  let match = {};
-  const { componentId } = selectedState;
-
-  traverseComponents(editorState.body, (p) => {
-    if (p._id === componentId) {
-      match = p;
-    }
-  });
-
-  return match;
-  */
-}
-
-function traverseComponents(
-  components: EditorComponent[],
-  operation: (c: EditorComponent, index: number) => void,
-) {
-  let i = 0;
-
-  function recurse(
-    components: EditorComponent | EditorComponent[],
-    operation: (c: EditorComponent, index: number) => void,
-  ) {
-    if (Array.isArray(components)) {
-      components.forEach((p) => recurse(p, operation));
-    } else {
-      operation(components, i);
-      i++;
-
-      if (Array.isArray(components.children)) {
-        recurse(components.children, operation);
-      }
-    }
-  }
-
-  recurse(components, operation);
-}
-
 declare global {
   interface Window {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
-    classChanged: typeof classChanged;
     elementChanged: typeof elementChanged;
-    contentChanged: typeof contentChanged;
-    getSelectedComponent: typeof getSelectedComponent;
     updateFileSystem: typeof updateFileSystem;
   }
 }
@@ -659,24 +538,8 @@ if (!("Deno" in globalThis)) {
 
   window.createEditor = createEditor;
   window.metaChanged = metaChanged;
-  window.classChanged = debounce<typeof classChanged>(classChanged);
   window.elementChanged = elementChanged;
-  window.contentChanged = debounce<typeof contentChanged>(contentChanged);
-  window.getSelectedComponent = getSelectedComponent;
   window.updateFileSystem = updateFileSystem;
-}
-
-// https://www.freecodecamp.org/news/javascript-debounce-example/
-function debounce<F>(func: F, timeout = 100) {
-  let timer: ReturnType<typeof setTimeout>;
-
-  return (...args: unknown[]) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      // @ts-ignore How to type this
-      func.apply(this, args);
-    }, timeout);
-  };
 }
 
 export { createEditor, toggleEditorVisibility };
