@@ -349,8 +349,10 @@ function attachIds(
 
   if (component.props) {
     ret.props = Object.fromEntries(
-      // @ts-ignore TODO: Figure out how to type this correctly
-      Object.entries(component.props).map(([k, v]) => [k, attachIds(v)]),
+      Object.entries(component.props).map((
+        [k, v],
+        // @ts-ignore TODO: Figure out how to type this correctly
+      ) => [k, typeof v === "string" ? v : attachIds(v)]),
     );
   }
 
