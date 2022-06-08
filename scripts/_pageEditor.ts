@@ -80,6 +80,13 @@ async function createEditor() {
   document.body.appendChild(editorContainer);
 
   evaluateAllDirectives();
+
+  // https://stackoverflow.com/questions/9012537/how-to-get-the-element-clicked-for-the-whole-document
+  globalThis.onclick = ({ target }) => {
+    // TODO: Track selection. This is the spot where to get data-id,
+    // handle manipulations, and show UI
+    console.log("target", target);
+  };
 }
 
 const editorsId = "editors";
