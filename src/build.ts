@@ -1,4 +1,5 @@
 import { esbuild, fs, path } from "../server-deps.ts";
+import { attachIds } from "../utils/attachIds.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -30,11 +31,19 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
-  const [routes, layouts, components] = await Promise.all([
+  let [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
+
+  if (projectMeta.features?.showEditorAlways) {
+    // @ts-ignore TODO: Fix type
+    components = attachIds(components);
+
+    // @ts-ignore TODO: Fix type
+    layouts = attachIds(layouts);
+  }
 
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfBuildThreads,
