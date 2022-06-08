@@ -99,4 +99,10 @@ async function visibleIf(
   return isVisible ? component : {};
 }
 
-export { classShortcut, foreach, visibleIf };
+function inject(injector: (c: Component) => Component) {
+  return (component: Component) => {
+    return Promise.resolve(injector(component));
+  };
+}
+
+export { classShortcut, foreach, inject, visibleIf };
