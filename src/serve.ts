@@ -1,12 +1,7 @@
-import {
-  cache,
-  lookup,
-  nanoid,
-  path as _path,
-  Server,
-} from "../server-deps.ts";
+import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
+import { attachIds } from "../utils/attachIds.ts";
 import { trim } from "../utils/string.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
@@ -320,43 +315,6 @@ async function compileScriptsToJavaScript(path: string) {
     // above might throw
     return {};
   }
-}
-
-// TODO: Move to utils
-// TODO: Use for static render too
-// TODO: Maybe this should become completely generic (just arrays and objects)
-// Doing this would likely fix the typing as a side effect
-function attachIds(
-  component: Component | Component[],
-): Component | Component[] {
-  if (Array.isArray(component)) {
-    // @ts-ignore TODO: Figure out how to type this correctly
-    return component.map((c) => attachIds(c));
-  }
-
-  const ret = {
-    ...component,
-    attributes: {
-      ...component.attributes,
-      "data-id": nanoid(),
-    },
-  };
-
-  if (Array.isArray(component.children)) {
-    // @ts-ignore This will be array anyway
-    ret.children = attachIds(component.children);
-  }
-
-  if (component.props) {
-    ret.props = Object.fromEntries(
-      Object.entries(component.props).map((
-        [k, v],
-        // @ts-ignore TODO: Figure out how to type this correctly
-      ) => [k, typeof v === "string" ? v : attachIds(v)]),
-    );
-  }
-
-  return ret;
 }
 
 if (import.meta.main) {
