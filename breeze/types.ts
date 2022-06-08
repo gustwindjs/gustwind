@@ -11,6 +11,7 @@ type BaseComponent = {
   children?: string | Component[];
   __children?: string; // Getter binding
   "==children"?: string; // Evaluation binding
+  "##children"?: string; // Rendering binding
 };
 type ClassComponent = BaseComponent & {
   classList?: Record<string, string>;

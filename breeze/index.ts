@@ -54,14 +54,10 @@ async function render(
     )).join("");
   }
 
-  const evalRender = (component: Component | Component[]) =>
-    render({ component, components, extensions, context, utilities });
-
   if (extensions) {
     for (const extension of extensions) {
       component = await extension(component, {
         props: scopedProps,
-        render: evalRender,
         context,
         utilities,
       });
@@ -80,7 +76,6 @@ async function render(
     typeof component.props !== "string"
       ? {
         props: scopedProps,
-        render: evalRender,
         context,
         utilities,
       }
@@ -113,6 +108,24 @@ async function render(
     );
   }
 
+  if (component["##children"]) {
+    return toHTML(
+      element,
+      attributes,
+      await render({
+        // @ts-ignore TODO: What if get fails?
+        component: get(
+          { context, props: scopedProps },
+          component["##children"],
+        ),
+        components,
+        extensions,
+        context,
+        utilities,
+      }),
+    );
+  }
+
   const expression = component["==children"];
 
   if (expression) {
@@ -120,7 +133,6 @@ async function render(
       element,
       attributes,
       await evaluateExpression(expression, {
-        render: evalRender,
         props: scopedProps,
         context,
         utilities,

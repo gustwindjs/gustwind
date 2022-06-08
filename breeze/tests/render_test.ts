@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 
 import breeze from "../index.ts";
 
-Deno.test("component with object props and render()", async () => {
+Deno.test("component with object props and rendering", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -12,7 +12,7 @@ Deno.test("component with object props and render()", async () => {
       components: {
         BaseLayout: {
           element: "body",
-          "==children": "render(props.content)",
+          "##children": "props.content",
         },
       },
     }),
@@ -20,7 +20,7 @@ Deno.test("component with object props and render()", async () => {
   );
 });
 
-Deno.test("component with array props and render()", async () => {
+Deno.test("component with array props and rendering", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -31,7 +31,7 @@ Deno.test("component with array props and render()", async () => {
         BaseLayout: [
           {
             element: "body",
-            "==children": "render(props.content)",
+            "##children": "props.content",
           },
         ],
       },
@@ -40,7 +40,7 @@ Deno.test("component with array props and render()", async () => {
   );
 });
 
-Deno.test("component with array props, render(), and nested usage", async () => {
+Deno.test("component with array props, rendering, and nested usage", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -54,7 +54,7 @@ Deno.test("component with array props, render(), and nested usage", async () => 
             children: [
               {
                 element: "body",
-                "==children": "render(props.content)",
+                "##children": "props.content",
               },
             ],
           },
@@ -65,12 +65,12 @@ Deno.test("component with array props, render(), and nested usage", async () => 
   );
 });
 
-Deno.test("pass render() to ==children with context", async () => {
+Deno.test("allow rendering with context", async () => {
   assertEquals(
     await breeze({
       component: {
         element: "div",
-        "==children": "render(context.demo)",
+        "##children": "context.demo",
       },
       context: { demo: { element: "span", children: "foobar" } },
     }),
@@ -78,20 +78,20 @@ Deno.test("pass render() to ==children with context", async () => {
   );
 });
 
-Deno.test("pass render() to ==children with props", async () => {
+Deno.test("allow rendering with props", async () => {
   assertEquals(
     await breeze({
       component: {
         element: "div",
         props: { demo: { element: "span", children: "foobar" } },
-        "==children": "render(props.demo)",
+        "##children": "props.demo",
       },
     }),
     "<div><span>foobar</span></div>",
   );
 });
 
-Deno.test("pass render() to ==children with props in a component", async () => {
+Deno.test("allow rendering with props in a component", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -101,7 +101,7 @@ Deno.test("pass render() to ==children with props in a component", async () => {
       components: {
         Test: {
           element: "div",
-          "==children": "render(props.demo)",
+          "##children": "props.demo",
         },
       },
     }),

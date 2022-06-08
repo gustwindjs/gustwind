@@ -37,7 +37,7 @@
           },
           {
             "element": "main",
-            "==children": "render(props.content)"
+            "##children": "props.content"
           },
           {
             "element": "MainFooter"
