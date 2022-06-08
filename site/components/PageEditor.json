@@ -70,7 +70,6 @@
               "children": "Layout"
             },
             {
-              "visibleIf": false,
               "element": "div",
               "attributes": {
                 "x": "'Selection id: ' + editor.selected"
@@ -95,7 +94,7 @@
                       "visibleIf": "false",
                       "element": "div",
                       "attributes": {
-                        "x": "JSON.stringify(state.value, null, 2)"
+                        "x": "'id: ' + state.value.attributes['data-id']"
                       }
                     },
                     {

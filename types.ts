@@ -6,7 +6,7 @@ type Transform = "markdown" | "reverse";
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Component = BreezeComponent;
+type Component = BreezeComponent | BreezeComponent[];
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
 type Library = {

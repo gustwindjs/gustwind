@@ -1,4 +1,10 @@
-import { cache, lookup, path as _path, Server } from "../server-deps.ts";
+import {
+  cache,
+  lookup,
+  nanoid,
+  path as _path,
+  Server,
+} from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
 import { trim } from "../utils/string.ts";
@@ -129,6 +135,14 @@ async function serveGustwind({
       const { pathname } = new URL(url);
       const matchedRoute = matchRoute(cache.routes, pathname);
 
+      const showEditor = projectMeta.features?.showEditorAlways;
+      let components = cache.components;
+
+      if (showEditor) {
+        // @ts-ignore TODO: Fix type
+        components = attachIds(components);
+      }
+
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
 
@@ -145,21 +159,22 @@ async function serveGustwind({
           // the case in which there was an update over web socket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          const layout = cache.layouts[layoutName] || matchedLayout;
+          let layout = cache.layouts[layoutName] || matchedLayout;
+
+          if (showEditor) {
+            // @ts-ignore TODO: Fix type
+            layout = attachIds(layout);
+          }
 
           // TODO: Store context and css so that subsequent requests can find the data
           const [html, context, css] = await renderPage({
             projectMeta,
-            // TODO: Attach ids to layout here already (renderPage is too late)
-            // TODO: The same needs to be done at buildWorker
-            //
             layout,
             route: matchedRoute, // TODO: Cache?
             mode,
             pagePath: "todo", // TODO: figure out the path of the page in the system
             twindSetup: cache.twindSetup,
-            // TODO: Attach ids to components as well so they can be located
-            components: cache.components,
+            components,
             pageUtilities: cache.pageUtilities,
             pathname,
           });
@@ -305,6 +320,41 @@ async function compileScriptsToJavaScript(path: string) {
     // above might throw
     return {};
   }
+}
+
+// TODO: Move to utils
+// TODO: Use for static render too
+// TODO: Maybe this should become completely generic (just arrays and objects)
+// Doing this would likely fix the typing as a side effect
+function attachIds(
+  component: Component | Component[],
+): Component | Component[] {
+  if (Array.isArray(component)) {
+    // @ts-ignore TODO: Figure out how to type this correctly
+    return component.map((c) => attachIds(c));
+  }
+
+  const ret = {
+    ...component,
+    attributes: {
+      ...component.attributes,
+      "data-id": nanoid(),
+    },
+  };
+
+  if (Array.isArray(component.children)) {
+    // @ts-ignore This will be array anyway
+    ret.children = attachIds(component.children);
+  }
+
+  if (component.props) {
+    ret.props = Object.fromEntries(
+      // @ts-ignore TODO: Figure out how to type this correctly
+      Object.entries(component.props).map(([k, v]) => [k, attachIds(v)]),
+    );
+  }
+
+  return ret;
 }
 
 if (import.meta.main) {
