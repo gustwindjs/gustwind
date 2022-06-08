@@ -147,16 +147,16 @@ async function render(
       } ${component.closingCharacter}>`;
     }
 
-    return `<${element}${attributes ? " " + attributes : ""}></${element}>`;
+    return toHTML(element, attributes);
   }
 
-  return "";
+  return toHTML();
 }
 
 function toHTML(
-  element: Component["element"],
-  attributes: string,
-  value?: unknown,
+  element?: Component["element"],
+  attributes?: string,
+  value: unknown = "",
 ) {
   if (element) {
     return `<${element}${
