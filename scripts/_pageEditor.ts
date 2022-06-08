@@ -11,6 +11,7 @@ import type {
   Layout,
   Route,
 } from "../types.ts";
+import type { Component as BreezeComponent } from "../breeze/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
@@ -74,7 +75,7 @@ async function createEditor() {
   // https://stackoverflow.com/questions/9012537/how-to-get-the-element-clicked-for-the-whole-document
   // Reference: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
   globalThis.onclick = ({ target }) => {
-    // TODO: How to know this is Element during runtime?
+    // TODO: How to know this is HTMLElement during runtime?
     const t = target as HTMLElement;
     const closestElement = t.hasAttribute("data-id")
       ? t
@@ -121,7 +122,7 @@ let editedElement: Element;
 
 function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
   let previousContent: string;
-  let selectionId = target.dataset.id;
+  const selectionId = target.dataset.id;
 
   if (!selectionId) {
     console.log("target doesn't have a selection id");
@@ -129,7 +130,6 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
     return;
   }
 
-  // TODO: Compare textContent of target and fo
   const focusOutListener = (e: Event) => {
     const inputElement = (e.target as HTMLElement);
 
@@ -152,21 +152,31 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
       return;
     }
 
-    console.log("content changed", inputElement.textContent);
+    if (typeof newContent !== "string") {
+      return;
+    }
 
-    const { editor: { layout, selected } } = getState<PageState>(
+    console.log("content changed", newContent);
+
+    const element = editorContainer.children[0];
+
+    const { editor: { layout } } = getState<PageState>(
       // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      editorContainer.children[0],
+      element,
     );
 
-    console.log("editor state", layout, selected);
-
-    produce(layout, (draftLayout: Layout) => {
+    const nextLayout = produce(layout, (draftLayout: Layout) => {
       traverseComponents(draftLayout, (p) => {
-        /*if (draftLayout?.attributes?['data-id'] === selectionId) {
-          match = p;
-        }*/
+        if (p?.attributes?.["data-id"] === selectionId) {
+          p.children = newContent;
+        }
       });
+    });
+
+    setState({ layout: nextLayout }, {
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element,
+      parent: "editor",
     });
   };
 
@@ -195,13 +205,13 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
 
 function traverseComponents(
   components: Component,
-  operation: (c: Component, index: number) => void,
+  operation: (c: BreezeComponent, index: number) => void,
 ) {
   let i = 0;
 
   function recurse(
     components: EditorComponent | EditorComponent[],
-    operation: (c: EditorComponent, index: number) => void,
+    operation: (c: BreezeComponent, index: number) => void,
   ) {
     if (Array.isArray(components)) {
       components.forEach((p) => recurse(p, operation));
@@ -211,6 +221,11 @@ function traverseComponents(
 
       if (Array.isArray(components.children)) {
         recurse(components.children, operation);
+      }
+
+      if (components.props) {
+        // @ts-ignore TODO: Figure out a better type for this
+        recurse(Object.values(components.props), operation);
       }
     }
   }
