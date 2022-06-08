@@ -56,16 +56,11 @@ async function createEditor() {
 
   const editorContainer = createEditorContainer(layout, route);
 
-  const selectionContainer = document.createElement("div");
-  selectionContainer.setAttribute("x-label", "selected");
-  selectionContainer.setAttribute("x-state", "{ componentId: undefined }");
-  editorContainer.appendChild(selectionContainer);
-
   const pageEditor = await createPageEditor(
     components,
     context,
   );
-  selectionContainer.append(pageEditor);
+  editorContainer.append(pageEditor);
 
   // TODO: Restore
   // const componentEditor = await createComponentEditor(components, context);
@@ -85,11 +80,16 @@ async function createEditor() {
   // Reference: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
   globalThis.onclick = ({ target }) => {
     // TODO: How to know this is Element during runtime?
-    const t = target as Element;
+    const t = target as HTMLElement;
     const closestElement = t.hasAttribute("data-id")
       ? t
       : getParents(t, "data-id")[0];
 
+    setState({ selected: closestElement.getAttribute("data-id") }, {
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element: editorContainer.children[0],
+      parent: "editor",
+    });
     closestElement && elementSelected(closestElement);
   };
 }
@@ -253,6 +253,7 @@ function createEditorContainer(layout: Layout, route: Route) {
       // TODO: Make sure layout contains data-id's already!
       layout,
       meta: route.meta,
+      selected: undefined,
     }),
   );
   editorsElement.setAttribute("x-label", "editor");

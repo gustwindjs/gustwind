@@ -70,6 +70,12 @@
               "children": "Layout"
             },
             {
+              "element": "div",
+              "attributes": {
+                "x": "'Selection id: ' + editor.selected"
+              }
+            },
+            {
               "element": "ul",
               "attributes": {
                 "x-each": "Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
