@@ -37,7 +37,9 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     getDefinitions<Component>(projectPaths.components),
   ]);
 
-  if (projectMeta.features?.showEditorAlways) {
+  const showEditor = projectMeta.features?.showEditorAlways;
+
+  if (showEditor) {
     // @ts-ignore TODO: Fix type
     components = attachIds(components);
 
@@ -75,10 +77,21 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     await Deno.remove(outputDirectory, { recursive: true });
 
     Object.entries(expandedRoutes).forEach(([url, route]) => {
-      route.layout && workerPool.addTaskToQueue({
+      if (!route.layout) {
+        return;
+      }
+
+      let layout = layouts[route.layout];
+
+      if (showEditor) {
+        // @ts-ignore: TODO: Fix type
+        layout = attachIds(layout);
+      }
+
+      workerPool.addTaskToQueue({
         type: "build",
         payload: {
-          layout: layouts[route.layout],
+          layout,
           route,
           pagePath: "", // TODO
           dir: path.join(outputDirectory, url),
