@@ -1,11 +1,9 @@
 {
-  "__children": [
-    {
-      "element": "script",
-      "attributes": {
-        "__type": "type",
-        "__src": "src"
-      }
+  "foreach": ["context.scripts", {
+    "element": "script",
+    "attributes": {
+      "__type": "props.type",
+      "__src": "props.src"
     }
-  ]
+  }]
 }

@@ -28,7 +28,7 @@
             {
               "element": "DynamicList",
               "class": "flex flex-col gap-2",
-              "__bind": {
+              "props": {
                 "dataSource": "Object.entries(editor.meta)",
                 "oninput": "metaChanged(this, this.value)"
               }
@@ -36,6 +36,8 @@
           ]
         },
         {
+          "visibleIf": "false",
+          "todo": "The data source portion has been disabled for now",
           "element": "div",
           "children": [
             {
@@ -45,21 +47,15 @@
             },
             {
               "element": "div",
+              "attributes": {
+                "x-each": "editor.dataSources"
+              },
               "children": [
                 {
-                  "element": "template",
-                  "attributes": {
-                    "x-each": "editor.dataSources"
-                  },
-                  "children": [
-                    {
-                      "element": "DynamicList",
-                      "class": "flex flex-col gap-2",
-                      "__bind": {
-                        "dataSource": "state.value ? Object.entries(state.value) : []"
-                      }
-                    }
-                  ]
+                  "element": "DynamicList",
+                  "props": {
+                    "dataSource": "state.value ? Object.entries(state.value) : []"
+                  }
                 }
               ]
             }
@@ -71,38 +67,133 @@
             {
               "element": "h2",
               "class": "font-bold mb-2",
-              "children": "Body"
+              "children": "Layout"
+            },
+            {
+              "visibleIf": "false",
+              "element": "div",
+              "attributes": {
+                "x": "'Selection id: ' + editor.selected"
+              }
             },
             {
               "element": "ul",
+              "attributes": {
+                "x-each": "Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
+              },
               "children": [
                 {
-                  "element": "template",
+                  "element": "li",
+                  "class": "flex flex-col gap-2",
                   "attributes": {
-                    "x-each": "editor.body"
+                    "x-template": "",
+                    "x-attr": "",
+                    "@class": "[state.level > 0 && 'ml-2', editor.selected === (state.value.attributes && state.value.attributes['data-id']) && 'underline']"
                   },
                   "children": [
                     {
-                      "element": "li",
-                      "class": "my-2",
+                      "visibleIf": "false",
+                      "element": "div",
                       "attributes": {
-                        "x-attr": "",
-                        "onclick": "elementClicked(this, this.state.value._id)",
-                        "@class": "state.level > 0 && 'ml-2'"
+                        "x": "'id: ' + state.value.attributes['data-id']"
+                      }
+                    },
+                    {
+                      "element": "div",
+                      "class": "flex flex-row gap-2",
+                      "attributes": {
+                        "x-if": "state.value.element"
                       },
                       "children": [
                         {
-                          "element": "label",
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Element"
+                        },
+                        {
+                          "element": "span",
                           "attributes": {
-                            "x-attr": "",
-                            "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')",
-                            "@class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._id === selected.componentId && 'font-bold']"
+                            "x": "state.value.element"
                           }
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "class": "flex flex-row gap-2",
+                      "attributes": {
+                        "x-if": "state.value.class"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Class"
+                        },
+                        {
+                          "element": "span",
+                          "attributes": {
+                            "x": "state.value.class"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "attributes": {
+                        "x-if": "state.value.props"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Props"
                         },
                         {
                           "element": "ul",
                           "attributes": {
-                            "x-recurse": "state.value.children"
+                            "x-each": "Object.entries(state.value.props)"
+                          },
+                          "children": [
+                            {
+                              "element": "li",
+                              "attributes": {
+                                "x-template": ""
+                              },
+                              "children": [
+                                {
+                                  "element": "span",
+                                  "attributes": {
+                                    "x": "state.value[0]"
+                                  }
+                                },
+                                {
+                                  "element": "ul",
+                                  "attributes": {
+                                    "x-recurse": "{ parentIndex: 1, value: 'state.value[1]' }"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "attributes": {
+                        "x-if": "state.value.children"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Children"
+                        },
+                        {
+                          "element": "div",
+                          "attributes": {
+                            "x-recurse": "Array.isArray(state.value.children) ? state.value.children : [{ element: state.value.children }]"
                           }
                         }
                       ]

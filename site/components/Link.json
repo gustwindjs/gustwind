@@ -1,11 +1,11 @@
 {
   "element": "a",
   "class": "underline",
-  "__class": {
-    "font-bold": "context.href === context.pathname"
+  "classList": {
+    "font-bold": "props.href === context.pathname"
   },
-  "__children": "children",
+  "__children": "props.children",
   "attributes": {
-    "__href": "href"
+    "__href": "props.href"
   }
 }

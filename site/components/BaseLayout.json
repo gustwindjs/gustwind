@@ -1,0 +1,52 @@
+[
+  {
+    "element": "!DOCTYPE",
+    "attributes": {
+      "html": "",
+      "language": "context.meta.language"
+    },
+    "closingCharacter": ""
+  },
+  {
+    "element": "html",
+    "attributes": {},
+    "children": [
+      {
+        "element": "head",
+        "children": [
+          {
+            "element": "MetaFields"
+          }
+        ]
+      },
+      {
+        "element": "body",
+        "children": [
+          {
+            "element": "MainNavigation"
+          },
+          {
+            "visibleIf": "props.showToc",
+            "element": "aside",
+            "class": "fixed top-16 pl-4 hidden lg:inline",
+            "children": [
+              {
+                "element": "TableOfContents"
+              }
+            ]
+          },
+          {
+            "element": "main",
+            "##children": "props.content"
+          },
+          {
+            "element": "MainFooter"
+          },
+          {
+            "element": "Scripts"
+          }
+        ]
+      }
+    ]
+  }
+]

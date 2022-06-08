@@ -1,4 +1,5 @@
 import { esbuild, fs, path } from "../server-deps.ts";
+import { attachIds } from "../utils/attachIds.ts";
 import { dir, getJson, resolvePaths } from "../utils/fs.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -30,11 +31,21 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
-  const [routes, layouts, components] = await Promise.all([
+  let [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
+
+  const showEditor = projectMeta.features?.showEditorAlways;
+
+  if (showEditor) {
+    // @ts-ignore TODO: Fix type
+    components = attachIds(components);
+
+    // @ts-ignore TODO: Fix type
+    layouts = attachIds(layouts);
+  }
 
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfBuildThreads,
@@ -66,10 +77,21 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     await Deno.remove(outputDirectory, { recursive: true });
 
     Object.entries(expandedRoutes).forEach(([url, route]) => {
-      route.layout && workerPool.addTaskToQueue({
+      if (!route.layout) {
+        return;
+      }
+
+      let layout = layouts[route.layout];
+
+      if (showEditor) {
+        // @ts-ignore: TODO: Fix type
+        layout = attachIds(layout);
+      }
+
+      workerPool.addTaskToQueue({
         type: "build",
         payload: {
-          layout: layouts[route.layout],
+          layout,
           route,
           pagePath: "", // TODO
           dir: path.join(outputDirectory, url),
@@ -123,7 +145,9 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     }
 
     if (projectPaths.scripts) {
-      const projectScripts = await dir(projectPaths.scripts, ".ts");
+      const projectScripts = (await Promise.all(
+        projectPaths.scripts.map((p) => dir(p, ".ts")),
+      )).flat();
 
       DEBUG && console.log("found project scripts", projectScripts);
 

@@ -3,12 +3,13 @@
   "amountOfBuildThreads": 1,
   "meta": {
     "language": "en",
-    "siteName": "Gustwind"
+    "siteName": "Gustwind",
+    "url": "https://gustwind.js.org/"
   },
   "scripts": [
     {
       "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@6.0.2/dist/sidewind.umd.production.min.js"
+      "src": "https://unpkg.com/sidewind@7.4.0/dist/sidewind.umd.production.min.js"
     }
   ],
   "paths": {
@@ -18,7 +19,7 @@
     "layouts": "./site/layouts",
     "output": "./build",
     "routes": "./site/routes.json",
-    "scripts": "./scripts",
+    "scripts": ["./scripts", "./site/scripts"],
     "transforms": "./site/transforms",
     "pageUtilities": "./site/pageUtilities.ts",
     "twindSetup": "./site/twindSetup.ts"

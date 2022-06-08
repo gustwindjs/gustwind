@@ -3,7 +3,14 @@ import type { ProjectMeta } from "../types.ts";
 
 function resolvePaths(rootPath = Deno.cwd(), paths: ProjectMeta["paths"]) {
   return Object.fromEntries(
-    Object.entries(paths).map(([k, p]) => [k, path.join(rootPath, p)]),
+    Object.entries(paths).map((
+      [k, p],
+    ) => [
+      k,
+      Array.isArray(p)
+        ? p.map((i) => path.join(rootPath, i))
+        : path.join(rootPath, p),
+    ]),
   ) as ProjectMeta["paths"];
 }
 

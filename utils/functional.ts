@@ -2,10 +2,21 @@ function last<O>(array: O[]) {
   return array[array.length - 1];
 }
 
+function isUndefined(str?: string) {
+  return typeof str == "undefined";
+}
+
 // deno-lint-ignore no-explicit-any
 const isObject = (a: any) => !Array.isArray(a) && typeof a === "object";
 
-function get<O = Record<string, unknown>>(dataContext: O, key: string): string {
+function get<O = Record<string, unknown>>(
+  dataContext: O,
+  key?: string,
+): unknown {
+  if (!key) {
+    return;
+  }
+
   let value = dataContext;
 
   // TODO: What if the lookup fails?
@@ -17,8 +28,7 @@ function get<O = Record<string, unknown>>(dataContext: O, key: string): string {
     }
   });
 
-  // TODO: How to type
-  return value as unknown as string;
+  return value;
 }
 
-export { get, isObject, last };
+export { get, isObject, isUndefined, last };

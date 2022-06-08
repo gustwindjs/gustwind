@@ -17,17 +17,15 @@ async function evaluateField(
   v: string,
 ): Promise<[string, string]> {
   if (k.startsWith("__")) {
-    // @ts-ignore: TODO: How to type __bound
-    return [k.slice(2), get(context.__bound, v) || get(context, v)];
+    // @ts-ignore: TODO: How to type this
+    return [k.slice(2), get(context, v)];
   } else if (k.startsWith("==")) {
-    // @ts-ignore: TODO: How to type __bound
-    const ctx = context.__bound || context;
-
     return [
       k.slice(2),
       await evaluateExpression(
         v,
-        isObject(ctx) ? ctx : { data: ctx },
+        // @ts-ignore: TODO: How to type this
+        isObject(context) ? context : { data: context },
       ),
     ];
   }

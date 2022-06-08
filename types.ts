@@ -1,28 +1,12 @@
+import type { Component as BreezeComponent } from "./breeze/types.ts";
+
 // This should match with ./transforms
 type Transform = "markdown" | "reverse";
 
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Component = {
-  visibleIf?: string; // A string to evaluate to figure out if to render an element at all
-  element?: string; // TODO: Only valid DOM element names + components
-  children?: string | Component[];
-  class?: string;
-  inputProperty?: string;
-  inputText?: string;
-  attributes?: Attributes;
-  transformWith?: Transform[];
-  // Data bindings
-  __bind?: string;
-  __class?: string;
-  __children?: string | Component[];
-  "==children"?: string;
-  __foreach?: [string, Component[]];
-  // Page editor - TODO: Consider decoupling this somehow
-  // maybe there can be an "enhanced" structure that's adding the id?
-  _id?: string;
-};
+type Component = BreezeComponent | BreezeComponent[];
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
 type Library = {
@@ -85,7 +69,7 @@ type ProjectMeta = {
     layouts: string;
     output: string;
     routes: string;
-    scripts?: string;
+    scripts?: string[];
     transforms: string;
     pageUtilities?: string;
     twindSetup?: string;
@@ -96,7 +80,7 @@ type ProjectMeta = {
   };
 };
 
-type Layout = Component[];
+type Layout = Component;
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type BuildWorkerEvent =

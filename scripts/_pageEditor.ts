@@ -1,8 +1,8 @@
 /// <reference lib="dom" />
 import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
-import { nanoid } from "https://cdn.skypack.dev/nanoid@3.1.30?min";
 import { draggable } from "../utils/draggable.ts";
-import { renderComponent } from "../src/renderComponent.ts";
+import breeze from "../breeze/index.ts";
+import * as breezeExtensions from "../breeze/extensions.ts";
 import { getPagePath } from "../utils/getPagePath.ts";
 import type {
   Component,
@@ -11,9 +11,15 @@ import type {
   Layout,
   Route,
 } from "../types.ts";
+import type { Component as BreezeComponent } from "../breeze/types.ts";
 
+// TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
+
+type EditorComponent = Component & {
+  _id?: string;
+};
 
 type StateName = "editor" | "selected";
 
@@ -27,11 +33,10 @@ declare global {
   function evaluateAllDirectives(): void;
 }
 
-type EditorState = Layout & { meta: Route["meta"] };
+type EditorState = { layout: Layout; meta: Route["meta"]; selected: string };
 type SelectedState = { componentId?: string };
 type PageState = {
   editor: EditorState;
-  selected: SelectedState;
 };
 
 async function createEditor() {
@@ -51,19 +56,11 @@ async function createEditor() {
 
   const editorContainer = createEditorContainer(layout, route);
 
-  const selectionContainer = document.createElement("div");
-  selectionContainer.setAttribute("x-label", "selected");
-  selectionContainer.setAttribute("x-state", "{ componentId: undefined }");
-  editorContainer.appendChild(selectionContainer);
-
   const pageEditor = await createPageEditor(
     components,
     context,
   );
-  selectionContainer.append(pageEditor);
-
-  const componentEditor = await createComponentEditor(components, context);
-  selectionContainer.append(componentEditor);
+  editorContainer.append(pageEditor);
 
   // TODO: Re-enable the side effect to update FS
   // Likely this should send patches, not whole structures
@@ -74,6 +71,166 @@ async function createEditor() {
   document.body.appendChild(editorContainer);
 
   evaluateAllDirectives();
+
+  // https://stackoverflow.com/questions/9012537/how-to-get-the-element-clicked-for-the-whole-document
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+  globalThis.onclick = ({ target }) => {
+    // TODO: How to know this is HTMLElement during runtime?
+    const t = target as HTMLElement;
+    const closestElement = t.hasAttribute("data-id")
+      ? t
+      : getParents(t, "data-id")[0];
+
+    // Likely the user clicked on something within an editor panel for example
+    if (!closestElement) {
+      return;
+    }
+
+    setState({ selected: closestElement.getAttribute("data-id") }, {
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element: editorContainer.children[0],
+      parent: "editor",
+    });
+    closestElement && elementSelected(closestElement, editorContainer);
+  };
+}
+
+// Adapted from Sidewind
+function getParents(
+  element: Element,
+  attribute: string,
+) {
+  const ret = [];
+  let parent = element.parentElement;
+
+  while (true) {
+    if (!parent) {
+      break;
+    }
+
+    if (parent.hasAttribute(attribute)) {
+      ret.push(parent);
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return ret;
+}
+
+let editedElement: Element;
+
+function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
+  let previousContent: string;
+  const selectionId = target.dataset.id;
+
+  if (!selectionId) {
+    console.log("target doesn't have a selection id");
+
+    return;
+  }
+
+  const focusOutListener = (e: Event) => {
+    const inputElement = (e.target as HTMLElement);
+
+    if (!inputElement) {
+      console.warn("inputListener - No element found");
+
+      return;
+    }
+
+    e.preventDefault();
+
+    target.removeAttribute("contenteditable");
+    target.removeEventListener("focusout", focusOutListener);
+
+    const newContent = inputElement.textContent;
+
+    if (previousContent === newContent) {
+      console.log("content didn't change");
+
+      return;
+    }
+
+    if (typeof newContent !== "string") {
+      return;
+    }
+
+    console.log("content changed", newContent);
+
+    const element = editorContainer.children[0];
+
+    const { editor: { layout } } = getState<PageState>(
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element,
+    );
+
+    const nextLayout = produce(layout, (draftLayout: Layout) => {
+      traverseComponents(draftLayout, (p) => {
+        if (p?.attributes?.["data-id"] === selectionId) {
+          p.children = newContent;
+        }
+      });
+    });
+
+    setState({ layout: nextLayout }, {
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element,
+      parent: "editor",
+    });
+  };
+
+  if (editedElement) {
+    editedElement.classList.remove("border");
+    editedElement.classList.remove("border-red-800");
+  }
+
+  editedElement = target;
+
+  target.classList.add("border");
+  target.classList.add("border-red-800");
+
+  // If element has children, enabling contenteditable on it will mess
+  // up logic due to DOM change.
+  if (target.children.length === 0 && target.textContent) {
+    previousContent = target.textContent;
+
+    target.setAttribute("contenteditable", "true");
+    target.addEventListener("focusout", focusOutListener);
+
+    // @ts-ignore TODO: Maybe target has to become HTMLElement?
+    target.focus();
+  }
+}
+
+function traverseComponents(
+  components: Component,
+  operation: (c: BreezeComponent, index: number) => void,
+) {
+  let i = 0;
+
+  function recurse(
+    components: EditorComponent | EditorComponent[],
+    operation: (c: BreezeComponent, index: number) => void,
+  ) {
+    if (Array.isArray(components)) {
+      components.forEach((p) => recurse(p, operation));
+    } else {
+      operation(components, i);
+      i++;
+
+      if (Array.isArray(components.children)) {
+        recurse(components.children, operation);
+      }
+
+      if (components.props) {
+        // @ts-ignore TODO: Figure out a better type for this
+        recurse(Object.values(components.props), operation);
+      }
+    }
+  }
+
+  recurse(components, operation);
 }
 
 const editorsId = "editors";
@@ -89,9 +246,9 @@ function createEditorContainer(layout: Layout, route: Route) {
   editorsElement.setAttribute(
     "x-state",
     JSON.stringify({
-      ...layout,
-      body: initializeBody(layout.body),
+      layout,
       meta: route.meta,
+      selected: undefined,
     }),
   );
   editorsElement.setAttribute("x-label", "editor");
@@ -110,22 +267,8 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
-function initializeBody(body: Layout["body"]) {
-  if (!body) {
-    console.error("initializeBody - missing body");
-
-    return;
-  }
-
-  return produce(body, (draftBody: Layout["body"]) => {
-    traverseComponents(draftBody, (p) => {
-      p._id = nanoid();
-    });
-  });
-}
-
 function updateFileSystem(state: Layout) {
-  const nextBody = produce(state.body, (draftBody: Layout["body"]) => {
+  const nextBody = produce(state.body, (draftBody: Layout) => {
     traverseComponents(draftBody, (p) => {
       // TODO: Generalize to erase anything that begins with a single _
       delete p._id;
@@ -154,12 +297,17 @@ async function createPageEditor(
 
   const treeElement = document.createElement("div");
   treeElement.id = documentTreeElementId;
-  treeElement.innerHTML = await renderComponent(
-    "",
-    components.PageEditor,
+  treeElement.innerHTML = await breeze({
+    component: components.PageEditor,
     components,
+    // @ts-ignore: TODO: Fix type
     context,
-  );
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+  });
 
   const aside = treeElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
@@ -174,12 +322,17 @@ async function createComponentEditor(
 ) {
   const controlsElement = document.createElement("div");
   controlsElement.id = controlsElementId;
-  controlsElement.innerHTML = await renderComponent(
-    "",
-    components.ComponentEditor,
+  controlsElement.innerHTML = await breeze({
+    component: components.ComponentEditor,
     components,
+    // @ts-ignore: TODO: Fix type
     context,
-  );
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+  });
 
   const aside = controlsElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
@@ -281,61 +434,6 @@ function metaChanged(
   });
 }
 
-const hoveredElements = new Set<HTMLElement>();
-
-function elementClicked(element: HTMLElement, componentId: Component["_id"]) {
-  // Stop bubbling as we're within a recursive HTML structure
-  event?.stopPropagation();
-
-  const { editor: { body } } = getState<PageState>(element);
-
-  const focusOutListener = (e: Event) => {
-    const inputElement = (e.target as HTMLElement);
-
-    if (!inputElement) {
-      console.warn("inputListener - No element found");
-
-      return;
-    }
-
-    e.preventDefault();
-
-    contentChanged(element, inputElement.textContent as string);
-  };
-
-  for (const element of hoveredElements.values()) {
-    element.classList.remove("border");
-    element.classList.remove("border-red-800");
-    element.removeAttribute("contenteditable");
-    element.removeEventListener("focusout", focusOutListener);
-
-    hoveredElements.delete(element);
-  }
-
-  traverseComponents(body, (p, i) => {
-    if (p._id === componentId) {
-      const matchedElement = findElement(
-        document.body,
-        i,
-        body,
-      ) as HTMLElement;
-
-      matchedElement.classList.add("border");
-      matchedElement.classList.add("border-red-800");
-      hoveredElements.add(matchedElement);
-
-      // If element has children, enabling contenteditable on it will mess
-      // up logic due to DOM change.
-      if (!Array.isArray(p.children)) {
-        matchedElement.setAttribute("contenteditable", "true");
-        matchedElement.addEventListener("focusout", focusOutListener);
-      }
-    }
-  });
-
-  setState({ componentId }, { element, parent: "selected" });
-}
-
 function elementChanged(
   element: HTMLElement,
   value: string,
@@ -371,51 +469,10 @@ function changeTag(element: HTMLElement, tag: string) {
   return newElem;
 }
 
-function contentChanged(
-  element: HTMLElement,
-  value: string,
-) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
-    element,
-  );
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    if (element) {
-      element.innerHTML = value;
-    }
-
-    p.children = value;
-  });
-
-  setState({ body: nextBody }, { element, parent: "editor" });
-}
-
-function classChanged(
-  element: HTMLElement,
-  value: string,
-) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
-    element,
-  );
-
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    if (element) {
-      element.setAttribute("class", value);
-
-      // TODO: Is there a nicer way to retain selection?
-      element.classList.add("border");
-      element.classList.add("border-red-800");
-    }
-
-    p.class = value;
-  });
-
-  setState({ body: nextBody }, { element, parent: "editor" });
-}
-
 function produceNextBody(
   body: Layout["body"],
-  componentId: Component["_id"],
-  matched: (p: Component, element: HTMLElement) => void,
+  componentId: EditorComponent["_id"],
+  matched: (p: EditorComponent, element: HTMLElement) => void,
 ) {
   return produce(body, (draftBody: Layout["body"]) => {
     traverseComponents(draftBody, (p, i) => {
@@ -482,56 +539,11 @@ function findElement(
   return recurse(element?.firstElementChild, body);
 }
 
-function getSelectedComponent(
-  editorState: EditorState,
-  selectedState: SelectedState,
-) {
-  let match = {};
-  const { componentId } = selectedState;
-
-  traverseComponents(editorState.body, (p) => {
-    if (p._id === componentId) {
-      match = p;
-    }
-  });
-
-  return match;
-}
-
-function traverseComponents(
-  components: Component[],
-  operation: (c: Component, index: number) => void,
-) {
-  let i = 0;
-
-  function recurse(
-    components: Component[] | Component,
-    operation: (c: Component, index: number) => void,
-  ) {
-    if (Array.isArray(components)) {
-      components.forEach((p) => recurse(p, operation));
-    } else {
-      operation(components, i);
-      i++;
-
-      if (Array.isArray(components.children)) {
-        recurse(components.children, operation);
-      }
-    }
-  }
-
-  recurse(components, operation);
-}
-
 declare global {
   interface Window {
     createEditor: typeof createEditor;
     metaChanged: typeof metaChanged;
-    classChanged: typeof classChanged;
-    elementClicked: typeof elementClicked;
     elementChanged: typeof elementChanged;
-    contentChanged: typeof contentChanged;
-    getSelectedComponent: typeof getSelectedComponent;
     updateFileSystem: typeof updateFileSystem;
   }
 }
@@ -541,25 +553,8 @@ if (!("Deno" in globalThis)) {
 
   window.createEditor = createEditor;
   window.metaChanged = metaChanged;
-  window.classChanged = debounce<typeof classChanged>(classChanged);
-  window.elementClicked = elementClicked;
   window.elementChanged = elementChanged;
-  window.contentChanged = debounce<typeof contentChanged>(contentChanged);
-  window.getSelectedComponent = getSelectedComponent;
   window.updateFileSystem = updateFileSystem;
-}
-
-// https://www.freecodecamp.org/news/javascript-debounce-example/
-function debounce<F>(func: F, timeout = 100) {
-  let timer: ReturnType<typeof setTimeout>;
-
-  return (...args: unknown[]) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      // @ts-ignore How to type this
-      func.apply(this, args);
-    }, timeout);
-  };
 }
 
 export { createEditor, toggleEditorVisibility };

@@ -1,50 +1,27 @@
-[
-  {
-    "element": "head",
-    "children": [
-      {
-        "element": "MetaFields"
-      }
-    ]
-  },
-  {
-    "element": "body",
-    "children": [
-      {
-        "element": "MainNavigation"
-      },
-      {
-        "element": "div",
-        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-        "__bind": "blogPosts",
-        "children": [
-          {
-            "element": "ul",
-            "__children": [
+{
+  "element": "BaseLayout",
+  "props": {
+    "content": {
+      "element": "div",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "children": [
+        {
+          "element": "ul",
+          "foreach": ["context.blogPosts", {
+            "element": "li",
+            "class": "inline",
+            "children": [
               {
-                "element": "li",
-                "class": "inline",
-                "children": [
-                  {
-                    "element": "Link",
-                    "__bind": {
-                      "__children": "data.title",
-                      "==href": "data.slug + '/'"
-                    }
-                  }
-                ]
+                "element": "Link",
+                "props": {
+                  "__children": "props.data.title",
+                  "==href": "props.data.slug + '/'"
+                }
               }
             ]
-          }
-        ]
-      },
-      {
-        "element": "MainFooter"
-      },
-      {
-        "element": "Scripts",
-        "__bind": "scripts"
-      }
-    ]
+          }]
+        }
+      ]
+    }
   }
-]
+}

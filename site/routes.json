@@ -59,8 +59,8 @@
       },
       "layout": "blogPage",
       "meta": {
-        "__title": "match.name",
-        "__description": "match.description"
+        "__title": "match.data.title",
+        "__description": "match.data.description"
       }
     }
   },
@@ -70,13 +70,15 @@
       "title": "Gustwind buttons",
       "description": "Secret buttons page"
     },
+    "scripts": ["hello"],
     "routes": {
       "more": {
         "layout": "buttonsPage",
         "meta": {
           "title": "More Gustwind buttons",
           "description": "Another secret buttons page"
-        }
+        },
+        "scripts": ["hello"]
       }
     }
   },

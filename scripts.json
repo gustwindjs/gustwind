@@ -4,6 +4,8 @@
     "NO_COLOR": 1
   },
   "scripts": {
+    "test": "deno test",
+    "watch:test": "deno test --watch",
     "start": {
       "cmd": "deno run --no-check --unstable ./cli.ts -d",
       "watch": true

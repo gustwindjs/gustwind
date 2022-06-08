@@ -1,36 +1,33 @@
 {
   "element": "ul",
   "class": "flex flex-col gap-2",
+  "attributes": {
+    "__x-each": "props.dataSource"
+  },
   "children": [
     {
-      "element": "template",
+      "element": "li",
       "attributes": {
-        "__x-each": "dataSource"
+        "x-template": ""
       },
+      "class": "flex gap-2",
       "children": [
         {
-          "element": "li",
-          "_todo": "Render multiple fields for an array value",
-          "class": "flex gap-2",
-          "children": [
-            {
-              "element": "label",
-              "attributes": {
-                "x": "state.value[0]"
-              }
-            },
-            {
-              "element": "input",
-              "class": "border flex-grow",
-              "attributes": {
-                "x-attr": "",
-                "type": "text",
-                "x": "state.value[1]",
-                "@data-field": "state.value[0]",
-                "__oninput": "oninput"
-              }
-            }
-          ]
+          "element": "label",
+          "attributes": {
+            "x": "state.value[0]"
+          }
+        },
+        {
+          "element": "input",
+          "class": "border flex-grow",
+          "attributes": {
+            "x-attr": "",
+            "type": "text",
+            "x": "state.value[1]",
+            "@data-field": "state.value[0]",
+            "__oninput": "props.oninput"
+          }
         }
       ]
     }

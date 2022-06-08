@@ -1,53 +1,23 @@
-[
-  {
-    "element": "head",
-    "children": [
-      {
-        "element": "MetaFields"
-      }
-    ]
-  },
-  {
-    "element": "body",
-    "children": [
-      {
-        "element": "MainNavigation"
-      },
-      {
-        "element": "aside",
-        "class": "fixed top-16 pl-4 hidden lg:inline",
-        "children": [
-          {
-            "element": "TableOfContents"
-          }
-        ]
-      },
-      {
-        "element": "div",
-        "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-        "attributes": {
-          "id": "main"
+{
+  "element": "BaseLayout",
+  "props": {
+    "showToc": true,
+    "content": {
+      "element": "div",
+      "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+      "children": [
+        {
+          "element": "h1",
+          "__children": "context.match.data.title"
         },
-        "children": [
-          {
-            "element": "h1",
-            "__children": "match.data.title"
-          },
-          {
-            "element": "p",
-            "inputProperty": "match.content",
-            "transformWith": ["markdown"],
-            "__children": "content"
+        {
+          "element": "Markdown",
+          "props": {
+            "element": "div",
+            "__inputText": "context.match.content"
           }
-        ]
-      },
-      {
-        "element": "MainFooter"
-      },
-      {
-        "element": "Scripts",
-        "__bind": "scripts"
-      }
-    ]
+        }
+      ]
+    }
   }
-]
+}

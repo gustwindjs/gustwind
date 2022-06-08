@@ -1,6 +1,7 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utils/compileScripts.ts";
 import { getJson, resolvePaths } from "../utils/fs.ts";
+import { attachIds } from "../utils/attachIds.ts";
 import { trim } from "../utils/string.ts";
 import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
@@ -45,6 +46,8 @@ async function serveGustwind({
   });
 
   if (mode === "development") {
+    // TODO: This branch might be safe to eliminate since
+    // meta.json scripts is capturing the dev scripts.
     if (import.meta.url.startsWith("file:///")) {
       DEBUG && console.log("Compiling local scripts");
 
@@ -82,8 +85,12 @@ async function serveGustwind({
   if (projectPaths.scripts) {
     DEBUG && console.log("Compiling project scripts");
 
-    const customScripts = await compileScriptsToJavaScript(
-      projectPaths.scripts,
+    const customScripts = Object.fromEntries(
+      await Promise.all(
+        projectPaths.scripts.map(async (s) =>
+          Object.entries(await compileScriptsToJavaScript(s))
+        ),
+      ),
     );
 
     cache.scripts = { ...cache.scripts, ...customScripts };
@@ -129,6 +136,14 @@ async function serveGustwind({
       const { pathname } = new URL(url);
       const matchedRoute = matchRoute(cache.routes, pathname);
 
+      const showEditor = projectMeta.features?.showEditorAlways;
+      let components = cache.components;
+
+      if (showEditor) {
+        // @ts-ignore TODO: Fix type
+        components = attachIds(components);
+      }
+
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
 
@@ -145,7 +160,12 @@ async function serveGustwind({
           // the case in which there was an update over web socket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          const layout = cache.layouts[layoutName] || matchedLayout;
+          let layout = cache.layouts[layoutName] || matchedLayout;
+
+          if (showEditor) {
+            // @ts-ignore TODO: Fix type
+            layout = attachIds(layout);
+          }
 
           // TODO: Store context and css so that subsequent requests can find the data
           const [html, context, css] = await renderPage({
@@ -155,7 +175,7 @@ async function serveGustwind({
             mode,
             pagePath: "todo", // TODO: figure out the path of the page in the system
             twindSetup: cache.twindSetup,
-            components: cache.components,
+            components,
             pageUtilities: cache.pageUtilities,
             pathname,
           });

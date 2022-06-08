@@ -3,9 +3,9 @@
 import {
   getStyleTag,
   getStyleTagProperties,
+  setupTwind,
   virtualSheet,
 } from "../client-deps.ts";
-import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import type {
   Components,
   DataContext,
@@ -15,9 +15,11 @@ import type {
   ProjectMeta,
   Route,
 } from "../types.ts";
-import { renderComponent } from "./renderComponent.ts";
+import type { Utilities } from "../breeze/types.ts";
+import breeze from "../breeze/index.ts";
+import * as breezeExtensions from "../breeze/extensions.ts";
 import { getContext } from "./getContext.ts";
-import { evaluateFields } from "./evaluate.ts";
+import { evaluateFields } from "../utils/evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -41,7 +43,7 @@ async function renderPage({
   route: Route;
   mode: Mode;
   pagePath: string;
-  pageUtilities: Record<string, unknown>;
+  pageUtilities: Utilities;
   twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
@@ -53,8 +55,13 @@ async function renderPage({
 
   const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
+  const showEditor = projectMeta.features?.showEditorAlways;
 
-  let pageScripts = route.scripts?.slice(0) || [];
+  // The assumption here is that all the page scripts are compiled with Gustwind.
+  // TODO: It might be a good idea to support third party scripts here as well
+  let pageScripts =
+    route.scripts?.slice(0).map((s) => ({ type: "module", src: `/${s}.js` })) ||
+    [];
 
   if (projectMeta.scripts) {
     pageScripts = pageScripts.concat(projectMeta.scripts);
@@ -63,7 +70,7 @@ async function renderPage({
     runtimeMeta.pagePath = pagePath;
     pageScripts.push({ type: "module", src: "/_webSocketClient.js" });
   }
-  if (mode === "development" || projectMeta.features?.showEditorAlways) {
+  if (mode === "development" || showEditor) {
     pageScripts.push({ type: "module", src: "/_twindRuntime.js" });
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
@@ -94,7 +101,6 @@ async function renderPage({
 
   try {
     const markup = await renderHTML(
-      projectPaths.transforms,
       layout,
       components,
       context,
@@ -103,7 +109,7 @@ async function renderPage({
     );
 
     if (route.type === "xml") {
-      return [xmlTemplate(markup), context];
+      return [markup, context];
     }
 
     // https://web.dev/defer-non-critical-css/
@@ -117,10 +123,7 @@ async function renderPage({
     }
 
     return [
-      htmlTemplate(
-        route.meta?.language || projectMeta.meta?.language,
-        injectStyleTag(markup, styleTag),
-      ),
+      injectStyleTag(markup, styleTag),
       context,
       css,
     ];
@@ -138,38 +141,29 @@ function injectStyleTag(markup: string, styleTag: string) {
 }
 
 function renderHTML(
-  transformsPath: string,
+  // TODO: Load transforms beforehand and connect them with utilities here
+  // transformsPath: string,
   children: Layout,
   components: Components,
   pageData: DataContext,
   pathname: string,
-  pageUtilities: Record<string, unknown>,
+  utilities: Utilities,
 ) {
   if (!children) {
     return "";
   }
 
-  return renderComponent(
-    transformsPath,
-    { children },
+  return breeze({
+    component: children,
     components,
-    { ...pageData, pathname },
-    pageUtilities,
-  );
-}
-
-function htmlTemplate(
-  language: string,
-  markup: string,
-) {
-  // TODO: Consider generalizing html attribute handling
-  return `<!DOCTYPE html><html${
-    language ? ' language="' + language + '"' : ""
-  }>${markup}</html$>`;
-}
-
-function xmlTemplate(bodyMarkup: string) {
-  return `<?xml version="1.0" encoding="UTF-8" ?>${bodyMarkup}`;
+    extensions: [
+      breezeExtensions.classShortcut,
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+    context: { ...pageData, pathname },
+    utilities,
+  });
 }
 
 export { renderHTML, renderPage };
