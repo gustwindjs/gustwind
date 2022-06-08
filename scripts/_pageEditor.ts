@@ -32,11 +32,10 @@ declare global {
   function evaluateAllDirectives(): void;
 }
 
-type EditorState = Layout & { meta: Route["meta"] };
+type EditorState = { layout: Layout; meta: Route["meta"]; selected: string };
 type SelectedState = { componentId?: string };
 type PageState = {
   editor: EditorState;
-  selected: SelectedState;
 };
 
 async function createEditor() {
@@ -95,7 +94,7 @@ async function createEditor() {
       element: editorContainer.children[0],
       parent: "editor",
     });
-    closestElement && elementSelected(closestElement);
+    closestElement && elementSelected(closestElement, editorContainer);
   };
 }
 
@@ -124,7 +123,10 @@ function getParents(
 
 let editedElement: Element;
 
-function elementSelected(target: Element) {
+function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
+  let previousContent: string;
+
+  // TODO: Compare textContent of target and fo
   const focusOutListener = (e: Event) => {
     const inputElement = (e.target as HTMLElement);
 
@@ -136,18 +138,41 @@ function elementSelected(target: Element) {
 
     e.preventDefault();
 
+    target.removeAttribute("contenteditable");
+    target.removeEventListener("focusout", focusOutListener);
+
+    const newContent = inputElement.textContent;
+
+    if (previousContent === newContent) {
+      console.log("content didn't change");
+
+      return;
+    }
+
     console.log("content changed", inputElement.textContent);
+
+    const { editor: { layout, selected } } = getState<PageState>(
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      editorContainer.children[0],
+    );
+
+    console.log("editor state", layout, selected);
 
     // TODO: Handle content change. I.e. update the original data.
     // This is where having data-id comes in handy as the children
     // field needs to be replaced based on that
+    /*produce(body, (draftBody: Layout["body"]) => {
+      traverseComponents(editorState.body, (p) => {
+        if (p._id === componentId) {
+          match = p;
+        }
+      });
+    });*/
   };
 
   if (editedElement) {
     editedElement.classList.remove("border");
     editedElement.classList.remove("border-red-800");
-    editedElement.removeAttribute("contenteditable");
-    editedElement.removeEventListener("focusout", focusOutListener);
   }
 
   editedElement = target;
@@ -157,7 +182,9 @@ function elementSelected(target: Element) {
 
   // If element has children, enabling contenteditable on it will mess
   // up logic due to DOM change.
-  if (target.children.length === 0) {
+  if (target.children.length === 0 && target.textContent) {
+    previousContent = target.textContent;
+
     target.setAttribute("contenteditable", "true");
     target.addEventListener("focusout", focusOutListener);
 
@@ -255,7 +282,6 @@ function createEditorContainer(layout: Layout, route: Route) {
   editorsElement.setAttribute(
     "x-state",
     JSON.stringify({
-      // TODO: Make sure layout contains data-id's already!
       layout,
       meta: route.meta,
       selected: undefined,
