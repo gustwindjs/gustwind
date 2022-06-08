@@ -177,45 +177,10 @@
                           "children": "Children"
                         },
                         {
-                          "element": "ul",
+                          "element": "div",
                           "attributes": {
-                            "x-each": "Array.isArray(state.value.children) ? state.value.children : [state.value.children]"
-                          },
-                          "children": [
-                            {
-                              "element": "li",
-                              "attributes": {
-                                "x-template": "",
-                                "x-attr": "",
-                                "@class": "state.level > 0 && 'ml-2'"
-                              },
-                              "children": [
-                                {
-                                  "element": "div",
-                                  "class": "flex flex-row gap-2",
-                                  "children": [
-                                    {
-                                      "element": "h3",
-                                      "class": "font-bold",
-                                      "children": "Element"
-                                    },
-                                    {
-                                      "element": "span",
-                                      "attributes": {
-                                        "x": "state.value.element"
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "element": "ul",
-                                  "attributes": {
-                                    "x-recurse": "{ parentIndex: 0, value: 'state.value.children' }"
-                                  }
-                                }
-                              ]
-                            }
-                          ]
+                            "x-recurse": "Array.isArray(state.value.children) ? state.value.children : [{ element: state.value.children }]"
+                          }
                         }
                       ]
                     }
