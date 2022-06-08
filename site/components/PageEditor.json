@@ -77,61 +77,141 @@
               "children": [
                 {
                   "element": "li",
-                  "class": "my-2",
+                  "class": "flex flex-col gap-2",
                   "attributes": {
                     "x-template": "",
                     "x-attr": "",
-                    "onclick": "elementClicked(this, this.state.value._id)",
                     "@class": "state.level > 0 && 'ml-2'"
                   },
                   "children": [
                     {
                       "element": "div",
+                      "class": "flex flex-row gap-2",
                       "attributes": {
-                        "x-attr": "",
-                        "@class": "['border-l', 'border-gray-800', 'py-2', 'pl-2', state.value._id === selected.componentId && 'font-bold']"
+                        "x-if": "state.value.element"
                       },
                       "children": [
                         {
-                          "element": "label",
-                          "attributes": {
-                            "x": "state.value.element + ((typeof state.value.children === 'string') ? ' : ' + state.value.children : '')"
-                          }
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Element"
                         },
                         {
-                          "element": "div",
-                          "class": "ml-2",
+                          "element": "span",
+                          "attributes": {
+                            "x": "state.value.element"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "class": "flex flex-row gap-2",
+                      "attributes": {
+                        "x-if": "state.value.class"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Class"
+                        },
+                        {
+                          "element": "span",
+                          "attributes": {
+                            "x": "state.value.class"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "attributes": {
+                        "x-if": "state.value.props"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Props"
+                        },
+                        {
+                          "element": "ul",
+                          "attributes": {
+                            "x-each": "Object.entries(state.value.props)"
+                          },
                           "children": [
                             {
-                              "element": "label",
-                              "children": "Props"
-                            },
-                            {
-                              "element": "ul",
+                              "element": "li",
                               "attributes": {
-                                "x-each": "state.value.props ? Object.entries(state.value.props) : []"
+                                "x-template": ""
                               },
                               "children": [
                                 {
-                                  "element": "li",
+                                  "element": "span",
                                   "attributes": {
-                                    "x-template": ""
-                                  },
+                                    "x": "state.value[0]"
+                                  }
+                                },
+                                {
+                                  "element": "ul",
+                                  "attributes": {
+                                    "x-recurse": "{ parentIndex: 1, value: 'state.value[1]' }"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "element": "div",
+                      "attributes": {
+                        "x-if": "state.value.children"
+                      },
+                      "children": [
+                        {
+                          "element": "h2",
+                          "class": "font-bold",
+                          "children": "Children"
+                        },
+                        {
+                          "element": "ul",
+                          "attributes": {
+                            "x-each": "Array.isArray(state.value.children) ? state.value.children : [state.value.children]"
+                          },
+                          "children": [
+                            {
+                              "element": "li",
+                              "attributes": {
+                                "x-template": "",
+                                "x-attr": "",
+                                "@class": "state.level > 0 && 'ml-2'"
+                              },
+                              "children": [
+                                {
+                                  "element": "div",
+                                  "class": "flex flex-row gap-2",
                                   "children": [
+                                    {
+                                      "element": "h3",
+                                      "class": "font-bold",
+                                      "children": "Element"
+                                    },
                                     {
                                       "element": "span",
                                       "attributes": {
-                                        "x": "state.value[0]"
-                                      }
-                                    },
-                                    {
-                                      "element": "ul",
-                                      "attributes": {
-                                        "todo": "make recursion point two levels up in the render tree",
-                                        "x-recurse": "state.value[1]"
+                                        "x": "state.value.element"
                                       }
                                     }
                                   ]
+                                },
+                                {
+                                  "element": "ul",
+                                  "attributes": {
+                                    "x-recurse": "{ parentIndex: 0, value: 'state.value.children' }"
+                                  }
                                 }
                               ]
                             }
