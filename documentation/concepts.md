@@ -41,7 +41,7 @@ In the examples above, data coming from **data sources** has been connected, or 
 
 **dataSources/indexMarkdown.ts**
 
-[<file>](site/layouts/blogIndex.json)
+[<file>](site/dataSources/indexMarkdown.ts)
 
 Data sources are asynchronous functions returning objects. Then, when bound, you
 can access the content. This would be a good spot to connect to a database,
