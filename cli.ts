@@ -97,7 +97,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     const mode = "development";
     const projectPaths = projectMeta.paths;
     const initialCache = getCache();
-    watchAll({
+    await watchAll({
       cache: initialCache,
       mode,
       projectRoot: projectRoot,

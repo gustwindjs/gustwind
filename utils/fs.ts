@@ -58,18 +58,20 @@ function dirSync(p: string, extension?: string) {
   return ret;
 }
 
-async function watch(
-  directory: string,
-  extension: string,
-  handler: (path: string, event: Deno.FsEvent) => void,
-  debounceDelay = 200, // in ms
-) {
+async function watch({
+  directory,
+  handler,
+  debounceDelay,
+}: {
+  directory: string;
+  handler: (path: string, event: Deno.FsEvent) => void;
+  debounceDelay?: number;
+}) {
   const watcher = Deno.watchFs(directory);
 
   const trigger = async.debounce(
-    (event: Deno.FsEvent) =>
-      event.paths.forEach((p) => p.endsWith(extension) && handler(p, event)),
-    debounceDelay,
+    (event: Deno.FsEvent) => event.paths.forEach((p) => handler(p, event)),
+    debounceDelay || 200,
   );
 
   for await (const event of watcher) {
