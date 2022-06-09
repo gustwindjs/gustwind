@@ -73,7 +73,7 @@
               "visibleIf": "false",
               "element": "div",
               "attributes": {
-                "x": "'Selection id: ' + editor.selected"
+                "x": "'Selection id: ' + editor.selectionId"
               }
             },
             {
@@ -88,7 +88,7 @@
                   "attributes": {
                     "x-template": "",
                     "x-attr": "",
-                    "@class": "[state.level > 0 && 'ml-2', editor.selected === (state.value.attributes && state.value.attributes['data-id']) && 'underline']"
+                    "@class": "[state.level > 0 && 'ml-2', editor.selectionId === (state.value.attributes && state.value.attributes['data-id']) && 'underline']"
                   },
                   "children": [
                     {

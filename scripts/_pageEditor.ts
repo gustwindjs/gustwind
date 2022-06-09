@@ -3,27 +3,17 @@ import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
 import { draggable } from "../utils/draggable.ts";
 import breeze from "../breeze/index.ts";
 import * as breezeExtensions from "../breeze/extensions.ts";
-import { getPagePath } from "../utils/getPagePath.ts";
-import type {
-  Component,
-  Components,
-  DataContext,
-  Layout,
-  Route,
-} from "../types.ts";
+// import { getPagePath } from "../utils/getPagePath.ts";
+import type { Components, DataContext, Layout, Route } from "../types.ts";
 import type { Component as BreezeComponent } from "../breeze/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
-type EditorComponent = Component & {
-  _id?: string;
-};
-
 type StateName = "editor" | "selected";
 
-// TODO: Push these types to sidewind
+// TODO: Consume these types from sidewind somehow (pragma?)
 declare global {
   function getState<T>(element: HTMLElement): T;
   function setState<T>(
@@ -33,8 +23,11 @@ declare global {
   function evaluateAllDirectives(): void;
 }
 
-type EditorState = { layout: Layout; meta: Route["meta"]; selected: string };
-type SelectedState = { componentId?: string };
+type EditorState = {
+  layout: Layout;
+  meta: Route["meta"];
+  selectionId?: string;
+};
 type PageState = {
   editor: EditorState;
 };
@@ -62,6 +55,9 @@ async function createEditor() {
   );
   editorContainer.append(pageEditor);
 
+  const componentEditor = await createComponentEditor(components, context);
+  editorContainer.append(componentEditor);
+
   // TODO: Re-enable the side effect to update FS
   // Likely this should send patches, not whole structures
   //const updateElement = document.createElement("div");
@@ -86,12 +82,19 @@ async function createEditor() {
       return;
     }
 
-    setState({ selected: closestElement.getAttribute("data-id") }, {
+    const selectionId = closestElement.getAttribute("data-id");
+    const element = editorContainer.children[0];
+    const { editor: { layout } } = getState<PageState>(
+      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
+      element,
+    );
+
+    setState({ selectionId }, {
       // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
       element: editorContainer.children[0],
       parent: "editor",
     });
-    closestElement && elementSelected(closestElement, editorContainer);
+    closestElement && elementSelected(editorContainer, closestElement, layout);
   };
 }
 
@@ -120,7 +123,11 @@ function getParents(
 
 let editedElement: Element;
 
-function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
+function elementSelected(
+  editorContainer: HTMLElement,
+  target: HTMLElement,
+  layout: Layout,
+) {
   let previousContent: string;
   const selectionId = target.dataset.id;
 
@@ -158,13 +165,6 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
 
     console.log("content changed", newContent);
 
-    const element = editorContainer.children[0];
-
-    const { editor: { layout } } = getState<PageState>(
-      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      element,
-    );
-
     const nextLayout = produce(layout, (draftLayout: Layout) => {
       traverseComponents(draftLayout, (p) => {
         if (p?.attributes?.["data-id"] === selectionId) {
@@ -172,6 +172,8 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
         }
       });
     });
+
+    const element = editorContainer.children[0];
 
     setState({ layout: nextLayout }, {
       // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
@@ -203,40 +205,15 @@ function elementSelected(target: HTMLElement, editorContainer: HTMLElement) {
   }
 }
 
-function traverseComponents(
-  components: Component,
-  operation: (c: BreezeComponent, index: number) => void,
-) {
-  let i = 0;
-
-  function recurse(
-    components: EditorComponent | EditorComponent[],
-    operation: (c: BreezeComponent, index: number) => void,
-  ) {
-    if (Array.isArray(components)) {
-      components.forEach((p) => recurse(p, operation));
-    } else {
-      operation(components, i);
-      i++;
-
-      if (Array.isArray(components.children)) {
-        recurse(components.children, operation);
-      }
-
-      if (components.props) {
-        // @ts-ignore TODO: Figure out a better type for this
-        recurse(Object.values(components.props), operation);
-      }
-    }
-  }
-
-  recurse(components, operation);
-}
-
 const editorsId = "editors";
 
 function createEditorContainer(layout: Layout, route: Route) {
   let editorsElement = document.getElementById(editorsId);
+  const initialState: EditorState = {
+    layout,
+    meta: route.meta,
+    selectionId: undefined,
+  };
 
   editorsElement?.remove();
 
@@ -245,11 +222,7 @@ function createEditorContainer(layout: Layout, route: Route) {
   editorsElement.style.visibility = "visible";
   editorsElement.setAttribute(
     "x-state",
-    JSON.stringify({
-      layout,
-      meta: route.meta,
-      selected: undefined,
-    }),
+    JSON.stringify(initialState),
   );
   editorsElement.setAttribute("x-label", "editor");
 
@@ -267,6 +240,8 @@ function toggleEditorVisibility() {
     editorsElement.style.visibility === "visible" ? "hidden" : "visible";
 }
 
+// TODO: Restore
+/*
 function updateFileSystem(state: Layout) {
   const nextBody = produce(state.body, (draftBody: Layout) => {
     traverseComponents(draftBody, (p) => {
@@ -288,6 +263,7 @@ function updateFileSystem(state: Layout) {
   // @ts-ignore Figure out where to declare the global
   window.developmentSocket.send(JSON.stringify({ type: "update", payload }));
 }
+*/
 
 async function createPageEditor(
   components: Components,
@@ -434,20 +410,67 @@ function metaChanged(
   });
 }
 
+function contentChanged(
+  element: HTMLElement,
+  value: string,
+) {
+  const { editor: { layout, selectionId } } = getState<PageState>(
+    element,
+  );
+  const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
+    elements.forEach((e) => {
+      e.innerHTML = value;
+    });
+
+    p.children = value;
+  });
+
+  setState({ layout: nextLayout }, { element, parent: "editor" });
+}
+
+function classChanged(
+  element: HTMLElement,
+  value: string,
+) {
+  const { editor: { layout, selectionId } } = getState<PageState>(
+    element,
+  );
+
+  const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
+    if (Array.isArray(p)) {
+      return;
+    }
+
+    elements.forEach((e) => e.setAttribute("class", value));
+
+    // @ts-ignore This is fine
+    p.class = value;
+  });
+
+  setState({ layout: nextLayout }, {
+    element,
+    parent: "editor",
+  });
+}
+
 function elementChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { body }, selected: { componentId } } = getState<PageState>(
+  const { editor: { layout, selectionId } } = getState<PageState>(
     element,
   );
-  const nextBody = produceNextBody(body, componentId, (p, element) => {
-    element?.replaceWith(changeTag(element, value));
+  const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
+    if (Array.isArray(p)) {
+      return;
+    }
+
+    elements.forEach((e) => e.replaceWith(changeTag(e, value)));
 
     p.element = value;
   });
 
-  setState({ body: nextBody }, { element, parent: "editor" });
+  setState({ layout: nextLayout }, { element, parent: "editor" });
 }
 
 // https://stackoverflow.com/questions/2206892/jquery-convert-dom-element-to-different-type/59147202#59147202
@@ -469,82 +492,79 @@ function changeTag(element: HTMLElement, tag: string) {
   return newElem;
 }
 
-function produceNextBody(
-  body: Layout["body"],
-  componentId: EditorComponent["_id"],
-  matched: (p: EditorComponent, element: HTMLElement) => void,
+function produceNextLayout(
+  layout: Layout,
+  selectionId: EditorState["selectionId"],
+  matched: (p: BreezeComponent, elements: HTMLElement[]) => void,
 ) {
-  return produce(body, (draftBody: Layout["body"]) => {
-    traverseComponents(draftBody, (p, i) => {
-      if (p._id === componentId) {
+  return produce(layout, (draftLayout: Layout) => {
+    traverseComponents(draftLayout, (p) => {
+      if (p?.attributes?.["data-id"] === selectionId) {
         matched(
           p,
-          findElement(
-            document.body,
-            i,
-            body,
-          ) as HTMLElement,
+          Array.from(document.querySelectorAll(`*[data-id="${selectionId}"]`)),
         );
       }
     });
   });
 }
 
-function findElement(
-  element: Element | null,
-  index: number,
-  body: Layout["body"],
-): Element | null {
+function getSelectedComponent(editor: EditorState) {
+  const { layout, selectionId } = editor;
+
+  if (!selectionId) {
+    return {};
+  }
+
+  let ret;
+
+  traverseComponents(layout, (p) => {
+    if (p?.attributes?.["data-id"] === selectionId) {
+      ret = p;
+    }
+  });
+
+  return ret;
+}
+
+function traverseComponents(
+  components: Layout,
+  operation: (c: BreezeComponent, index: number) => void,
+) {
   let i = 0;
 
   function recurse(
-    element: Element | null | undefined,
-    body: Layout["body"] | Component,
-  ): Element | null {
-    if (!element) {
-      return null;
-    }
-
-    if (Array.isArray(body)) {
-      let elem: Element | null | undefined = element;
-
-      for (const p of body) {
-        const match = recurse(elem, p);
-
-        if (match) {
-          return match;
-        }
-
-        elem = elem?.nextElementSibling;
-      }
+    components: BreezeComponent | BreezeComponent[],
+    operation: (c: BreezeComponent, index: number) => void,
+  ) {
+    if (Array.isArray(components)) {
+      components.forEach((p) => recurse(p, operation));
     } else {
-      if (index === i) {
-        return element;
-      }
-
+      operation(components, i);
       i++;
 
-      if (Array.isArray(body.children)) {
-        const match = recurse(element.firstElementChild, body.children);
+      if (Array.isArray(components.children)) {
+        recurse(components.children, operation);
+      }
 
-        if (match) {
-          return match;
-        }
+      if (components.props) {
+        // @ts-ignore TODO: Figure out a better type for this
+        recurse(Object.values(components.props), operation);
       }
     }
-
-    return null;
   }
 
-  return recurse(element?.firstElementChild, body);
+  recurse(components, operation);
 }
 
 declare global {
   interface Window {
     createEditor: typeof createEditor;
+    classChanged: typeof classChanged;
+    contentChanged: typeof contentChanged;
+    getSelectedComponent: typeof getSelectedComponent;
     metaChanged: typeof metaChanged;
     elementChanged: typeof elementChanged;
-    updateFileSystem: typeof updateFileSystem;
   }
 }
 
@@ -552,9 +572,11 @@ if (!("Deno" in globalThis)) {
   console.log("Hello from the page editor");
 
   window.createEditor = createEditor;
+  window.classChanged = classChanged;
+  window.contentChanged = contentChanged;
+  window.getSelectedComponent = getSelectedComponent;
   window.metaChanged = metaChanged;
   window.elementChanged = elementChanged;
-  window.updateFileSystem = updateFileSystem;
 }
 
 export { createEditor, toggleEditorVisibility };
