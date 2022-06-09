@@ -9,7 +9,7 @@
   "scripts": [
     {
       "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@7.4.0/dist/sidewind.umd.production.min.js"
+      "src": "https://unpkg.com/sidewind@7.5.0/dist/sidewind.umd.production.min.js"
     }
   ],
   "paths": {

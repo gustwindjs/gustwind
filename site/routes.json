@@ -82,6 +82,14 @@
       }
     }
   },
+  "playground": {
+    "layout": "playgroundPage",
+    "meta": {
+      "title": "JSON playground",
+      "description": "Try JSON to HTML conversion on this page"
+    },
+    "scripts": ["playground"]
+  },
   "atom.xml": {
     "layout": "rssPage",
     "type": "xml",
