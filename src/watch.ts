@@ -145,8 +145,6 @@ async function watchRoutes(
   const inputsToWatch = getInputsToWatch(routeDefinition);
   inputsToWatch.push(path);
 
-  console.log(inputsToWatch);
-
   inputsToWatch.forEach((p) => {
     watch({
       directory: p,
