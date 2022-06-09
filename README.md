@@ -29,6 +29,13 @@ Gustwind accepts TypeScript, Markdown, JSON definitions including Twind (Tailwin
 
 It's possible to customize the input formats and it can load data from asynchronous sources, say GraphQL APIs, so it can be used with headless content APIs.
 
+## Example sites
+
+Given Gustwind is still in a rapid development phase, the APIs change every once in a while. The [source of this site](https://github.com/gustwindjs/gustwind) is the most up to date resource and I've listed other examples below:
+
+* [jster.net](https://jster.net/) - [Source](https://github.com/jsterlibs/website-v2)
+* [sidewind.js.org](https://sidewind.js.org/) - [Source](https://github.com/survivejs/sidewind)
+
 ## Earlier related work
 
 * [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.
