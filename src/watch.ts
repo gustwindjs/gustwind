@@ -166,7 +166,6 @@ function getInputsToWatch(routeDefinition: Route["routes"]) {
 
   let inputsToWatch: string[] = [];
 
-  // TODO: Do glob expansions for directories
   Object.values(routeDefinition).forEach(({ dataSources, expand, routes }) => {
     dataSources?.forEach(({ input }) => input && inputsToWatch.push(input));
     expand?.dataSources?.forEach(({ input }) =>
