@@ -15,6 +15,57 @@ Deno.test("attributes", async () => {
   );
 });
 
+Deno.test("gets attributes from context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { __href: "context.test", empty: "" },
+        children: "testing",
+      },
+      context: {
+        test: "test",
+      },
+    }),
+    '<a href="test" empty>testing</a>',
+  );
+});
+
+Deno.test("evaluates attributes from context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { "==href": "'foo' + context.test", empty: "" },
+        children: "testing",
+      },
+      context: {
+        test: "test",
+      },
+    }),
+    '<a href="footest" empty>testing</a>',
+  );
+});
+
+Deno.test("gives access to utilities and evaluates attributes from context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "a",
+        attributes: { "==href": "utilities.foo() + context.test", empty: "" },
+        children: "testing",
+      },
+      context: {
+        test: "test",
+      },
+      utilities: {
+        foo: () => "foo",
+      },
+    }),
+    '<a href="footest" empty>testing</a>',
+  );
+});
+
 Deno.test("undefined attributes", async () => {
   assertEquals(
     await breeze({

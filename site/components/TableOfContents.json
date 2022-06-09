@@ -23,9 +23,8 @@
               "attributes": {
                 "x-attr": "",
                 "x": "state.value.textContent",
-                "todo_@href": "state.value.parentElement?.attributes.href.value",
                 "@href": "state.value.parentElement?.attributes.href.value",
-                "@class": "[state.value.textContent === parent.closest.textContent && 'underline', state.tagName === 'H3' && 'ml-2']"
+                "==@class": "`[state.value.textContent === parent.closest.textContent && '` + utilities.tw('underline') + `', state.tagName === 'H3' && '` + utilities.tw('ml-2') + `']`"
               }
             }
           ]
