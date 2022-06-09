@@ -18,7 +18,7 @@ To give you a simple example of a component, consider the following example for 
 
 The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `classList`.
 
-A navigation component built on top of `link` could look like this:
+A navigation component built on top of `Link` could look like this:
 
 **components/Navigation.json**
 
