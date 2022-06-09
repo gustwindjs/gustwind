@@ -86,11 +86,11 @@ async function serveGustwind({
     DEBUG && console.log("Compiling project scripts");
 
     const customScripts = Object.fromEntries(
-      await Promise.all(
+      (await Promise.all(
         projectPaths.scripts.map(async (s) =>
           Object.entries(await compileScriptsToJavaScript(s))
         ),
-      ),
+      )).flat(),
     );
 
     cache.scripts = { ...cache.scripts, ...customScripts };
