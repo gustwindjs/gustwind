@@ -19,12 +19,18 @@
         {
           "element": "div",
           "class": "btn btn-blue",
-          "children": "Test button"
+          "children": "Test button",
+          "attributes": {
+            "onclick": "alert('You pressed button 1')"
+          }
         },
         {
           "element": "div",
           "class": "btn btn-muted",
-          "children": "Test button"
+          "children": "Test button",
+          "attributes": {
+            "onclick": "alert('You pressed button 2')"
+          }
         }
       ]
     }
