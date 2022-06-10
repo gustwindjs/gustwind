@@ -83,10 +83,9 @@ async function createEditor() {
     }
 
     const selectionId = closestElement.getAttribute("data-id");
-    const element = editorContainer.children[0];
     const { editor: { layout } } = getState<PageState>(
       // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      element,
+      editorContainer.children[0],
     );
 
     setState({ selectionId }, {
