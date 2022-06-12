@@ -154,6 +154,8 @@ async function serveGustwind({
         const matchedLayout = layouts[layoutName];
 
         if (matchedLayout) {
+          const route = matchedRoute; // TODO: Cache?
+
           let contentType = "text/html";
 
           // If there's cached data, use it instead. This fixes
@@ -162,7 +164,7 @@ async function serveGustwind({
           // the latest data.
           let layout = cache.layouts[layoutName] || matchedLayout;
 
-          if (showEditor) {
+          if (showEditor && route.type !== "xml") {
             // @ts-ignore TODO: Fix type
             layout = attachIds(layout);
           }
@@ -171,7 +173,7 @@ async function serveGustwind({
           const [html, context, css] = await renderPage({
             projectMeta,
             layout,
-            route: matchedRoute, // TODO: Cache?
+            route,
             mode,
             pagePath: "todo", // TODO: figure out the path of the page in the system
             twindSetup: cache.twindSetup,

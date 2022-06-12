@@ -83,7 +83,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
       let layout = layouts[route.layout];
 
-      if (showEditor) {
+      if (showEditor && route.type !== "xml") {
         // @ts-ignore: TODO: Fix type
         layout = attachIds(layout);
       }
