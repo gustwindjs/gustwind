@@ -71,9 +71,22 @@ async function createEditor() {
 
   evaluateAllDirectives();
 
+  const elementSelected = getElementSelected(editorContainer);
+
   // https://stackoverflow.com/questions/9012537/how-to-get-the-element-clicked-for-the-whole-document
   // Reference: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
-  globalThis.onclick = ({ target }) => {
+  globalThis.onclick = ({ target }) => elementSelected(target);
+
+  // Support ios as well
+  globalThis.ontouchstart = ({ target }) => elementSelected(target);
+}
+
+function getElementSelected(editorContainer: HTMLElement) {
+  return function elementSelected(target: EventTarget | null) {
+    if (!target) {
+      return;
+    }
+
     // TODO: How to know this is HTMLElement during runtime?
     const t = target as HTMLElement;
     const closestElement = t.hasAttribute("data-id")
@@ -96,7 +109,8 @@ async function createEditor() {
       element: editorContainer.children[0],
       parent: "editor",
     });
-    closestElement && elementSelected(editorContainer, closestElement, layout);
+    closestElement &&
+      validElementSelected(editorContainer, closestElement, layout);
   };
 }
 
@@ -104,7 +118,7 @@ async function createEditor() {
 // element for outlines.
 let editedElement: Element;
 
-function elementSelected(
+function validElementSelected(
   editorContainer: HTMLElement,
   target: HTMLElement,
   layout: Layout,
