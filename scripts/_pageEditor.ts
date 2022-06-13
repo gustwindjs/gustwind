@@ -99,16 +99,9 @@ function getElementSelected(editorContainer: HTMLElement) {
     }
 
     const selectionId = closestElement.getAttribute("data-id");
-    const { editor: { layout } } = getState<PageState>(
-      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      editorContainer.children[0],
-    );
+    const { editor: { layout } } = getState<PageState>(editorContainer);
 
-    setState({ selectionId }, {
-      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      element: editorContainer.children[0],
-      parent: "editor",
-    });
+    setState({ selectionId }, { element: editorContainer, parent: "editor" });
     closestElement &&
       validElementSelected(editorContainer, closestElement, layout);
   };
@@ -409,9 +402,7 @@ function contentChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { layout, selectionId } } = getState<PageState>(
-    element,
-  );
+  const { editor: { layout, selectionId } } = getState<PageState>(element);
   const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
     elements.forEach((e) => {
       e.innerHTML = value;
@@ -427,9 +418,7 @@ function classChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { layout, selectionId } } = getState<PageState>(
-    element,
-  );
+  const { editor: { layout, selectionId } } = getState<PageState>(element);
 
   const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
     if (Array.isArray(p)) {
@@ -452,9 +441,7 @@ function elementChanged(
   element: HTMLElement,
   value: string,
 ) {
-  const { editor: { layout, selectionId } } = getState<PageState>(
-    element,
-  );
+  const { editor: { layout, selectionId } } = getState<PageState>(element);
   const nextLayout = produceNextLayout(layout, selectionId, (p, elements) => {
     if (Array.isArray(p)) {
       return;
