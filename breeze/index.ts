@@ -113,7 +113,7 @@ async function render(
       element,
       attributes,
       await render({
-        // @ts-ignore TODO: What if get fails?
+        // @ts-expect-error TODO: What if get fails?
         component: get(
           { context, props: scopedProps },
           component["##children"],
@@ -187,7 +187,7 @@ async function evaluateFields(props?: Context, context?: Context) {
 
   return (await Promise.all(
     Object.entries(props).map(async ([k, v]) => {
-      // @ts-ignore This is ok
+      // @ts-expect-error This is ok
       if (isUndefined(v)) {
         return [];
       }
@@ -199,7 +199,7 @@ async function evaluateFields(props?: Context, context?: Context) {
         key = k.split("__").slice(1).join("__");
 
         // TODO: What if value isn't found?
-        // @ts-ignore This is ok
+        // @ts-expect-error This is ok
         value = get(context, v) as string;
       }
 
@@ -208,7 +208,7 @@ async function evaluateFields(props?: Context, context?: Context) {
         value = await evaluateExpression(v, context);
       }
 
-      // @ts-ignore This is ok
+      // @ts-expect-error This is ok
       if (isUndefined(value)) {
         return [];
       }
