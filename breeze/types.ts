@@ -3,6 +3,7 @@ type Context = Record<string, unknown>;
 type BaseComponent = {
   element?: string;
   __element?: string; // Getter binding
+  "==element"?: string; // Evaluation binding
 
   attributes?: Record<string, string | undefined>;
   props?: Context;

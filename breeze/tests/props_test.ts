@@ -124,6 +124,18 @@ Deno.test("bind element from props", async () => {
   );
 });
 
+Deno.test("evaluate element from props", async () => {
+  assertEquals(
+    await breeze({
+      component: { element: "Button" },
+      components: {
+        Button: { "==element": "props.element || 'a'", children: "demo" },
+      },
+    }),
+    "<a>demo</a>",
+  );
+});
+
 Deno.test("bind to context in a prop", async () => {
   assertEquals(
     await breeze({

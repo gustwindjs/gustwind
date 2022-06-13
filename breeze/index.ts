@@ -77,6 +77,14 @@ async function render(
       element) as string;
   }
 
+  if (component["==element"]) {
+    element = await evaluateExpression(component["==element"], {
+      props: scopedProps,
+      context,
+      utilities,
+    });
+  }
+
   const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
