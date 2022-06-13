@@ -1,11 +1,10 @@
 /// <reference lib="dom" />
-import { draggable } from "../utils/draggable.ts";
 import { getParents } from "../utils/getParents.ts";
 import { changeTag } from "../utils/changeTag.ts";
 import { traverseComponents } from "../utils/traverseComponents.ts";
 import breeze from "../breeze/index.ts";
 import * as breezeExtensions from "../breeze/extensions.ts";
-import { produce } from "../client-deps.ts";
+import { draggable, produce } from "../client-deps.ts";
 // import { getPagePath } from "../utils/getPagePath.ts";
 import type { Components, DataContext, Layout, Route } from "../types.ts";
 import type { Component as BreezeComponent } from "../breeze/types.ts";
