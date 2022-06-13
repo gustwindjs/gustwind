@@ -4,10 +4,16 @@ import { compileScript } from "../utils/compileScripts.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import { renderPage } from "./renderPage.ts";
 import type { Utilities } from "../breeze/types.ts";
-import type { BuildWorkerEvent, Components, ProjectMeta } from "../types.ts";
+import type {
+  BuildWorkerEvent,
+  Components,
+  DataSources,
+  ProjectMeta,
+} from "../types.ts";
 
 let id: string;
 let components: Components;
+let dataSources: DataSources;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
 let twindSetup: Record<string, unknown>;
@@ -26,6 +32,10 @@ self.onmessage = async (e) => {
 
     components = payload.components;
     projectMeta = payload.projectMeta;
+
+    dataSources = projectMeta.paths.dataSources
+      ? await import("file://" + projectMeta.paths.dataSources).then((m) => m)
+      : {};
 
     pageUtilities = projectMeta.paths.pageUtilities
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
@@ -62,6 +72,7 @@ self.onmessage = async (e) => {
       components,
       pageUtilities,
       pathname: url,
+      dataSources,
     });
 
     if (css) {

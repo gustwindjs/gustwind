@@ -59,12 +59,14 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     },
   });
 
+  const dataSources = projectPaths.dataSources
+    ? await import("file://" + projectPaths.dataSources).then((m) => m)
+    : {};
+
   const expandedRoutes = flattenRoutes(
     await expandRoutes({
-      mode: "production",
       routes,
-      dataSourcesPath: projectPaths.dataSources,
-      transformsPath: projectPaths.transforms,
+      dataSources,
     }),
   );
   const outputDirectory = projectPaths.output;
