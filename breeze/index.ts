@@ -55,6 +55,12 @@ async function render(
   }
 
   if (extensions) {
+    // Since for some declarations there are no extensions, it's possible
+    // that it would be more performant first to check if an extension would
+    // apply to the case (key check) than running the extension logic always.
+    //
+    // Doing this would mean needing a slightly more elaborate API for declaring
+    // extensions.
     for (const extension of extensions) {
       component = await extension(component, {
         props: scopedProps,
@@ -150,7 +156,9 @@ async function render(
     return toHTML(element, attributes);
   }
 
-  return toHTML();
+  // Maybe this has to become controllable if it should be possible to emit
+  // something else than a string.
+  return "";
 }
 
 function toHTML(
