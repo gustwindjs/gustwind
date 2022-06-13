@@ -15,7 +15,7 @@
   "paths": {
     "assets": "./assets",
     "components": "./site/components",
-    "dataSources": "./site/dataSources",
+    "dataSources": "./site/dataSources.ts",
     "layouts": "./site/layouts",
     "output": "./build",
     "routes": "./site/routes.json",

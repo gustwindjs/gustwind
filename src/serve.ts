@@ -38,11 +38,13 @@ async function serveGustwind({
   ]);
   cache.components = components;
 
+  const dataSources = projectPaths.dataSources
+    ? await import("file://" + projectPaths.dataSources).then((m) => m)
+    : {};
+
   cache.routes = await expandRoutes({
-    mode,
     routes,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
+    dataSources,
   });
 
   if (mode === "development") {
@@ -180,6 +182,7 @@ async function serveGustwind({
             components,
             pageUtilities: cache.pageUtilities,
             pathname,
+            dataSources,
           });
 
           if (matchedRoute.type === "xml") {

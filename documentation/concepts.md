@@ -39,20 +39,13 @@ In this case we add `/` to each slug.
 
 In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
 
-**dataSources/indexMarkdown.ts**
+**dataSources.ts**
 
-[<file>](site/dataSources/indexMarkdown.ts)
+[<file>](site/dataSources.ts)
 
-Data sources are asynchronous functions returning objects. Then, when bound, you
+Data sources are asynchronous functions returning arrays of objects. Then, when bound, you
 can access the content. This would be a good spot to connect to a database,
-external API, or local data. In this particular example, we check the given
-directory for Markdown files and then parse them.
-
-Due to the signature, to implement a file loader you could do this:
-
-```javascript
-export default Deno.readTextFile;
-```
+external API, or local data.
 
 ## Transforms
 

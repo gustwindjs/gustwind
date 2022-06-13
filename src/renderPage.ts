@@ -9,6 +9,7 @@ import {
 import type {
   Components,
   DataContext,
+  DataSources,
   Layout,
   Meta,
   Mode,
@@ -18,7 +19,6 @@ import type {
 import type { Utilities } from "../breeze/types.ts";
 import breeze from "../breeze/index.ts";
 import * as breezeExtensions from "../breeze/extensions.ts";
-import { getContext } from "./getContext.ts";
 import { evaluateFields } from "../utils/evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -37,6 +37,7 @@ async function renderPage({
   twindSetup,
   components,
   pathname,
+  dataSources,
 }: {
   projectMeta: ProjectMeta;
   layout: Layout;
@@ -47,13 +48,13 @@ async function renderPage({
   twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
+  dataSources: DataSources;
 }): Promise<[string, DataContext, string?]> {
   setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
 
   // @ts-ignore Somehow TS gets confused here
   stylesheet.reset();
 
-  const projectPaths = projectMeta.paths;
   const runtimeMeta: Meta = { built: (new Date()).toString() };
   const showEditor = projectMeta.features?.showEditorAlways;
 
@@ -75,17 +76,15 @@ async function renderPage({
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
-  const extraContext = await getContext(
-    mode,
-    projectPaths.dataSources,
-    projectPaths.transforms,
-    route.dataSources,
-  );
   const meta = {
     ...runtimeMeta,
     ...projectMeta.meta,
     ...route.meta,
   };
+  const dataSourceContext = await getDataSourceContext(
+    route.dataSources,
+    dataSources,
+  );
   const context = {
     projectMeta,
     meta: {
@@ -94,7 +93,7 @@ async function renderPage({
     },
     scripts: pageScripts,
     ...route.context,
-    ...extraContext,
+    ...dataSourceContext,
   };
 
   DEBUG && console.log("rendering a page with context", context);
@@ -132,6 +131,21 @@ async function renderPage({
   }
 
   return ["", {}];
+}
+
+async function getDataSourceContext(
+  dataSourceIds?: Route["dataSources"],
+  dataSources?: DataSources,
+) {
+  if (!dataSourceIds || !dataSources) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    await Promise.all(
+      dataSourceIds.map(async (id) => [id, await dataSources[id]()]),
+    ),
+  );
 }
 
 function injectStyleTag(markup: string, styleTag: string) {

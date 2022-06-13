@@ -1,13 +1,10 @@
 import { path as _path } from "../server-deps.ts";
 import { get } from "../utils/functional.ts";
-import { getContext } from "./getContext.ts";
-import type { Mode, Route } from "../types.ts";
+import type { DataSources, Route } from "../types.ts";
 
-async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
-  mode: Mode;
+async function expandRoutes({ routes, dataSources }: {
   routes: Route["routes"];
-  dataSourcesPath: string;
-  transformsPath: string;
+  dataSources: DataSources;
 }): Promise<NonNullable<Route["routes"]>> {
   if (!routes) {
     throw new Error("Missing route definition");
@@ -22,9 +19,7 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
     const [expandedUrl, expandedRoute] = await expandRoute({
       url,
       route,
-      mode,
-      dataSourcesPath,
-      transformsPath,
+      dataSources,
     });
 
     ret[expandedUrl] = expandedRoute;
@@ -40,68 +35,63 @@ async function expandRoutes({ mode, routes, dataSourcesPath, transformsPath }: {
 }
 
 async function expandRoute(
-  { url, route, mode, dataSourcesPath, transformsPath }: {
-    mode: Mode;
-    dataSourcesPath: string;
-    transformsPath: string;
+  { url, route, dataSources }: {
     url: string;
     route: Route;
+    dataSources: DataSources;
   },
 ): Promise<[string, Route]> {
   let ret = { ...route };
 
   if (route.expand) {
-    const { dataSources, matchBy } = route.expand;
+    const { matchBy } = route.expand;
 
     if (!matchBy) {
       throw new Error("Tried to matchBy a path that is not matchable");
     }
 
-    if (!dataSources) {
-      throw new Error("Missing dataSources");
-    }
-
-    const pageData = await getContext(
-      mode,
-      dataSourcesPath,
-      transformsPath,
-      dataSources,
-    );
-    const dataSource = pageData[matchBy.dataSource];
+    const dataSource = dataSources[matchBy.dataSource];
 
     if (!dataSource) {
       throw new Error("Missing data source");
     }
 
+    if (typeof dataSource !== "function") {
+      throw new Error("Data source is not a function");
+    }
+
     const expandedRoutes: Record<string, Route> = {};
+    const dataSourceResults = await dataSource();
 
     if (matchBy.collection) {
-      (Array.isArray(dataSource)
-        ? dataSource
-        : Object.values(dataSource[matchBy.collection])).forEach((match) => {
-          const u = get(match, matchBy.slug);
+      (Array.isArray(dataSourceResults)
+        ? dataSourceResults
+        : Object.values(dataSourceResults[matchBy.collection])).forEach(
+          (match) => {
+            const u = get(match, matchBy.slug) as string;
 
-          if (!u) {
-            throw new Error(
-              `Route ${matchBy.slug} is missing from ${
-                JSON.stringify(match, null, 2)
-              } for ${matchBy.collection} within ${url} route`,
-            );
-          }
+            if (!u) {
+              throw new Error(
+                `Route ${matchBy.slug} is missing from ${
+                  JSON.stringify(match, null, 2)
+                } for ${matchBy.collection} within ${url} route`,
+              );
+            }
 
-          // @ts-ignore route.expand exists by now for sure
-          const { meta, layout } = route.expand;
+            // @ts-ignore route.expand exists by now for sure
+            const { meta, layout } = route.expand;
 
-          expandedRoutes[u] = {
-            meta,
-            layout,
-            context: route.context ? { ...route.context, match } : { match },
-            url: u,
-          };
-        });
+            expandedRoutes[u] = {
+              meta,
+              layout,
+              context: route.context ? { ...route.context, match } : { match },
+              url: u,
+            };
+          },
+        );
     } else {
       // TODO: Give a warning if dataSource isn't an array
-      Array.isArray(dataSource) && dataSource.forEach((match) => {
+      Array.isArray(dataSourceResults) && dataSourceResults.forEach((match) => {
         const u = get(match, matchBy.slug);
 
         if (!u) {

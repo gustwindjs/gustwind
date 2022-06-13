@@ -38,24 +38,16 @@ type Route = {
   meta: Meta;
   scripts?: Scripts;
   routes?: Record<string, Route>;
-  dataSources?: DataSource[];
+  dataSources?: string[];
   expand?: {
-    dataSources?: DataSource[];
     matchBy?: { dataSource: string; collection?: string; slug: string };
   };
   // These are attached later
   context?: DataContext;
   url?: string;
 };
-type DataSource = {
-  id: string;
-  operation: string;
-  input: string;
-  transformWith: Transform[];
-  // The only valid values are names of other operations here
-  dependsOn?: string[];
-};
 type Scripts = { type: string; src: string }[];
+type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
   port: number;
@@ -129,7 +121,7 @@ export type {
   Component,
   Components,
   DataContext,
-  DataSource,
+  DataSources,
   Layout,
   Library,
   MarkdownWithFrontmatter,
