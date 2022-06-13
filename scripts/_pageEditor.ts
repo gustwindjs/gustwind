@@ -1,6 +1,9 @@
 /// <reference lib="dom" />
 import { produce } from "https://cdn.skypack.dev/immer@9.0.6?min";
 import { draggable } from "../utils/draggable.ts";
+import { getParents } from "../utils/getParents.ts";
+import { changeTag } from "../utils/changeTag.ts";
+import { traverseComponents } from "../utils/traverseComponents.ts";
 import breeze from "../breeze/index.ts";
 import * as breezeExtensions from "../breeze/extensions.ts";
 // import { getPagePath } from "../utils/getPagePath.ts";
@@ -97,29 +100,8 @@ async function createEditor() {
   };
 }
 
-// Adapted from Sidewind
-function getParents(
-  element: Element,
-  attribute: string,
-) {
-  const ret = [];
-  let parent = element.parentElement;
-
-  while (true) {
-    if (!parent) {
-      break;
-    }
-
-    if (parent.hasAttribute(attribute)) {
-      ret.push(parent);
-    }
-
-    parent = parent.parentElement;
-  }
-
-  return ret;
-}
-
+// This is likely a bad coupling. It would be better to maintain a separate DOM
+// element for outlines.
 let editedElement: Element;
 
 function elementSelected(
@@ -472,25 +454,6 @@ function elementChanged(
   setState({ layout: nextLayout }, { element, parent: "editor" });
 }
 
-// https://stackoverflow.com/questions/2206892/jquery-convert-dom-element-to-different-type/59147202#59147202
-function changeTag(element: HTMLElement, tag: string) {
-  // prepare the elements
-  const newElem = document.createElement(tag);
-  const clone = element.cloneNode(true);
-
-  // move the children from the clone to the new element
-  while (clone.firstChild) {
-    newElem.appendChild(clone.firstChild);
-  }
-
-  // copy the attributes
-  // @ts-ignore Fine like this
-  for (const attr of clone.attributes) {
-    newElem.setAttribute(attr.name, attr.value);
-  }
-  return newElem;
-}
-
 function produceNextLayout(
   layout: Layout,
   selectionId: EditorState["selectionId"],
@@ -524,36 +487,6 @@ function getSelectedComponent(editor: EditorState) {
   });
 
   return ret;
-}
-
-function traverseComponents(
-  components: Layout,
-  operation: (c: BreezeComponent, index: number) => void,
-) {
-  let i = 0;
-
-  function recurse(
-    components: BreezeComponent | BreezeComponent[],
-    operation: (c: BreezeComponent, index: number) => void,
-  ) {
-    if (Array.isArray(components)) {
-      components.forEach((p) => recurse(p, operation));
-    } else {
-      operation(components, i);
-      i++;
-
-      if (Array.isArray(components.children)) {
-        recurse(components.children, operation);
-      }
-
-      if (components.props) {
-        // @ts-ignore TODO: Figure out a better type for this
-        recurse(Object.values(components.props), operation);
-      }
-    }
-  }
-
-  recurse(components, operation);
 }
 
 declare global {
