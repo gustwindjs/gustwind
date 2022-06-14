@@ -124,6 +124,20 @@ function validElementSelected(
     return;
   }
 
+  const onInputListener = (e: Event) => {
+    if (!e || !e.target) {
+      return;
+    }
+
+    updateElementContent(
+      editorContainer,
+      layout,
+      selectionId,
+      e.target as HTMLElement,
+      previousContent,
+    );
+  };
+
   const focusOutListener = (e: Event) => {
     const inputElement = (e.target as HTMLElement);
 
@@ -136,37 +150,8 @@ function validElementSelected(
     e.preventDefault();
 
     target.removeAttribute("contenteditable");
+    target.removeEventListener("input", onInputListener);
     target.removeEventListener("focusout", focusOutListener);
-
-    const newContent = inputElement.textContent;
-
-    if (previousContent === newContent) {
-      console.log("content didn't change");
-
-      return;
-    }
-
-    if (typeof newContent !== "string") {
-      return;
-    }
-
-    console.log("content changed", newContent);
-
-    const nextLayout = produce(layout, (draftLayout: Layout) => {
-      traverseComponents(draftLayout, (p) => {
-        if (p?.attributes?.["data-id"] === selectionId) {
-          p.children = newContent;
-        }
-      });
-    });
-
-    const element = editorContainer.children[0];
-
-    setState({ layout: nextLayout }, {
-      // @ts-ignore: TODO: Allow passing editorContainer here (sidewind needs a fix)
-      element,
-      parent: "editor",
-    });
   };
 
   if (editedElement) {
@@ -186,10 +171,48 @@ function validElementSelected(
 
     target.setAttribute("contenteditable", "true");
     target.addEventListener("focusout", focusOutListener);
+    target.addEventListener("input", onInputListener);
 
     // @ts-ignore TODO: Maybe target has to become HTMLElement?
     target.focus();
   }
+}
+
+function updateElementContent(
+  editorContainer: HTMLElement,
+  layout: EditorState["layout"],
+  selectionId: EditorState["selectionId"],
+  htmlElement: HTMLElement,
+  previousContent: string,
+) {
+  const newContent = htmlElement.textContent;
+
+  if (previousContent === newContent) {
+    console.log("content didn't change");
+
+    return;
+  }
+
+  if (typeof newContent !== "string") {
+    return;
+  }
+
+  console.log("content changed", newContent);
+
+  const nextLayout = produce(layout, (draftLayout: Layout) => {
+    traverseComponents(draftLayout, (p) => {
+      if (p?.attributes?.["data-id"] === selectionId) {
+        p.children = newContent;
+      }
+    });
+  });
+
+  const element = editorContainer.children[0] as HTMLElement;
+
+  setState({ layout: nextLayout }, {
+    element,
+    parent: "editor",
+  });
 }
 
 const editorsId = "editors";
