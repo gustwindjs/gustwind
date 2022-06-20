@@ -7,7 +7,14 @@ import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
+import type {
+  Component,
+  DataSources,
+  Layout,
+  Mode,
+  ProjectMeta,
+  Route,
+} from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -16,11 +23,13 @@ async function serveGustwind({
   projectRoot,
   mode,
   initialCache,
+  dataSources,
 }: {
   projectMeta: ProjectMeta;
   projectRoot: string;
   mode: Mode;
   initialCache?: ServeCache;
+  dataSources: DataSources;
 }) {
   // The cache is populated based on an external source (web socket, fs). If there's
   // something in the cache, then the routing logic will refer to it instead of
@@ -36,12 +45,8 @@ async function serveGustwind({
     getDefinitions<Layout>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
+
   cache.components = components;
-
-  const dataSources = projectPaths.dataSources
-    ? await import("file://" + projectPaths.dataSources).then((m) => m)
-    : {};
-
   cache.routes = await expandRoutes({
     routes,
     dataSources,
@@ -326,12 +331,6 @@ async function compileScriptsToJavaScript(path: string) {
     // above might throw
     return {};
   }
-}
-
-if (import.meta.main) {
-  const projectMeta = await getJson<ProjectMeta>("./meta.json");
-
-  serveGustwind({ projectMeta, projectRoot: Deno.cwd(), mode: "development" });
 }
 
 export { serveGustwind };

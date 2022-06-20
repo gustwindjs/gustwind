@@ -130,11 +130,18 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
         initialCache.twindSetup,
       );
 
+    const dataSources = projectPaths.dataSources
+      ? await import(
+        "file://" + path.join(projectRoot, projectPaths.dataSources)
+      ).then((m) => m)
+      : {};
+
     const serve = await serveGustwind({
       projectMeta,
       projectRoot,
       mode,
       initialCache,
+      dataSources,
     });
 
     const port = projectMeta.port;
