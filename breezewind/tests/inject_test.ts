@@ -1,11 +1,10 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { nanoid } from "https://esm.sh/nanoid@4.0.0";
 
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
 Deno.test("injects an id for a component", async () => {
-  const id = nanoid();
+  const id = "123";
 
   assertEquals(
     await breeze({
@@ -25,7 +24,7 @@ Deno.test("injects an id for a component", async () => {
 });
 
 Deno.test("injects ids for multiple component", async () => {
-  const id = nanoid();
+  const id = "123";
 
   assertEquals(
     await breeze({

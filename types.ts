@@ -1,4 +1,4 @@
-import type { Component as BreezeComponent } from "./breeze/types.ts";
+import type { Component as BreezeComponent } from "./breezewind/types.ts";
 
 // This should match with ./transforms
 type Transform = "markdown" | "reverse";

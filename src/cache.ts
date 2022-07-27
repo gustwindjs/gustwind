@@ -1,5 +1,5 @@
 import type { Component, DataContext, Layout, Route } from "../types.ts";
-import type { Utilities } from "../breeze/types.ts";
+import type { Utilities } from "../breezewind/types.ts";
 
 type ServeCache = {
   contexts: Record<string, DataContext>;

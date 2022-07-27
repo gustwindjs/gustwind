@@ -16,9 +16,9 @@ import type {
   ProjectMeta,
   Route,
 } from "../types.ts";
-import type { Utilities } from "../breeze/types.ts";
-import breeze from "../breeze/index.ts";
-import * as breezeExtensions from "../breeze/extensions.ts";
+import type { Utilities } from "../breezewind/types.ts";
+import breeze from "../breezewind/index.ts";
+import * as breezeExtensions from "../breezewind/extensions.ts";
 import { evaluateFields } from "../utils/evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";

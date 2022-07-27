@@ -1,5 +1,5 @@
-import breeze from "../../breeze/index.ts";
-import * as breezeExtensions from "../../breeze/extensions.ts";
+import breeze from "../../breezewind/index.ts";
+import * as breezeExtensions from "../../breezewind/extensions.ts";
 
 async function compile(input: string) {
   try {

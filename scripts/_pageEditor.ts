@@ -2,12 +2,12 @@
 import { getParents } from "../utils/getParents.ts";
 import { changeTag } from "../utils/changeTag.ts";
 import { traverseComponents } from "../utils/traverseComponents.ts";
-import breeze from "../breeze/index.ts";
-import * as breezeExtensions from "../breeze/extensions.ts";
+import breeze from "../breezewind/index.ts";
+import * as breezeExtensions from "../breezewind/extensions.ts";
 import { draggable, produce } from "../client-deps.ts";
 // import { getPagePath } from "../utils/getPagePath.ts";
 import type { Components, DataContext, Layout, Route } from "../types.ts";
-import type { Component as BreezeComponent } from "../breeze/types.ts";
+import type { Component as BreezeComponent } from "../breezewind/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";

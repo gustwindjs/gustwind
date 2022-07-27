@@ -3,7 +3,7 @@
 import { compileScript } from "../utils/compileScripts.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import { renderPage } from "./renderPage.ts";
-import type { Utilities } from "../breeze/types.ts";
+import type { Utilities } from "../breezewind/types.ts";
 import type {
   BuildWorkerEvent,
   Components,
