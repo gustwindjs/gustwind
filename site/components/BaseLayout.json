@@ -3,7 +3,7 @@
     "element": "!DOCTYPE",
     "attributes": {
       "html": "",
-      "language": "context.meta.language"
+      "__language": "context.meta.language"
     },
     "closingCharacter": ""
   },
