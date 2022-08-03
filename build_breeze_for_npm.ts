@@ -1,26 +1,28 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.28.0/mod.ts";
 import { path } from "./server-deps.ts";
 
-async function buildForNpm(outDir: string, version: string) {
+async function buildForNpm(name: string, version: string) {
   if (!version) {
     console.error("Missing version!");
 
     return;
   }
 
+  const outDir = `./${name}/npm`;
+
   await emptyDir(outDir);
 
   await build({
-    entryPoints: ["./breezewind/index.ts", {
+    entryPoints: [`./${name}/index.ts`, {
       name: "./extensions",
-      path: "./breezewind/extensions.ts",
+      path: `./${name}/extensions.ts`,
     }],
     outDir,
     shims: {
       deno: true,
     },
     package: {
-      name: "breezewind",
+      name,
       version,
       description: "Simple and extensible JSON based templating engine",
       license: "MIT",
@@ -37,7 +39,7 @@ async function buildForNpm(outDir: string, version: string) {
   });
 
   Deno.copyFileSync("LICENSE", path.join(outDir, "LICENSE"));
-  Deno.copyFileSync("./breezewind/README.md", path.join(outDir, "README.md"));
+  Deno.copyFileSync(`./${name}/README.md`, path.join(outDir, "README.md"));
 }
 
-buildForNpm("./breezewind/npm", Deno.args[0]);
+buildForNpm("breezewind", Deno.args[0]);
