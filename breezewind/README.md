@@ -6,8 +6,8 @@ Breezewind is a simple templating engine used by Gustwind. It's designed to be f
 
 The API is available through `breezewind` and `breezewind/extensions`. For now, it's best to examine the tests and this project for exact usage as some details may change until the API is considered stable.
 
-## Publishing
+## Publishing to npm
 
-1. `vr build:breezewind <VERSION>` where `VERSION` is `0.1.0` for example
+1. `vr build:breezewind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd breezewind/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)

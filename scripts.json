@@ -13,8 +13,11 @@
     "build": {
       "cmd": "deno run --no-check --unstable ./cli.ts -b"
     },
-    "build:breezewind": {
+    "build:breezewind-for-npm": {
       "cmd": "deno run -A build_breeze_for_npm.ts"
+    },
+    "build:gustwind-for-npm": {
+      "cmd": "deno run -A build_gustwind_for_npm.ts"
     },
     "watch:build": {
       "cmd": "deno run --no-check --unstable ./cli.ts -b",

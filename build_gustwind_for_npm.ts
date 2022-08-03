@@ -13,18 +13,16 @@ async function buildForNpm(name: string, version: string) {
   await emptyDir(outDir);
 
   await build({
-    entryPoints: [`./${name}/index.ts`, {
-      name: "./extensions",
-      path: `./${name}/extensions.ts`,
-    }],
+    entryPoints: [`./cli.ts`],
     outDir,
     shims: {
       deno: true,
     },
+    test: false,
     package: {
       name,
       version,
-      description: "Simple and extensible JSON based templating engine",
+      description: "JSON oriented site generator",
       license: "MIT",
       repository: {
         type: "git",
@@ -33,13 +31,14 @@ async function buildForNpm(name: string, version: string) {
       bugs: {
         url: "https://github.com/survivejs/gustwind/issues",
       },
+      bin: "./src/cli.js",
       homepage: "https://gustwind.js.org/",
-      keywords: ["templating", "json", "templating-engine"],
+      keywords: ["ssg", "json", "site-generation", "static-site-generator"],
     },
   });
 
   Deno.copyFileSync("LICENSE", path.join(outDir, "LICENSE"));
-  Deno.copyFileSync(`./${name}/README.md`, path.join(outDir, "README.md"));
+  Deno.copyFileSync("README.md", path.join(outDir, "README.md"));
 }
 
-buildForNpm("breezewind", Deno.args[0]);
+buildForNpm("gustwind", Deno.args[0]);
