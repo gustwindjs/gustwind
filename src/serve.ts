@@ -163,7 +163,7 @@ async function serveGustwind({
         if (matchedLayout) {
           const route = matchedRoute; // TODO: Cache?
 
-          let contentType = "text/html";
+          let contentType = "text/html; charset=utf-8";
 
           // If there's cached data, use it instead. This fixes
           // the case in which there was an update over web socket and
