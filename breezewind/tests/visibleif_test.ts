@@ -3,9 +3,9 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
-Deno.test("visibleIf causes empty render", async () => {
+Deno.test("visibleIf causes empty render", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: { element: "span", visibleIf: [] },
       extensions: [extensions.visibleIf],
     }),
@@ -13,9 +13,9 @@ Deno.test("visibleIf causes empty render", async () => {
   );
 });
 
-Deno.test("visibleIf shows element based on context", async () => {
+Deno.test("visibleIf shows element based on context", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: {
         element: "span",
         visibleIf: [{ context: "context", property: "visible" }],
@@ -27,9 +27,9 @@ Deno.test("visibleIf shows element based on context", async () => {
   );
 });
 
-Deno.test("visibleIf hides element based on context", async () => {
+Deno.test("visibleIf hides element based on context", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: {
         element: "span",
         visibleIf: [{ context: "context", property: "visible" }],
@@ -41,9 +41,9 @@ Deno.test("visibleIf hides element based on context", async () => {
   );
 });
 
-Deno.test("visibleIf shows element based on prop", async () => {
+Deno.test("visibleIf shows element based on prop", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: {
         element: "span",
         props: { foo: true },
@@ -55,9 +55,9 @@ Deno.test("visibleIf shows element based on prop", async () => {
   );
 });
 
-Deno.test("visibleIf hides element based on prop", async () => {
+Deno.test("visibleIf hides element based on prop", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: {
         element: "span",
         props: { foo: false },
@@ -69,9 +69,9 @@ Deno.test("visibleIf hides element based on prop", async () => {
   );
 });
 
-Deno.test("visibleIf shows element based on context and prop", async () => {
+Deno.test("visibleIf shows element based on context and prop", () => {
   assertEquals(
-    await breeze({
+    breeze({
       component: {
         element: "span",
         props: { foo: true },

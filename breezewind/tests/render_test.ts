@@ -12,7 +12,10 @@ Deno.test("component with object props and rendering", async () => {
       components: {
         BaseLayout: {
           element: "body",
-          "##children": "props.content",
+          children: {
+            context: "props",
+            property: "content",
+          },
         },
       },
     }),
@@ -31,7 +34,10 @@ Deno.test("component with array props and rendering", async () => {
         BaseLayout: [
           {
             element: "body",
-            "##children": "props.content",
+            children: {
+              context: "props",
+              property: "content",
+            },
           },
         ],
       },
@@ -54,7 +60,10 @@ Deno.test("component with array props, rendering, and nested usage", async () =>
             children: [
               {
                 element: "body",
-                "##children": "props.content",
+                children: {
+                  context: "props",
+                  property: "content",
+                },
               },
             ],
           },
@@ -70,7 +79,10 @@ Deno.test("allow rendering with context", async () => {
     await breeze({
       component: {
         element: "div",
-        "##children": "context.demo",
+        children: {
+          context: "context",
+          property: "demo",
+        },
       },
       context: { demo: { element: "span", children: "foobar" } },
     }),
@@ -84,7 +96,10 @@ Deno.test("allow rendering with props", async () => {
       component: {
         element: "div",
         props: { demo: { element: "span", children: "foobar" } },
-        "##children": "props.demo",
+        children: {
+          context: "props",
+          property: "demo",
+        },
       },
     }),
     "<div><span>foobar</span></div>",
@@ -101,7 +116,10 @@ Deno.test("allow rendering with props in a component", async () => {
       components: {
         Test: {
           element: "div",
-          "##children": "props.demo",
+          children: {
+            context: "props",
+            property: "demo",
+          },
         },
       },
     }),

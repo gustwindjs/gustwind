@@ -9,7 +9,10 @@ Deno.test("allow customizing closing character", async () => {
         element: "!DOCTYPE",
         attributes: {
           html: "",
-          __language: "context.meta.language",
+          language: {
+            context: "context",
+            property: "meta.language",
+          },
         },
         closingCharacter: "",
       },

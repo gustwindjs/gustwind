@@ -5,7 +5,10 @@ import breeze from "../index.ts";
 Deno.test("context binding", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __children: "context.test" },
+      component: {
+        element: "span",
+        children: { context: "context", property: "test" },
+      },
       context: { test: "foobar" },
     }),
     "<span>foobar</span>",
@@ -15,7 +18,10 @@ Deno.test("context binding", async () => {
 Deno.test("nested context binding", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", __children: "context.meta.title" },
+      component: {
+        element: "span",
+        children: { context: "context", property: "meta.title" },
+      },
       context: { meta: { title: "foobar" } },
     }),
     "<span>foobar</span>",
@@ -25,7 +31,10 @@ Deno.test("nested context binding", async () => {
 Deno.test("nested context binding within an array", async () => {
   assertEquals(
     await breeze({
-      component: [{ element: "span", __children: "context.meta.title" }],
+      component: [{
+        element: "span",
+        children: { context: "context", property: "meta.title" },
+      }],
       context: { meta: { title: "foobar" } },
     }),
     "<span>foobar</span>",
@@ -41,7 +50,10 @@ Deno.test("nested context binding within components", async () => {
           element: "html",
           children: [{ element: "MetaFields" }],
         }],
-        MetaFields: [{ element: "span", __children: "context.meta.title" }],
+        MetaFields: [{
+          element: "span",
+          children: { context: "context", property: "meta.title" },
+        }],
       },
       context: { meta: { title: "foobar" } },
     }),
@@ -52,7 +64,7 @@ Deno.test("nested context binding within components", async () => {
 Deno.test("context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { __children: "context.test" },
+      component: { children: { context: "context", property: "test" } },
       context: { test: "foobar" },
     }),
     "foobar",
@@ -62,7 +74,7 @@ Deno.test("context binding without element", async () => {
 Deno.test("nested context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { __children: "context.test.test" },
+      component: { children: { context: "context", property: "test.test" } },
       context: { test: { test: "foobar" } },
     }),
     "foobar",
@@ -72,8 +84,17 @@ Deno.test("nested context binding without element", async () => {
 Deno.test("context evaluation", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", "==children": "context.test + 'bar'" },
+      component: {
+        element: "span",
+        children: {
+          utility: "concat",
+          parameters: [{ context: "context", property: "test" }, "bar"],
+        },
+      },
       context: { test: "foo" },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     "<span>foobar</span>",
   );
@@ -84,9 +105,14 @@ Deno.test("async context evaluation", async () => {
     await breeze({
       component: {
         element: "span",
-        "==children": "Promise.resolve('foobar')",
+        children: {
+          utility: "demo",
+        },
       },
       context: { test: "bar" },
+      utilities: {
+        demo: () => Promise.resolve("foobar"),
+      },
     }),
     "<span>foobar</span>",
   );
@@ -95,8 +121,17 @@ Deno.test("async context evaluation", async () => {
 Deno.test("nested context evaluation", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", "==children": "context.test.test + 'bar'" },
+      component: {
+        element: "span",
+        children: {
+          utility: "concat",
+          parameters: [{ context: "context", property: "test.test" }, "bar"],
+        },
+      },
       context: { test: { test: "foo" } },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     "<span>foobar</span>",
   );
@@ -105,8 +140,16 @@ Deno.test("nested context evaluation", async () => {
 Deno.test("context evaluation without element", async () => {
   assertEquals(
     await breeze({
-      component: { "==children": "context.test + 'bar'" },
+      component: {
+        children: {
+          utility: "concat",
+          parameters: [{ context: "context", "property": "test" }, "bar"],
+        },
+      },
       context: { test: "foo" },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     "foobar",
   );
@@ -115,8 +158,16 @@ Deno.test("context evaluation without element", async () => {
 Deno.test("nested context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { "==children": "context.test.test + 'bar'" },
+      component: {
+        children: {
+          utility: "concat",
+          parameters: [{ context: "context", property: "test.test" }, "bar"],
+        },
+      },
       context: { test: { test: "foo" } },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     "foobar",
   );
@@ -127,7 +178,7 @@ Deno.test("context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { __title: "context.test" },
+        attributes: { title: { context: "context", property: "test" } },
         children: "test",
       },
       context: { test: "foobar" },
@@ -141,7 +192,7 @@ Deno.test("nested context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { __title: "context.test.test" },
+        attributes: { title: { context: "context", property: "test.test" } },
         children: "test",
       },
       context: { test: { test: "foobar" } },
@@ -155,10 +206,18 @@ Deno.test("context evaluation for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { "==title": "context.test + 'bar'" },
+        attributes: {
+          title: {
+            utility: "concat",
+            parameters: [{ context: "context", property: "test" }, "bar"],
+          },
+        },
         children: "test",
       },
       context: { test: "foo" },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     '<span title="foobar">test</span>',
   );
@@ -169,10 +228,15 @@ Deno.test("async context evaluation for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { "==title": "Promise.resolve('foobar')" },
+        attributes: {
+          title: { utility: "demo" },
+        },
         "children": "test",
       },
       context: { test: "bar" },
+      utilities: {
+        demo: () => Promise.resolve("foobar"),
+      },
     }),
     '<span title="foobar">test</span>',
   );
@@ -184,11 +248,17 @@ Deno.test("nested context evaluation for attributes", async () => {
       component: {
         element: "span",
         attributes: {
-          "==title": "context.test.test + 'bar'",
+          title: {
+            utility: "concat",
+            parameters: [{ context: "context", property: "test.test" }, "bar"],
+          },
         },
         children: "test",
       },
       context: { test: { test: "foo" } },
+      utilities: {
+        concat: (a: string, b: string) => `${a}${b}`,
+      },
     }),
     '<span title="foobar">test</span>',
   );
@@ -199,9 +269,12 @@ Deno.test("async context evaluation for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        "==children": "Promise.resolve('foobar')",
+        children: { utility: "demo" },
       },
       context: { test: "bar" },
+      utilities: {
+        demo: () => Promise.resolve("foobar"),
+      },
     }),
     "<span>foobar</span>",
   );
@@ -210,11 +283,14 @@ Deno.test("async context evaluation for attributes", async () => {
       component: {
         element: "span",
         attributes: {
-          "==title": "Promise.resolve('foobar')",
+          title: { utility: "demo" },
         },
         children: "test",
       },
       context: { test: { test: "foo" } },
+      utilities: {
+        demo: () => Promise.resolve("foobar"),
+      },
     }),
     '<span title="foobar">test</span>',
   );
