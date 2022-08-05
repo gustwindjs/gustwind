@@ -24,9 +24,15 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
       component: {
         element: "span",
         classList: {
-          "font-bold": "context.href === context.pathname",
-          "mx-2": "context.href === context.pathname",
-          "my-2": "context.href === 'bar'",
+          "font-bold": [
+            { context: "context", property: "href" },
+            { context: "context", property: "pathname" },
+          ],
+          "mx-2": [
+            { context: "context", property: "href" },
+            { context: "context", property: "pathname" },
+          ],
+          "my-2": [{ context: "context", property: "href" }, { value: "bar" }],
         },
         children: "testing",
       },
@@ -47,11 +53,16 @@ Deno.test("classList shortcut works with different class types", async () => {
         element: "span",
         class: "bg-red-200",
         __class: "context.href",
-        "==class": "context.href + context.pathname",
         classList: {
-          "font-bold": "context.href === context.pathname",
-          "mx-2": "context.href === context.pathname",
-          "my-2": "context.href === 'bar'",
+          "font-bold": [
+            { context: "context", property: "href" },
+            { context: "context", property: "pathname" },
+          ],
+          "mx-2": [
+            { context: "context", property: "href" },
+            { context: "context", property: "pathname" },
+          ],
+          "my-2": [{ context: "context", property: "href" }, { value: "bar" }],
         },
         children: "testing",
       },
@@ -61,7 +72,7 @@ Deno.test("classList shortcut works with different class types", async () => {
         pathname: "foo",
       },
     }),
-    '<span class="bg-red-200 foo foofoo font-bold mx-2">testing</span>',
+    '<span class="bg-red-200 foo font-bold mx-2">testing</span>',
   );
 });
 
@@ -75,21 +86,6 @@ Deno.test("class shortcut extension with getter", async () => {
       },
       extensions: [extensions.classShortcut],
       context: { demo: "foobar" },
-    }),
-    '<span class="foobar">testing</span>',
-  );
-});
-
-Deno.test("class shortcut extension with evaluation", async () => {
-  assertEquals(
-    await breeze({
-      component: {
-        element: "span",
-        "==class": "context.demo + 'bar'",
-        children: "testing",
-      },
-      extensions: [extensions.classShortcut],
-      context: { demo: "foo" },
     }),
     '<span class="foobar">testing</span>',
   );

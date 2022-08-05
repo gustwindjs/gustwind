@@ -6,7 +6,7 @@ import * as extensions from "../extensions.ts";
 Deno.test("visibleIf causes empty render", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", visibleIf: "" },
+      component: { element: "span", visibleIf: [] },
       extensions: [extensions.visibleIf],
     }),
     "",
@@ -16,7 +16,10 @@ Deno.test("visibleIf causes empty render", async () => {
 Deno.test("visibleIf shows element based on context", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", visibleIf: "context.visible" },
+      component: {
+        element: "span",
+        visibleIf: [{ context: "context", property: "visible" }],
+      },
       extensions: [extensions.visibleIf],
       context: { visible: true },
     }),
@@ -27,7 +30,10 @@ Deno.test("visibleIf shows element based on context", async () => {
 Deno.test("visibleIf hides element based on context", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", visibleIf: "context.visible" },
+      component: {
+        element: "span",
+        visibleIf: [{ context: "context", property: "visible" }],
+      },
       extensions: [extensions.visibleIf],
       context: { visible: false },
     }),
@@ -41,7 +47,7 @@ Deno.test("visibleIf shows element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: true },
-        visibleIf: "props.foo",
+        visibleIf: [{ context: "props", property: "foo" }],
       },
       extensions: [extensions.visibleIf],
     }),
@@ -55,7 +61,7 @@ Deno.test("visibleIf hides element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: false },
-        visibleIf: "props.foo",
+        visibleIf: [{ context: "props", property: "foo" }],
       },
       extensions: [extensions.visibleIf],
     }),
@@ -69,7 +75,10 @@ Deno.test("visibleIf shows element based on context and prop", async () => {
       component: {
         element: "span",
         props: { foo: true },
-        visibleIf: "context.visible && props.foo",
+        visibleIf: [
+          { context: "context", property: "visible" },
+          { context: "props", property: "foo" },
+        ],
       },
       extensions: [extensions.visibleIf],
       context: { visible: true },

@@ -19,7 +19,6 @@ import type {
 import type { Utilities } from "../breezewind/types.ts";
 import breeze from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
-import { evaluateFields } from "../utils/evaluate.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -76,11 +75,6 @@ async function renderPage({
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
-  const meta = {
-    ...runtimeMeta,
-    ...projectMeta.meta,
-    ...route.meta,
-  };
   const dataSourceContext = await getDataSourceContext(
     route.dataSources,
     dataSources,
@@ -88,8 +82,9 @@ async function renderPage({
   const context = {
     projectMeta,
     meta: {
-      ...meta,
-      ...Object.fromEntries(await evaluateFields(route.context, meta)),
+      ...runtimeMeta,
+      ...projectMeta.meta,
+      ...route.meta,
     },
     scripts: pageScripts,
     ...route.context,

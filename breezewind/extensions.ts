@@ -2,9 +2,10 @@
 // to keep related imports at minimum.
 import { tw } from "../client-deps.ts";
 import { get, isObject } from "../utils/functional.ts";
-import { evaluateExpression } from "../utils/evaluate.ts";
 import type {
   ClassComponent,
+  ClassList,
+  ClassOptions,
   Component,
   Context,
   ForEachComponent,
@@ -12,10 +13,10 @@ import type {
 } from "./types.ts";
 
 // TODO: Consider extracting tw from this to generalize the extension
-async function classShortcut(
+function classShortcut(
   component: ClassComponent,
   context: Context,
-): Promise<Component> {
+): Component {
   const classes: string[] = [];
 
   if (typeof component.class === "string") {
@@ -26,54 +27,55 @@ async function classShortcut(
     classes.push(get(context, component.__class) as string);
   }
 
-  if (typeof component["==class"] === "string") {
-    classes.push(await evaluateExpression(component["==class"], context));
-  }
-
   if (isObject(component.classList)) {
-    const className = (await Promise.all(
-      Object.entries(component.classList as Record<string, string>).map(
-        async ([k, v]) => {
-          const isVisible = await evaluateExpression(v, context);
+    const className = (Object.entries(component.classList as ClassList)
+      .map(
+        ([k, values]) => {
+          const firstValue = getValue(context, values[0]);
 
-          return isVisible && k;
+          return values.every((v) => firstValue === getValue(context, v))
+            ? k
+            : false;
         },
-      ),
-    )).filter(Boolean).join(" ");
+      )).filter(Boolean).join(" ");
 
     classes.push(className);
   }
 
   if (classes.length) {
-    return Promise.resolve({
+    return {
       ...component,
       attributes: {
         ...component.attributes,
         class: classes.map((c) => tw(c)).join(" "),
       },
-    });
+    };
   }
 
   // TODO: Test this case
-  return Promise.resolve(component);
+  return component;
+}
+
+function getValue(context: Context, v: ClassOptions) {
+  return v.context ? context[v.property] : v.value;
 }
 
 function foreach(
   component: ForEachComponent,
   context: Context,
-): Promise<Component> {
+): Component {
   if (!context || !component.foreach) {
-    return Promise.resolve(component);
+    return component;
   }
 
   const [key, childComponent] = component.foreach;
   const values = get(context, key);
 
   if (!Array.isArray(values)) {
-    return Promise.resolve(component);
+    return component;
   }
 
-  return Promise.resolve({
+  return {
     ...component,
     children: values.flatMap((v) =>
       Array.isArray(childComponent)
@@ -83,18 +85,22 @@ function foreach(
         }))
         : ({ ...childComponent, props: isObject(v) ? v : { value: v } })
     ),
-  });
+  };
 }
 
-async function visibleIf(
-  component: VisibleIfComponent,
-  context: Context,
-): Promise<Component> {
-  if (typeof component.visibleIf !== "string") {
-    return Promise.resolve(component);
+function visibleIf(component: VisibleIfComponent, context: Context): Component {
+  if (!Array.isArray(component.visibleIf)) {
+    return component;
   }
 
-  const isVisible = await evaluateExpression(component.visibleIf, context);
+  if (component.visibleIf.length === 0) {
+    return {};
+  }
+
+  const isVisible = component.visibleIf.every((v) =>
+    // @ts-ignore TODO: Figure out how to type this
+    context[v.context][v.property]
+  );
 
   return isVisible ? component : {};
 }

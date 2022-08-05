@@ -1,8 +1,13 @@
 import { get, isUndefined } from "../utils/functional.ts";
-import { evaluateExpression } from "../utils/evaluate.ts";
-import type { Component, Context, Extension, Utilities } from "./types.ts";
+import type {
+  Component,
+  Context,
+  Extension,
+  Utilities,
+  Utility,
+} from "./types.ts";
 
-async function render(
+function render(
   { component, components, extensions, context, props, utilities }: {
     component: Component | Component[];
     components?: Record<string, Component | Component[]>;
@@ -11,35 +16,28 @@ async function render(
     props?: Context;
     utilities?: Utilities;
   },
-): Promise<string> {
+): string {
   if (Array.isArray(component)) {
-    return (await Promise.all(
-      component.map((c) =>
-        render({
-          component: c,
-          components,
-          extensions,
-          context,
-          props,
-          utilities,
-        })
-      ),
-    )).join("");
+    return component.map((c) =>
+      render({
+        component: c,
+        components,
+        extensions,
+        context,
+        props,
+        utilities,
+      })
+    ).join("");
   }
 
   let element = component.element;
   const foundComponent = element && components?.[element];
 
-  const scopedProps = Object.fromEntries(
-    await evaluateFields(component.props || props, {
-      context,
-      props: props,
-    }),
-  );
+  const scopedProps = component.props || props;
 
   if (foundComponent) {
-    return (await Promise.all(
-      (Array.isArray(foundComponent) ? foundComponent : [foundComponent]).map((
+    return (Array.isArray(foundComponent) ? foundComponent : [foundComponent])
+      .map((
         c,
       ) =>
         render({
@@ -50,8 +48,7 @@ async function render(
           props: scopedProps,
           utilities,
         })
-      ),
-    )).join("");
+      ).join("");
   }
 
   if (extensions) {
@@ -62,7 +59,7 @@ async function render(
     // Doing this would mean needing a slightly more elaborate API for declaring
     // extensions.
     for (const extension of extensions) {
-      component = await extension(component, {
+      component = extension(component, {
         props: scopedProps,
         context,
         utilities,
@@ -77,15 +74,7 @@ async function render(
       element) as string;
   }
 
-  if (component["==element"]) {
-    element = await evaluateExpression(component["==element"], {
-      props: scopedProps,
-      context,
-      utilities,
-    });
-  }
-
-  const attributes = await generateAttributes(
+  const attributes = generateAttributes(
     component.attributes,
     typeof component.props !== "string"
       ? {
@@ -94,13 +83,16 @@ async function render(
         utilities,
       }
       : context,
+    utilities,
   );
 
   if (component.children) {
     let children = component.children;
 
-    if (Array.isArray(children)) {
-      children = await render({
+    if (typeof children === "string") {
+      // Nothing to do
+    } else if (Array.isArray(children)) {
+      children = render({
         component: children,
         props: scopedProps,
         components,
@@ -108,6 +100,8 @@ async function render(
         context,
         utilities,
       });
+    } else if (children.utility && utilities) {
+      children = applyUtility(utilities, children);
     }
 
     return toHTML(element, attributes, children);
@@ -126,7 +120,7 @@ async function render(
     return toHTML(
       element,
       attributes,
-      await render({
+      render({
         // @ts-expect-error TODO: What if get fails?
         component: get(
           { context, props: scopedProps },
@@ -134,20 +128,6 @@ async function render(
         ),
         components,
         extensions,
-        context,
-        utilities,
-      }),
-    );
-  }
-
-  const expression = component["==children"];
-
-  if (expression) {
-    return toHTML(
-      element,
-      attributes,
-      await evaluateExpression(expression, {
-        props: scopedProps,
         context,
         utilities,
       }),
@@ -183,55 +163,62 @@ function toHTML(
   return (value as string) || "";
 }
 
-async function generateAttributes(
+function generateAttributes(
   attributes: Component["attributes"],
   context?: Context,
-): Promise<string> {
+  utilities?: Utilities,
+) {
   if (!attributes) {
     return "";
   }
 
-  return (await evaluateFields(attributes, context)).map(([k, v]) =>
+  return (evaluateFields(attributes, context, utilities)).map(([k, v]) =>
     v && (v as string).length > 0 ? `${k}="${v}"` : k
   ).join(" ");
 }
 
-async function evaluateFields(props?: Context, context?: Context) {
+function evaluateFields(
+  props?: Context,
+  context?: Context,
+  utilities?: Utilities,
+) {
   if (!props) {
-    return Promise.resolve([]);
+    return [];
   }
 
-  return (await Promise.all(
-    Object.entries(props).map(async ([k, v]) => {
+  return (Object.entries(props).map(([k, v]) => {
+    // @ts-expect-error This is ok
+    if (isUndefined(v)) {
+      return [];
+    }
+
+    let key = k;
+    let value = v;
+
+    if (k.startsWith("__")) {
+      key = k.split("__").slice(1).join("__");
+
+      // TODO: What if value isn't found?
       // @ts-expect-error This is ok
-      if (isUndefined(v)) {
-        return [];
-      }
-
-      let key = k;
-      let value = v;
-
-      if (k.startsWith("__")) {
-        key = k.split("__").slice(1).join("__");
-
-        // TODO: What if value isn't found?
-        // @ts-expect-error This is ok
-        value = get(context, v) as string;
-      }
-
-      if (k.startsWith("==") && typeof v === "string") {
-        key = k.split("==").slice(1).join("==");
-        value = await evaluateExpression(v, context);
-      }
-
+      value = get(context, v) as string;
+    } // @ts-expect-error This is ok
+    else if (isUndefined(value)) {
+      return [];
       // @ts-expect-error This is ok
-      if (isUndefined(value)) {
-        return [];
-      }
+    } else if (value.utility && utilities) {
+      value = applyUtility(utilities, value as Utility);
+    }
 
-      return [key, value];
-    }),
-  ));
+    return [key, value];
+  }));
+}
+
+function applyUtility(utilities: Utilities, value: Utility) {
+  return utilities[value.utility].apply(
+    null,
+    // @ts-ignore Ignore for now
+    value.parameters || [],
+  );
 }
 
 export default render;
