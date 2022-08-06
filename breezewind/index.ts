@@ -104,7 +104,10 @@ async function render(
         children.property,
       );
     } else if (children.utility && utilities) {
-      children = await applyUtility(utilities, children);
+      children = await applyUtility(utilities, children, {
+        context,
+        props: scopedProps,
+      });
     }
 
     return toHTML(element, attributes, children);
@@ -194,19 +197,32 @@ function evaluateFields(
     if (isUndefined(value)) {
       return [];
       // @ts-expect-error This is ok
+    } else if (value.context) {
+      // @ts-expect-error This is ok
+      value = get(get(context, value.context), value.property);
+      // @ts-expect-error This is ok
     } else if (value.utility && utilities) {
-      value = applyUtility(utilities, value as Utility);
+      value = applyUtility(utilities, value as Utility, context);
     }
 
     return [k, value];
   }));
 }
 
-function applyUtility(utilities: Utilities, value: Utility) {
+function applyUtility(utilities: Utilities, value: Utility, context?: Context) {
   return utilities[value.utility].apply(
     null,
-    // @ts-ignore Ignore for now
-    value.parameters || [],
+    Array.isArray(value.parameters)
+      ? value.parameters.map((p) => {
+        // @ts-expect-error This is ok
+        if (p.context && p.property) {
+          // @ts-expect-error This is ok
+          return get(get(context, p.context), p.property);
+        }
+
+        return p;
+      })
+      : [],
   );
 }
 
