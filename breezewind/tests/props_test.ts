@@ -252,7 +252,7 @@ Deno.test("evaluate to context in a prop", async () => {
   );
 });
 
-Deno.test("bind to a prop in a prop", async () => {
+Deno.test("bind to a prop in a prop with utilities", async () => {
   assertEquals(
     await breeze({
       component: {

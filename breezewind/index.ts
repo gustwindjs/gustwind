@@ -71,7 +71,7 @@ async function render(
     element = component.element;
   }
 
-  const attributes = generateAttributes(
+  const attributes = await generateAttributes(
     component.attributes,
     typeof component.props !== "string"
       ? {
@@ -177,7 +177,7 @@ function toHTML(
   return (value as string) || "";
 }
 
-function generateAttributes(
+async function generateAttributes(
   attributes: Component["attributes"],
   context?: Context,
   utilities?: Utilities,
@@ -186,12 +186,12 @@ function generateAttributes(
     return "";
   }
 
-  return (evaluateFields(attributes, context, utilities)).map(([k, v]) =>
+  return (await evaluateFields(attributes, context, utilities)).map(([k, v]) =>
     v && (v as string).length > 0 ? `${k}="${v}"` : k
   ).join(" ");
 }
 
-function evaluateFields(
+async function evaluateFields(
   props?: Context,
   context?: Context,
   utilities?: Utilities,
@@ -200,32 +200,34 @@ function evaluateFields(
     return [];
   }
 
-  return (Object.entries(props).map(([k, v]) => {
-    if (isUndefined(v)) {
-      return [];
-    }
+  return Promise.all(
+    await Object.entries(props).map(async ([k, v]) => {
+      if (isUndefined(v)) {
+        return [];
+      }
 
-    let value = v;
+      let value = v;
 
-    if (isUndefined(value)) {
-      return [];
-      // @ts-expect-error This is ok
-    } else if (value.context) {
-      value = get(
+      if (isUndefined(value)) {
+        return [];
         // @ts-expect-error This is ok
-        get(context, value.context),
+      } else if (value.context) {
+        value = get(
+          // @ts-expect-error This is ok
+          get(context, value.context),
+          // @ts-expect-error This is ok
+          value.property,
+          // @ts-expect-error This is ok
+          value["default"],
+        );
         // @ts-expect-error This is ok
-        value.property,
-        // @ts-expect-error This is ok
-        value["default"],
-      );
-      // @ts-expect-error This is ok
-    } else if (value.utility && utilities) {
-      value = applyUtility(utilities, value as Utility, context);
-    }
+      } else if (value.utility && utilities) {
+        value = await applyUtility(utilities, value as Utility, context);
+      }
 
-    return [k, value];
-  }));
+      return [k, value];
+    }),
+  );
 }
 
 function applyUtility(utilities: Utilities, value: Utility, context?: Context) {
