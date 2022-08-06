@@ -1,5 +1,4 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-
 import breeze from "../index.ts";
 
 Deno.test("attributes", async () => {
@@ -20,7 +19,10 @@ Deno.test("gets attributes from context", async () => {
     await breeze({
       component: {
         element: "a",
-        attributes: { __href: "context.test", empty: "" },
+        attributes: {
+          href: { context: "context", property: "test" },
+          empty: "",
+        },
         children: "testing",
       },
       context: {
@@ -36,30 +38,20 @@ Deno.test("evaluates attributes from context", async () => {
     await breeze({
       component: {
         element: "a",
-        attributes: { "==href": "'foo' + context.test", empty: "" },
-        children: "testing",
-      },
-      context: {
-        test: "test",
-      },
-    }),
-    '<a href="footest" empty>testing</a>',
-  );
-});
-
-Deno.test("gives access to utilities and evaluates attributes from context", async () => {
-  assertEquals(
-    await breeze({
-      component: {
-        element: "a",
-        attributes: { "==href": "utilities.foo() + context.test", empty: "" },
+        attributes: {
+          href: {
+            utility: "concat",
+            parameters: ["foo", { context: "context", property: "test" }],
+          },
+          empty: "",
+        },
         children: "testing",
       },
       context: {
         test: "test",
       },
       utilities: {
-        foo: () => "foo",
+        concat: (a: string, b: string) => `${a}${b}`,
       },
     }),
     '<a href="footest" empty>testing</a>',
