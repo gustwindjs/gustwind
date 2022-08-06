@@ -20,7 +20,7 @@ Deno.test("gets attributes from context", async () => {
       component: {
         element: "a",
         attributes: {
-          href: { context: "context", property: "test" },
+          href: { utility: "get", parameters: ["context", "test"] },
           empty: "",
         },
         children: "testing",
@@ -41,7 +41,10 @@ Deno.test("evaluates attributes from context", async () => {
         attributes: {
           href: {
             utility: "concat",
-            parameters: ["foo", { context: "context", property: "test" }],
+            parameters: ["foo", {
+              utility: "get",
+              parameters: ["context", "test"],
+            }],
           },
           empty: "",
         },
@@ -49,9 +52,6 @@ Deno.test("evaluates attributes from context", async () => {
       },
       context: {
         test: "test",
-      },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
       },
     }),
     '<a href="footest" empty>testing</a>',

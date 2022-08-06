@@ -13,10 +13,12 @@ Deno.test("injects an id for a component", async () => {
         children: "demo",
       },
       extensions: [
-        extensions.inject((c) => ({
-          ...c,
-          attributes: { ...c.attributes, "data-id": id },
-        })),
+        extensions.inject((c) =>
+          Promise.resolve({
+            ...c,
+            attributes: { ...c.attributes, "data-id": id },
+          })
+        ),
       ],
     }),
     `<div data-id="${id}">demo</div>`,
@@ -42,10 +44,12 @@ Deno.test("injects ids for multiple component", async () => {
         ],
       },
       extensions: [
-        extensions.inject((c) => ({
-          ...c,
-          attributes: { ...c.attributes, "data-id": id },
-        })),
+        extensions.inject((c) =>
+          Promise.resolve({
+            ...c,
+            attributes: { ...c.attributes, "data-id": id },
+          })
+        ),
       ],
     }),
     `<div data-id="${id}"><span data-id="${id}">foo</span><span data-id="${id}">bar</span></div>`,

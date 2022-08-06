@@ -10,7 +10,7 @@ Deno.test("foreach extension without context", async () => {
         element: "ul",
         foreach: ["items", {
           element: "li",
-          children: { context: "props", property: "value" },
+          children: { utility: "get", parameters: ["props", "value"] },
         }],
       },
       extensions: [extensions.foreach],
@@ -26,7 +26,7 @@ Deno.test("foreach extension with an array", async () => {
         element: "ul",
         foreach: ["context.items", {
           element: "li",
-          children: { context: "props", property: "value" },
+          children: { utility: "get", parameters: ["props", "value"] },
         }],
       },
       extensions: [extensions.foreach],
@@ -43,10 +43,10 @@ Deno.test("foreach extension with multiple children", async () => {
         element: "ul",
         foreach: ["context.items", [{
           element: "li",
-          children: { context: "props", property: "value" },
+          children: { utility: "get", parameters: ["props", "value"] },
         }, {
           element: "li",
-          children: { context: "props", property: "value" },
+          children: { utility: "get", parameters: ["props", "value"] },
         }]],
       },
       extensions: [extensions.foreach],
@@ -63,7 +63,7 @@ Deno.test("foreach extension with an array with a nested key", async () => {
         element: "ul",
         foreach: ["context.test.items", {
           element: "li",
-          children: { context: "props", property: "value" },
+          children: { utility: "get", parameters: ["props", "value"] },
         }],
       },
       extensions: [extensions.foreach],
@@ -80,7 +80,7 @@ Deno.test("foreach extension with an array of objects", async () => {
         element: "ul",
         foreach: ["context.items", {
           element: "li",
-          children: { context: "props", property: "title" },
+          children: { utility: "get", parameters: ["props", "title"] },
         }],
       },
       extensions: [extensions.foreach],
@@ -97,14 +97,8 @@ Deno.test("foreach extension with attributes", async () => {
         foreach: ["context.scripts", {
           element: "script",
           attributes: {
-            type: {
-              context: "props",
-              property: "type",
-            },
-            src: {
-              context: "props",
-              property: "src",
-            },
+            type: { utility: "get", parameters: ["props", "type"] },
+            src: { utility: "get", parameters: ["props", "src"] },
           },
         }],
       },
@@ -127,14 +121,8 @@ Deno.test("foreach extension with multiple scripts", async () => {
         foreach: ["context.scripts", {
           element: "script",
           attributes: {
-            type: {
-              context: "props",
-              property: "type",
-            },
-            src: {
-              context: "props",
-              property: "src",
-            },
+            type: { utility: "get", parameters: ["props", "type"] },
+            src: { utility: "get", parameters: ["props", "src"] },
           },
         }],
       },
@@ -166,14 +154,8 @@ Deno.test("foreach extension with attributes and nesting", async () => {
                 foreach: ["context.scripts", {
                   element: "script",
                   attributes: {
-                    type: {
-                      context: "props",
-                      property: "type",
-                    },
-                    src: {
-                      context: "props",
-                      property: "src",
-                    },
+                    type: { utility: "get", parameters: ["props", "type"] },
+                    src: { utility: "get", parameters: ["props", "src"] },
                   },
                 }],
               },

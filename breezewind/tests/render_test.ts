@@ -12,10 +12,7 @@ Deno.test("component with object props and rendering", async () => {
       components: {
         BaseLayout: {
           element: "body",
-          children: {
-            context: "props",
-            property: "content",
-          },
+          children: { utility: "get", parameters: ["props", "content"] },
         },
       },
     }),
@@ -34,10 +31,7 @@ Deno.test("component with array props and rendering", async () => {
         BaseLayout: [
           {
             element: "body",
-            children: {
-              context: "props",
-              property: "content",
-            },
+            children: { utility: "get", parameters: ["props", "content"] },
           },
         ],
       },
@@ -60,10 +54,7 @@ Deno.test("component with array props, rendering, and nested usage", async () =>
             children: [
               {
                 element: "body",
-                children: {
-                  context: "props",
-                  property: "content",
-                },
+                children: { utility: "get", parameters: ["props", "content"] },
               },
             ],
           },

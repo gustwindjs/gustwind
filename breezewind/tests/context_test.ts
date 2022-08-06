@@ -7,7 +7,7 @@ Deno.test("context binding", async () => {
     await breeze({
       component: {
         element: "span",
-        children: { context: "context", property: "test" },
+        children: { utility: "get", parameters: ["context", "test"] },
       },
       context: { test: "foobar" },
     }),
@@ -20,7 +20,7 @@ Deno.test("nested context binding", async () => {
     await breeze({
       component: {
         element: "span",
-        children: { context: "context", property: "meta.title" },
+        children: { utility: "get", parameters: ["context", "meta.title"] },
       },
       context: { meta: { title: "foobar" } },
     }),
@@ -33,7 +33,7 @@ Deno.test("nested context binding within an array", async () => {
     await breeze({
       component: [{
         element: "span",
-        children: { context: "context", property: "meta.title" },
+        children: { utility: "get", parameters: ["context", "meta.title"] },
       }],
       context: { meta: { title: "foobar" } },
     }),
@@ -52,7 +52,7 @@ Deno.test("nested context binding within components", async () => {
         }],
         MetaFields: [{
           element: "span",
-          children: { context: "context", property: "meta.title" },
+          children: { utility: "get", parameters: ["context", "meta.title"] },
         }],
       },
       context: { meta: { title: "foobar" } },
@@ -64,7 +64,9 @@ Deno.test("nested context binding within components", async () => {
 Deno.test("context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { children: { context: "context", property: "test" } },
+      component: {
+        children: { utility: "get", parameters: ["context", "test"] },
+      },
       context: { test: "foobar" },
     }),
     "foobar",
@@ -74,7 +76,9 @@ Deno.test("context binding without element", async () => {
 Deno.test("nested context binding without element", async () => {
   assertEquals(
     await breeze({
-      component: { children: { context: "context", property: "test.test" } },
+      component: {
+        children: { utility: "get", parameters: ["context", "test.test"] },
+      },
       context: { test: { test: "foobar" } },
     }),
     "foobar",
@@ -88,13 +92,13 @@ Deno.test("context evaluation", async () => {
         element: "span",
         children: {
           utility: "concat",
-          parameters: [{ context: "context", property: "test" }, "bar"],
+          parameters: [
+            { utility: "get", parameters: ["context", "test"] },
+            "bar",
+          ],
         },
       },
       context: { test: "foo" },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     "<span>foobar</span>",
   );
@@ -125,13 +129,13 @@ Deno.test("nested context evaluation", async () => {
         element: "span",
         children: {
           utility: "concat",
-          parameters: [{ context: "context", property: "test.test" }, "bar"],
+          parameters: [
+            { utility: "get", parameters: ["context", "test.test"] },
+            "bar",
+          ],
         },
       },
       context: { test: { test: "foo" } },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     "<span>foobar</span>",
   );
@@ -143,13 +147,13 @@ Deno.test("context evaluation without element", async () => {
       component: {
         children: {
           utility: "concat",
-          parameters: [{ context: "context", "property": "test" }, "bar"],
+          parameters: [
+            { utility: "get", parameters: ["context", "test"] },
+            "bar",
+          ],
         },
       },
       context: { test: "foo" },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     "foobar",
   );
@@ -161,13 +165,13 @@ Deno.test("nested context binding without element", async () => {
       component: {
         children: {
           utility: "concat",
-          parameters: [{ context: "context", property: "test.test" }, "bar"],
+          parameters: [
+            { utility: "get", parameters: ["context", "test.test"] },
+            "bar",
+          ],
         },
       },
       context: { test: { test: "foo" } },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     "foobar",
   );
@@ -178,7 +182,9 @@ Deno.test("context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { title: { context: "context", property: "test" } },
+        attributes: {
+          title: { utility: "get", parameters: ["context", "test"] },
+        },
         children: "test",
       },
       context: { test: "foobar" },
@@ -192,7 +198,9 @@ Deno.test("nested context binding for attributes", async () => {
     await breeze({
       component: {
         element: "span",
-        attributes: { title: { context: "context", property: "test.test" } },
+        attributes: {
+          title: { utility: "get", parameters: ["context", "test.test"] },
+        },
         children: "test",
       },
       context: { test: { test: "foobar" } },
@@ -209,15 +217,15 @@ Deno.test("context evaluation for attributes", async () => {
         attributes: {
           title: {
             utility: "concat",
-            parameters: [{ context: "context", property: "test" }, "bar"],
+            parameters: [
+              { utility: "get", parameters: ["context", "test"] },
+              "bar",
+            ],
           },
         },
         children: "test",
       },
       context: { test: "foo" },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     '<span title="foobar">test</span>',
   );
@@ -250,15 +258,15 @@ Deno.test("nested context evaluation for attributes", async () => {
         attributes: {
           title: {
             utility: "concat",
-            parameters: [{ context: "context", property: "test.test" }, "bar"],
+            parameters: [{
+              utility: "get",
+              parameters: ["context", "test.test"],
+            }, "bar"],
           },
         },
         children: "test",
       },
       context: { test: { test: "foo" } },
-      utilities: {
-        concat: (a: string, b: string) => `${a}${b}`,
-      },
     }),
     '<span title="foobar">test</span>',
   );

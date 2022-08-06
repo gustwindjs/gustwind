@@ -1,4 +1,6 @@
-import { get, isUndefined } from "../utils/functional.ts";
+import { get, isObject, isUndefined } from "../utils/functional.ts";
+import { applyUtility } from "./applyUtility.ts";
+import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
   Component,
   Context,
@@ -17,6 +19,11 @@ async function render(
     utilities?: Utilities;
   },
 ): Promise<string> {
+  // @ts-expect-error This is fine
+  utilities = isObject(utilities)
+    ? { ...defaultUtilities, ...utilities }
+    : defaultUtilities;
+
   if (Array.isArray(component)) {
     return (await Promise.all(component.map((c) =>
       render({
@@ -61,11 +68,10 @@ async function render(
     // Doing this would mean needing a slightly more elaborate API for declaring
     // extensions.
     for (const extension of extensions) {
-      component = extension(component, {
+      component = await extension(component, {
         props: scopedProps,
         context,
-        utilities,
-      });
+      }, utilities);
     }
 
     element = component.element;
@@ -77,7 +83,6 @@ async function render(
       ? {
         props: scopedProps,
         context,
-        utilities,
       }
       : context,
     utilities,
@@ -87,14 +92,8 @@ async function render(
 
   if (typeof element === "string") {
     // Do nothing
-  } else if (element?.context && element?.property) {
-    // @ts-ignore Ignore for now
-    e = get(
-      // @ts-ignore Ignore for now
-      get({ context, props: scopedProps }, element.context, element["default"]),
-      // @ts-ignore Ignore for now
-      element.property,
-    );
+  } else if (element?.utility && element?.parameters) {
+    e = await applyUtility(element, utilities, { context, props: scopedProps });
   }
 
   if (component.children) {
@@ -111,15 +110,8 @@ async function render(
         context,
         utilities,
       });
-    } else if (children.context) {
-      // @ts-expect-error This is fine
-      children = get(
-        get({ context, props: scopedProps }, children.context),
-        children.property,
-        children["default"],
-      );
     } else if (children.utility && utilities) {
-      children = await applyUtility(utilities, children, {
+      children = await applyUtility(children, utilities, {
         context,
         props: scopedProps,
       });
@@ -222,28 +214,11 @@ async function evaluateFields(
         );
         // @ts-expect-error This is ok
       } else if (value.utility && utilities) {
-        value = await applyUtility(utilities, value as Utility, context);
+        value = await applyUtility(value as Utility, utilities, context);
       }
 
       return [k, value];
     }),
-  );
-}
-
-function applyUtility(utilities: Utilities, value: Utility, context?: Context) {
-  return utilities[value.utility].apply(
-    null,
-    Array.isArray(value.parameters)
-      ? value.parameters.map((p) => {
-        // @ts-expect-error This is ok
-        if (p.context && p.property) {
-          // @ts-expect-error This is ok
-          return get(get(context, p.context), p.property, p["default"]);
-        }
-
-        return p;
-      })
-      : [],
   );
 }
 

@@ -18,7 +18,7 @@ Deno.test("visibleIf shows element based on context", async () => {
     await breeze({
       component: {
         element: "span",
-        visibleIf: [{ context: "context", property: "visible" }],
+        visibleIf: [{ utility: "get", parameters: ["context", "visible"] }],
       },
       extensions: [extensions.visibleIf],
       context: { visible: true },
@@ -32,7 +32,7 @@ Deno.test("visibleIf hides element based on context", async () => {
     await breeze({
       component: {
         element: "span",
-        visibleIf: [{ context: "context", property: "visible" }],
+        visibleIf: [{ utility: "get", parameters: ["context", "visible"] }],
       },
       extensions: [extensions.visibleIf],
       context: { visible: false },
@@ -47,7 +47,7 @@ Deno.test("visibleIf shows element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: true },
-        visibleIf: [{ context: "props", property: "foo" }],
+        visibleIf: [{ utility: "get", parameters: ["props", "foo"] }],
       },
       extensions: [extensions.visibleIf],
     }),
@@ -61,7 +61,7 @@ Deno.test("visibleIf hides element based on prop", async () => {
       component: {
         element: "span",
         props: { foo: false },
-        visibleIf: [{ context: "props", property: "foo" }],
+        visibleIf: [{ utility: "get", parameters: ["props", "foo"] }],
       },
       extensions: [extensions.visibleIf],
     }),
@@ -76,8 +76,8 @@ Deno.test("visibleIf shows element based on context and prop", async () => {
         element: "span",
         props: { foo: true },
         visibleIf: [
-          { context: "context", property: "visible" },
-          { context: "props", property: "foo" },
+          { utility: "get", parameters: ["context", "visible"] },
+          { utility: "get", parameters: ["props", "foo"] },
         ],
       },
       extensions: [extensions.visibleIf],

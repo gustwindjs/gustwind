@@ -2,42 +2,24 @@ type Context = Record<string, unknown>;
 
 type BaseComponent = {
   // TODO: Rename as type
-  element?: string | PossibleParameter;
+  element?: string | Utility;
 
-  attributes?: Record<string, string | PossibleParameter | undefined>;
+  attributes?: Record<string, string | Utility | undefined>;
   props?: Context;
-  bindToProps?: Record<string, PossibleParameter>;
+  bindToProps?: Record<string, Utility>;
   closingCharacter?: string;
 
-  children?: string | Component[] | PossibleParameter;
+  children?: string | Component[] | Utility;
 
   // TODO: Eliminate?
   "##children"?: string; // Rendering binding
 };
 
-type PossibleParameter =
-  | (LookupPair & {
-    utility?: never;
-    parameters?: never;
-  })
-  | (Utility & {
-    context?: never;
-    property?: never;
-    value?: never;
-    default?: never;
-  });
-
-type ClassOptions = LookupPair | Value;
+type ClassOptions = Utility | Value;
 type ClassList = Record<string, ClassOptions[]>;
 type Utility = {
   utility: string;
-  parameters?: (string | LookupPair)[];
-};
-type LookupPair = {
-  context: string;
-  property: string;
-  value?: never;
-  default?: string;
+  parameters?: (string | Utility)[];
 };
 
 // TODO: Maybe this one can be dropped (comes from claslist)
@@ -50,15 +32,13 @@ type Value = {
 
 type ClassComponent = BaseComponent & {
   classList?: ClassList;
-  class?: string;
-  "__class"?: string;
-  "==class"?: string;
+  class?: string | Utility;
 };
 type ForEachComponent = BaseComponent & {
   foreach?: [string, Component | Component[]];
 };
 type VisibleIfComponent = BaseComponent & {
-  visibleIf?: LookupPair[];
+  visibleIf?: Utility[];
 };
 type Component =
   | BaseComponent
@@ -69,7 +49,8 @@ type Component =
 type Extension = (
   component: Component,
   context: Context,
-) => BaseComponent;
+  utilities?: Utilities,
+) => Promise<BaseComponent>;
 
 // deno-lint-ignore no-explicit-any
 type Utilities = Record<string, (...args: any) => string | Promise<string>>;

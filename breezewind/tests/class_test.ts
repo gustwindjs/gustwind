@@ -25,14 +25,16 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
         element: "span",
         classList: {
           "font-bold": [
-            { context: "context", property: "href" },
-            { context: "context", property: "pathname" },
+            { utility: "get", parameters: ["context", "href"] },
+            { utility: "get", parameters: ["context", "pathname"] },
           ],
           "mx-2": [
-            { context: "context", property: "href" },
-            { context: "context", property: "pathname" },
+            { utility: "get", parameters: ["context", "href"] },
+            { utility: "get", parameters: ["context", "pathname"] },
           ],
-          "my-2": [{ context: "context", property: "href" }, { value: "bar" }],
+          "my-2": [{ utility: "get", parameters: ["context", "href"] }, {
+            value: "bar",
+          }],
         },
         children: "testing",
       },
@@ -51,18 +53,25 @@ Deno.test("classList shortcut works with different class types", async () => {
     await breeze({
       component: {
         element: "span",
-        class: "bg-red-200",
-        __class: "context.href",
+        class: {
+          utility: "concat",
+          parameters: ["bg-red-200", " ", {
+            utility: "get",
+            parameters: ["context", "href"],
+          }],
+        },
         classList: {
           "font-bold": [
-            { context: "context", property: "href" },
-            { context: "context", property: "pathname" },
+            { utility: "get", parameters: ["context", "href"] },
+            { utility: "get", parameters: ["context", "pathname"] },
           ],
           "mx-2": [
-            { context: "context", property: "href" },
-            { context: "context", property: "pathname" },
+            { utility: "get", parameters: ["context", "href"] },
+            { utility: "get", parameters: ["context", "pathname"] },
           ],
-          "my-2": [{ context: "context", property: "href" }, { value: "bar" }],
+          "my-2": [{ utility: "get", parameters: ["context", "href"] }, {
+            value: "bar",
+          }],
         },
         children: "testing",
       },
@@ -81,7 +90,7 @@ Deno.test("class shortcut extension with getter", async () => {
     await breeze({
       component: {
         element: "span",
-        __class: "context.demo",
+        class: { utility: "get", parameters: ["context", "demo"] },
         children: "testing",
       },
       extensions: [extensions.classShortcut],
