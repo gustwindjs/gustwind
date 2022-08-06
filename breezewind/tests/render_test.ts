@@ -7,7 +7,7 @@ Deno.test("component with object props and rendering", async () => {
     await breeze({
       component: {
         element: "BaseLayout",
-        props: { content: { children: "demo" } },
+        props: { content: "demo" },
       },
       components: {
         BaseLayout: {
@@ -28,7 +28,7 @@ Deno.test("component with array props and rendering", async () => {
     await breeze({
       component: {
         element: "BaseLayout",
-        props: { content: { children: "demo" } },
+        props: { content: "demo" },
       },
       components: {
         BaseLayout: [
@@ -51,7 +51,7 @@ Deno.test("component with array props, rendering, and nested usage", async () =>
     await breeze({
       component: {
         element: "BaseLayout",
-        props: { content: { children: "demo" } },
+        props: { content: "demo" },
       },
       components: {
         BaseLayout: [
@@ -79,10 +79,7 @@ Deno.test("allow rendering with context", async () => {
     await breeze({
       component: {
         element: "div",
-        children: {
-          context: "context",
-          property: "demo",
-        },
+        "##children": "context.demo",
       },
       context: { demo: { element: "span", children: "foobar" } },
     }),
@@ -96,10 +93,7 @@ Deno.test("allow rendering with props", async () => {
       component: {
         element: "div",
         props: { demo: { element: "span", children: "foobar" } },
-        children: {
-          context: "props",
-          property: "demo",
-        },
+        "##children": "props.demo",
       },
     }),
     "<div><span>foobar</span></div>",
@@ -116,10 +110,7 @@ Deno.test("allow rendering with props in a component", async () => {
       components: {
         Test: {
           element: "div",
-          children: {
-            context: "props",
-            property: "demo",
-          },
+          "##children": "props.demo",
         },
       },
     }),

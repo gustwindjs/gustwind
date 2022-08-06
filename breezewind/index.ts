@@ -98,7 +98,11 @@ async function render(
         utilities,
       });
     } else if (children.context) {
-      // TODO
+      // @ts-expect-error This is fine
+      children = get(
+        get({ context, props: scopedProps }, children.context),
+        children.property,
+      );
     } else if (children.utility && utilities) {
       children = await applyUtility(utilities, children);
     }
@@ -106,11 +110,13 @@ async function render(
     return toHTML(element, attributes, children);
   }
 
+  // TODO: Should this go through the utility api instead?
+  // I.e. expose render as a default utility
   if (component["##children"]) {
     return toHTML(
       element,
       attributes,
-      render({
+      await render({
         // @ts-expect-error TODO: What if get fails?
         component: get(
           { context, props: scopedProps },
