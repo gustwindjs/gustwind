@@ -179,7 +179,7 @@ Deno.test("bind to context in a prop", async () => {
     await breeze({
       component: {
         element: "span",
-        props: { title: { context: "context", property: "value" } },
+        bindToProps: { title: { context: "context", property: "value" } },
         children: { context: "props", property: "title" },
       },
       context: {
@@ -190,12 +190,14 @@ Deno.test("bind to context in a prop", async () => {
   );
 });
 
+// TODO: Test bindToProps and props used together
+
 Deno.test("bind to a prop in a prop", async () => {
   assertEquals(
     await breeze({
       component: {
         element: "div",
-        props: { title: { context: "context", property: "value" } },
+        bindToProps: { title: { context: "context", property: "value" } },
         children: [
           {
             element: "Button",
@@ -230,7 +232,7 @@ Deno.test("evaluate to context in a prop", async () => {
     await breeze({
       component: {
         element: "span",
-        props: {
+        bindToProps: {
           title: {
             utility: "concat",
             parameters: [{ context: "context", property: "value" }, "bar"],
@@ -257,7 +259,7 @@ Deno.test("bind to a prop in a prop with utilities", async () => {
     await breeze({
       component: {
         element: "div",
-        props: { title: { context: "context", property: "value" } },
+        bindToProps: { title: { context: "context", property: "value" } },
         children: [
           {
             element: "Button",

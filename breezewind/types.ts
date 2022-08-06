@@ -2,20 +2,20 @@ type Context = Record<string, unknown>;
 
 type BaseComponent = {
   // TODO: Rename as type
-  element?: PossibleParameter;
+  element?: string | PossibleParameter;
 
-  attributes?: Record<string, PossibleParameter | undefined>;
+  attributes?: Record<string, string | PossibleParameter | undefined>;
   props?: Context;
+  bindToProps?: Record<string, PossibleParameter>;
   closingCharacter?: string;
 
-  children?: Component[] | PossibleParameter;
+  children?: string | Component[] | PossibleParameter;
 
   // TODO: Eliminate?
   "##children"?: string; // Rendering binding
 };
 
 type PossibleParameter =
-  | string
   | (LookupPair & {
     utility?: never;
     parameters?: never;
