@@ -7,7 +7,7 @@ import type {
   Utility,
 } from "./types.ts";
 
-function render(
+async function render(
   { component, components, extensions, context, props, utilities }: {
     component: Component | Component[];
     components?: Record<string, Component | Component[]>;
@@ -16,9 +16,9 @@ function render(
     props?: Context;
     utilities?: Utilities;
   },
-): string {
+): Promise<string> {
   if (Array.isArray(component)) {
-    return component.map((c) =>
+    return (await Promise.all(component.map((c) =>
       render({
         component: c,
         components,
@@ -27,17 +27,18 @@ function render(
         props,
         utilities,
       })
-    ).join("");
+    ))).join("");
   }
 
   let element = component.element;
-  const foundComponent = element && components?.[element];
+  const foundComponent = element && typeof element === "string" &&
+    components?.[element];
 
   const scopedProps = component.props || props;
 
   if (foundComponent) {
-    return (Array.isArray(foundComponent) ? foundComponent : [foundComponent])
-      .map((
+    return (await Promise.all(
+      (Array.isArray(foundComponent) ? foundComponent : [foundComponent]).map((
         c,
       ) =>
         render({
@@ -48,7 +49,8 @@ function render(
           props: scopedProps,
           utilities,
         })
-      ).join("");
+      ),
+    )).join("");
   }
 
   if (extensions) {
@@ -69,11 +71,6 @@ function render(
     element = component.element;
   }
 
-  if (component.__element) {
-    element = (get({ context, props: scopedProps }, component.__element) ||
-      element) as string;
-  }
-
   const attributes = generateAttributes(
     component.attributes,
     typeof component.props !== "string"
@@ -92,7 +89,7 @@ function render(
     if (typeof children === "string") {
       // Nothing to do
     } else if (Array.isArray(children)) {
-      children = render({
+      children = await render({
         component: children,
         props: scopedProps,
         components,
@@ -100,20 +97,13 @@ function render(
         context,
         utilities,
       });
+    } else if (children.context) {
+      // TODO
     } else if (children.utility && utilities) {
-      children = applyUtility(utilities, children);
+      children = await applyUtility(utilities, children);
     }
 
     return toHTML(element, attributes, children);
-  }
-
-  if (component.__children) {
-    // TODO: What if get fails?
-    return toHTML(
-      element,
-      attributes,
-      get({ context, props: scopedProps }, component.__children),
-    );
   }
 
   if (component["##children"]) {
@@ -192,24 +182,17 @@ function evaluateFields(
       return [];
     }
 
-    let key = k;
     let value = v;
 
-    if (k.startsWith("__")) {
-      key = k.split("__").slice(1).join("__");
-
-      // TODO: What if value isn't found?
-      // @ts-expect-error This is ok
-      value = get(context, v) as string;
-    } // @ts-expect-error This is ok
-    else if (isUndefined(value)) {
+    // @ts-expect-error This is ok
+    if (isUndefined(value)) {
       return [];
       // @ts-expect-error This is ok
     } else if (value.utility && utilities) {
       value = applyUtility(utilities, value as Utility);
     }
 
-    return [key, value];
+    return [k, value];
   }));
 }
 

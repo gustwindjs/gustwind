@@ -2,17 +2,30 @@ type Context = Record<string, unknown>;
 
 type BaseComponent = {
   // TODO: Rename as type
-  element?: string | LookupPair | Utility;
+  element?: PossibleParameter;
 
-  attributes?: Record<string, LookupPair | Utility | string | undefined>;
+  attributes?: Record<string, PossibleParameter | undefined>;
   props?: Context;
   closingCharacter?: string;
 
-  children?: string | Component[] | LookupPair | Utility;
+  children?: Component[] | PossibleParameter;
 
-  // TODO: Eliminate
+  // TODO: Eliminate?
   "##children"?: string; // Rendering binding
 };
+
+type PossibleParameter =
+  | string
+  | (LookupPair & {
+    utility?: never;
+    parameters?: never;
+  })
+  | (Utility & {
+    context?: never;
+    property?: never;
+    value?: never;
+    default?: never;
+  });
 
 type ClassOptions = LookupPair | Value;
 type ClassList = Record<string, ClassOptions[]>;
