@@ -2,7 +2,7 @@ function last<O>(array: O[]) {
   return array[array.length - 1];
 }
 
-function isUndefined(str?: string) {
+function isUndefined(str?: unknown) {
   return typeof str == "undefined";
 }
 
@@ -12,6 +12,7 @@ const isObject = (a: any) => !Array.isArray(a) && typeof a === "object";
 function get<O = Record<string, unknown>>(
   dataContext: O,
   key?: string,
+  defaultValue?: unknown,
 ): unknown {
   if (!key) {
     return;
@@ -23,10 +24,14 @@ function get<O = Record<string, unknown>>(
   key.split(".").forEach((k) => {
     if (isObject(value)) {
       // TODO: How to type
-      // @ts-ignore Recursive until it finds the root
+      // @ts-expect-error Recursive until it finds the root
       value = value[k];
     }
   });
+
+  if (isUndefined(value)) {
+    return defaultValue;
+  }
 
   return value;
 }

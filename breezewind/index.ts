@@ -83,6 +83,20 @@ async function render(
     utilities,
   );
 
+  let e = element;
+
+  if (typeof element === "string") {
+    // Do nothing
+  } else if (element?.context && element?.property) {
+    // @ts-ignore Ignore for now
+    e = get(
+      // @ts-ignore Ignore for now
+      get({ context, props: scopedProps }, element.context, element["default"]),
+      // @ts-ignore Ignore for now
+      element.property,
+    );
+  }
+
   if (component.children) {
     let children = component.children;
 
@@ -102,6 +116,7 @@ async function render(
       children = get(
         get({ context, props: scopedProps }, children.context),
         children.property,
+        children["default"],
       );
     } else if (children.utility && utilities) {
       children = await applyUtility(utilities, children, {
@@ -110,14 +125,14 @@ async function render(
       });
     }
 
-    return toHTML(element, attributes, children);
+    return toHTML(e, attributes, children);
   }
 
   // TODO: Should this go through the utility api instead?
   // I.e. expose render as a default utility
   if (component["##children"]) {
     return toHTML(
-      element,
+      e,
       attributes,
       await render({
         // @ts-expect-error TODO: What if get fails?
@@ -135,12 +150,12 @@ async function render(
 
   if (element) {
     if (typeof component.closingCharacter === "string") {
-      return `<${element}${
+      return `<${e}${
         attributes ? " " + attributes : ""
       } ${component.closingCharacter}>`;
     }
 
-    return toHTML(element, attributes);
+    return toHTML(e, attributes);
   }
 
   // Maybe this has to become controllable if it should be possible to emit
@@ -186,20 +201,24 @@ function evaluateFields(
   }
 
   return (Object.entries(props).map(([k, v]) => {
-    // @ts-expect-error This is ok
     if (isUndefined(v)) {
       return [];
     }
 
     let value = v;
 
-    // @ts-expect-error This is ok
     if (isUndefined(value)) {
       return [];
       // @ts-expect-error This is ok
     } else if (value.context) {
-      // @ts-expect-error This is ok
-      value = get(get(context, value.context), value.property);
+      value = get(
+        // @ts-expect-error This is ok
+        get(context, value.context),
+        // @ts-expect-error This is ok
+        value.property,
+        // @ts-expect-error This is ok
+        value["default"],
+      );
       // @ts-expect-error This is ok
     } else if (value.utility && utilities) {
       value = applyUtility(utilities, value as Utility, context);
@@ -217,7 +236,7 @@ function applyUtility(utilities: Utilities, value: Utility, context?: Context) {
         // @ts-expect-error This is ok
         if (p.context && p.property) {
           // @ts-expect-error This is ok
-          return get(get(context, p.context), p.property);
+          return get(get(context, p.context), p.property, p["default"]);
         }
 
         return p;
