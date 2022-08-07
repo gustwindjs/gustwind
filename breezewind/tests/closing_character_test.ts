@@ -6,7 +6,7 @@ Deno.test("allow customizing closing character", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "!DOCTYPE",
+        type: "!DOCTYPE",
         attributes: {
           html: "",
           language: {
@@ -30,7 +30,7 @@ Deno.test("allow rendering xml heading", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "?xml",
+        type: "?xml",
         attributes: {
           version: "1.0",
           encoding: "UTF-8",

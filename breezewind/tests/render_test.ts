@@ -6,12 +6,12 @@ Deno.test("component with object props and rendering", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "BaseLayout",
+        type: "BaseLayout",
         props: { content: "demo" },
       },
       components: {
         BaseLayout: {
-          element: "body",
+          type: "body",
           children: { utility: "get", parameters: ["props", "content"] },
         },
       },
@@ -24,13 +24,13 @@ Deno.test("component with array props and rendering", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "BaseLayout",
+        type: "BaseLayout",
         props: { content: "demo" },
       },
       components: {
         BaseLayout: [
           {
-            element: "body",
+            type: "body",
             children: { utility: "get", parameters: ["props", "content"] },
           },
         ],
@@ -44,16 +44,16 @@ Deno.test("component with array props, rendering, and nested usage", async () =>
   assertEquals(
     await breeze({
       component: {
-        element: "BaseLayout",
+        type: "BaseLayout",
         props: { content: "demo" },
       },
       components: {
         BaseLayout: [
           {
-            element: "html",
+            type: "html",
             children: [
               {
-                element: "body",
+                type: "body",
                 children: { utility: "get", parameters: ["props", "content"] },
               },
             ],
@@ -69,10 +69,10 @@ Deno.test("allow rendering with context", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         "##children": "context.demo",
       },
-      context: { demo: { element: "span", children: "foobar" } },
+      context: { demo: { type: "span", children: "foobar" } },
     }),
     "<div><span>foobar</span></div>",
   );
@@ -82,8 +82,8 @@ Deno.test("allow rendering with props", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
-        props: { demo: { element: "span", children: "foobar" } },
+        type: "div",
+        props: { demo: { type: "span", children: "foobar" } },
         "##children": "props.demo",
       },
     }),
@@ -95,12 +95,12 @@ Deno.test("allow rendering with props in a component", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "Test",
-        props: { demo: { element: "span", children: "foobar" } },
+        type: "Test",
+        props: { demo: { type: "span", children: "foobar" } },
       },
       components: {
         Test: {
-          element: "div",
+          type: "div",
           "##children": "props.demo",
         },
       },

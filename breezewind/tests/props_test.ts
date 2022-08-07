@@ -5,7 +5,7 @@ import breeze from "../index.ts";
 Deno.test("props binding without children", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", props: { value: "foobar" } },
+      component: { type: "span", props: { value: "foobar" } },
     }),
     "<span></span>",
   );
@@ -15,7 +15,7 @@ Deno.test("props binding to children", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         props: { title: "foobar" },
         children: { utility: "get", parameters: ["props", "title"] },
       },
@@ -28,7 +28,7 @@ Deno.test("props binding to ==children", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         props: { title: "foo" },
         children: {
           utility: "concat",
@@ -47,7 +47,7 @@ Deno.test("props binding to ==children using context", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         props: { title: "foo" },
         children: {
           utility: "concat",
@@ -69,7 +69,7 @@ Deno.test("props binding with attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: { utility: "get", parameters: ["props", "title"] },
         },
@@ -86,7 +86,7 @@ Deno.test("props binding with attributes using context", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: {
             utility: "concat",
@@ -111,10 +111,10 @@ Deno.test("props binding with attributes using context", async () => {
 Deno.test("component with props", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button", props: { children: "demobutton" } },
+      component: { type: "Button", props: { children: "demobutton" } },
       components: {
         Button: {
-          element: "button",
+          type: "button",
           children: { utility: "get", parameters: ["props", "children"] },
         },
       },
@@ -126,14 +126,14 @@ Deno.test("component with props", async () => {
 Deno.test("component with props with another element", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Layout" },
+      component: { type: "Layout" },
       components: {
-        Layout: { element: "div", children: [{ element: "Navigation" }] },
+        Layout: { type: "div", children: [{ type: "Navigation" }] },
         Link: {
-          element: "a",
+          type: "a",
           children: { utility: "get", parameters: ["props", "children"] },
         },
-        Navigation: [{ element: "Link", props: { children: "zoozoo" } }],
+        Navigation: [{ type: "Link", props: { children: "zoozoo" } }],
       },
     }),
     "<div><a>zoozoo</a></div>",
@@ -143,10 +143,10 @@ Deno.test("component with props with another element", async () => {
 Deno.test("bind element from props", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button", props: { element: "div" } },
+      component: { type: "Button", props: { type: "div" } },
       components: {
         Button: {
-          element: { utility: "get", parameters: ["props", "element"] },
+          type: { utility: "get", parameters: ["props", "type"] },
           children: "demo",
         },
       },
@@ -158,10 +158,10 @@ Deno.test("bind element from props", async () => {
 Deno.test("evaluate element from props", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button" },
+      component: { type: "Button" },
       components: {
         Button: {
-          element: { utility: "get", parameters: ["props", "element", "a"] },
+          type: { utility: "get", parameters: ["props", "type", "a"] },
           children: "demo",
         },
       },
@@ -174,7 +174,7 @@ Deno.test("bind to context in a prop", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         bindToProps: {
           title: { utility: "get", parameters: ["context", "value"] },
         },
@@ -192,7 +192,7 @@ Deno.test("bind to context in a prop and use regular props", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         bindToProps: {
           title: { utility: "get", parameters: ["context", "value"] },
         },
@@ -217,13 +217,13 @@ Deno.test("bind to a prop in a prop", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         bindToProps: {
           title: { utility: "get", parameters: ["context", "value"] },
         },
         children: [
           {
-            element: "Button",
+            type: "Button",
             bindToProps: {
               children: { utility: "get", parameters: ["props", "title"] },
             },
@@ -232,7 +232,7 @@ Deno.test("bind to a prop in a prop", async () => {
       },
       components: {
         Button: {
-          element: "button",
+          type: "button",
           children: { utility: "get", parameters: ["props", "children"] },
         },
       },
@@ -248,7 +248,7 @@ Deno.test("evaluate to context in a prop", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         bindToProps: {
           title: {
             utility: "concat",
@@ -272,13 +272,13 @@ Deno.test("bind to a prop in a prop with utilities", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         bindToProps: {
           title: { utility: "get", parameters: ["context", "value"] },
         },
         children: [
           {
-            element: "Button",
+            type: "Button",
             bindToProps: {
               children: {
                 utility: "concat",
@@ -293,7 +293,7 @@ Deno.test("bind to a prop in a prop with utilities", async () => {
       },
       components: {
         Button: {
-          element: "button",
+          type: "button",
           children: { utility: "get", parameters: ["props", "children"] },
         },
       },

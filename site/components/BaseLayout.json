@@ -1,6 +1,6 @@
 [
   {
-    "element": "!DOCTYPE",
+    "type": "!DOCTYPE",
     "attributes": {
       "html": "",
       "__language": "context.meta.language"
@@ -8,42 +8,42 @@
     "closingCharacter": ""
   },
   {
-    "element": "html",
+    "type": "html",
     "attributes": {},
     "children": [
       {
-        "element": "head",
+        "type": "head",
         "children": [
           {
-            "element": "MetaFields"
+            "type": "MetaFields"
           }
         ]
       },
       {
-        "element": "body",
+        "type": "body",
         "children": [
           {
-            "element": "MainNavigation"
+            "type": "MainNavigation"
           },
           {
             "visibleIf": "props.showToc",
-            "element": "aside",
+            "type": "aside",
             "class": "fixed top-16 pl-4 hidden lg:inline",
             "children": [
               {
-                "element": "TableOfContents"
+                "type": "TableOfContents"
               }
             ]
           },
           {
-            "element": "main",
+            "type": "main",
             "##children": "props.content"
           },
           {
-            "element": "MainFooter"
+            "type": "MainFooter"
           },
           {
-            "element": "Scripts"
+            "type": "Scripts"
           }
         ]
       }

@@ -11,7 +11,7 @@ setupTwind({ sheet: stylesheet, mode: "silent" });
 Deno.test("class shortcut extension", async () => {
   assertEquals(
     await breeze({
-      component: { element: "span", class: "demo", children: "testing" },
+      component: { type: "span", class: "demo", children: "testing" },
       extensions: [extensions.classShortcut],
     }),
     '<span class="demo">testing</span>',
@@ -22,7 +22,7 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         classList: {
           "font-bold": [
             { utility: "get", parameters: ["context", "href"] },
@@ -50,7 +50,7 @@ Deno.test("classList shortcut works with different class types", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         class: {
           utility: "concat",
           parameters: ["bg-red-200", " ", {
@@ -85,7 +85,7 @@ Deno.test("class shortcut extension with getter", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         class: { utility: "get", parameters: ["context", "demo"] },
         children: "testing",
       },

@@ -3,8 +3,8 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import breeze from "../index.ts";
 
 const onlyChildren = { children: "testing" };
-const emptySpan = { element: "span" };
-const span = { element: "span", children: "testing" };
+const emptySpan = { type: "span" };
+const span = { type: "span", children: "testing" };
 
 Deno.test("empty element", async () => {
   assertEquals(await breeze({ component: emptySpan }), "<span></span>");
@@ -27,14 +27,14 @@ Deno.test("children element", async () => {
 
 Deno.test("nested element", async () => {
   assertEquals(
-    await breeze({ component: { element: "div", children: [span] } }),
+    await breeze({ component: { type: "div", children: [span] } }),
     "<div><span>testing</span></div>",
   );
 });
 
 Deno.test("nested siblings", async () => {
   assertEquals(
-    await breeze({ component: { element: "div", children: [span, span] } }),
+    await breeze({ component: { type: "div", children: [span, span] } }),
     "<div><span>testing</span><span>testing</span></div>",
   );
 });
@@ -42,7 +42,7 @@ Deno.test("nested siblings", async () => {
 Deno.test("nested children siblings", async () => {
   assertEquals(
     await breeze({
-      component: { element: "div", children: [onlyChildren, onlyChildren] },
+      component: { type: "div", children: [onlyChildren, onlyChildren] },
     }),
     "<div>testingtesting</div>",
   );
@@ -52,8 +52,8 @@ Deno.test("multi-level nesting", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
-        children: [{ element: "div", children: [span] }],
+        type: "div",
+        children: [{ type: "div", children: [span] }],
       },
     }),
     "<div><div><span>testing</span></div></div>",

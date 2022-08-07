@@ -1,35 +1,35 @@
 {
-  "element": "BaseLayout",
+  "type": "BaseLayout",
   "props": {
     "content": {
-      "element": "div",
+      "type": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "children": [
         {
-          "element": "div",
+          "type": "div",
           "class": "flex flex-col gap-4",
           "children": [
             {
-              "element": "div",
+              "type": "div",
               "children": "In this playground, you can experiment with the JSON to HTML transform."
             },
             {
-              "element": "div",
+              "type": "div",
               "class": "flex gap-4",
               "attributes": {
-                "x-state": "{ editor: JSON.stringify({ element: 'div', class: 'bg-red-200 p-4', children: 'demo' }, null, 2) }"
+                "x-state": "{ editor: JSON.stringify({ type: 'div', class: 'bg-red-200 p-4', children: 'demo' }, null, 2) }"
               },
               "children": [
                 {
-                  "element": "div",
+                  "type": "div",
                   "class": "w-1/2",
                   "children": [
                     {
-                      "element": "h2",
+                      "type": "h2",
                       "children": "Input"
                     },
                     {
-                      "element": "textarea",
+                      "type": "textarea",
                       "class": "border",
                       "attributes": {
                         "rows": "10",
@@ -41,15 +41,15 @@
                   ]
                 },
                 {
-                  "element": "div",
+                  "type": "div",
                   "class": "w-1/2",
                   "children": [
                     {
-                      "element": "h2",
+                      "type": "h2",
                       "children": "Output"
                     },
                     {
-                      "element": "div",
+                      "type": "div",
                       "attributes": {
                         "x": "compile(state.editor).then(t => t)"
                       }

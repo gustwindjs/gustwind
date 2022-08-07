@@ -1,5 +1,5 @@
 {
-  "element": "a",
+  "type": "a",
   "class": "underline",
   "classList": {
     "font-bold": "props.href === context.pathname"

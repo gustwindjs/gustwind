@@ -5,7 +5,7 @@ Deno.test("attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: { href: "testing", empty: "" },
         children: "testing",
       },
@@ -18,7 +18,7 @@ Deno.test("gets attributes from context", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: {
           href: { utility: "get", parameters: ["context", "test"] },
           empty: "",
@@ -37,7 +37,7 @@ Deno.test("evaluates attributes from context", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: {
           href: {
             utility: "concat",
@@ -62,7 +62,7 @@ Deno.test("undefined attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: { href: undefined },
         children: "testing",
       },
@@ -75,7 +75,7 @@ Deno.test("attributes without children", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: { href: "testing" },
       },
     }),
@@ -87,7 +87,7 @@ Deno.test("retains empty attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: { href: "" },
       },
     }),
@@ -99,7 +99,7 @@ Deno.test("removes undefined attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "a",
+        type: "a",
         attributes: { href: undefined },
       },
     }),

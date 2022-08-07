@@ -1,8 +1,7 @@
 type Context = Record<string, unknown>;
 
 type BaseComponent = {
-  // TODO: Rename as type
-  element?: string | Utility;
+  type?: string | Utility;
 
   attributes?: Record<string, string | Utility | undefined>;
   props?: Context;

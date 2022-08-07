@@ -6,7 +6,7 @@ Deno.test("context binding", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: { utility: "get", parameters: ["context", "test"] },
       },
       context: { test: "foobar" },
@@ -19,7 +19,7 @@ Deno.test("nested context binding", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: { utility: "get", parameters: ["context", "meta.title"] },
       },
       context: { meta: { title: "foobar" } },
@@ -32,7 +32,7 @@ Deno.test("nested context binding within an array", async () => {
   assertEquals(
     await breeze({
       component: [{
-        element: "span",
+        type: "span",
         children: { utility: "get", parameters: ["context", "meta.title"] },
       }],
       context: { meta: { title: "foobar" } },
@@ -44,14 +44,14 @@ Deno.test("nested context binding within an array", async () => {
 Deno.test("nested context binding within components", async () => {
   assertEquals(
     await breeze({
-      component: { element: "BaseLayout" },
+      component: { type: "BaseLayout" },
       components: {
         BaseLayout: [{
-          element: "html",
-          children: [{ element: "MetaFields" }],
+          type: "html",
+          children: [{ type: "MetaFields" }],
         }],
         MetaFields: [{
-          element: "span",
+          type: "span",
           children: { utility: "get", parameters: ["context", "meta.title"] },
         }],
       },
@@ -89,7 +89,7 @@ Deno.test("context evaluation", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: {
           utility: "concat",
           parameters: [
@@ -108,7 +108,7 @@ Deno.test("async context evaluation", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: {
           utility: "demo",
         },
@@ -126,7 +126,7 @@ Deno.test("nested context evaluation", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: {
           utility: "concat",
           parameters: [
@@ -181,7 +181,7 @@ Deno.test("context binding for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: { utility: "get", parameters: ["context", "test"] },
         },
@@ -197,7 +197,7 @@ Deno.test("nested context binding for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: { utility: "get", parameters: ["context", "test.test"] },
         },
@@ -213,7 +213,7 @@ Deno.test("context evaluation for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: {
             utility: "concat",
@@ -235,7 +235,7 @@ Deno.test("async context evaluation for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: { utility: "demo" },
         },
@@ -254,7 +254,7 @@ Deno.test("nested context evaluation for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: {
             utility: "concat",
@@ -276,7 +276,7 @@ Deno.test("async context evaluation for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         children: { utility: "demo" },
       },
       context: { test: "bar" },
@@ -289,7 +289,7 @@ Deno.test("async context evaluation for attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "span",
+        type: "span",
         attributes: {
           title: { utility: "demo" },
         },

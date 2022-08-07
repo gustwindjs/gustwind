@@ -1,6 +1,6 @@
 {
   "foreach": ["context.scripts", {
-    "element": "script",
+    "type": "script",
     "attributes": {
       "__type": "props.type",
       "__src": "props.src"

@@ -9,7 +9,7 @@ Deno.test("injects an id for a component", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: "demo",
       },
       extensions: [
@@ -31,14 +31,14 @@ Deno.test("injects ids for multiple component", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: [
           {
-            element: "span",
+            type: "span",
             children: "foo",
           },
           {
-            element: "span",
+            type: "span",
             children: "bar",
           },
         ],

@@ -1,25 +1,25 @@
 {
-  "element": "ul",
+  "type": "ul",
   "class": "flex flex-col gap-2",
   "attributes": {
     "__x-each": "props.dataSource"
   },
   "children": [
     {
-      "element": "li",
+      "type": "li",
       "attributes": {
         "x-template": ""
       },
       "class": "flex gap-2",
       "children": [
         {
-          "element": "label",
+          "type": "label",
           "attributes": {
             "x": "state.value[0]"
           }
         },
         {
-          "element": "input",
+          "type": "input",
           "class": "border flex-grow",
           "attributes": {
             "x-attr": "",

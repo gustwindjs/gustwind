@@ -6,7 +6,7 @@ Deno.test("pass utilities to children", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: {
           utility: "hello",
         },
@@ -23,7 +23,7 @@ Deno.test("pass utilities to children with parameters", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: {
           utility: "hello",
           parameters: ["world"],
@@ -41,7 +41,7 @@ Deno.test("pass utilities to attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         attributes: {
           title: {
             utility: "hello",
@@ -61,7 +61,7 @@ Deno.test("pass utilities to attributes with parameters", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         attributes: {
           title: {
             utility: "hello",

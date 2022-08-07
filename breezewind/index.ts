@@ -1,4 +1,3 @@
-import { apply } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { get, isObject, isUndefined } from "../utils/functional.ts";
 import { applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
@@ -38,7 +37,7 @@ async function render(
     ))).join("");
   }
 
-  let element = component.element;
+  let element = component.type;
   const foundComponent = element && typeof element === "string" &&
     components?.[element];
 
@@ -90,7 +89,7 @@ async function render(
       }, utilities);
     }
 
-    element = component.element;
+    element = component.type;
   }
 
   const attributes = await generateAttributes(
@@ -172,7 +171,7 @@ async function render(
 }
 
 function toHTML(
-  element?: Component["element"],
+  element?: Component["type"],
   attributes?: string,
   value: unknown = "",
 ) {

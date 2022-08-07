@@ -1,6 +1,6 @@
 [
   {
-    "element": "?xml",
+    "type": "?xml",
     "attributes": {
       "version": "1.0",
       "encoding": "UTF-8"
@@ -8,48 +8,48 @@
     "closingCharacter": "?"
   },
   {
-    "element": "feed",
+    "type": "feed",
     "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
     "attributes": {
       "xmlns": "http://www.w3.org/2005/Atom"
     },
     "children": [
       {
-        "element": "title",
+        "type": "title",
         "__children": "context.meta.siteName"
       },
       {
-        "element": "id",
+        "type": "id",
         "__children": "context.meta.url"
       },
       {
-        "element": "link",
+        "type": "link",
         "attributes": {
           "rel": "alternate",
           "__href": "context.meta.url"
         }
       },
       {
-        "element": "link",
+        "type": "link",
         "attributes": {
           "rel": "self",
           "==href": "context.meta.url + 'atom.xml'"
         }
       },
       {
-        "element": "updated",
+        "type": "updated",
         "==children": "(new Date(context.meta.built)).toISOString()"
       },
       {
         "foreach": ["context.blogPosts", {
-          "element": "entry",
+          "type": "entry",
           "children": [
             {
-              "element": "title",
+              "type": "title",
               "__children": "props.data.title"
             },
             {
-              "element": "link",
+              "type": "link",
               "attributes": {
                 "rel": "alternate",
                 "type": "text/html",
@@ -57,15 +57,15 @@
               }
             },
             {
-              "element": "id",
+              "type": "id",
               "__children": "props.data.slug"
             },
             {
-              "element": "published",
+              "type": "published",
               "==children": "(new Date(props.data.date)).toISOString()"
             },
             {
-              "element": "content",
+              "type": "content",
               "attributes": {
                 "type": "html"
               },
