@@ -32,9 +32,7 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
             { utility: "get", parameters: ["context", "href"] },
             { utility: "get", parameters: ["context", "pathname"] },
           ],
-          "my-2": [{ utility: "get", parameters: ["context", "href"] }, {
-            value: "bar",
-          }],
+          "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
         children: "testing",
       },
@@ -69,9 +67,7 @@ Deno.test("classList shortcut works with different class types", async () => {
             { utility: "get", parameters: ["context", "href"] },
             { utility: "get", parameters: ["context", "pathname"] },
           ],
-          "my-2": [{ utility: "get", parameters: ["context", "href"] }, {
-            value: "bar",
-          }],
+          "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
         children: "testing",
       },
@@ -81,7 +77,7 @@ Deno.test("classList shortcut works with different class types", async () => {
         pathname: "foo",
       },
     }),
-    '<span class="bg-red-200 foo font-bold mx-2">testing</span>',
+    '<span class="bg-red-200 font-bold mx-2">testing</span>',
   );
 });
 

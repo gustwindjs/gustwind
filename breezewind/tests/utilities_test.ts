@@ -30,7 +30,7 @@ Deno.test("pass utilities to children with parameters", async () => {
         },
       },
       utilities: {
-        hello: (target: string) => `hello ${target}`,
+        hello: (_, target: string) => `hello ${target}`,
       },
     }),
     "<div>hello world</div>",
@@ -71,7 +71,7 @@ Deno.test("pass utilities to attributes with parameters", async () => {
         "children": "test",
       },
       utilities: {
-        hello: (target: string) => `hello ${target}`,
+        hello: (_, target: string) => `hello ${target}`,
       },
     }),
     '<div title="hello world">test</div>',

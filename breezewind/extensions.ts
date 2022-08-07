@@ -40,6 +40,11 @@ async function classShortcut(
               utilities,
               context,
             );
+
+            if (values.length === 1) {
+              return firstValue;
+            }
+
             const trues = (await Promise.all(values.map(async (v) =>
               firstValue ===
                 await applyUtility(v as Utility, utilities, context)
