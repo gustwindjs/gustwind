@@ -1,7 +1,7 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
 import { tw } from "../client-deps.ts";
-import { get, isObject } from "../utils/functional.ts";
+import { isObject } from "../utils/functional.ts";
 import { applyUtility } from "./applyUtility.ts";
 import type {
   ClassComponent,
@@ -67,17 +67,17 @@ async function classShortcut(
   return component;
 }
 
-// TODO: Refactor to go through applyUtility to make this more flexible
-function foreach(
+async function foreach(
   component: ForEachComponent,
   context: Context,
+  utilities?: Utilities,
 ): Promise<Component> {
   if (!context || !component.foreach) {
     return Promise.resolve(component);
   }
 
-  const [key, childComponent] = component.foreach;
-  const values = get(context, key);
+  const [v, childComponent] = component.foreach;
+  const values = await applyUtility(v, utilities, context);
 
   if (!Array.isArray(values)) {
     return Promise.resolve(component);

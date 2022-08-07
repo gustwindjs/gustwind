@@ -8,7 +8,7 @@ Deno.test("foreach extension without context", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["items", {
+        foreach: [{ utility: "get", parameters: [] }, {
           element: "li",
           children: { utility: "get", parameters: ["props", "value"] },
         }],
@@ -24,7 +24,7 @@ Deno.test("foreach extension with an array", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["context.items", {
+        foreach: [{ utility: "get", parameters: ["context", "items"] }, {
           element: "li",
           children: { utility: "get", parameters: ["props", "value"] },
         }],
@@ -41,7 +41,7 @@ Deno.test("foreach extension with multiple children", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["context.items", [{
+        foreach: [{ utility: "get", parameters: ["context", "items"] }, [{
           element: "li",
           children: { utility: "get", parameters: ["props", "value"] },
         }, {
@@ -61,7 +61,7 @@ Deno.test("foreach extension with an array with a nested key", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["context.test.items", {
+        foreach: [{ utility: "get", parameters: ["context", "test.items"] }, {
           element: "li",
           children: { utility: "get", parameters: ["props", "value"] },
         }],
@@ -78,7 +78,7 @@ Deno.test("foreach extension with an array of objects", async () => {
     await breeze({
       component: {
         element: "ul",
-        foreach: ["context.items", {
+        foreach: [{ utility: "get", parameters: ["context", "items"] }, {
           element: "li",
           children: { utility: "get", parameters: ["props", "title"] },
         }],
@@ -94,7 +94,7 @@ Deno.test("foreach extension with attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        foreach: ["context.scripts", {
+        foreach: [{ utility: "get", parameters: ["context", "scripts"] }, {
           element: "script",
           attributes: {
             type: { utility: "get", parameters: ["props", "type"] },
@@ -118,7 +118,7 @@ Deno.test("foreach extension with multiple scripts", async () => {
   assertEquals(
     await breeze({
       component: {
-        foreach: ["context.scripts", {
+        foreach: [{ utility: "get", parameters: ["context", "scripts"] }, {
           element: "script",
           attributes: {
             type: { utility: "get", parameters: ["props", "type"] },
@@ -151,7 +151,10 @@ Deno.test("foreach extension with attributes and nesting", async () => {
             "element": "body",
             "children": [
               {
-                foreach: ["context.scripts", {
+                foreach: [{
+                  utility: "get",
+                  parameters: ["context", "scripts"],
+                }, {
                   element: "script",
                   attributes: {
                     type: { utility: "get", parameters: ["props", "type"] },

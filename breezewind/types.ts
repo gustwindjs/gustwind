@@ -35,7 +35,7 @@ type ClassComponent = BaseComponent & {
   class?: string | Utility;
 };
 type ForEachComponent = BaseComponent & {
-  foreach?: [string, Component | Component[]];
+  foreach?: [Utility, Component | Component[]];
 };
 type VisibleIfComponent = BaseComponent & {
   visibleIf?: Utility[];

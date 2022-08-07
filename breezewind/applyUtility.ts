@@ -11,17 +11,19 @@ function applyUtility(
 
   return utilities[value.utility].apply(
     null,
-    Array.isArray(value.parameters)
-      ? value.parameters.map((p) => {
-        // @ts-expect-error This is ok
-        if (p.context && p.property) {
+    [context].concat(
+      Array.isArray(value.parameters)
+        ? value.parameters.map((p) => {
           // @ts-expect-error This is ok
-          return get(get(context, p.context), p.property, p["default"]);
-        }
+          if (p.context && p.property) {
+            // @ts-expect-error This is ok
+            return get(get(context, p.context), p.property, p["default"]);
+          }
 
-        return p;
-      })
-      : [],
+          return p;
+        })
+        : [],
+    ),
   );
 }
 
