@@ -1,3 +1,4 @@
+import { apply } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { get, isObject, isUndefined } from "../utils/functional.ts";
 import { applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
@@ -41,7 +42,22 @@ async function render(
   const foundComponent = element && typeof element === "string" &&
     components?.[element];
 
-  const scopedProps = component.props || props;
+  let scopedProps = component.props || props;
+
+  if (component.bindToProps) {
+    const boundProps = Object.fromEntries(
+      await Promise.all(
+        Object.entries(component.bindToProps).map(async (
+          [k, v],
+        ) => [
+          k,
+          await applyUtility(v, utilities, { context, props: scopedProps }),
+        ]),
+      ),
+    );
+
+    scopedProps = { ...boundProps, ...scopedProps };
+  }
 
   if (foundComponent) {
     return (await Promise.all(

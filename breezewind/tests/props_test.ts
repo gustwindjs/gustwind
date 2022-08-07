@@ -224,11 +224,8 @@ Deno.test("bind to a prop in a prop", async () => {
         children: [
           {
             element: "Button",
-            props: {
-              children: {
-                context: "props",
-                property: "title",
-              },
+            bindToProps: {
+              children: { utility: "get", parameters: ["props", "title"] },
             },
           },
         ],
@@ -282,10 +279,13 @@ Deno.test("bind to a prop in a prop with utilities", async () => {
         children: [
           {
             element: "Button",
-            props: {
+            bindToProps: {
               children: {
                 utility: "concat",
-                parameters: [{ context: "context", property: "title" }, "bar"],
+                parameters: [{
+                  utility: "get",
+                  parameters: ["props", "title"],
+                }, "bar"],
               },
             },
           },
