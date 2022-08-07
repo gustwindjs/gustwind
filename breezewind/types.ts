@@ -2,12 +2,11 @@ type Context = Record<string, unknown>;
 
 type BaseComponent = {
   type?: string | Utility;
-
-  attributes?: Record<string, string | Utility | undefined>;
-  props?: Context;
-  bindToProps?: Record<string, Utility>;
   closingCharacter?: string;
 
+  attributes?: Record<string, string | Utility | undefined>;
+  bindToProps?: Record<string, Utility>;
+  props?: Context;
   children?: string | Component[] | Utility;
 
   // TODO: Eliminate by providing a render utility
