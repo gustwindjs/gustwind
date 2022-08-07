@@ -11,23 +11,14 @@ type BaseComponent = {
 
   children?: string | Component[] | Utility;
 
-  // TODO: Eliminate?
+  // TODO: Eliminate by providing a render utility
   "##children"?: string; // Rendering binding
 };
 
-type ClassOptions = Utility | Value;
-type ClassList = Record<string, ClassOptions[]>;
+type ClassList = Record<string, Utility[]>;
 type Utility = {
   utility: string;
   parameters?: (string | Utility)[];
-};
-
-// TODO: Maybe this one can be dropped (comes from claslist)
-type Value = {
-  context?: never;
-  property?: never;
-  value: string;
-  default?: never;
 };
 
 type ClassComponent = BaseComponent & {
@@ -58,7 +49,6 @@ type Utilities = Record<string, (...args: any) => string | Promise<string>>;
 export type {
   ClassComponent,
   ClassList,
-  ClassOptions,
   Component,
   Context,
   Extension,
