@@ -188,7 +188,30 @@ Deno.test("bind to context in a prop", async () => {
   );
 });
 
-// TODO: Test bindToProps and props used together
+Deno.test("bind to context in a prop and use regular props", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        element: "span",
+        bindToProps: {
+          title: { utility: "get", parameters: ["context", "value"] },
+        },
+        props: { demo: "bar" },
+        children: {
+          utility: "concat",
+          parameters: [
+            { utility: "get", parameters: ["props", "title"] },
+            { utility: "get", parameters: ["props", "demo"] },
+          ],
+        },
+      },
+      context: {
+        value: "demo",
+      },
+    }),
+    "<span>demobar</span>",
+  );
+});
 
 Deno.test("bind to a prop in a prop", async () => {
   assertEquals(
