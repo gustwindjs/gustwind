@@ -101,12 +101,7 @@ async function render(
 
   const attributes = await generateAttributes(
     component.attributes,
-    typeof component.props !== "string"
-      ? {
-        props: scopedProps,
-        context,
-      }
-      : context,
+    { props: scopedProps, context },
     utilities,
   );
 
