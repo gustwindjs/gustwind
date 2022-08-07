@@ -48,7 +48,7 @@ async function render(
   const foundComponent = element && typeof element === "string" &&
     components?.[element];
 
-  let scopedProps = component.props || props;
+  props = component.props || props;
 
   if (component.bindToProps) {
     const boundProps = Object.fromEntries(
@@ -57,12 +57,12 @@ async function render(
           [k, v],
         ) => [
           k,
-          await applyUtility(v, utilities, { context, props: scopedProps }),
+          await applyUtility(v, utilities, { context, props }),
         ]),
       ),
     );
 
-    scopedProps = { ...boundProps, ...scopedProps };
+    props = { ...boundProps, ...props };
   }
 
   if (foundComponent) {
@@ -75,7 +75,7 @@ async function render(
           components,
           extensions,
           context,
-          props: scopedProps,
+          props,
           utilities,
         })
       ),
@@ -91,7 +91,7 @@ async function render(
     // extensions.
     for (const extension of extensions) {
       component = await extension(component, {
-        props: scopedProps,
+        props,
         context,
       }, utilities);
     }
@@ -101,7 +101,7 @@ async function render(
 
   const attributes = await generateAttributes(
     component.attributes,
-    { props: scopedProps, context },
+    { props, context },
     utilities,
   );
 
@@ -110,7 +110,7 @@ async function render(
   if (typeof element === "string") {
     // Do nothing
   } else if (element?.utility && element?.parameters) {
-    e = await applyUtility(element, utilities, { context, props: scopedProps });
+    e = await applyUtility(element, utilities, { context, props });
   }
 
   if (component.children) {
@@ -121,17 +121,14 @@ async function render(
     } else if (Array.isArray(children)) {
       children = await render({
         component: children,
-        props: scopedProps,
+        props,
         components,
         extensions,
         context,
         utilities,
       });
     } else if (children.utility && utilities) {
-      children = await applyUtility(children, utilities, {
-        context,
-        props: scopedProps,
-      });
+      children = await applyUtility(children, utilities, { context, props });
     }
 
     return toHTML(e, attributes, children);
