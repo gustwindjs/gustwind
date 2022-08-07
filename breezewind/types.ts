@@ -8,9 +8,6 @@ type BaseComponent = {
   bindToProps?: Record<string, Utility>;
   props?: Context;
   children?: string | Component[] | Utility;
-
-  // TODO: Eliminate by providing a render utility
-  "##children"?: string; // Rendering binding
 };
 
 type ClassList = Record<string, Utility[]>;

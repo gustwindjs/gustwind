@@ -19,10 +19,17 @@ async function render(
     utilities?: Utilities;
   },
 ): Promise<string> {
+  const renderUtility = (_: Context, component: Component | Component[]) =>
+    render({ component, components, extensions, context, utilities });
+
   // @ts-expect-error This is fine
   utilities = isObject(utilities)
-    ? { ...defaultUtilities, ...utilities }
-    : defaultUtilities;
+    ? {
+      render: renderUtility,
+      ...defaultUtilities,
+      ...utilities,
+    }
+    : { render: renderUtility, ...defaultUtilities };
 
   if (Array.isArray(component)) {
     return (await Promise.all(component.map((c) =>
@@ -133,26 +140,6 @@ async function render(
     }
 
     return toHTML(e, attributes, children);
-  }
-
-  // TODO: Should this go through the utility api instead?
-  // I.e. expose render as a default utility
-  if (component["##children"]) {
-    return toHTML(
-      e,
-      attributes,
-      await render({
-        // @ts-expect-error TODO: What if get fails?
-        component: get(
-          { context, props: scopedProps },
-          component["##children"],
-        ),
-        components,
-        extensions,
-        context,
-        utilities,
-      }),
-    );
   }
 
   if (element) {

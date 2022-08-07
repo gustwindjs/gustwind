@@ -10,7 +10,13 @@ function applyUtility(
     throw new Error("applyUtility - No utilities were provided");
   }
 
-  return utilities[value.utility].apply(
+  const foundUtility = utilities[value.utility];
+
+  if (!foundUtility) {
+    throw new Error("applyUtility - Matching utility was not found");
+  }
+
+  return foundUtility.apply(
     null,
     [context].concat(
       Array.isArray(value.parameters)

@@ -70,7 +70,10 @@ Deno.test("allow rendering with context", async () => {
     await breeze({
       component: {
         type: "div",
-        "##children": "context.demo",
+        children: {
+          utility: "render",
+          parameters: [{ utility: "get", parameters: ["context", "demo"] }],
+        },
       },
       context: { demo: { type: "span", children: "foobar" } },
     }),
@@ -84,7 +87,10 @@ Deno.test("allow rendering with props", async () => {
       component: {
         type: "div",
         props: { demo: { type: "span", children: "foobar" } },
-        "##children": "props.demo",
+        children: {
+          utility: "render",
+          parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+        },
       },
     }),
     "<div><span>foobar</span></div>",
@@ -101,7 +107,10 @@ Deno.test("allow rendering with props in a component", async () => {
       components: {
         Test: {
           type: "div",
-          "##children": "props.demo",
+          children: {
+            utility: "render",
+            parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+          },
         },
       },
     }),
