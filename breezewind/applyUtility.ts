@@ -1,5 +1,22 @@
 import type { Context, Utilities, Utility } from "./types.ts";
 
+async function applyUtilities(
+  props: Record<string, Utility>,
+  utilities?: Utilities,
+  context?: Context,
+) {
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(props).map(async (
+        [k, v],
+      ) => [
+        k,
+        await applyUtility(v, utilities, context),
+      ]),
+    ),
+  );
+}
+
 async function applyUtility(
   value: Utility,
   utilities?: Utilities,
@@ -37,4 +54,4 @@ async function applyUtility(
   );
 }
 
-export { applyUtility };
+export { applyUtilities, applyUtility };

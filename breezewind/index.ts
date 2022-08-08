@@ -1,5 +1,5 @@
 import { get, isObject, isUndefined } from "../utils/functional.ts";
-import { applyUtility } from "./applyUtility.ts";
+import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
   Component,
@@ -51,15 +51,10 @@ async function render(
   props = component.props || props;
 
   if (component.bindToProps) {
-    const boundProps = Object.fromEntries(
-      await Promise.all(
-        Object.entries(component.bindToProps).map(async (
-          [k, v],
-        ) => [
-          k,
-          await applyUtility(v, utilities, { context, props }),
-        ]),
-      ),
+    const boundProps = await applyUtilities(
+      component.bindToProps,
+      utilities,
+      { context, props },
     );
 
     props = { ...boundProps, ...props };
