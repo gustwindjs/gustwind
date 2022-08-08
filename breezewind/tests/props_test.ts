@@ -219,13 +219,17 @@ Deno.test("bind to a prop in a prop", async () => {
       component: {
         type: "div",
         bindToProps: {
-          title: { utility: "get", parameters: ["context", "value"] },
+          demo: { utility: "get", parameters: ["context", "value"] },
         },
         children: [
           {
             type: "Button",
             bindToProps: {
-              children: { utility: "get", parameters: ["props", "title"] },
+              children: { utility: "get", parameters: ["props", "demo"] },
+              title: { utility: "get", parameters: ["props", "demo"] },
+            },
+            props: {
+              alt: "demotitle",
             },
           },
         ],
@@ -234,13 +238,17 @@ Deno.test("bind to a prop in a prop", async () => {
         Button: {
           type: "button",
           children: { utility: "get", parameters: ["props", "children"] },
+          attributes: {
+            alt: { utility: "get", parameters: ["props", "alt"] },
+            title: { utility: "get", parameters: ["props", "title"] },
+          },
         },
       },
       context: {
         value: "propinpropdemo",
       },
     }),
-    "<div><button>propinpropdemo</button></div>",
+    '<div><button alt="demotitle" title="propinpropdemo">propinpropdemo</button></div>',
   );
 });
 

@@ -47,17 +47,16 @@ async function render(
   let element = component.type;
   const foundComponent = element && typeof element === "string" &&
     components?.[element];
-
-  props = component.props || props;
+  let scopedProps = { ...props, ...component.props };
 
   if (component.bindToProps) {
     const boundProps = await applyUtilities(
       component.bindToProps,
       utilities,
-      { context, props },
+      { context, props: scopedProps },
     );
 
-    props = { ...boundProps, ...props };
+    scopedProps = { ...boundProps, ...scopedProps };
   }
 
   if (foundComponent) {
@@ -70,7 +69,7 @@ async function render(
           components,
           extensions,
           context,
-          props,
+          props: scopedProps,
           utilities,
         })
       ),
@@ -86,7 +85,7 @@ async function render(
     // extensions.
     for (const extension of extensions) {
       component = await extension(component, {
-        props,
+        props: scopedProps,
         context,
       }, utilities);
     }
@@ -96,7 +95,7 @@ async function render(
 
   const attributes = await generateAttributes(
     component.attributes,
-    { props, context },
+    { props: scopedProps, context },
     utilities,
   );
 
@@ -105,7 +104,7 @@ async function render(
   if (typeof element === "string") {
     // Do nothing
   } else if (element?.utility && element?.parameters) {
-    e = await applyUtility(element, utilities, { context, props });
+    e = await applyUtility(element, utilities, { context, props: scopedProps });
   }
 
   if (component.children) {
@@ -116,14 +115,17 @@ async function render(
     } else if (Array.isArray(children)) {
       children = await render({
         component: children,
-        props,
+        props: scopedProps,
         components,
         extensions,
         context,
         utilities,
       });
     } else if (children.utility && utilities) {
-      children = await applyUtility(children, utilities, { context, props });
+      children = await applyUtility(children, utilities, {
+        context,
+        props: scopedProps,
+      });
     }
 
     return toHTML(e, attributes, children);

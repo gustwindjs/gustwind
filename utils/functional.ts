@@ -15,7 +15,7 @@ function get<O = Record<string, unknown>>(
   defaultValue?: unknown,
 ): unknown {
   if (!key) {
-    return undefined;
+    return defaultValue;
   }
 
   let value = dataContext;
@@ -23,8 +23,14 @@ function get<O = Record<string, unknown>>(
   const keyParts = key.split(".");
 
   if (keyParts.length === 1) {
-    // @ts-expect-error This is ok
-    return dataContext ? dataContext[key] : defaultValue;
+    if (dataContext) {
+      // @ts-expect-error This is ok
+      const value = dataContext[key];
+
+      return isUndefined(value) ? defaultValue : value;
+    }
+
+    return defaultValue;
   }
 
   // TODO: What if the lookup fails?
