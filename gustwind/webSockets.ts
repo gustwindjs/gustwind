@@ -1,9 +1,9 @@
 import { websockets } from "../server-deps.ts";
-import type { Layout } from "../types.ts";
+import type { Component } from "../breezewind/types.ts";
 
 type WebSocketMessage = {
   type: "update";
-  payload: { path: string; data: Layout };
+  payload: { path: string; data: Component | Component[] };
 };
 
 const getWebsocketServer = (port = 8080) => {

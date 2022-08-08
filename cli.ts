@@ -94,14 +94,21 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     const startTime = performance.now();
     console.log("Starting development server");
 
-    const mode = "development";
     const projectPaths = projectMeta.paths;
+
+    const dataSources = projectPaths.dataSources
+      ? await import(
+        "file://" + path.join(projectRoot, projectPaths.dataSources)
+      ).then((m) => m)
+      : {};
+
+    const mode = "development";
     const initialCache = getCache();
     await watchAll({
       cache: initialCache,
-      mode,
       projectRoot: projectRoot,
       projectPaths,
+      dataSources,
     });
 
     // TODO: Watch pageUtilities file to update the cache on change
@@ -129,12 +136,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
         "twind setup",
         initialCache.twindSetup,
       );
-
-    const dataSources = projectPaths.dataSources
-      ? await import(
-        "file://" + path.join(projectRoot, projectPaths.dataSources)
-      ).then((m) => m)
-      : {};
 
     const serve = await serveGustwind({
       projectMeta,

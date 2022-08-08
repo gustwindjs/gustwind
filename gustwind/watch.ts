@@ -4,25 +4,24 @@ import { path as _path } from "../server-deps.ts";
 import { getDefinition } from "./getDefinitions.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { Component, Layout, Mode, ProjectMeta, Route } from "../types.ts";
+import type { DataSources, ProjectMeta, Route } from "../types.ts";
 import type { ServeCache } from "./cache.ts";
+import type { Component } from "../breezewind/types.ts";
 
 function watchDataSourceInputs(
-  { wss, path, cache, mode, dataSourcesPath, transformsPath }: {
+  { wss, path, cache, dataSources }: {
     wss: ReturnType<typeof getWebsocketServer>;
     path: string;
     cache: ServeCache;
-    mode: Mode;
-    dataSourcesPath: ProjectMeta["paths"]["dataSources"];
-    transformsPath: ProjectMeta["paths"]["transforms"];
+    dataSources: DataSources;
   },
 ) {
   const watched = new Set();
 
   Object.values(cache.routes).forEach((route) => {
-    const { dataSources, url } = route;
+    const { url } = route;
 
-    dataSources?.forEach(({ input }) => {
+    route.dataSources?.forEach((input) => {
       if (!watched.has(input)) {
         watch({
           directory: _path.join(path, input),
@@ -32,9 +31,7 @@ function watchDataSourceInputs(
             const [u, r] = await expandRoute({
               url: url as string,
               route,
-              mode,
-              dataSourcesPath,
-              transformsPath,
+              dataSources,
             });
             cache.routes[u] = r;
 
@@ -166,11 +163,7 @@ function getInputsToWatch(routeDefinition: Route["routes"]) {
 
   let inputsToWatch: string[] = [];
 
-  Object.values(routeDefinition).forEach(({ dataSources, expand, routes }) => {
-    dataSources?.forEach(({ input }) => input && inputsToWatch.push(input));
-    expand?.dataSources?.forEach(({ input }) =>
-      input && inputsToWatch.push(input)
-    );
+  Object.values(routeDefinition).forEach(({ routes }) => {
     inputsToWatch = inputsToWatch.concat(getInputsToWatch(routes));
   });
 
@@ -195,7 +188,9 @@ function watchLayouts(
 
       console.log("Changed layouts", matchedPath);
       wss.clients.forEach(async (socket) => {
-        const [layoutName, layoutDefinition] = await getDefinition<Layout>(
+        const [layoutName, layoutDefinition] = await getDefinition<
+          Component | Component[]
+        >(
           matchedPath,
         );
 
@@ -282,11 +277,11 @@ function watchScripts(
 }
 
 async function watchAll(
-  { cache, mode, projectRoot, projectPaths }: {
+  { cache, projectRoot, projectPaths, dataSources }: {
     cache: ServeCache;
-    mode: Mode;
     projectRoot: string;
     projectPaths: ProjectMeta["paths"];
+    dataSources: DataSources;
   },
 ) {
   const wss = getWebsocketServer();
@@ -295,9 +290,7 @@ async function watchAll(
     wss,
     path: projectRoot,
     cache,
-    mode,
-    dataSourcesPath: projectPaths.dataSources,
-    transformsPath: projectPaths.transforms,
+    dataSources,
   });
   watchScripts(wss, cache, projectPaths.scripts);
   watchMeta(wss, projectRoot);

@@ -1,11 +1,11 @@
-import type { Component, DataContext, Layout, Route } from "../types.ts";
-import type { Utilities } from "../breezewind/types.ts";
+import type { DataContext, Route } from "../types.ts";
+import type { Component, Utilities } from "../breezewind/types.ts";
 
 type ServeCache = {
   contexts: Record<string, DataContext>;
   components: Record<string, Component>;
-  layoutDefinitions: Record<string, Layout>;
-  layouts: Record<string, Layout>;
+  layoutDefinitions: Record<string, Component | Component[]>;
+  layouts: Record<string, Component | Component[]>;
   scripts: Record<string, string>;
   styles: Record<string, string>;
   routes: Record<string, Route>;
