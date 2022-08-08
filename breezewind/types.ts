@@ -38,8 +38,11 @@ type Extension = (
   utilities?: Utilities,
 ) => Promise<BaseComponent>;
 
-// deno-lint-ignore no-explicit-any
-type Utilities = Record<string, (...args: any) => string | Promise<string>>;
+type Utilities = Record<
+  string,
+  // deno-lint-ignore no-explicit-any
+  (context?: Context, ...args: any) => string | Promise<string>
+>;
 
 export type {
   ClassComponent,

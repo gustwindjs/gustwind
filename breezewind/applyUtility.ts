@@ -1,7 +1,7 @@
 import type { Context, Utilities, Utility } from "./types.ts";
 
 async function applyUtilities(
-  props: Record<string, Utility>,
+  props: Record<string, string | Utility>,
   utilities?: Utilities,
   context?: Context,
 ) {
@@ -11,7 +11,7 @@ async function applyUtilities(
         [k, v],
       ) => [
         k,
-        await applyUtility(v, utilities, context),
+        typeof v === "string" ? v : await applyUtility(v, utilities, context),
       ]),
     ),
   );

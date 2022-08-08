@@ -19,6 +19,8 @@ import type {
 import type { Utilities } from "../breezewind/types.ts";
 import breeze from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
+import { applyUtilities } from "../breezewind/applyUtility.ts";
+import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -81,15 +83,21 @@ async function renderPage({
   );
   const context = {
     projectMeta,
-    meta: {
-      ...runtimeMeta,
-      ...projectMeta.meta,
-      ...route.meta,
-    },
     scripts: pageScripts,
     ...route.context,
     ...dataSourceContext,
   };
+  const meta = await applyUtilities(
+    {
+      ...runtimeMeta,
+      ...projectMeta.meta,
+      ...route.meta,
+    },
+    // @ts-expect-error This is fine
+    { ...defaultUtilities, ...pageUtilities },
+    context,
+  );
+  context.meta = meta;
 
   DEBUG && console.log("rendering a page with context", context);
 
