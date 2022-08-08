@@ -71,6 +71,21 @@ Deno.test("undefined attributes", async () => {
   );
 });
 
+Deno.test("undefined attributes with get", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "a",
+        attributes: {
+          href: { "utility": "get", "parameters": ["dummy", "test"] },
+        },
+        children: "testing",
+      },
+    }),
+    "<a>testing</a>",
+  );
+});
+
 Deno.test("attributes without children", async () => {
   assertEquals(
     await breeze({

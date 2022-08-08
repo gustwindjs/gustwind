@@ -167,8 +167,9 @@ async function generateAttributes(
     return "";
   }
 
-  return (await evaluateFields(attributes, context, utilities)).map(([k, v]) =>
-    v && (v as string).length > 0 ? `${k}="${v}"` : k
+  return (await evaluateFields(attributes, context, utilities)).map(
+    // @ts-expect-error This is ok
+    ([k, v]) => v && (v as string).length > 0 ? `${k}="${v}"` : k,
   ).join(" ");
 }
 
@@ -181,7 +182,7 @@ async function evaluateFields(
     return [];
   }
 
-  return Promise.all(
+  return (await Promise.all(
     await Object.entries(props).map(async ([k, v]) => {
       if (isUndefined(v)) {
         return [];
@@ -206,9 +207,13 @@ async function evaluateFields(
         value = await applyUtility(value as Utility, utilities, context);
       }
 
+      if (isUndefined(value)) {
+        return;
+      }
+
       return [k, value];
     }),
-  );
+  )).filter(Boolean);
 }
 
 export default render;

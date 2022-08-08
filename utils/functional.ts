@@ -15,13 +15,20 @@ function get<O = Record<string, unknown>>(
   defaultValue?: unknown,
 ): unknown {
   if (!key) {
-    return;
+    return undefined;
   }
 
   let value = dataContext;
 
+  const keyParts = key.split(".");
+
+  if (keyParts.length === 1) {
+    // @ts-expect-error This is ok
+    return dataContext ? dataContext[key] : defaultValue;
+  }
+
   // TODO: What if the lookup fails?
-  key.split(".").forEach((k) => {
+  keyParts.forEach((k) => {
     if (isObject(value)) {
       // TODO: How to type
       // @ts-expect-error Recursive until it finds the root
