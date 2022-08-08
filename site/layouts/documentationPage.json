@@ -15,12 +15,14 @@
         },
         {
           "type": "Markdown",
-          "props": {
-            "type": "div",
+          "bindToProps": {
             "inputText": {
               "utility": "get",
               "parameters": ["context", "match.content"]
             }
+          },
+          "props": {
+            "type": "div"
           }
         }
       ]
