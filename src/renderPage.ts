@@ -10,17 +10,18 @@ import type {
   Components,
   DataContext,
   DataSources,
-  Layout,
   Meta,
   Mode,
   ProjectMeta,
   Route,
 } from "../types.ts";
-import type { Utilities } from "../breezewind/types.ts";
+import type { Component, Utilities } from "../breezewind/types.ts";
 import breeze from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
+
+type Layout = Component | Component[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -158,8 +159,6 @@ function injectStyleTag(markup: string, styleTag: string) {
 }
 
 function renderHTML(
-  // TODO: Load transforms beforehand and connect them with utilities here
-  // transformsPath: string,
   children: Layout,
   components: Components,
   pageData: DataContext,

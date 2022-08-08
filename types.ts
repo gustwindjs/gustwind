@@ -1,4 +1,4 @@
-import type { Component as BreezeComponent } from "./breezewind/types.ts";
+import type { Component } from "./breezewind/types.ts";
 
 // This should match with ./transforms
 type Transform = "markdown" | "reverse";
@@ -6,7 +6,6 @@ type Transform = "markdown" | "reverse";
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Component = BreezeComponent | BreezeComponent[];
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
 type Library = {
@@ -72,7 +71,6 @@ type ProjectMeta = {
   };
 };
 
-type Layout = Component;
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type BuildWorkerEvent =
@@ -83,7 +81,7 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
-      layout: Layout;
+      layout: Component | Component[];
       route: Route;
       pagePath: string;
       dir: string;
@@ -118,11 +116,9 @@ export type {
   Attributes,
   BuildWorkerEvent,
   Category,
-  Component,
   Components,
   DataContext,
   DataSources,
-  Layout,
   Library,
   MarkdownWithFrontmatter,
   Meta,
