@@ -1,5 +1,5 @@
 {
-  "foreach": ["context.scripts", {
+  "foreach": [{ "utility": "get", "parameters": ["context", "scripts"] }, {
     "type": "script",
     "attributes": {
       "type": {

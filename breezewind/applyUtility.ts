@@ -13,6 +13,7 @@ function applyUtility(
   const foundUtility = utilities[value.utility];
 
   if (!foundUtility) {
+    console.error({ utilities, value });
     throw new Error("applyUtility - Matching utility was not found");
   }
 
