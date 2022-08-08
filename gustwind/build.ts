@@ -213,10 +213,14 @@ function getAmountOfThreads(
   return amountOfThreads;
 }
 
-if (import.meta.main) {
+async function run() {
   const projectMeta = await getJson<ProjectMeta>("./meta.json");
 
   build(projectMeta, Deno.cwd());
+}
+
+if (import.meta.main) {
+  run();
 }
 
 export { build };

@@ -181,10 +181,14 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   return 0;
 }
 
-if (import.meta.main) {
+async function run() {
   const ret = await main(Deno.args);
 
   if (ret) {
     Deno.exit(ret);
   }
+}
+
+if (import.meta.main) {
+  run();
 }
