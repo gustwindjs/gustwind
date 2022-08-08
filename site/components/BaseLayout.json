@@ -41,8 +41,13 @@
           {
             "type": "main",
             "children": {
-              "utility": "get",
-              "parameters": ["props", "content"]
+              "utility": "render",
+              "parameters": [
+                {
+                  "utility": "get",
+                  "parameters": ["props", "content"]
+                }
+              ]
             }
           },
           {
