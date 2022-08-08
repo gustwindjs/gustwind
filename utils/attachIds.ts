@@ -31,7 +31,7 @@ function attachIds<T extends Component | Component[]>(
       Object.entries(component.props).map((
         [k, v],
         // @ts-ignore TODO: Figure out how to type this correctly
-      ) => [k, isObject(v) ? attachIds(v) : v]),
+      ) => [k, Array.isArray(v) || isObject(v) ? attachIds(v) : v]),
     );
   }
 
