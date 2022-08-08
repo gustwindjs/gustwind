@@ -14,6 +14,7 @@ async function buildForNpm(name: string, version: string) {
 
   await build({
     entryPoints: [`./cli.ts`],
+    scriptModule: false, // ESM only (allows top level awaits)
     outDir,
     shims: {
       deno: true,
