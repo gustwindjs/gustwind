@@ -9,14 +9,16 @@ Deno.test("injects an id for a component", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: "demo",
       },
       extensions: [
-        extensions.inject((c) => ({
-          ...c,
-          attributes: { ...c.attributes, "data-id": id },
-        })),
+        extensions.inject((c) =>
+          Promise.resolve({
+            ...c,
+            attributes: { ...c.attributes, "data-id": id },
+          })
+        ),
       ],
     }),
     `<div data-id="${id}">demo</div>`,
@@ -29,23 +31,25 @@ Deno.test("injects ids for multiple component", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         children: [
           {
-            element: "span",
+            type: "span",
             children: "foo",
           },
           {
-            element: "span",
+            type: "span",
             children: "bar",
           },
         ],
       },
       extensions: [
-        extensions.inject((c) => ({
-          ...c,
-          attributes: { ...c.attributes, "data-id": id },
-        })),
+        extensions.inject((c) =>
+          Promise.resolve({
+            ...c,
+            attributes: { ...c.attributes, "data-id": id },
+          })
+        ),
       ],
     }),
     `<div data-id="${id}"><span data-id="${id}">foo</span><span data-id="${id}">bar</span></div>`,

@@ -1,23 +1,43 @@
 {
-  "element": "BaseLayout",
+  "type": "BaseLayout",
   "props": {
     "content": {
-      "element": "div",
+      "type": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "children": [
         {
-          "element": "div",
+          "type": "div",
           "children": "You have discovered the secret button page!"
         },
         {
-          "element": "div",
-          "==children": "utilities.testUtility('hello') + ' ' + 'world!'",
+          "type": "div",
+          "children": {
+            "utility": "concat",
+            "parameters": [
+              {
+                "utility": "testUtility",
+                "parameters": ["hello"]
+              },
+              " ",
+              "world!"
+            ]
+          },
           "attributes": {
-            "==title": "utilities.testUtility('hello') + ' ' + 'world!'"
+            "title": {
+              "utility": "concat",
+              "parameters": [
+                {
+                  "utility": "testUtility",
+                  "parameters": ["hello"]
+                },
+                " ",
+                "world!"
+              ]
+            }
           }
         },
         {
-          "element": "div",
+          "type": "div",
           "class": "btn btn-blue",
           "children": "Test button",
           "attributes": {
@@ -25,7 +45,7 @@
           }
         },
         {
-          "element": "div",
+          "type": "div",
           "class": "btn btn-muted",
           "children": "Test button",
           "attributes": {

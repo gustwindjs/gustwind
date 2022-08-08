@@ -1,9 +1,15 @@
 {
-  "foreach": ["context.scripts", {
-    "element": "script",
+  "foreach": [{ "utility": "get", "parameters": ["context", "scripts"] }, {
+    "type": "script",
     "attributes": {
-      "__type": "props.type",
-      "__src": "props.src"
+      "type": {
+        "utility": "get",
+        "parameters": ["props", "type"]
+      },
+      "src": {
+        "utility": "get",
+        "parameters": ["props", "src"]
+      }
     }
   }]
 }

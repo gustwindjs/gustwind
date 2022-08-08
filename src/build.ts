@@ -5,13 +5,8 @@ import { getDefinitions } from "./getDefinitions.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import type {
-  BuildWorkerEvent,
-  Component,
-  Layout,
-  ProjectMeta,
-  Route,
-} from "../types.ts";
+import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
+import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -33,7 +28,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   let [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
-    getDefinitions<Layout>(projectPaths.layouts),
+    getDefinitions<Component | Component[]>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
 

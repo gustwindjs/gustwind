@@ -10,16 +10,18 @@ import type {
   Components,
   DataContext,
   DataSources,
-  Layout,
   Meta,
   Mode,
   ProjectMeta,
   Route,
 } from "../types.ts";
-import type { Utilities } from "../breezewind/types.ts";
+import type { Component, Utilities } from "../breezewind/types.ts";
 import breeze from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
-import { evaluateFields } from "../utils/evaluate.ts";
+import { applyUtilities } from "../breezewind/applyUtility.ts";
+import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
+
+type Layout = Component | Component[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -76,25 +78,27 @@ async function renderPage({
     pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
-  const meta = {
-    ...runtimeMeta,
-    ...projectMeta.meta,
-    ...route.meta,
-  };
   const dataSourceContext = await getDataSourceContext(
     route.dataSources,
     dataSources,
   );
   const context = {
     projectMeta,
-    meta: {
-      ...meta,
-      ...Object.fromEntries(await evaluateFields(route.context, meta)),
-    },
     scripts: pageScripts,
     ...route.context,
     ...dataSourceContext,
   };
+  const meta = await applyUtilities(
+    {
+      ...runtimeMeta,
+      ...projectMeta.meta,
+      ...route.meta,
+    },
+    // @ts-expect-error This is fine
+    { ...defaultUtilities, ...pageUtilities },
+    context,
+  );
+  context.meta = meta;
 
   DEBUG && console.log("rendering a page with context", context);
 
@@ -155,8 +159,6 @@ function injectStyleTag(markup: string, styleTag: string) {
 }
 
 function renderHTML(
-  // TODO: Load transforms beforehand and connect them with utilities here
-  // transformsPath: string,
   children: Layout,
   components: Components,
   pageData: DataContext,

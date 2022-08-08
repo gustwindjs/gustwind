@@ -1,6 +1,13 @@
-import { get, isUndefined } from "../utils/functional.ts";
-import { evaluateExpression } from "../utils/evaluate.ts";
-import type { Component, Context, Extension, Utilities } from "./types.ts";
+import { get, isObject, isUndefined } from "../utils/functional.ts";
+import { applyUtilities, applyUtility } from "./applyUtility.ts";
+import { defaultUtilities } from "./defaultUtilities.ts";
+import type {
+  Component,
+  Context,
+  Extension,
+  Utilities,
+  Utility,
+} from "./types.ts";
 
 async function render(
   { component, components, extensions, context, props, utilities }: {
@@ -12,30 +19,46 @@ async function render(
     utilities?: Utilities;
   },
 ): Promise<string> {
+  const renderUtility = (_: Context, component: Component | Component[]) =>
+    render({ component, components, extensions, context, utilities });
+
+  // @ts-expect-error This is fine
+  utilities = isObject(utilities)
+    ? {
+      render: renderUtility,
+      ...defaultUtilities,
+      ...utilities,
+    }
+    : { render: renderUtility, ...defaultUtilities };
+
   if (Array.isArray(component)) {
-    return (await Promise.all(
-      component.map((c) =>
-        render({
-          component: c,
-          components,
-          extensions,
-          context,
-          props,
-          utilities,
-        })
-      ),
-    )).join("");
+    return (await Promise.all(component.map((c) =>
+      render({
+        component: c,
+        components,
+        extensions,
+        context,
+        props,
+        utilities,
+      })
+    ))).join("");
   }
 
-  let element = component.element;
-  const foundComponent = element && components?.[element];
+  let element = component.type;
+  const foundComponent = element && typeof element === "string" &&
+    components?.[element];
 
-  const scopedProps = Object.fromEntries(
-    await evaluateFields(component.props || props, {
-      context,
-      props: props,
-    }),
-  );
+  props = component.props || props;
+
+  if (component.bindToProps) {
+    const boundProps = await applyUtilities(
+      component.bindToProps,
+      utilities,
+      { context, props },
+    );
+
+    props = { ...boundProps, ...props };
+  }
 
   if (foundComponent) {
     return (await Promise.all(
@@ -47,7 +70,7 @@ async function render(
           components,
           extensions,
           context,
-          props: scopedProps,
+          props,
           utilities,
         })
       ),
@@ -63,105 +86,57 @@ async function render(
     // extensions.
     for (const extension of extensions) {
       component = await extension(component, {
-        props: scopedProps,
+        props,
         context,
-        utilities,
-      });
+      }, utilities);
     }
 
-    element = component.element;
-  }
-
-  if (component.__element) {
-    element = (get({ context, props: scopedProps }, component.__element) ||
-      element) as string;
-  }
-
-  if (component["==element"]) {
-    element = await evaluateExpression(component["==element"], {
-      props: scopedProps,
-      context,
-      utilities,
-    });
+    element = component.type;
   }
 
   const attributes = await generateAttributes(
     component.attributes,
-    typeof component.props !== "string"
-      ? {
-        props: scopedProps,
-        context,
-        utilities,
-      }
-      : context,
+    { props, context },
+    utilities,
   );
+
+  let e = element;
+
+  if (typeof element === "string") {
+    // Do nothing
+  } else if (element?.utility && element?.parameters) {
+    e = await applyUtility(element, utilities, { context, props });
+  }
 
   if (component.children) {
     let children = component.children;
 
-    if (Array.isArray(children)) {
+    if (typeof children === "string") {
+      // Nothing to do
+    } else if (Array.isArray(children)) {
       children = await render({
         component: children,
-        props: scopedProps,
+        props,
         components,
         extensions,
         context,
         utilities,
       });
+    } else if (children.utility && utilities) {
+      children = await applyUtility(children, utilities, { context, props });
     }
 
-    return toHTML(element, attributes, children);
-  }
-
-  if (component.__children) {
-    // TODO: What if get fails?
-    return toHTML(
-      element,
-      attributes,
-      get({ context, props: scopedProps }, component.__children),
-    );
-  }
-
-  if (component["##children"]) {
-    return toHTML(
-      element,
-      attributes,
-      await render({
-        // @ts-expect-error TODO: What if get fails?
-        component: get(
-          { context, props: scopedProps },
-          component["##children"],
-        ),
-        components,
-        extensions,
-        context,
-        utilities,
-      }),
-    );
-  }
-
-  const expression = component["==children"];
-
-  if (expression) {
-    return toHTML(
-      element,
-      attributes,
-      await evaluateExpression(expression, {
-        props: scopedProps,
-        context,
-        utilities,
-      }),
-    );
+    return toHTML(e, attributes, children);
   }
 
   if (element) {
     if (typeof component.closingCharacter === "string") {
-      return `<${element}${
+      return `<${e}${
         attributes ? " " + attributes : ""
       } ${component.closingCharacter}>`;
     }
 
-    return toHTML(element, attributes);
+    return toHTML(e, attributes);
   }
 
   // Maybe this has to become controllable if it should be possible to emit
@@ -170,7 +145,7 @@ async function render(
 }
 
 function toHTML(
-  element?: Component["element"],
+  element?: Component["type"],
   attributes?: string,
   value: unknown = "",
 ) {
@@ -186,52 +161,54 @@ function toHTML(
 async function generateAttributes(
   attributes: Component["attributes"],
   context?: Context,
-): Promise<string> {
+  utilities?: Utilities,
+) {
   if (!attributes) {
     return "";
   }
 
-  return (await evaluateFields(attributes, context)).map(([k, v]) =>
+  return (await evaluateFields(attributes, context, utilities)).map(([k, v]) =>
     v && (v as string).length > 0 ? `${k}="${v}"` : k
   ).join(" ");
 }
 
-async function evaluateFields(props?: Context, context?: Context) {
+async function evaluateFields(
+  props?: Context,
+  context?: Context,
+  utilities?: Utilities,
+) {
   if (!props) {
-    return Promise.resolve([]);
+    return [];
   }
 
-  return (await Promise.all(
-    Object.entries(props).map(async ([k, v]) => {
-      // @ts-expect-error This is ok
+  return Promise.all(
+    await Object.entries(props).map(async ([k, v]) => {
       if (isUndefined(v)) {
         return [];
       }
 
-      let key = k;
       let value = v;
 
-      if (k.startsWith("__")) {
-        key = k.split("__").slice(1).join("__");
-
-        // TODO: What if value isn't found?
-        // @ts-expect-error This is ok
-        value = get(context, v) as string;
-      }
-
-      if (k.startsWith("==") && typeof v === "string") {
-        key = k.split("==").slice(1).join("==");
-        value = await evaluateExpression(v, context);
-      }
-
-      // @ts-expect-error This is ok
       if (isUndefined(value)) {
         return [];
+        // @ts-expect-error This is ok
+      } else if (value.context) {
+        value = get(
+          // @ts-expect-error This is ok
+          get(context, value.context),
+          // @ts-expect-error This is ok
+          value.property,
+          // @ts-expect-error This is ok
+          value["default"],
+        );
+        // @ts-expect-error This is ok
+      } else if (value.utility && utilities) {
+        value = await applyUtility(value as Utility, utilities, context);
       }
 
-      return [key, value];
+      return [k, value];
     }),
-  ));
+  );
 }
 
 export default render;

@@ -1,5 +1,5 @@
 {
-  "element": "aside",
+  "type": "aside",
   "class": "fixed top-16 right-2 max-w-sm overflow-auto rounded filter drop-shadow",
   "attributes": {
     "x-state": "getSelectedComponent(editor)",
@@ -7,53 +7,53 @@
   },
   "children": [
     {
-      "element": "header",
+      "type": "header",
       "class": "cursor-move",
       "children": [
         {
-          "element": "h2",
+          "type": "h2",
           "class": "p-4 font-bold bg-gray-800 text-white",
           "children": "Component editor"
         }
       ]
     },
     {
-      "element": "section",
+      "type": "section",
       "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
       "children": [
         {
-          "element": "div",
+          "type": "div",
           "children": [
             {
-              "element": "h2",
+              "type": "h2",
               "class": "font-bold",
               "children": "Content"
             },
             {
-              "element": "ul",
+              "type": "ul",
               "class": "flex flex-col gap-2",
               "children": [
                 {
-                  "element": "li",
+                  "type": "li",
                   "class": "flex gap-2",
                   "children": [
                     {
-                      "element": "label",
-                      "children": "Element"
+                      "type": "label",
+                      "children": "type"
                     },
                     {
-                      "element": "input",
+                      "type": "input",
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
-                        "x": "selectedComponent?.element || 'No selected element'",
+                        "x": "selectedComponent?.type || 'No selected element'",
                         "oninput": "elementChanged(this, this.value)"
                       }
                     }
                   ]
                 },
                 {
-                  "element": "li",
+                  "type": "li",
                   "class": "flex gap-2",
                   "attributes": {
                     "x-attr": "",
@@ -61,11 +61,11 @@
                   },
                   "children": [
                     {
-                      "element": "label",
+                      "type": "label",
                       "children": "Content"
                     },
                     {
-                      "element": "input",
+                      "type": "input",
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
@@ -76,15 +76,15 @@
                   ]
                 },
                 {
-                  "element": "li",
+                  "type": "li",
                   "class": "flex gap-2",
                   "children": [
                     {
-                      "element": "label",
+                      "type": "label",
                       "children": "Class"
                     },
                     {
-                      "element": "input",
+                      "type": "input",
                       "class": "border flex-grow",
                       "attributes": {
                         "type": "text",
@@ -95,8 +95,8 @@
                   ]
                 },
                 {
-                  "visibleIf": "false",
-                  "element": "div",
+                  "visibleIf": [],
+                  "type": "div",
                   "attributes": {
                     "x": "JSON.stringify(selectedComponent, null, 2)"
                   }

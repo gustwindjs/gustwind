@@ -297,6 +297,8 @@ async function createPageEditor(
 
   const aside = treeElement.children[0] as HTMLElement;
   const handle = aside.children[0] as HTMLElement;
+
+  // @ts-ignore: TODO: Fix type
   draggable({ element: aside, handle });
 
   return treeElement;
@@ -471,7 +473,7 @@ function elementChanged(
 
     elements.forEach((e) => e.replaceWith(changeTag(e, value)));
 
-    p.element = value;
+    p.type = value;
   });
 
   setState({ layout: nextLayout }, { element, parent: "editor" });

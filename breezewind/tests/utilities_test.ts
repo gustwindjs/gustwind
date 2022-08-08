@@ -2,12 +2,14 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 
 import breeze from "../index.ts";
 
-Deno.test("pass utilities to ==children", async () => {
+Deno.test("pass utilities to children", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
-        "==children": "utilities.hello()",
+        type: "div",
+        children: {
+          utility: "hello",
+        },
       },
       utilities: {
         hello: () => "hello",
@@ -17,13 +19,33 @@ Deno.test("pass utilities to ==children", async () => {
   );
 });
 
+Deno.test("pass utilities to children with parameters", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "div",
+        children: {
+          utility: "hello",
+          parameters: ["world"],
+        },
+      },
+      utilities: {
+        hello: (_, target: string) => `hello ${target}`,
+      },
+    }),
+    "<div>hello world</div>",
+  );
+});
+
 Deno.test("pass utilities to attributes", async () => {
   assertEquals(
     await breeze({
       component: {
-        element: "div",
+        type: "div",
         attributes: {
-          "==title": "utilities.hello()",
+          title: {
+            utility: "hello",
+          },
         },
         "children": "test",
       },
@@ -32,5 +54,26 @@ Deno.test("pass utilities to attributes", async () => {
       },
     }),
     '<div title="hello">test</div>',
+  );
+});
+
+Deno.test("pass utilities to attributes with parameters", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "div",
+        attributes: {
+          title: {
+            utility: "hello",
+            parameters: ["world"],
+          },
+        },
+        "children": "test",
+      },
+      utilities: {
+        hello: (_, target: string) => `hello ${target}`,
+      },
+    }),
+    '<div title="hello world">test</div>',
   );
 });

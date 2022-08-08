@@ -1,29 +1,31 @@
 type Context = Record<string, unknown>;
 
 type BaseComponent = {
-  element?: string;
-  __element?: string; // Getter binding
-  "==element"?: string; // Evaluation binding
-
-  attributes?: Record<string, string | undefined>;
-  props?: Context;
+  type?: string | Utility;
   closingCharacter?: string;
 
-  children?: string | Component[];
-  __children?: string; // Getter binding
-  "==children"?: string; // Evaluation binding
-  "##children"?: string; // Rendering binding
+  attributes?: Record<string, string | Utility | undefined>;
+  bindToProps?: Record<string, Utility>;
+  props?: Context;
+  children?: string | Component[] | Utility;
 };
+
+type ClassList = Record<string, Utility[]>;
+type Utility = {
+  utility: string;
+  parameters?: (string | Utility)[];
+};
+
 type ClassComponent = BaseComponent & {
-  classList?: Record<string, string>;
-  class?: string;
-  "__class"?: string;
-  "==class"?: string;
+  classList?: ClassList;
+  class?: string | Utility;
 };
 type ForEachComponent = BaseComponent & {
-  foreach?: [string, Component | Component[]];
+  foreach?: [Utility, Component | Component[]];
 };
-type VisibleIfComponent = BaseComponent & { visibleIf?: string };
+type VisibleIfComponent = BaseComponent & {
+  visibleIf?: Utility[];
+};
 type Component =
   | BaseComponent
   | ClassComponent
@@ -33,16 +35,23 @@ type Component =
 type Extension = (
   component: Component,
   context: Context,
+  utilities?: Utilities,
 ) => Promise<BaseComponent>;
 
-type Utilities = Record<string, (args: unknown) => string>;
+type Utilities = Record<
+  string,
+  // deno-lint-ignore no-explicit-any
+  (context?: Context, ...args: any) => string | Promise<string>
+>;
 
 export type {
   ClassComponent,
+  ClassList,
   Component,
   Context,
   Extension,
   ForEachComponent,
   Utilities,
+  Utility,
   VisibleIfComponent,
 };

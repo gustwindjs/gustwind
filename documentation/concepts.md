@@ -25,9 +25,9 @@ A navigation component built on top of `Link` could look like this:
 [<file>](site/components/Navigation.json)
 
 
-### Getters and interpolation
+### Utilities
 
-The following example illustrates the usage of getters (`__`) and interpolation (`==`):
+The following example illustrates the usage of utilities:
 
 **layouts/blogIndex.json**
 

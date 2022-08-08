@@ -1,32 +1,32 @@
 {
-  "element": "aside",
+  "type": "aside",
   "class": "fixed top-16 left-2 max-w-sm max-h-full overflow-auto rounded filter drop-shadow",
   "children": [
     {
-      "element": "header",
+      "type": "header",
       "class": "cursor-move",
       "children": [
         {
-          "element": "h2",
+          "type": "h2",
           "class": "p-4 font-bold bg-gray-800 text-white",
           "children": "Page editor"
         }
       ]
     },
     {
-      "element": "section",
+      "type": "section",
       "class": "p-4 gap-4 flex flex-col bg-white filter bg-opacity-90",
       "children": [
         {
-          "element": "div",
+          "type": "div",
           "children": [
             {
-              "element": "h2",
+              "type": "h2",
               "class": "font-bold",
               "children": "Meta"
             },
             {
-              "element": "DynamicList",
+              "type": "DynamicList",
               "class": "flex flex-col gap-2",
               "props": {
                 "dataSource": "Object.entries(editor.meta)",
@@ -36,23 +36,23 @@
           ]
         },
         {
-          "visibleIf": "false",
+          "visibleIf": [],
           "todo": "The data source portion has been disabled for now",
-          "element": "div",
+          "type": "div",
           "children": [
             {
-              "element": "h2",
+              "type": "h2",
               "class": "font-bold",
               "children": "Data sources"
             },
             {
-              "element": "div",
+              "type": "div",
               "attributes": {
                 "x-each": "editor.dataSources"
               },
               "children": [
                 {
-                  "element": "DynamicList",
+                  "type": "DynamicList",
                   "props": {
                     "dataSource": "state.value ? Object.entries(state.value) : []"
                   }
@@ -62,28 +62,28 @@
           ]
         },
         {
-          "element": "div",
+          "type": "div",
           "children": [
             {
-              "element": "h2",
+              "type": "h2",
               "class": "font-bold mb-2",
               "children": "Layout"
             },
             {
-              "visibleIf": "false",
-              "element": "div",
+              "visibleIf": [],
+              "type": "div",
               "attributes": {
                 "x": "'Selection id: ' + editor.selectionId"
               }
             },
             {
-              "element": "ul",
+              "type": "ul",
               "attributes": {
                 "x-each": "Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
               },
               "children": [
                 {
-                  "element": "li",
+                  "type": "li",
                   "class": "flex flex-col gap-2",
                   "attributes": {
                     "x-template": "",
@@ -92,46 +92,46 @@
                   },
                   "children": [
                     {
-                      "visibleIf": "false",
-                      "element": "div",
+                      "visibleIf": [],
+                      "type": "div",
                       "attributes": {
                         "x": "'id: ' + state.value.attributes['data-id']"
                       }
                     },
                     {
-                      "element": "div",
+                      "type": "div",
                       "class": "flex flex-row gap-2",
                       "attributes": {
-                        "x-if": "state.value.element"
+                        "x-if": "state.value.type"
                       },
                       "children": [
                         {
-                          "element": "h2",
+                          "type": "h2",
                           "class": "font-bold",
-                          "children": "Element"
+                          "children": "type"
                         },
                         {
-                          "element": "span",
+                          "type": "span",
                           "attributes": {
-                            "x": "state.value.element"
+                            "x": "state.value.type"
                           }
                         }
                       ]
                     },
                     {
-                      "element": "div",
+                      "type": "div",
                       "class": "flex flex-row gap-2",
                       "attributes": {
                         "x-if": "state.value.class"
                       },
                       "children": [
                         {
-                          "element": "h2",
+                          "type": "h2",
                           "class": "font-bold",
                           "children": "Class"
                         },
                         {
-                          "element": "span",
+                          "type": "span",
                           "attributes": {
                             "x": "state.value.class"
                           }
@@ -139,36 +139,36 @@
                       ]
                     },
                     {
-                      "element": "div",
+                      "type": "div",
                       "attributes": {
                         "x-if": "state.value.props"
                       },
                       "children": [
                         {
-                          "element": "h2",
+                          "type": "h2",
                           "class": "font-bold",
                           "children": "Props"
                         },
                         {
-                          "element": "ul",
+                          "type": "ul",
                           "attributes": {
                             "x-each": "Object.entries(state.value.props)"
                           },
                           "children": [
                             {
-                              "element": "li",
+                              "type": "li",
                               "attributes": {
                                 "x-template": ""
                               },
                               "children": [
                                 {
-                                  "element": "span",
+                                  "type": "span",
                                   "attributes": {
                                     "x": "state.value[0]"
                                   }
                                 },
                                 {
-                                  "element": "ul",
+                                  "type": "ul",
                                   "attributes": {
                                     "x-recurse": "{ parentIndex: 1, value: 'state.value[1]' }"
                                   }
@@ -180,20 +180,20 @@
                       ]
                     },
                     {
-                      "element": "div",
+                      "type": "div",
                       "attributes": {
                         "x-if": "state.value.children"
                       },
                       "children": [
                         {
-                          "element": "h2",
+                          "type": "h2",
                           "class": "font-bold",
                           "children": "Children"
                         },
                         {
-                          "element": "div",
+                          "type": "div",
                           "attributes": {
-                            "x-recurse": "Array.isArray(state.value.children) ? state.value.children : [{ element: state.value.children }]"
+                            "x-recurse": "Array.isArray(state.value.children) ? state.value.children : [{ type: state.value.children }]"
                           }
                         }
                       ]

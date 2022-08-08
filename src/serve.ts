@@ -7,14 +7,8 @@ import { getDefinitions } from "./getDefinitions.ts";
 import { renderPage } from "./renderPage.ts";
 import { expandRoutes } from "./expandRoutes.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type {
-  Component,
-  DataSources,
-  Layout,
-  Mode,
-  ProjectMeta,
-  Route,
-} from "../types.ts";
+import type { DataSources, Mode, ProjectMeta, Route } from "../types.ts";
+import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -42,7 +36,7 @@ async function serveGustwind({
 
   const [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
-    getDefinitions<Layout>(projectPaths.layouts),
+    getDefinitions<Component | Component[]>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
 
@@ -147,8 +141,10 @@ async function serveGustwind({
       let components = cache.components;
 
       if (showEditor) {
-        // @ts-ignore TODO: Fix type
-        components = attachIds(components);
+        const keys = Object.keys(components);
+        const values = attachIds(Object.values(components));
+
+        components = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
       }
 
       if (matchedRoute) {
@@ -169,10 +165,10 @@ async function serveGustwind({
           // the case in which there was an update over web socket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          let layout = cache.layouts[layoutName] || matchedLayout;
+          let layout: Component | Component[] = cache.layouts[layoutName] ||
+            matchedLayout;
 
           if (showEditor && route.type !== "xml") {
-            // @ts-ignore TODO: Fix type
             layout = attachIds(layout);
           }
 

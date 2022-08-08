@@ -1,6 +1,6 @@
 [
   {
-    "element": "?xml",
+    "type": "?xml",
     "attributes": {
       "version": "1.0",
       "encoding": "UTF-8"
@@ -8,71 +8,126 @@
     "closingCharacter": "?"
   },
   {
-    "element": "feed",
+    "type": "feed",
     "__reference": "https://kevincox.ca/2022/05/06/rss-feed-best-practices/",
     "attributes": {
       "xmlns": "http://www.w3.org/2005/Atom"
     },
     "children": [
       {
-        "element": "title",
-        "__children": "context.meta.siteName"
+        "type": "title",
+        "children": {
+          "utility": "get",
+          "parameters": ["context", "meta.siteName"]
+        }
       },
       {
-        "element": "id",
-        "__children": "context.meta.url"
+        "type": "id",
+        "children": {
+          "utility": "get",
+          "parameters": ["context", "meta.url"]
+        }
       },
       {
-        "element": "link",
+        "type": "link",
         "attributes": {
           "rel": "alternate",
-          "__href": "context.meta.url"
+          "href": {
+            "utility": "get",
+            "parameters": ["context", "meta.url"]
+          }
         }
       },
       {
-        "element": "link",
+        "type": "link",
         "attributes": {
           "rel": "self",
-          "==href": "context.meta.url + 'atom.xml'"
+          "children": {
+            "utility": "concat",
+            "parameters": [
+              {
+                "utility": "get",
+                "parameters": ["context", "meta.url"]
+              },
+              "atom.xml"
+            ]
+          }
         }
       },
       {
-        "element": "updated",
-        "==children": "(new Date(context.meta.built)).toISOString()"
+        "type": "updated",
+        "children": {
+          "utility": "dateToISO",
+          "parameters": [
+            { "utility": "get", "parameters": ["context", "meta.built"] }
+          ]
+        }
       },
       {
-        "foreach": ["context.blogPosts", {
-          "element": "entry",
-          "children": [
-            {
-              "element": "title",
-              "__children": "props.data.title"
-            },
-            {
-              "element": "link",
-              "attributes": {
-                "rel": "alternate",
-                "type": "text/html",
-                "==href": "context.meta.url + 'blog/' + props.data.slug + '/'"
-              }
-            },
-            {
-              "element": "id",
-              "__children": "props.data.slug"
-            },
-            {
-              "element": "published",
-              "==children": "(new Date(props.data.date)).toISOString()"
-            },
-            {
-              "element": "content",
-              "attributes": {
-                "type": "html"
+        "foreach": [
+          { "utility": "get", "parameters": ["context", "blogPosts"] },
+          {
+            "type": "entry",
+            "children": [
+              {
+                "type": "title",
+                "children": {
+                  "utility": "get",
+                  "parameters": ["props", "data.title"]
+                }
               },
-              "__children": "props.data.description"
-            }
-          ]
-        }]
+              {
+                "type": "link",
+                "attributes": {
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "href": {
+                    "utility": "concat",
+                    "parameters": [
+                      {
+                        "utility": "get",
+                        "parameters": ["context", "meta.url"]
+                      },
+                      "blog",
+                      "/",
+                      {
+                        "utility": "get",
+                        "parameters": ["props", "data.slug"]
+                      },
+                      "/"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "id",
+                "children": {
+                  "utility": "get",
+                  "parameters": ["props", "data.slug"]
+                }
+              },
+              {
+                "type": "published",
+                "children": {
+                  "utility": "dateToISO",
+                  "parameters": [
+                    { "utility": "get", "parameters": ["props", "data.date"] }
+                  ]
+                }
+              },
+              {
+                "type": "content",
+                "attributes": {
+                  "type": "html"
+                },
+                "children": {
+                  "utility": "get",
+                  "parameters": ["props", "data.description"]
+                }
+              }
+            ]
+          }
+        ]
       }
     ]
   }

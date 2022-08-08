@@ -1,20 +1,28 @@
 {
-  "element": "BaseLayout",
+  "type": "BaseLayout",
   "props": {
     "showToc": true,
     "content": {
-      "element": "div",
+      "type": "div",
       "class": "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
       "children": [
         {
-          "element": "h1",
-          "__children": "context.match.data.title"
+          "type": "h1",
+          "children": {
+            "utility": "get",
+            "parameters": ["context", "match.data.title"]
+          }
         },
         {
-          "element": "Markdown",
+          "type": "Markdown",
+          "bindToProps": {
+            "inputText": {
+              "utility": "get",
+              "parameters": ["context", "match.content"]
+            }
+          },
           "props": {
-            "element": "div",
-            "__inputText": "context.match.content"
+            "type": "div"
           }
         }
       ]

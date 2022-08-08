@@ -5,8 +5,8 @@ import breeze from "../index.ts";
 Deno.test("component lookup", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button" },
-      components: { Button: { element: "button", children: "demo" } },
+      component: { type: "Button" },
+      components: { Button: { type: "button", children: "demo" } },
     }),
     "<button>demo</button>",
   );
@@ -15,10 +15,10 @@ Deno.test("component lookup", async () => {
 Deno.test("component lookup with an array", async () => {
   assertEquals(
     await breeze({
-      component: { element: "Button" },
+      component: { type: "Button" },
       components: {
-        Button: [{ element: "button", children: "foo" }, {
-          element: "button",
+        Button: [{ type: "button", children: "foo" }, {
+          type: "button",
           children: "bar",
         }],
       },
@@ -32,10 +32,10 @@ Deno.test("component lookup with a complex structure", async () => {
     await breeze({
       component: [
         {
-          "element": "head",
+          "type": "head",
           "children": [
             {
-              "element": "MetaFields",
+              "type": "MetaFields",
             },
           ],
         },
@@ -43,7 +43,7 @@ Deno.test("component lookup with a complex structure", async () => {
       components: {
         MetaFields: [
           {
-            "element": "link",
+            "type": "link",
             "attributes": {
               "rel": "icon",
               "href": "bar",
