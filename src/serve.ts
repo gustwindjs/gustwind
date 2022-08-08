@@ -141,8 +141,10 @@ async function serveGustwind({
       let components = cache.components;
 
       if (showEditor) {
-        // @ts-ignore TODO: Fix type
-        components = attachIds(components);
+        const keys = Object.keys(components);
+        const values = attachIds(Object.values(components));
+
+        components = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
       }
 
       if (matchedRoute) {
