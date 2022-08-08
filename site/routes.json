@@ -13,8 +13,14 @@
       },
       "layout": "documentationPage",
       "meta": {
-        "__title": "match.data.title",
-        "__description": "match.data.description"
+        "title": {
+          "utility": "get",
+          "parameters": ["match", "data.title"]
+        },
+        "description": {
+          "utility": "get",
+          "parameters": ["match", "data.description"]
+        }
       }
     }
   },
@@ -32,8 +38,14 @@
       },
       "layout": "blogPage",
       "meta": {
-        "__title": "match.data.title",
-        "__description": "match.data.description"
+        "title": {
+          "utility": "get",
+          "parameters": ["match", "data.title"]
+        },
+        "description": {
+          "utility": "get",
+          "parameters": ["match", "data.description"]
+        }
       }
     }
   },

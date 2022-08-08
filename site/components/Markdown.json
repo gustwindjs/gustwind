@@ -1,5 +1,8 @@
 {
-  "__element": "props.element",
-  "__class": "props.class",
-  "==children": "utilities.markdown(props.inputText).content"
+  "type": { "utility": "get", "parameters": ["props", "type"] },
+  "class": { "utility": "get", "parameters": ["props", "class"] },
+  "children": {
+    "utility": "markdown",
+    "parameters": [{ "utility": "get", "parameters": ["props", "inputText"] }]
+  }
 }

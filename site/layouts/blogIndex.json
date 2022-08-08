@@ -7,15 +7,30 @@
       "children": [
         {
           "type": "ul",
-          "foreach": ["context.blogPosts", {
+          "foreach": [{
+            "utility": "get",
+            "parameters": ["context", "blogPosts"]
+          }, {
             "type": "li",
             "class": "inline",
             "children": [
               {
                 "type": "Link",
                 "props": {
-                  "__children": "props.data.title",
-                  "==href": "props.data.slug + '/'"
+                  "children": {
+                    "utility": "get",
+                    "parameters": ["props", "data.title"]
+                  },
+                  "href": {
+                    "utility": "concat",
+                    "parameters": [
+                      {
+                        "utility": "get",
+                        "parameters": ["props", "data.slug"]
+                      },
+                      "/"
+                    ]
+                  }
                 }
               }
             ]

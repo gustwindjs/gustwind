@@ -77,7 +77,7 @@ Deno.test("classList shortcut works with different class types", async () => {
         pathname: "foo",
       },
     }),
-    '<span class="bg-red-200 font-bold mx-2">testing</span>',
+    '<span class="bg-red-200 foo font-bold mx-2">testing</span>',
   );
 });
 

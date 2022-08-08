@@ -24,7 +24,16 @@
                 "x-attr": "",
                 "x": "state.value.textContent",
                 "@href": "state.value.parentElement?.attributes.href.value",
-                "==@class": "`[state.value.textContent === parent.closest.textContent && '` + utilities.tw('underline') + `', state.tagName === 'H3' && '` + utilities.tw('ml-2') + `']`"
+                "@class": {
+                  "utility": "concat",
+                  "parameters": [
+                    "[state.value.textContent === parent.closest.textContent && '",
+                    { "utility": "tw", "parameters": ["underline"] },
+                    "', state.tagName === 'H3' && '",
+                    { "utility": "tw", "parameters": ["ml-2"] },
+                    "']"
+                  ]
+                }
               }
             }
           ]

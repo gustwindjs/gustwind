@@ -8,13 +8,19 @@
       "children": [
         {
           "type": "h1",
-          "__children": "context.match.data.title"
+          "children": {
+            "utility": "get",
+            "parameters": ["context", "match.data.title"]
+          }
         },
         {
           "type": "Markdown",
           "props": {
             "type": "div",
-            "__inputText": "context.match.content"
+            "inputText": {
+              "utility": "get",
+              "parameters": ["context", "match.content"]
+            }
           }
         }
       ]

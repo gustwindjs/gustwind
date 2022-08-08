@@ -24,7 +24,7 @@ Deno.test("props binding to children", async () => {
   );
 });
 
-Deno.test("props binding to ==children", async () => {
+Deno.test("props binding to children using utilities", async () => {
   assertEquals(
     await breeze({
       component: {
@@ -43,7 +43,7 @@ Deno.test("props binding to ==children", async () => {
   );
 });
 
-Deno.test("props binding to ==children using context", async () => {
+Deno.test("props binding to children using context", async () => {
   assertEquals(
     await breeze({
       component: {

@@ -2,10 +2,19 @@
   "type": "a",
   "class": "underline",
   "classList": {
-    "font-bold": "props.href === context.pathname"
+    "font-bold": [
+      { "utility": "get", "parameters": ["props", "href"] },
+      { "utility": "get", "parameters": ["context", "pathname"] }
+    ]
   },
-  "__children": "props.children",
+  "children": {
+    "utility": "get",
+    "parameters": ["props", "children"]
+  },
   "attributes": {
-    "__href": "props.href"
+    "href": {
+      "utility": "get",
+      "parameters": ["props", "href"]
+    }
   }
 }

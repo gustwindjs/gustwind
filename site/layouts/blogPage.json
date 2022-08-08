@@ -7,11 +7,20 @@
       "children": [
         {
           "type": "h1",
-          "__children": "context.match.data.title"
+          "children": {
+            "utility": "get",
+            "parameters": ["context", "match.data.title"]
+          }
         },
         {
           "type": "p",
-          "==children": "utilities.markdown(context.match.content).content"
+          "children": {
+            "utility": "markdown",
+            "parameters": [{
+              "utility": "get",
+              "parameters": ["context", "match.content"]
+            }]
+          }
         }
       ]
     }

@@ -32,7 +32,10 @@
     "type": "meta",
     "attributes": {
       "name": "pagepath",
-      "__content": "context.meta.pagePath"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.pagePath"]
+      }
     }
   },
   {
@@ -47,60 +50,87 @@
     "type": "meta",
     "attributes": {
       "name": "og:site_name",
-      "__content": "context.meta.siteName"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.siteName"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "twitter:site",
-      "__content": "context.meta.siteName"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.siteName"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "og:title",
-      "__content": "context.meta.title"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.title"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "twitter:title",
-      "__content": "context.meta.title"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.title"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "description",
-      "__content": "context.meta.description"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.description"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "og:description",
-      "__content": "context.meta.description"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.description"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "twitter:description",
-      "__content": "context.meta.description"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.description"]
+      }
     }
   },
   {
     "type": "meta",
     "attributes": {
       "name": "built",
-      "__content": "context.meta.built"
+      "content": {
+        "utility": "get",
+        "parameters": ["context", "meta.built"]
+      }
     }
   },
   {
     "type": "title",
-    "__children": "context.meta.title"
+    "children": {
+      "utility": "get",
+      "parameters": ["context", "meta.title"]
+    }
   }
 ]

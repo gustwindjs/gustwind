@@ -2,7 +2,7 @@ import { get } from "../utils/functional.ts";
 import { Context } from "./types.ts";
 
 const defaultUtilities = {
-  concat: (_: Context, a: string, b: string) => `${a}${b}`,
+  concat: (_: Context, ...parts: string[]) => parts.join(""),
   get: (
     context: Context,
     c: string,

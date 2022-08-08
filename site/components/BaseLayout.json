@@ -3,7 +3,10 @@
     "type": "!DOCTYPE",
     "attributes": {
       "html": "",
-      "__language": "context.meta.language"
+      "language": {
+        "utility": "get",
+        "parameters": ["context", "meta.language"]
+      }
     },
     "closingCharacter": ""
   },
@@ -37,7 +40,10 @@
           },
           {
             "type": "main",
-            "##children": "props.content"
+            "children": {
+              "utility": "get",
+              "parameters": ["props", "content"]
+            }
           },
           {
             "type": "MainFooter"

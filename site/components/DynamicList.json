@@ -2,7 +2,7 @@
   "type": "ul",
   "class": "flex flex-col gap-2",
   "attributes": {
-    "__x-each": "props.dataSource"
+    "x-each": { "utility": "get", "parameters": ["props", "dataSource"] }
   },
   "children": [
     {
@@ -26,7 +26,7 @@
             "type": "text",
             "x": "state.value[1]",
             "@data-field": "state.value[0]",
-            "__oninput": "props.oninput"
+            "oninput": { "utility": "get", "parameters": ["props", "oninput"] }
           }
         }
       ]

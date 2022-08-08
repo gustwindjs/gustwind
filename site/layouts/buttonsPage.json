@@ -11,9 +11,29 @@
         },
         {
           "type": "div",
-          "==children": "utilities.testUtility('hello') + ' ' + 'world!'",
+          "children": {
+            "utility": "concat",
+            "parameters": [
+              {
+                "utility": "testUtility",
+                "parameters": ["hello"]
+              },
+              " ",
+              "world!"
+            ]
+          },
           "attributes": {
-            "==title": "utilities.testUtility('hello') + ' ' + 'world!'"
+            "title": {
+              "utility": "concat",
+              "parameters": [
+                {
+                  "utility": "testUtility",
+                  "parameters": ["hello"]
+                },
+                " ",
+                "world!"
+              ]
+            }
           }
         },
         {
