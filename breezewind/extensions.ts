@@ -125,9 +125,7 @@ async function visibleIf(
 }
 
 function inject(injector: (c: Component) => Promise<Component>) {
-  return (component: Component) => {
-    return injector(component);
-  };
+  return (component: Component) => injector(component);
 }
 
 export { classShortcut, foreach, inject, visibleIf };
