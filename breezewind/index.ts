@@ -56,7 +56,8 @@ async function render(
       { context, props: scopedProps },
     );
 
-    scopedProps = { ...boundProps, ...scopedProps };
+    // TODO: Test this case
+    scopedProps = { ...scopedProps, ...boundProps };
   }
 
   if (foundComponent) {
