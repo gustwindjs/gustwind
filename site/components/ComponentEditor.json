@@ -95,7 +95,7 @@
                   ]
                 },
                 {
-                  "visibleIf": "false",
+                  "visibleIf": [],
                   "type": "div",
                   "attributes": {
                     "x": "JSON.stringify(selectedComponent, null, 2)"
