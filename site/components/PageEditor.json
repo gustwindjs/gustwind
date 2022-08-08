@@ -102,7 +102,7 @@
                       "type": "div",
                       "class": "flex flex-row gap-2",
                       "attributes": {
-                        "x-if": "state.value.element"
+                        "x-if": "state.value.type"
                       },
                       "children": [
                         {
@@ -113,7 +113,7 @@
                         {
                           "type": "span",
                           "attributes": {
-                            "x": "state.value.element"
+                            "x": "state.value.type"
                           }
                         }
                       ]
