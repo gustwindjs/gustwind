@@ -1,4 +1,5 @@
 import { nanoid } from "../server-deps.ts";
+import { isObject } from "./functional.ts";
 import type { Component } from "../types.ts";
 
 // TODO: Use for static render too
@@ -30,7 +31,7 @@ function attachIds(
       Object.entries(component.props).map((
         [k, v],
         // @ts-ignore TODO: Figure out how to type this correctly
-      ) => [k, typeof v === "string" ? v : attachIds(v)]),
+      ) => [k, isObject(v) ? attachIds(v) : v]),
     );
   }
 

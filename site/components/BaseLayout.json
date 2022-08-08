@@ -29,7 +29,10 @@
             "type": "MainNavigation"
           },
           {
-            "visibleIf": "props.showToc",
+            "visibleIf": [{
+              "utility": "get",
+              "parameters": ["props", "showToc"]
+            }],
             "type": "aside",
             "class": "fixed top-16 pl-4 hidden lg:inline",
             "children": [
