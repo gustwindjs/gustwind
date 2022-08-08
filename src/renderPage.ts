@@ -4,6 +4,7 @@ import {
   getStyleTag,
   getStyleTagProperties,
   setupTwind,
+  tw,
   virtualSheet,
 } from "../client-deps.ts";
 import type {
@@ -173,7 +174,7 @@ function renderHTML(
     component: children,
     components,
     extensions: [
-      breezeExtensions.classShortcut,
+      breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
       breezeExtensions.visibleIf,
     ],

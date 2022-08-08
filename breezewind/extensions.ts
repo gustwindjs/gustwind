@@ -1,6 +1,5 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
-import { tw } from "../client-deps.ts";
 import { isObject } from "../utils/functional.ts";
 import { applyUtility } from "./applyUtility.ts";
 import type {
@@ -14,62 +13,63 @@ import type {
   VisibleIfComponent,
 } from "./types.ts";
 
-// TODO: Consider extracting tw from this to generalize the extension
-async function classShortcut(
-  component: ClassComponent,
-  context: Context,
-  utilities?: Utilities,
-): Promise<Component> {
-  const classes: string[] = [];
+function classShortcut(tw: (...args: string[]) => string) {
+  return async function (
+    component: ClassComponent,
+    context: Context,
+    utilities?: Utilities,
+  ): Promise<Component> {
+    const classes: string[] = [];
 
-  if (typeof component.class === "string") {
-    classes.push(component.class);
-  } else if (component.class?.utility && component.class.parameters) {
-    classes.push(
-      await applyUtility(component.class, utilities, context),
-    );
-  }
+    if (typeof component.class === "string") {
+      classes.push(component.class);
+    } else if (component.class?.utility && component.class.parameters) {
+      classes.push(
+        await applyUtility(component.class, utilities, context),
+      );
+    }
 
-  if (isObject(component.classList)) {
-    const className = (await Promise.all(
-      await Object.entries(component.classList as ClassList)
-        .map(
-          async ([k, values]) => {
-            const firstValue = await applyUtility(
-              values[0] as Utility,
-              utilities,
-              context,
-            );
+    if (isObject(component.classList)) {
+      const className = (await Promise.all(
+        await Object.entries(component.classList as ClassList)
+          .map(
+            async ([k, values]) => {
+              const firstValue = await applyUtility(
+                values[0] as Utility,
+                utilities,
+                context,
+              );
 
-            if (values.length === 1) {
-              return firstValue;
-            }
+              if (values.length === 1) {
+                return firstValue;
+              }
 
-            const trues = (await Promise.all(values.map(async (v) =>
-              firstValue ===
-                await applyUtility(v as Utility, utilities, context)
-            ))).filter(Boolean);
+              const trues = (await Promise.all(values.map(async (v) =>
+                firstValue ===
+                  await applyUtility(v as Utility, utilities, context)
+              ))).filter(Boolean);
 
-            return values.length === trues.length && k;
-          },
-        ),
-    )).filter(Boolean).join(" ");
+              return values.length === trues.length && k;
+            },
+          ),
+      )).filter(Boolean).join(" ");
 
-    classes.push(className);
-  }
+      classes.push(className);
+    }
 
-  if (classes.length) {
-    return {
-      ...component,
-      attributes: {
-        ...component.attributes,
-        class: classes.map((c) => tw(c)).join(" "),
-      },
-    };
-  }
+    if (classes.length) {
+      return {
+        ...component,
+        attributes: {
+          ...component.attributes,
+          class: classes.map((c) => tw(c)).join(" "),
+        },
+      };
+    }
 
-  // TODO: Test this case
-  return component;
+    // TODO: Test this case
+    return component;
+  };
 }
 
 async function foreach(

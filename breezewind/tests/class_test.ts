@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 
-import { setupTwind, virtualSheet } from "../../client-deps.ts";
+import { setupTwind, tw, virtualSheet } from "../../client-deps.ts";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
@@ -12,7 +12,7 @@ Deno.test("class shortcut extension", async () => {
   assertEquals(
     await breeze({
       component: { type: "span", class: "demo", children: "testing" },
-      extensions: [extensions.classShortcut],
+      extensions: [extensions.classShortcut(tw)],
     }),
     '<span class="demo">testing</span>',
   );
@@ -36,7 +36,7 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
         },
         children: "testing",
       },
-      extensions: [extensions.classShortcut],
+      extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
         pathname: "foo",
@@ -71,7 +71,7 @@ Deno.test("classList shortcut works with different class types", async () => {
         },
         children: "testing",
       },
-      extensions: [extensions.classShortcut],
+      extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
         pathname: "foo",
@@ -89,7 +89,7 @@ Deno.test("class shortcut extension with getter", async () => {
         class: { utility: "get", parameters: ["context", "demo"] },
         children: "testing",
       },
-      extensions: [extensions.classShortcut],
+      extensions: [extensions.classShortcut(tw)],
       context: { demo: "foobar" },
     }),
     '<span class="foobar">testing</span>',
