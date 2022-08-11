@@ -1,3 +1,4 @@
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import breeze from "../../breezewind/index.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 
@@ -10,7 +11,7 @@ async function compile(input: string) {
       components: {},
       context: {},
       extensions: [
-        breezeExtensions.classShortcut,
+        breezeExtensions.classShortcut(tw),
         breezeExtensions.foreach,
         breezeExtensions.visibleIf,
       ],
