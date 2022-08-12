@@ -1,4 +1,4 @@
-import { get } from "../utils/functional.ts";
+import { get, isObject } from "../utils/functional.ts";
 import { Context } from "./types.ts";
 
 const defaultUtilities = {
@@ -8,7 +8,17 @@ const defaultUtilities = {
     c: string,
     key: string,
     defaultValue?: unknown,
-  ) => get(get(context, c), key, defaultValue),
+  ) => {
+    const ctx = get(context, c);
+
+    if (!isObject(ctx)) {
+      console.error(context, c);
+      throw new Error("get - Found context is not an object");
+    }
+
+    return get(ctx, key, defaultValue);
+  },
+  stringify: (_: Context, input: unknown) => JSON.stringify(input, null, 2),
 };
 
 export { defaultUtilities };
