@@ -28,6 +28,10 @@ marked.setOptions({
 });
 
 function transformMarkdown(input: string) {
+  if (typeof input !== "string") {
+    throw new Error("transformMarkdown - passed wrong type of input");
+  }
+
   // https://github.com/markedjs/marked/issues/545
   const tableOfContents: { slug: string; level: number; text: string }[] = [];
 

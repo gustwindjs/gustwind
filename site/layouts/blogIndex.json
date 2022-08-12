@@ -16,7 +16,7 @@
             "children": [
               {
                 "type": "Link",
-                "props": {
+                "bindToProps": {
                   "children": {
                     "utility": "get",
                     "parameters": ["props", "data.title"]

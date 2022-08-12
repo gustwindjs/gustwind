@@ -9,7 +9,7 @@
           "type": "h1",
           "children": {
             "utility": "get",
-            "parameters": ["context", "match.data.title"]
+            "parameters": ["context", "document.data.title"]
           }
         },
         {
@@ -18,7 +18,7 @@
             "utility": "markdown",
             "parameters": [{
               "utility": "get",
-              "parameters": ["context", "match.content"]
+              "parameters": ["context", "document.content"]
             }]
           }
         }

@@ -5,24 +5,32 @@
       "title": "Gustwind",
       "description": "Deno powered JSON oriented site generator"
     },
-    "dataSources": ["readme"],
+    "dataSources": [{ "operation": "readme", "name": "readme" }],
     "expand": {
       "matchBy": {
-        "dataSource": "documentation",
+        "dataSource": { "operation": "documentation", "name": "document" },
         "slug": "data.slug"
       },
       "layout": "documentationPage",
       "meta": {
         "title": {
           "utility": "get",
-          "parameters": ["match", "data.title"]
+          "parameters": ["context", "document.data.title"]
         },
         "description": {
           "utility": "get",
-          "parameters": ["match", "data.description"]
+          "parameters": ["context", "document.data.description"]
         }
       }
     }
+  },
+  "breezewind": {
+    "layout": "documentationPage",
+    "meta": {
+      "title": "Breezewind",
+      "description": "Breezing fast templating"
+    },
+    "dataSources": [{ "operation": "parseHeadmatter", "name": "document" }]
   },
   "blog": {
     "layout": "blogIndex",
@@ -30,21 +38,21 @@
       "title": "Blog",
       "description": "A blog about Gustwind"
     },
-    "dataSources": ["blogPosts"],
+    "dataSources": [{ "operation": "blogPosts", "name": "blogPosts" }],
     "expand": {
       "matchBy": {
-        "dataSource": "blogPosts",
+        "dataSource": { "operation": "blogPosts", "name": "document" },
         "slug": "data.slug"
       },
       "layout": "blogPage",
       "meta": {
         "title": {
           "utility": "get",
-          "parameters": ["match", "data.title"]
+          "parameters": ["context", "document.data.title"]
         },
         "description": {
           "utility": "get",
-          "parameters": ["match", "data.description"]
+          "parameters": ["context", "document.data.description"]
         }
       }
     }
@@ -81,7 +89,7 @@
       "title": "Gustwind",
       "description": "Gustwind blog"
     },
-    "dataSources": ["blogPosts"],
+    "dataSources": [{ "operation": "blogPosts", "name": "blogPosts" }],
     "type": "xml"
   }
 }

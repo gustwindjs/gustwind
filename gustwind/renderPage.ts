@@ -89,15 +89,16 @@ async function renderPage({
     ...route.context,
     ...dataSourceContext,
   };
+  const props = {
+    ...runtimeMeta,
+    ...projectMeta.meta,
+    ...route.meta,
+  };
   const meta = await applyUtilities(
-    {
-      ...runtimeMeta,
-      ...projectMeta.meta,
-      ...route.meta,
-    },
+    props,
     // @ts-expect-error This is fine
     { ...defaultUtilities, ...pageUtilities },
-    context,
+    { context },
   );
   context.meta = meta;
 
@@ -148,12 +149,14 @@ async function getDataSourceContext(
 
   return Object.fromEntries(
     await Promise.all(
-      dataSourceIds.map(async (id) => {
-        if (!dataSources[id]) {
-          throw new Error(`Data source ${id} was not found!`);
+      dataSourceIds.map(async ({ name, operation }) => {
+        const dataSource = dataSources[operation];
+
+        if (!dataSource) {
+          throw new Error(`Data source ${operation} was not found!`);
         }
 
-        return [id, await dataSources[id]()];
+        return [name, await dataSource()];
       }),
     ),
   );

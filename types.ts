@@ -37,15 +37,16 @@ type Route = {
   meta: Meta;
   scripts?: Scripts;
   routes?: Record<string, Route>;
-  dataSources?: string[];
+  dataSources?: DataSource[];
   expand?: {
-    matchBy?: { dataSource: string; collection?: string; slug: string };
+    matchBy?: { dataSource: DataSource; slug: string };
   };
   // These are attached later
   context?: DataContext;
   url?: string;
 };
 type Scripts = { type: string; src: string }[];
+type DataSource = { operation: string; name: string };
 type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {

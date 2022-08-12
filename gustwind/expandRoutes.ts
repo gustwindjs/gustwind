@@ -50,7 +50,7 @@ async function expandRoute(
       throw new Error("Tried to matchBy a path that is not matchable");
     }
 
-    const dataSource = dataSources[matchBy.dataSource];
+    const dataSource = dataSources[matchBy.dataSource.operation];
 
     if (!dataSource) {
       throw new Error("Missing data source");
@@ -63,57 +63,32 @@ async function expandRoute(
     const expandedRoutes: Record<string, Route> = {};
     const dataSourceResults = await dataSource();
 
-    if (matchBy.collection) {
-      (Array.isArray(dataSourceResults)
-        ? dataSourceResults
-        : Object.values(dataSourceResults[matchBy.collection])).forEach(
-          (match) => {
-            const u = get(match, matchBy.slug) as string;
+    // TODO: Give a warning if dataSource isn't an array
+    Array.isArray(dataSourceResults) && dataSourceResults.forEach((match) => {
+      const u = get(match, matchBy.slug) as string;
 
-            if (!u) {
-              throw new Error(
-                `Route ${matchBy.slug} is missing from ${
-                  JSON.stringify(match, null, 2)
-                } for ${matchBy.collection} within ${url} route`,
-              );
-            }
-
-            // @ts-ignore route.expand exists by now for sure
-            const { meta, layout } = route.expand;
-
-            expandedRoutes[u] = {
-              meta,
-              layout,
-              context: route.context ? { ...route.context, match } : { match },
-              url: u,
-            };
-          },
+      if (!u) {
+        throw new Error(
+          `Route ${matchBy.slug} is missing from ${
+            JSON.stringify(match, null, 2)
+          } with slug ${matchBy.slug} within ${url} route`,
         );
-    } else {
-      // TODO: Give a warning if dataSource isn't an array
-      Array.isArray(dataSourceResults) && dataSourceResults.forEach((match) => {
-        const u = get(match, matchBy.slug);
+      }
 
-        if (!u) {
-          throw new Error(
-            `Route ${matchBy.slug} is missing from ${
-              JSON.stringify(match, null, 2)
-            } with slug ${matchBy.slug} within ${url} route`,
-          );
-        }
+      // @ts-ignore route.expand exists by now for sure
+      const { meta, layout } = route.expand;
 
-        // @ts-ignore route.expand exists by now for sure
-        const { meta, layout } = route.expand;
-
-        // @ts-ignore Not sure how to type this
-        expandedRoutes[u] = {
-          meta,
-          layout,
-          context: { match },
-          url: u,
-        };
-      });
-    }
+      // @ts-ignore Not sure how to type this
+      expandedRoutes[u] = {
+        meta,
+        layout,
+        context: {
+          ...expandedRoutes[u]?.context,
+          [matchBy.dataSource.name]: match,
+        },
+        url: u,
+      };
+    });
 
     ret = {
       ...route,

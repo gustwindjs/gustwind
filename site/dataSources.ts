@@ -6,11 +6,17 @@ import type { MarkdownWithFrontmatter } from "../types.ts";
 function blogPosts() {
   return indexMarkdown("./blogPosts");
 }
+
 function documentation() {
   return indexMarkdown("./documentation");
 }
+
 async function readme() {
   return markdown(await Deno.readTextFile("./README.md"));
+}
+
+async function parseHeadmatter() {
+  return parse(await Deno.readTextFile("./breezewind/README.md"));
 }
 
 async function indexMarkdown(directory: string) {
@@ -23,4 +29,4 @@ async function indexMarkdown(directory: string) {
   );
 }
 
-export { blogPosts, documentation, readme };
+export { blogPosts, documentation, parseHeadmatter, readme };
