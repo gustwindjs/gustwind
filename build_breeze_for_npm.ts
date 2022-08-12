@@ -21,7 +21,7 @@ async function buildForNpm(name: string, version: string) {
     shims: {
       deno: true,
     },
-    test: false, // TODO: Re-enable when dnt works again
+    test: true, // TODO: Re-enable when dnt works again
     package: {
       name,
       version,
