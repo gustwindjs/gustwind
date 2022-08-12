@@ -148,7 +148,13 @@ async function getDataSourceContext(
 
   return Object.fromEntries(
     await Promise.all(
-      dataSourceIds.map(async (id) => [id, await dataSources[id]()]),
+      dataSourceIds.map(async (id) => {
+        if (!dataSources[id]) {
+          throw new Error(`Data source ${id} was not found!`);
+        }
+
+        return [id, await dataSources[id]()];
+      }),
     ),
   );
 }
