@@ -77,11 +77,11 @@ On top of this, it's possible to apply functions within parameters recursively. 
 
 ```typescript
 const concatenatedAttribute = {
-  "utility": "concat",
-  "parameters": [
+  utility: "concat",
+  parameters: [
     {
-      "utility": "get",
-      "parameters": ["props", "data.slug"]
+      utility: "get",
+      parameters: ["props", "data.slug"]
     },
     "/"
   ]
