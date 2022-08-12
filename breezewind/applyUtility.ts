@@ -27,6 +27,10 @@ async function applyUtility(
     throw new Error("applyUtility - No utilities were provided");
   }
 
+  if (typeof value.utility !== "string") {
+    return;
+  }
+
   const foundUtility = utilities[value.utility];
 
   if (!foundUtility) {
