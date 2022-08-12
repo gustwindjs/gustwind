@@ -14,6 +14,11 @@ function get<O = Record<string, unknown>>(
   key?: string,
   defaultValue?: unknown,
 ): unknown {
+  if (!isObject(dataContext)) {
+    console.error(dataContext);
+    throw new Error("get - data context is not an object!");
+  }
+
   if (!key) {
     return defaultValue;
   }
