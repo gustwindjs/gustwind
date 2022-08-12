@@ -220,3 +220,4 @@ async function evaluateFields(
 }
 
 export default render;
+export type { Component, Context, Extension, Utilities, Utility };
