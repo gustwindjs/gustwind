@@ -1,5 +1,5 @@
 import { get, isObject } from "../utils/functional.ts";
-import { Context } from "./types.ts";
+import type { Context } from "./types.ts";
 
 const defaultUtilities = {
   concat: (_: Context, ...parts: string[]) => parts.join(""),
