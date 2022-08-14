@@ -39,7 +39,7 @@ function transformMarkdown(input: string) {
   // https://github.com/markedjs/marked/issues/545
   const tableOfContents: { slug: string; level: number; text: string }[] = [];
 
-  /*marked.use({
+  marked.use({
     async: true,
     extensions: [{
       name: "importComponent",
@@ -86,93 +86,6 @@ function transformMarkdown(input: string) {
           );
         }
       }
-    },
-  });*/
-
-  // https://marked.js.org/using_pro#renderer
-  // https://github.com/markedjs/marked/blob/master/src/Renderer.js
-  marked.use({
-    renderer: {
-      code(code: string, infostring: string): string {
-        const lang = ((infostring || "").match(/\S*/) || [])[0];
-
-        // @ts-ignore How to type this?
-        if (this.options.highlight) {
-          // @ts-ignore How to type this?
-          const out = this.options.highlight(code, lang);
-
-          if (out != null && out !== code) {
-            code = out;
-          }
-        }
-
-        code = code.replace(/\n$/, "") + "\n";
-
-        if (!lang) {
-          return "<pre><code>" +
-            code +
-            "</code></pre>\n";
-        }
-
-        return '<pre class="' +
-          tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
-          '"><code class="' +
-          // @ts-ignore How to type this?
-          this.options.langPrefix +
-          lang +
-          '">' +
-          code +
-          "</code></pre>\n";
-      },
-      heading(
-        text: string,
-        level: number,
-        raw: string,
-        slugger: { slug: (s: string) => string },
-      ) {
-        const slug = slugger.slug(raw);
-
-        tableOfContents.push({ slug, level, text });
-
-        return '<a href="#' + slug + '"><h' +
-          level +
-          ' class="' + tw`inline` + '"' +
-          ' id="' +
-          slug +
-          '">' +
-          text +
-          "</h" +
-          level +
-          ">" +
-          "</a>\n";
-      },
-      link(href: string, title: string, text: string) {
-        if (href === null) {
-          return text;
-        }
-
-        if (text === "<file>") {
-          return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
-        }
-
-        let out = '<a class="' + tw`underline` + '" href="' + href + '"';
-        if (title) {
-          out += ' title="' + title + '"';
-        }
-        out += ">" + text + "</a>";
-        return out;
-      },
-      list(body: string, ordered: string, start: number) {
-        const type = ordered ? "ol" : "ul",
-          startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
-          klass = ordered
-            ? "list-decimal list-inside"
-            : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
-          body +
-          "</" +
-          type + ">\n";
-      },
     },
   });
 
