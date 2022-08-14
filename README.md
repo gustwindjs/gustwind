@@ -44,7 +44,7 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 
 ## Development
 
-Run the available commands through [velociraptor](https://github.com/umbopepato/velociraptor) (vr).
+Use `deno task` to see available tasks and to run them.
 
 To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./cli.ts`. A symlink would likely work as well.
 
@@ -54,6 +54,6 @@ Publishing to deno.land goes through the [publish](https://deno.land/x/publish) 
 
 ## Publishing to npm
 
-1. `vr build:gustwind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
+1. `deno task build:gustwind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd gustwind/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)

@@ -231,7 +231,7 @@ import breeze, { type Component } from "breezewind";
 
 ## Publishing to npm
 
-1. `vr build:breezewind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
+1. `deno task build:breezewind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd breezewind/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)
 
