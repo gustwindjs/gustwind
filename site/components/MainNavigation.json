@@ -1,41 +1,65 @@
 {
-  "type": "nav",
-  "class": "sticky top-0 opacity-80 px-8 py-4 gap-4 flex flex-col sm:flex-row justify-between bg-gray-100 font-thin filter drop-shadow-sm",
+  "type": "div",
+  "class": "sticky top-0 opacity-90 px-8 py-4 bg-gray-100 font-thin filter drop-shadow-sm",
   "children": [
     {
-      "type": "div",
-      "class": "flex flex-wrap gap-4 ml-auto sm:ml-0",
-      "children": [
-        {
-          "type": "a",
-          "class": "scale-150 whitespace-nowrap",
-          "children": "🐳💨",
-          "attributes": {
-            "href": "/"
-          }
-        },
-        {
-          "type": "Navigation"
-        }
-      ]
+      "type": "input",
+      "class": "peer hidden checked:after:-rotate-45 checked:before:rotate-45",
+      "attributes": {
+        "id": "nav__toggle",
+        "type": "checkbox"
+      }
     },
     {
-      "type": "div",
-      "class": "flex gap-4 ml-auto sm:ml-0",
+      "type": "label",
+      "class": "hidden before:-top-2 after:top-2",
+      "attributes": {
+        "htmlFor": "nav__toggle"
+      }
+    },
+    {
+      "type": "nav",
+      "class": "peer-checked:translate-0 flex flex-col sm:flex-row gap-4 justify-between",
       "children": [
         {
-          "type": "Link",
-          "props": {
-            "children": "Blog",
-            "href": "/blog/"
-          }
+          "type": "div",
+          "class": "sm:flex sm:flex-row sm:flex-wrap gap-4 sm:ml-auto sm:ml-0 grid",
+          "children": [
+            {
+              "type": "a",
+              "attributes": {
+                "href": "/"
+              },
+              "children": [{
+                "type": "span",
+                "class": "scale-150 whitespace-nowrap",
+                "children": "🐳💨"
+              }]
+            },
+            {
+              "type": "Navigation"
+            }
+          ]
         },
         {
-          "type": "Link",
-          "props": {
-            "children": "GitHub",
-            "href": "https://github.com/survivejs/gustwind"
-          }
+          "type": "div",
+          "class": "sm:flex sm:flex-row gap-4 sm:ml-auto sm:ml-0 grid",
+          "children": [
+            {
+              "type": "Link",
+              "props": {
+                "children": "Blog",
+                "href": "/blog/"
+              }
+            },
+            {
+              "type": "Link",
+              "props": {
+                "children": "GitHub",
+                "href": "https://github.com/survivejs/gustwind"
+              }
+            }
+          ]
         }
       ]
     }
