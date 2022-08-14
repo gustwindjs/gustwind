@@ -23,7 +23,7 @@
               "attributes": {
                 "x-attr": "",
                 "x": "state.value.textContent",
-                "@href": "state.value.parentElement?.attributes.href.value",
+                "@href": "state.value.parentElement?.attributes.href?.value",
                 "@class": {
                   "utility": "concat",
                   "parameters": [
