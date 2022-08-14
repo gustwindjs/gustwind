@@ -39,7 +39,7 @@ function transformMarkdown(input: string) {
   // https://github.com/markedjs/marked/issues/545
   const tableOfContents: { slug: string; level: number; text: string }[] = [];
 
-  marked.use({
+  /*marked.use({
     async: true,
     extensions: [{
       name: "importComponent",
@@ -87,7 +87,7 @@ function transformMarkdown(input: string) {
         }
       }
     },
-  });
+  });*/
 
   // https://marked.js.org/using_pro#renderer
   // https://github.com/markedjs/marked/blob/master/src/Renderer.js
