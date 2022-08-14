@@ -1,63 +1,79 @@
 {
+  "__todo": "port to CSS only solution (needs twind 1.0)",
   "type": "div",
-  "class": "sticky top-0 opacity-90 px-8 py-4 bg-gray-100 font-thin filter drop-shadow-sm",
+  "class": "sticky top-0",
+  "attributes": {
+    "hidden": "",
+    "x-cloak": "",
+    "x-state": "true"
+  },
   "children": [
     {
-      "type": "input",
-      "class": "peer hidden checked:after:-rotate-45 checked:before:rotate-45",
+      "type": "span",
+      "class": "fixed top-4 right-4 text-4xl sm:hidden z-50",
       "attributes": {
-        "id": "nav__toggle",
-        "type": "checkbox"
-      }
-    },
-    {
-      "type": "label",
-      "class": "hidden before:-top-2 after:top-2",
-      "attributes": {
-        "htmlFor": "nav__toggle"
-      }
+        "onclick": "setState(v => !v)"
+      },
+      "children": "☰"
     },
     {
       "type": "nav",
-      "class": "peer-checked:translate-0 flex flex-col sm:flex-row gap-4 justify-between",
+      "class": "grid sm:flex opacity-90 bg-gray-100 font-thin filter drop-shadow-sm",
+      "attributes": {
+        "x-attr": "",
+        "@class": {
+          "utility": "concat",
+          "parameters": [
+            "[state && '",
+            { "utility": "tw", "parameters": ["hidden"] },
+            "']"
+          ]
+        }
+      },
       "children": [
         {
           "type": "div",
-          "class": "sm:flex sm:flex-row sm:flex-wrap gap-4 sm:ml-auto sm:ml-0 grid",
+          "class": "m-4 sm:w-full flex flex-col sm:flex-row sm:justify-between gap-4",
           "children": [
             {
-              "type": "a",
-              "attributes": {
-                "href": "/"
-              },
-              "children": [{
-                "type": "span",
-                "class": "scale-150 whitespace-nowrap",
-                "children": "🐳💨"
-              }]
+              "type": "div",
+              "class": "sm:flex sm:flex-row sm:flex-wrap gap-4 sm:ml-auto sm:ml-0 grid",
+              "children": [
+                {
+                  "type": "a",
+                  "attributes": {
+                    "href": "/"
+                  },
+                  "children": [{
+                    "type": "span",
+                    "class": "scale-150 whitespace-nowrap",
+                    "children": "🐳💨"
+                  }]
+                },
+                {
+                  "type": "Navigation"
+                }
+              ]
             },
             {
-              "type": "Navigation"
-            }
-          ]
-        },
-        {
-          "type": "div",
-          "class": "sm:flex sm:flex-row gap-4 sm:ml-auto sm:ml-0 grid",
-          "children": [
-            {
-              "type": "Link",
-              "props": {
-                "children": "Blog",
-                "href": "/blog/"
-              }
-            },
-            {
-              "type": "Link",
-              "props": {
-                "children": "GitHub",
-                "href": "https://github.com/survivejs/gustwind"
-              }
+              "type": "div",
+              "class": "sm:flex sm:flex-row gap-4 sm:ml-auto sm:ml-0 grid",
+              "children": [
+                {
+                  "type": "Link",
+                  "props": {
+                    "children": "Blog",
+                    "href": "/blog/"
+                  }
+                },
+                {
+                  "type": "Link",
+                  "props": {
+                    "children": "GitHub",
+                    "href": "https://github.com/survivejs/gustwind"
+                  }
+                }
+              ]
             }
           ]
         }
