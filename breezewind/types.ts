@@ -41,7 +41,7 @@ type Extension = (
 type Utilities = Record<
   string,
   // deno-lint-ignore no-explicit-any
-  (context?: Context, ...args: any) => string | Promise<string>
+  (context: Context, ...args: any) => string | Promise<string>
 >;
 
 export type {

@@ -1,8 +1,8 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utils/compileScripts.ts";
+import { renderPage } from "../utils/renderPage.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import { renderPage } from "./renderPage.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {
   BuildWorkerEvent,

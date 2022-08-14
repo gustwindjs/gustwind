@@ -1,7 +1,7 @@
 import { compileTypeScript } from "../utils/compileTypeScript.ts";
 import { getJson, watch } from "../utils/fs.ts";
+import { getDefinition } from "../utils/getDefinitions.ts";
 import { path as _path } from "../server-deps.ts";
-import { getDefinition } from "./getDefinitions.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import { getWebsocketServer } from "./webSockets.ts";
 import type { DataSources, ProjectMeta, Route } from "../types.ts";
@@ -24,7 +24,7 @@ function watchDataSourceInputs(
     route.dataSources?.forEach((input) => {
       if (!watched.has(input)) {
         watch({
-          directory: _path.join(path, input),
+          directory: _path.join(path, input.name),
           handler: async (matchedPath) => {
             console.log("Changed data source input", matchedPath, url);
 

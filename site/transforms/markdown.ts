@@ -1,5 +1,9 @@
-import { marked } from "https://unpkg.com/marked@4.0.0/lib/marked.esm.js";
+import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { getDefinitions } from "../../utils/getDefinitions.ts";
+import { renderHTML } from "../../utils/renderPage.ts";
+import type { Component } from "../../breezewind/types.ts";
+import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash";
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
@@ -34,6 +38,56 @@ function transformMarkdown(input: string) {
 
   // https://github.com/markedjs/marked/issues/545
   const tableOfContents: { slug: string; level: number; text: string }[] = [];
+
+  marked.use({
+    async: true,
+    extensions: [{
+      name: "importComponent",
+      level: "block",
+      start(src: string) {
+        return src.indexOf(":");
+      },
+      tokenizer(src: string) {
+        const rule = /^\:([A-Za-z]+)\:/;
+        const match = rule.exec(src);
+
+        if (match) {
+          return {
+            type: "importComponent",
+            raw: match[0],
+            component: match[1],
+            html: "", // will be replaced in walkTokens
+          };
+        }
+      },
+      // @ts-ignore How to type this?
+      renderer(token) {
+        return token.html;
+      },
+    }],
+    // @ts-ignore How to type this?
+    async walkTokens(token) {
+      if (token.type === "importComponent") {
+        const components = await getDefinitions<Component>("./site/components");
+        const matchedComponent = components[token.component];
+
+        if (matchedComponent) {
+          const html = await renderHTML({
+            component: matchedComponent,
+            components: {},
+            context: {},
+            utilities: pageUtilities,
+          });
+
+          token.html = html;
+        } else {
+          throw new Error(
+            `Failed to find a matching component for ${token.component}`,
+          );
+        }
+      }
+    },
+  });
 
   // https://marked.js.org/using_pro#renderer
   // https://github.com/markedjs/marked/blob/master/src/Renderer.js

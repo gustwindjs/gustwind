@@ -40,12 +40,5 @@
       "children": "Breezewind",
       "href": "/breezewind/"
     }
-  },
-  {
-    "type": "Link",
-    "props": {
-      "children": "Playground",
-      "href": "/playground/"
-    }
   }
 ]

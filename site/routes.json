@@ -30,7 +30,8 @@
       "title": "Breezewind",
       "description": "Breezing fast templating"
     },
-    "dataSources": [{ "operation": "parseHeadmatter", "name": "document" }]
+    "dataSources": [{ "operation": "parseHeadmatter", "name": "document" }],
+    "scripts": ["playground"]
   },
   "blog": {
     "layout": "blogIndex",
@@ -74,14 +75,6 @@
         "scripts": ["hello"]
       }
     }
-  },
-  "playground": {
-    "layout": "playgroundPage",
-    "meta": {
-      "title": "JSON playground",
-      "description": "Try JSON to HTML conversion on this page"
-    },
-    "scripts": ["playground"]
   },
   "atom.xml": {
     "layout": "rssPage",

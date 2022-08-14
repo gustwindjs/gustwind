@@ -16,8 +16,8 @@ import type {
   ProjectMeta,
   Route,
 } from "../types.ts";
-import type { Component, Utilities } from "../breezewind/types.ts";
-import breeze from "../breezewind/index.ts";
+import type { Component, Context, Utilities } from "../breezewind/types.ts";
+import breezewind from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
@@ -105,13 +105,12 @@ async function renderPage({
   DEBUG && console.log("rendering a page with context", context);
 
   try {
-    const markup = await renderHTML(
-      layout,
+    const markup = await renderHTML({
+      component: layout,
       components,
-      context,
-      pathname,
-      pageUtilities,
-    );
+      context: { ...context, pathname },
+      utilities: pageUtilities,
+    });
 
     if (route.type === "xml") {
       return [markup, context];
@@ -168,26 +167,21 @@ function injectStyleTag(markup: string, styleTag: string) {
   return parts[0] + styleTag + parts[1];
 }
 
-function renderHTML(
-  children: Layout,
-  components: Components,
-  pageData: DataContext,
-  pathname: string,
-  utilities: Utilities,
-) {
-  if (!children) {
-    return "";
-  }
-
-  return breeze({
-    component: children,
+function renderHTML({ component, components, context, utilities }: {
+  component: Layout;
+  components: Components;
+  context: Context;
+  utilities: Utilities;
+}) {
+  return breezewind({
+    component,
     components,
     extensions: [
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
       breezeExtensions.visibleIf,
     ],
-    context: { ...pageData, pathname },
+    context,
     utilities,
   });
 }

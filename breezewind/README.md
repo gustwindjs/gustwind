@@ -229,6 +229,12 @@ import breeze, { type Component } from "breezewind";
 ...
 ```
 
+## Playground
+
+Use the playground below to experiment with the syntax:
+
+:Playground:
+
 ## Publishing to npm
 
 1. `deno task build:breezewind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
