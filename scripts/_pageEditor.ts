@@ -197,8 +197,6 @@ function updateElementContent(
     return;
   }
 
-  console.log("content changed", newContent);
-
   const nextLayout = produce(layout, (draftLayout: BreezeComponent) => {
     traverseComponents(draftLayout, (p) => {
       if (p?.attributes?.["data-id"] === selectionId) {
