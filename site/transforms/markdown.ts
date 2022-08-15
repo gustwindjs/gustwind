@@ -44,6 +44,10 @@ function transformMarkdown(input: string) {
     extensions: [{
       name: "importComponent",
       level: "block",
+      // Avoid consuming too much
+      start(src: string) {
+        return src.indexOf("\n:");
+      },
       tokenizer(src: string) {
         const rule = /^\:([A-Za-z]+)\:/;
         const match = rule.exec(src);
