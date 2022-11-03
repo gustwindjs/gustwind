@@ -1,7 +1,7 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
-import { getDefinitions } from "../../utils/getDefinitions.ts";
-import { renderHTML } from "../../utils/renderPage.ts";
+import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
+import { renderHTML } from "../../gustwind-utilities/renderPage.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";

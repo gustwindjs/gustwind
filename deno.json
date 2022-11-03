@@ -2,9 +2,9 @@
   "tasks": {
     "test": "deno test",
     "watch:test": "deno test --watch",
-    "start": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./cli.ts -d",
-    "build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./cli.ts -b",
-    "watch:build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./cli.ts -b",
+    "start": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d",
+    "build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b",
+    "watch:build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b",
     "build:breezewind-for-npm": "deno run -A build_breeze_for_npm.ts",
     "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts",
     "compileGustwindScripts": "deno run --allow-env --allow-read --allow-run --allow-write --unstable compileGustwindScripts.ts"

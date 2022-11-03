@@ -1,10 +1,10 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { attachIds } from "../utils/attachIds.ts";
-import { dir, getJson, resolvePaths } from "../utils/fs.ts";
-import { getDefinitions } from "../utils/getDefinitions.ts";
+import { attachIds } from "../utilities/attachIds.ts";
+import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
+import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
+import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
+import { flattenRoutes } from "../gustwind-utilities/flattenRoutes.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import { expandRoutes } from "./expandRoutes.ts";
-import { flattenRoutes } from "./flattenRoutes.ts";
 import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
 

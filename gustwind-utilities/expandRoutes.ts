@@ -1,5 +1,5 @@
 import { path as _path } from "../server-deps.ts";
-import { get } from "../utils/functional.ts";
+import { get } from "../utilities/functional.ts";
 import type { DataSources, Route } from "../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {

@@ -1,6 +1,6 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
-import { isObject } from "../utils/functional.ts";
+import { isObject } from "../utilities/functional.ts";
 import { applyUtility } from "./applyUtility.ts";
 import type {
   ClassComponent,

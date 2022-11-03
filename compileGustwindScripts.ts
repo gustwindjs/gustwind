@@ -1,8 +1,8 @@
 import { esbuild, fs, path } from "./server-deps.ts";
-import { compileScripts } from "./utils/compileScripts.ts";
+import { compileScripts } from "./utilities/compileScripts.ts";
 
 async function compileGustwindScripts(scriptsPath: string) {
-  const gustwindScriptsPath = "./gustwindScripts";
+  const gustwindScriptsPath = "./gustwind-scripts";
 
   await fs.ensureDir(gustwindScriptsPath);
 

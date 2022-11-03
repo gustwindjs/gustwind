@@ -1,4 +1,4 @@
-import { get, isObject } from "../utils/functional.ts";
+import { get, isObject } from "../utilities/functional.ts";
 import type { Context } from "./types.ts";
 
 const defaultUtilities = {

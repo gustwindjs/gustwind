@@ -1,5 +1,5 @@
 import { path } from "../server-deps.ts";
-import { dir, getJson } from "../utils/fs.ts";
+import { dir, getJson } from "../utilities/fs.ts";
 
 async function getDefinitions<T>(directoryPath: string) {
   const componentFiles = await dir(directoryPath, ".json");

@@ -96,7 +96,6 @@ async function renderPage({
   };
   const meta = await applyUtilities(
     props,
-    // @ts-expect-error This is fine
     { ...defaultUtilities, ...pageUtilities },
     { context },
   );

@@ -1,11 +1,11 @@
 /// <reference lib="dom" />
-import { getParents } from "../utils/getParents.ts";
-import { changeTag } from "../utils/changeTag.ts";
-import { traverseComponents } from "../utils/traverseComponents.ts";
+import { getParents } from "../utilities/getParents.ts";
+import { changeTag } from "../utilities/changeTag.ts";
+import { traverseComponents } from "../utilities/traverseComponents.ts";
 import breezewind from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
 import { draggable, produce, tw } from "../client-deps.ts";
-// import { getPagePath } from "../utils/getPagePath.ts";
+// import { getPagePath } from "../utilities/getPagePath.ts";
 import type { Components, DataContext, Route } from "../types.ts";
 import type { Component as BreezeComponent } from "../breezewind/types.ts";
 
@@ -40,7 +40,7 @@ async function createEditor() {
   const [components, context, layout, route]: [
     Components,
     DataContext,
-    Layout,
+    Components,
     Route,
   ] = await Promise.all([
     fetch("/components.json").then((res) => res.json()),

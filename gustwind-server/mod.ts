@@ -1,11 +1,11 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
-import { compileScript, compileScripts } from "../utils/compileScripts.ts";
-import { getJson, resolvePaths } from "../utils/fs.ts";
-import { attachIds } from "../utils/attachIds.ts";
-import { trim } from "../utils/string.ts";
-import { renderPage } from "../utils/renderPage.ts";
-import { getDefinitions } from "../utils/getDefinitions.ts";
-import { expandRoutes } from "./expandRoutes.ts";
+import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
+import { getJson, resolvePaths } from "../utilities/fs.ts";
+import { attachIds } from "../utilities/attachIds.ts";
+import { trim } from "../utilities/string.ts";
+import { renderPage } from "../gustwind-utilities/renderPage.ts";
+import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
+import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { getCache, type ServeCache } from "./cache.ts";
 import type { DataSources, Mode, ProjectMeta, Route } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
@@ -63,7 +63,7 @@ async function serveGustwind({
       DEBUG && console.log("Compiling remote scripts");
 
       cache.scripts = Object.fromEntries(
-        (await compileGustwindScripts()).map(
+        (await compileRemoteGustwindScripts()).map(
           ({ name, content }) => {
             return [name.replace(".ts", ".js"), content];
           },
@@ -285,30 +285,25 @@ function matchRoute(
   return match;
 }
 
-async function compileGustwindScripts() {
-  // TODO: Generate a list of these scripts in a dynamic way instead
-  // of hardcoding. The question is how to do the lookup.
-  const pageEditor = await cache(
-    "https://deno.land/x/gustwind/gustwindScripts/_pageEditor.ts",
-  );
-  const toggleEditor = await cache(
-    "https://deno.land/x/gustwind/gustwindScripts/_toggleEditor.ts",
-  );
-  const wsClient = await cache(
-    "https://deno.land/x/gustwind/gustwindScripts/_webSocketClient.ts",
-  );
-  const twindRuntime = await cache(
-    "https://deno.land/x/gustwind/gustwindScripts/_twindRuntime.ts",
-  );
+function compileRemoteGustwindScripts() {
+  const repository = "https://deno.land/x/gustwind";
+  const scriptsDirectory = "gustwind-scripts";
+  const scripts = [
+    "pageEditor",
+    "toggleEditor",
+    "webSocketClient",
+    "twindRuntime",
+  ];
 
-  return Promise.all([
-    { name: "_pageEditor.ts", file: pageEditor },
-    { name: "_toggleEditor.ts", file: toggleEditor },
-    { name: "_webSocketClient.ts", file: wsClient },
-    { name: "_twindRuntime.ts", file: twindRuntime },
-  ].map(({ name, file: { path } }) =>
-    compileScript({ name, path, mode: "development" })
-  ));
+  // TODO: See if script names can be looked up from somewhere remote easily
+  return Promise.all(scripts.map(async (script) => {
+    const name = `_${script}.ts`;
+    const { path } = await cache(
+      `${repository}/${scriptsDirectory}/${name}`,
+    );
+
+    return compileScript({ name, path, mode: "development" });
+  }));
 }
 
 async function compileScriptsToJavaScript(path: string) {

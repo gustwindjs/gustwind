@@ -1,4 +1,4 @@
-import { get, isObject, isUndefined } from "../utils/functional.ts";
+import { get, isObject, isUndefined } from "../utilities/functional.ts";
 import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {

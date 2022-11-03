@@ -1,7 +1,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
-import { compileScript } from "../utils/compileScripts.ts";
-import { renderPage } from "../utils/renderPage.ts";
+import { compileScript } from "../utilities/compileScripts.ts";
+import { renderPage } from "../gustwind-utilities/renderPage.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {

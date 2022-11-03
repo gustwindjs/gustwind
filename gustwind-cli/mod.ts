@@ -3,14 +3,14 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags, path } from "./server-deps.ts";
-import { getJson } from "./utils/fs.ts";
-import { VERSION } from "./version.ts";
-import type { ProjectMeta } from "./types.ts";
-import { build as buildProject } from "./gustwind/build.ts";
-import { serveGustwind } from "./gustwind/serve.ts";
-import { watchAll } from "./gustwind/watch.ts";
-import { getCache } from "./gustwind/cache.ts";
+import { flags, path } from "../server-deps.ts";
+import { getJson } from "../utilities/fs.ts";
+import { VERSION } from "../version.ts";
+import type { ProjectMeta } from "../types.ts";
+import { build as buildProject } from "../gustwind-builder/mod.ts";
+import { serveGustwind } from "../gustwind-server/mod.ts";
+import { watchAll } from "../gustwind-server/watch.ts";
+import { getCache } from "../gustwind-server/cache.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
