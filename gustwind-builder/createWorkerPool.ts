@@ -66,9 +66,7 @@ function createWorker(onReady: (WorkerWrapper: WorkerWrapper) => void) {
       new URL("./buildWorker.ts", import.meta.url).href,
       {
         type: "module",
-        // @ts-ignore This should be allowed based on the docs
         deno: {
-          namespace: true,
           permissions: "inherit",
         },
       },
