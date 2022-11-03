@@ -9,6 +9,10 @@ Gustwind is an experimental site generator built on top of JSON definitions usin
 
 Please see the documentation to learn more about the concepts.
 
+## Getting started
+
+There's [a simple GitHub template](https://github.com/survivejs/gustwind-template) that has basic features set up. It renders the project readme as `index.html` and you should expand/change the project to your liking.
+
 ## Usage
 
 The easiest way to consume the project is to use the CLI:
@@ -20,6 +24,7 @@ deno install -A --unstable --no-check -f https://deno.land/x/gustwind/gustwind-c
 The APIs are also available as modules if you need more control.
 
 It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.16.0 or newer.
+
 
 ## Data flow
 
