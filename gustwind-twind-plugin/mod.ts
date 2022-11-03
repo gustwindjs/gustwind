@@ -1,10 +1,10 @@
 import {
   getStyleTag,
-  getStyleTagProperties,
+  // getStyleTagProperties,
   virtualSheet,
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
-import { path } from "../server-deps.ts";
+// import { path } from "../server-deps.ts";
 import { ProjectMeta, Route } from "../types.ts";
 import type { Context } from "../breezewind/types.ts";
 
