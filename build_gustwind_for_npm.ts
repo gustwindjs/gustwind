@@ -13,7 +13,7 @@ async function buildForNpm(name: string, version: string) {
   await emptyDir(outDir);
 
   await build({
-    entryPoints: [`./cli.ts`],
+    entryPoints: [`./gustwind-cli/mod.ts`],
     scriptModule: false, // ESM only (allows top level awaits)
     outDir,
     shims: {

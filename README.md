@@ -14,7 +14,7 @@ Please see the documentation to learn more about the concepts.
 The easiest way to consume the project is to use the CLI:
 
 ```bash
-deno install -A --unstable --no-check -f https://deno.land/x/gustwind/cli.ts
+deno install -A --unstable --no-check -f https://deno.land/x/gustwind/gustwind-cli/mod.ts
 ```
 
 The APIs are also available as modules if you need more control.
@@ -46,7 +46,7 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 
 Use `deno task` to see available tasks and to run them.
 
-To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./cli.ts`. A symlink would likely work as well.
+To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./gustwind-cli/mod.ts`. A symlink would likely work as well.
 
 ## Publishing to deno.land
 

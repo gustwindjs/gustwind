@@ -14,7 +14,7 @@ The general approach is to first set up a build script to install Deno and run G
 
 curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.22.0
 /opt/buildhome/.deno/bin/deno task decompress:cache
-/opt/buildhome/.deno/bin/deno run -A --unstable --no-check https://deno.land/x/gustwind@v0.25.0/cli.ts -b
+/opt/buildhome/.deno/bin/deno run -A --unstable --no-check https://deno.land/x/gustwind@v0.25.0/gustwind-cli/mod.ts -b
 ```
 
 Also make the file executable with `chmod +x` and point your CI environment to use the file when building. Usually there's a field for that in their user interface somewhere.
