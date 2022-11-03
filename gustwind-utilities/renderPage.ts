@@ -96,7 +96,7 @@ async function renderPage({
   };
   const meta = await applyUtilities(
     props,
-    { ...defaultUtilities, ...pageUtilities },
+    { ...defaultUtilities, ...pageUtilities } as Utilities,
     { context },
   );
   context.meta = meta;
