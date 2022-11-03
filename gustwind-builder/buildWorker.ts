@@ -62,7 +62,7 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    const [html, context, css] = await renderPage({
+    const { markup, context } = await renderPage({
       projectMeta,
       layout,
       route,
@@ -75,10 +75,11 @@ self.onmessage = async (e) => {
       dataSources,
     });
 
-    if (css) {
-      // TODO: Push this to a task
-      await Deno.writeTextFile(path.join(dir, "styles.css"), css);
-    }
+    // TODO: Handle at plugin
+    //if (css) {
+    // TODO: Push this to a task
+    //await Deno.writeTextFile(path.join(dir, "styles.css"), css);
+    //}
 
     if (route.type !== "xml" && projectMeta.features?.showEditorAlways) {
       // TODO: Can these be pushed to tasks?
@@ -98,12 +99,12 @@ self.onmessage = async (e) => {
     }
 
     if (route.type === "xml") {
-      await Deno.writeTextFile(dir, html);
+      await Deno.writeTextFile(dir, markup);
     } else {
       await fs.ensureDir(dir);
       await Deno.writeTextFile(
         path.join(dir, "index.html"),
-        html,
+        markup,
       );
     }
 

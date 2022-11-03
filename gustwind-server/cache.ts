@@ -7,7 +7,6 @@ type ServeCache = {
   layoutDefinitions: Record<string, Component | Component[]>;
   layouts: Record<string, Component | Component[]>;
   scripts: Record<string, string>;
-  styles: Record<string, string>;
   routes: Record<string, Route>;
   routeDefinitions: Record<string, Route>;
   pageUtilities: Utilities;
@@ -22,7 +21,6 @@ function getCache(): ServeCache {
     layouts: {},
     layoutDefinitions: {},
     scripts: {},
-    styles: {},
     routes: {},
     routeDefinitions: {},
     pageUtilities: {},

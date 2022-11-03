@@ -172,8 +172,8 @@ async function serveGustwind({
             layout = attachIds(layout);
           }
 
-          // TODO: Store context and css so that subsequent requests can find the data
-          const [html, context, css] = await renderPage({
+          // TODO: Store context so that subsequent requests can find the data
+          const { markup, context } = await renderPage({
             projectMeta,
             layout,
             route,
@@ -194,15 +194,11 @@ async function serveGustwind({
           cache.layoutDefinitions[url + "layout.json"] = layout;
           cache.routeDefinitions[url + "route.json"] = matchedRoute;
 
-          if (css) {
-            cache.styles[url + "styles.css"] = css;
-          }
-
           if (context) {
             cache.contexts[url + "context.json"] = context;
           }
 
-          return respond(200, html, contentType);
+          return respond(200, markup, contentType);
         }
 
         return respond(404, "No matching layout");
@@ -214,12 +210,6 @@ async function serveGustwind({
           JSON.stringify(cache.components),
           "application/json",
         );
-      }
-
-      const matchedCSS = cache.styles[url];
-
-      if (matchedCSS) {
-        return respond(200, matchedCSS, "text/css");
       }
 
       const assetPath = projectPaths.assets && _path.join(

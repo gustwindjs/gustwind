@@ -67,7 +67,6 @@ type ProjectMeta = {
     twindSetup?: string;
   };
   features?: {
-    extractCSS?: boolean;
     showEditorAlways?: boolean;
   };
 };

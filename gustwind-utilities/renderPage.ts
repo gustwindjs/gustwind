@@ -53,7 +53,7 @@ async function renderPage({
   components: Components;
   pathname: string;
   dataSources: DataSources;
-}): Promise<[string, DataContext, string?]> {
+}): Promise<{ markup: string; context: DataContext; css?: string }> {
   setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
 
   // @ts-ignore Somehow TS gets confused here
@@ -117,29 +117,21 @@ async function renderPage({
     pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
 
     if (route.type === "xml") {
-      return [markup, context];
+      return { markup, context };
     }
 
     // https://web.dev/defer-non-critical-css/
-    const styleTag = projectMeta.features?.extractCSS
-      ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
-      : getStyleTag(stylesheet);
+    const styleTag = getStyleTag(stylesheet);
 
-    let css = "";
-    if (projectMeta.features?.extractCSS) {
-      css = getStyleTagProperties(stylesheet).textContent;
-    }
-
-    return [
-      injectStyleTag(markup, styleTag),
+    return {
+      markup: injectStyleTag(markup, styleTag),
       context,
-      css,
-    ];
+    };
   } catch (error) {
     console.error("Failed to render", route.url, error);
   }
 
-  return ["", {}];
+  return { markup: "", context: {} };
 }
 
 async function getDataSourceContext(
