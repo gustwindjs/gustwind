@@ -61,7 +61,10 @@ async function expandRoute(
     }
 
     const expandedRoutes: Record<string, Route> = {};
-    const dataSourceResults = await dataSource();
+    const dataSourceResults = await dataSource.apply(
+      undefined,
+      matchBy.dataSource.parameters,
+    );
 
     // TODO: Give a warning if dataSource isn't an array
     Array.isArray(dataSourceResults) && dataSourceResults.forEach((match) => {

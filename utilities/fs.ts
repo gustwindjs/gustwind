@@ -27,6 +27,10 @@ function getJsonSync<R>(filePath: string) {
 }
 
 async function dir(p: string, extension?: string) {
+  if (!p) {
+    throw new Error("dir - missing path");
+  }
+
   const ret = [];
 
   for await (const { name } of Deno.readDir(p)) {
@@ -43,6 +47,10 @@ async function dir(p: string, extension?: string) {
 }
 
 function dirSync(p: string, extension?: string) {
+  if (!p) {
+    throw new Error("dirSync - missing path");
+  }
+
   const ret = [];
 
   for (const { name } of Deno.readDirSync(p)) {
