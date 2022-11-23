@@ -41,6 +41,20 @@ Deno.test("visibleIf hides element based on context", async () => {
   );
 });
 
+Deno.test("visibleIf hides element based on context with an empty array", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "span",
+        visibleIf: [{ utility: "get", parameters: ["context", "visible"] }],
+      },
+      extensions: [extensions.visibleIf],
+      context: { visible: [] },
+    }),
+    "",
+  );
+});
+
 Deno.test("visibleIf shows element based on prop", async () => {
   assertEquals(
     await breeze({

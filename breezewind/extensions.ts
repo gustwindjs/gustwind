@@ -115,9 +115,11 @@ async function visibleIf(
   }
 
   const trues = (await Promise.all(
-    component.visibleIf.map(async (v) =>
-      await applyUtility(v as Utility, utilities, context)
-    ),
+    component.visibleIf.map(async (v) => {
+      const ret = await applyUtility(v as Utility, utilities, context);
+
+      return Array.isArray(ret) ? ret.length > 0 : ret;
+    }),
   )).filter(Boolean);
   const isVisible = trues.length === component.visibleIf.length;
 
