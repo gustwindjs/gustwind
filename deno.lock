@@ -1,0 +1,18 @@
+{
+  "version": "2",
+  "remote": {
+    "https://cdn.skypack.dev/-/dragjs@v0.13.3-me5BBq5bvn2QQFZBJZVn/dist=es2019,mode=imports,min/optimized/dragjs.js": "02de2be8c505dbdcbcef68c4fbcc6b2a84e1861fe2d55c5234add20515110e7e",
+    "https://cdn.skypack.dev/-/immer@v9.0.16-jlFiFlg3t7hqWHKp0hsC/dist=es2019,mode=imports,min/optimized/immer.js": "df1822ce7c2e3204d9275a5ca3f0644ea487eed510bd4d4b47992e0405d269a0",
+    "https://cdn.skypack.dev/-/style-vendorizer@v2.0.0-M3RNjjqClSTio1f91tNw/dist=es2019,mode=imports,min/optimized/style-vendorizer.js": "07b219b6159c3969b388146ebd8676971cc5d1fe5c59a26fa50996ae420a1c5f",
+    "https://cdn.skypack.dev/-/twind@v0.16.16-LPGqCzM3XVHFUO0IDjyk/dist=es2019,mode=imports,min/optimized/twind.js": "34c235c84f33c8db4666fd48c266b1e53ee020a929d24551d6f592426fb57635",
+    "https://cdn.skypack.dev/-/twind@v0.16.16-LPGqCzM3XVHFUO0IDjyk/dist=es2019,mode=imports,min/optimized/twind/sheets.js": "444cc7151e003995c29c32ca1a4b8f7a1ef83ff1591503a9731f889d47ff1a86",
+    "https://cdn.skypack.dev/dragjs@v0.13.3?min": "b40cadd5ad6b9f54a444f5f8aa6fa94515ebf5c9036e258c086ed2b8a25a6282",
+    "https://cdn.skypack.dev/immer@9.0.16?min": "97f8bf0f3f28adae7c053107abc91922b16fac965e99ae4b264b28743736c997",
+    "https://cdn.skypack.dev/twind@0.16.16/sheets?min": "1ec0646e1498da9bac4372f11e812539376d3adec67560ed543ab0ea209ff31a",
+    "https://cdn.skypack.dev/twind@0.16.16?min": "9f798f1ff101bf0f71c29e35e04b49f58df6678d26a57998a9d72fa3641d0809",
+    "https://deno.land/std@0.142.0/fmt/colors.ts": "30455035d6d728394781c10755351742dd731e3db6771b1843f9b9e490104d37",
+    "https://deno.land/std@0.142.0/testing/_diff.ts": "029a00560b0d534bc0046f1bce4bd36b3b41ada3f2a3178c85686eb2ff5f1413",
+    "https://deno.land/std@0.142.0/testing/_format.ts": "0d8dc79eab15b67cdc532826213bbe05bccfd276ca473a50a3fc7bbfb7260642",
+    "https://deno.land/std@0.142.0/testing/asserts.ts": "319df43e1e6bba2520508f6090a21a9a640cbe2754d255aee17cd1dfa78c2ff6"
+  }
+}
