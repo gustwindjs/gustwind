@@ -19,8 +19,11 @@ async function render(
     utilities?: Utilities;
   },
 ): Promise<string> {
-  const renderUtility = (_: Context, component: Component | Component[]) =>
-    render({ component, components, extensions, context, utilities });
+  const renderUtility = (_: Context, component: unknown) =>
+    isComponent(component)
+      // @ts-ignore: This is correct due to runtime check
+      ? render({ component, components, extensions, context, utilities })
+      : component;
 
   // @ts-expect-error This is fine
   utilities = isObject(utilities)
@@ -147,6 +150,17 @@ async function render(
   return "";
 }
 
+// Note that the test here is more strict than the type itself as
+// it checks against the children field.
+function isComponent(input: unknown): boolean {
+  if (Array.isArray(input)) {
+    return input.every(isComponent);
+  }
+
+  // @ts-ignore We know it's an object by now. Maybe there's a more TS way to do this.
+  return !!(isObject(input) && input.children);
+}
+
 function toHTML(
   element?: Component["type"],
   attributes?: string,
@@ -220,4 +234,5 @@ async function evaluateFields(
 }
 
 export default render;
+export { isComponent };
 export type { Component, Context, Extension, Utilities, Utility };

@@ -1,6 +1,7 @@
 import { get, isObject } from "../utilities/functional.ts";
 import type { Context } from "./types.ts";
 
+// Note that on top of these, a render utility is injected at index.ts!
 const defaultUtilities = {
   concat: (_: Context, ...parts: string[]) => parts.join(""),
   get: (

@@ -117,3 +117,23 @@ Deno.test("allow rendering with props in a component", async () => {
     "<div><span>foobar</span></div>",
   );
 });
+
+Deno.test("allow rendering pure strings", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "Test",
+      },
+      components: {
+        Test: {
+          type: "div",
+          children: {
+            utility: "render",
+            parameters: ["barfoo"],
+          },
+        },
+      },
+    }),
+    "<div>barfoo</div>",
+  );
+});

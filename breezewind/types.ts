@@ -7,6 +7,8 @@ type BaseComponent = {
   attributes?: Record<string, string | Utility | undefined>;
   bindToProps?: Record<string, Utility>;
   props?: Context;
+
+  // TODO: Should setting children be forced?
   children?: string | Component[] | Utility;
 };
 

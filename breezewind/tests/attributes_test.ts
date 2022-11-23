@@ -1,4 +1,7 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import breeze from "../index.ts";
 
 Deno.test("attributes", async () => {
@@ -72,7 +75,9 @@ Deno.test("undefined attributes", async () => {
 });
 
 Deno.test("undefined attributes with get", async () => {
-  assertEquals(
+  let threw = false;
+
+  try {
     await breeze({
       component: {
         type: "a",
@@ -81,9 +86,12 @@ Deno.test("undefined attributes with get", async () => {
         },
         children: "testing",
       },
-    }),
-    "<a>testing</a>",
-  );
+    });
+  } catch (_) {
+    threw = true;
+  }
+
+  assertEquals(threw, true);
 });
 
 Deno.test("attributes without children", async () => {

@@ -4,7 +4,9 @@ import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
 Deno.test("foreach extension without context", async () => {
-  assertEquals(
+  let threw = false;
+
+  try {
     await breeze({
       component: {
         type: "ul",
@@ -14,9 +16,12 @@ Deno.test("foreach extension without context", async () => {
         }],
       },
       extensions: [extensions.foreach],
-    }),
-    "<ul></ul>",
-  );
+    });
+  } catch (_) {
+    threw = true;
+  }
+
+  assertEquals(threw, true);
 });
 
 Deno.test("foreach extension with an array", async () => {
