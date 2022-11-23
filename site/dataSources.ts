@@ -3,20 +3,12 @@ import markdown from "./transforms/markdown.ts";
 import { dir } from "../utilities/fs.ts";
 import type { MarkdownWithFrontmatter } from "../types.ts";
 
-function blogPosts() {
-  return indexMarkdown("./blogPosts");
+async function processMarkdown(filename: string) {
+  return markdown(await Deno.readTextFile(filename));
 }
 
-function documentation() {
-  return indexMarkdown("./documentation");
-}
-
-async function readme() {
-  return markdown(await Deno.readTextFile("./README.md"));
-}
-
-async function parseHeadmatter() {
-  return parse(await Deno.readTextFile("./breezewind/README.md"));
+async function parseHeadmatter(filename: string) {
+  return parse(await Deno.readTextFile(filename));
 }
 
 async function indexMarkdown(directory: string) {
@@ -29,4 +21,4 @@ async function indexMarkdown(directory: string) {
   );
 }
 
-export { blogPosts, documentation, parseHeadmatter, readme };
+export { indexMarkdown, parseHeadmatter, processMarkdown };

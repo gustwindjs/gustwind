@@ -10,6 +10,7 @@ import {
 import type {
   Components,
   DataContext,
+  DataSource,
   DataSources,
   Meta,
   Mode,
@@ -147,14 +148,21 @@ async function getDataSourceContext(
 
   return Object.fromEntries(
     await Promise.all(
-      dataSourceIds.map(async ({ name, operation }) => {
+      dataSourceIds.map(async ({ name, operation, parameters }) => {
         const dataSource = dataSources[operation];
 
         if (!dataSource) {
           throw new Error(`Data source ${operation} was not found!`);
         }
 
-        return [name, await dataSource()];
+        return [
+          name,
+          await dataSource.apply(
+            undefined,
+            // @ts-expect-error This is fine
+            Array.isArray(parameters) ? parameters : [],
+          ),
+        ];
       }),
     ),
   );

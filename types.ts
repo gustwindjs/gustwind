@@ -46,7 +46,7 @@ type Route = {
   url?: string;
 };
 type Scripts = { type: string; src: string }[];
-type DataSource = { operation: string; name: string };
+type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
@@ -119,6 +119,7 @@ export type {
   Category,
   Components,
   DataContext,
+  DataSource,
   DataSources,
   Library,
   MarkdownWithFrontmatter,

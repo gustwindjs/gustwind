@@ -5,10 +5,20 @@
       "title": "Gustwind",
       "description": "Deno powered JSON oriented site generator"
     },
-    "dataSources": [{ "operation": "readme", "name": "readme" }],
+    "dataSources": [
+      {
+        "operation": "processMarkdown",
+        "parameters": ["./README.md"],
+        "name": "readme"
+      }
+    ],
     "expand": {
       "matchBy": {
-        "dataSource": { "operation": "documentation", "name": "document" },
+        "dataSource": {
+          "operation": "indexMarkdown",
+          "parameters": ["./documentation"],
+          "name": "document"
+        },
         "slug": "data.slug"
       },
       "layout": "documentationPage",
@@ -30,7 +40,13 @@
       "title": "Breezewind",
       "description": "Breezing fast templating"
     },
-    "dataSources": [{ "operation": "parseHeadmatter", "name": "document" }],
+    "dataSources": [
+      {
+        "operation": "parseHeadmatter",
+        "parameters": ["./breezewind/README.md"],
+        "name": "document"
+      }
+    ],
     "scripts": ["playground"]
   },
   "blog": {
@@ -39,10 +55,20 @@
       "title": "Blog",
       "description": "A blog about Gustwind"
     },
-    "dataSources": [{ "operation": "blogPosts", "name": "blogPosts" }],
+    "dataSources": [
+      {
+        "operation": "indexMarkdown",
+        "parameters": ["./blogPosts"],
+        "name": "blogPosts"
+      }
+    ],
     "expand": {
       "matchBy": {
-        "dataSource": { "operation": "blogPosts", "name": "document" },
+        "dataSource": {
+          "operation": "indexMarkdown",
+          "parameters": ["./blogPosts"],
+          "name": "document"
+        },
         "slug": "data.slug"
       },
       "layout": "blogPage",
@@ -82,7 +108,13 @@
       "title": "Gustwind",
       "description": "Gustwind blog"
     },
-    "dataSources": [{ "operation": "blogPosts", "name": "blogPosts" }],
+    "dataSources": [
+      {
+        "operation": "indexMarkdown",
+        "parameters": ["./blogPosts"],
+        "name": "blogPosts"
+      }
+    ],
     "type": "xml"
   }
 }
