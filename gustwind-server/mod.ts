@@ -178,7 +178,7 @@ async function serveGustwind({
             layout,
             route,
             mode,
-            pagePath: "todo", // TODO: figure out the path of the page in the system
+            pagePath: pathname,
             twindSetup: cache.twindSetup,
             components,
             pageUtilities: cache.pageUtilities,

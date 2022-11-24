@@ -113,11 +113,19 @@ type BuildWorkerEvent =
     };
   };
 
+// This is the context used when rendering a page. It's also the type
+// pageUtilities should consume.
+type Context = Record<string, unknown> & {
+  pagePath: string;
+  meta?: Record<string, unknown>;
+};
+
 export type {
   Attributes,
   BuildWorkerEvent,
   Category,
   Components,
+  Context,
   DataContext,
   DataSource,
   DataSources,

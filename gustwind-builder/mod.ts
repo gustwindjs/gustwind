@@ -90,7 +90,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         payload: {
           layout,
           route,
-          pagePath: "", // TODO
+          pagePath: url === "/" ? "/" : "/" + url + "/",
           dir: path.join(outputDirectory, url),
           url: url === "/" ? "/" : "/" + url + "/",
         },

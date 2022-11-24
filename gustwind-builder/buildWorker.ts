@@ -67,7 +67,7 @@ self.onmessage = async (e) => {
       layout,
       route,
       mode: "production",
-      pagePath: "", // TODO
+      pagePath: url,
       twindSetup,
       components,
       pageUtilities,

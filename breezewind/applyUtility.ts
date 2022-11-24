@@ -4,7 +4,7 @@ async function applyUtilities(
   props: Record<string, string | Utility>,
   utilities?: Utilities,
   context?: Context,
-) {
+): Promise<Record<string, unknown>> {
   return Object.fromEntries(
     await Promise.all(
       Object.entries(props).map(async (

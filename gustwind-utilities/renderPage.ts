@@ -9,15 +9,15 @@ import {
 } from "../client-deps.ts";
 import type {
   Components,
+  Context,
   DataContext,
-  DataSource,
   DataSources,
   Meta,
   Mode,
   ProjectMeta,
   Route,
 } from "../types.ts";
-import type { Component, Context, Utilities } from "../breezewind/types.ts";
+import type { Component, Utilities } from "../breezewind/types.ts";
 import breezewind from "../breezewind/index.ts";
 import * as breezeExtensions from "../breezewind/extensions.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
@@ -84,7 +84,8 @@ async function renderPage({
     route.dataSources,
     dataSources,
   );
-  const context = {
+  const context: Context = {
+    pagePath,
     projectMeta,
     scripts: pageScripts,
     ...route.context,
@@ -95,22 +96,25 @@ async function renderPage({
     ...projectMeta.meta,
     ...route.meta,
   };
-  const meta = await applyUtilities(
+  context.meta = await applyUtilities(
     props,
     { ...defaultUtilities, ...pageUtilities } as Utilities,
     { context },
   );
-  context.meta = meta;
 
   DEBUG && console.log("rendering a page with context", context);
 
   try {
+    pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);
+
     const markup = await renderHTML({
       component: layout,
       components,
       context: { ...context, pathname },
       utilities: pageUtilities,
     });
+
+    pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
 
     if (route.type === "xml") {
       return [markup, context];
@@ -141,7 +145,7 @@ async function renderPage({
 async function getDataSourceContext(
   dataSourceIds?: Route["dataSources"],
   dataSources?: DataSources,
-) {
+): Promise<Record<string, unknown>> {
   if (!dataSourceIds || !dataSources) {
     return {};
   }
