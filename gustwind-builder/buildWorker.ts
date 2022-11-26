@@ -16,7 +16,6 @@ let components: Components;
 let dataSources: DataSources;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
-let twindSetup: Record<string, unknown>;
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -41,12 +40,6 @@ self.onmessage = async (e) => {
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
       : {};
 
-    twindSetup = projectMeta.paths.twindSetup
-      ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
-        m.default
-      )
-      : {};
-
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
@@ -62,41 +55,17 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    const { markup, context } = await renderPage({
+    const { markup } = await renderPage({
       projectMeta,
       layout,
       route,
       mode: "production",
       pagePath: url,
-      twindSetup,
       components,
       pageUtilities,
       pathname: url,
       dataSources,
     });
-
-    // TODO: Handle at plugin
-    //if (css) {
-    // TODO: Push this to a task
-    //await Deno.writeTextFile(path.join(dir, "styles.css"), css);
-    //}
-
-    if (route.type !== "xml" && projectMeta.features?.showEditorAlways) {
-      // TODO: Can these be pushed to tasks?
-      await fs.ensureDir(dir);
-      await Deno.writeTextFile(
-        path.join(dir, "context.json"),
-        JSON.stringify(context),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "layout.json"),
-        JSON.stringify(layout),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "route.json"),
-        JSON.stringify(route),
-      );
-    }
 
     if (route.type === "xml") {
       await Deno.writeTextFile(dir, markup);

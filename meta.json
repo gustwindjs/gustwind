@@ -23,8 +23,5 @@
     "transforms": "./site/transforms",
     "pageUtilities": "./site/pageUtilities.ts",
     "twindSetup": "./site/twindSetup.ts"
-  },
-  "features": {
-    "showEditorAlways": true
   }
 }

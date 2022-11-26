@@ -1,5 +1,4 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { attachIds } from "../utilities/attachIds.ts";
 import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
@@ -26,22 +25,13 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
-  let [routes, layouts, components] = await Promise.all([
+  const [routes, layouts, components] = await Promise.all([
     getJson<Record<string, Route>>(projectPaths.routes),
     getDefinitions<Component | Component[]>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
 
-  const showEditor = projectMeta.features?.showEditorAlways;
-
-  if (showEditor) {
-    // @ts-ignore TODO: Fix type
-    components = attachIds(components);
-
-    // @ts-ignore TODO: Fix type
-    layouts = attachIds(layouts);
-  }
-
+  // TODO: Trigger beforeEachRequest for each plugin here
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfBuildThreads,
   );
@@ -78,17 +68,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         return;
       }
 
-      let layout = layouts[route.layout];
-
-      if (showEditor && route.type !== "xml") {
-        // @ts-ignore: TODO: Fix type
-        layout = attachIds(layout);
-      }
-
       workerPool.addTaskToQueue({
         type: "build",
         payload: {
-          layout,
+          layout: layouts[route.layout],
           route,
           pagePath: url === "/" ? "/" : "/" + url + "/",
           dir: path.join(outputDirectory, url),
@@ -106,40 +89,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       );
     }
 
-    if (projectMeta.features?.showEditorAlways) {
-      workerPool.addTaskToQueue({
-        type: "writeScript",
-        payload: {
-          outputDirectory,
-          scriptName: "twindSetup.js",
-          scriptPath: projectPaths.twindSetup,
-        },
-      });
-
-      const transformDirectory = path.join(outputDirectory, "transforms");
-      await fs.ensureDir(transformDirectory);
-
-      const transformScripts = await dir(projectPaths.transforms, ".ts");
-      transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        workerPool.addTaskToQueue({
-          type: "writeScript",
-          payload: {
-            outputDirectory: transformDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
-      );
-
-      workerPool.addTaskToQueue({
-        type: "writeFile",
-        payload: {
-          dir: outputDirectory,
-          file: "components.json",
-          data: JSON.stringify(components),
-        },
-      });
-    }
+    // TODO: Trigger prepareBuild hooks of plugins here
 
     if (projectPaths.scripts) {
       const projectScripts = (await Promise.all(

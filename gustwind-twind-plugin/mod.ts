@@ -5,6 +5,7 @@ import {
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 // import { path } from "../server-deps.ts";
+import { createWorkerPool } from "../gustwind-builder/createWorkerPool.ts";
 import { ProjectMeta, Route } from "../types.ts";
 import type { Context } from "../breezewind/types.ts";
 
@@ -12,7 +13,9 @@ import type { Context } from "../breezewind/types.ts";
 // TODO: Expose custom types for ProjectMeta
 function twindPlugin(
   projectMeta: ProjectMeta,
-  setup: Record<string, unknown>,
+  _: { // setup
+    extractStylesToDirectory: string;
+  },
 ) {
   const setupRender = () => {
     const stylesheet = virtualSheet();
@@ -22,8 +25,16 @@ function twindPlugin(
 
   return {
     setupRender,
-    beforeEachRender({ stylesheet }: ReturnType<typeof setupRender>) {
-      setupTwind({ sheet: stylesheet, mode: "silent", ...setup });
+    beforeEachRender: async (
+      { stylesheet }: ReturnType<typeof setupRender>,
+    ) => {
+      const twindSetup = projectMeta.paths.twindSetup
+        ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
+          m.default
+        )
+        : {};
+
+      setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
 
       // @ts-ignore Somehow TS gets confused here
       stylesheet.reset();
@@ -57,6 +68,8 @@ function twindPlugin(
       let css = "";
       if (projectMeta.features?.extractCSS) {
         css = getStyleTagProperties(stylesheet).textContent;
+
+        TODO: Setup a task to write styles.css
       }
       */
 
@@ -64,13 +77,23 @@ function twindPlugin(
 
       return { markup: injectStyleTag(markup, styleTag) };
     },
-    /*
-    writeRender: async (
-      { dir, meta }: { dir: string; meta: { css: string } },
+    prepareBuild: (
+      { workerPool }: {
+        workerPool: ReturnType<typeof createWorkerPool>;
+      },
     ) => {
-      await Deno.writeTextFile(path.join(dir, "styles.css"), meta.css);
+      const { paths } = projectMeta;
+      const outputDirectory = paths.output;
+
+      workerPool.addTaskToQueue({
+        type: "writeScript",
+        payload: {
+          outputDirectory,
+          scriptName: "twindSetup.js",
+          scriptPath: paths.twindSetup,
+        },
+      });
     },
-    */
   };
 }
 

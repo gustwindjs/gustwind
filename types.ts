@@ -66,9 +66,6 @@ type ProjectMeta = {
     pageUtilities?: string;
     twindSetup?: string;
   };
-  features?: {
-    showEditorAlways?: boolean;
-  };
 };
 
 type Meta = Record<string, string>;
@@ -81,7 +78,7 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
-      layout: Component | Component[];
+      layout: Layout;
       route: Route;
       pagePath: string;
       dir: string;
@@ -112,6 +109,8 @@ type BuildWorkerEvent =
     };
   };
 
+type Layout = Component | Component[];
+
 // This is the context used when rendering a page. It's also the type
 // pageUtilities should consume.
 type Context = Record<string, unknown> & {
@@ -128,6 +127,7 @@ export type {
   DataContext,
   DataSource,
   DataSources,
+  Layout,
   Library,
   MarkdownWithFrontmatter,
   Meta,

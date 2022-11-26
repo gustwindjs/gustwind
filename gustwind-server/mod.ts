@@ -1,13 +1,19 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { getJson, resolvePaths } from "../utilities/fs.ts";
-import { attachIds } from "../utilities/attachIds.ts";
 import { trim } from "../utilities/string.ts";
 import { renderPage } from "../gustwind-utilities/renderPage.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
+import { respond } from "../gustwind-utilities/respond.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { DataSources, Mode, ProjectMeta, Route } from "../types.ts";
+import type {
+  DataSources,
+  Layout,
+  Mode,
+  ProjectMeta,
+  Route,
+} from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -63,11 +69,13 @@ async function serveGustwind({
       DEBUG && console.log("Compiling remote scripts");
 
       cache.scripts = Object.fromEntries(
-        (await compileRemoteGustwindScripts()).map(
-          ({ name, content }) => {
-            return [name.replace(".ts", ".js"), content];
-          },
-        ),
+        // TODO: Pull custom scripts from plugins to compile here
+        (await compileRemoteGustwindScripts("https://deno.land/x/gustwind", []))
+          .map(
+            ({ name, content }) => {
+              return [name.replace(".ts", ".js"), content];
+            },
+          ),
       );
     }
   }
@@ -108,44 +116,9 @@ async function serveGustwind({
 
   const server = new Server({
     handler: async ({ url }) => {
-      const matchedContext = cache.contexts[url];
-
-      if (matchedContext) {
-        return respond(200, JSON.stringify(matchedContext), "application/json");
-      }
-
-      const matchedLayoutDefinition = cache.layoutDefinitions[url];
-
-      if (matchedLayoutDefinition) {
-        return respond(
-          200,
-          JSON.stringify(matchedLayoutDefinition),
-          "application/json",
-        );
-      }
-
-      const matchedRouteDefinition = cache.routeDefinitions[url];
-
-      if (matchedRouteDefinition) {
-        return respond(
-          200,
-          JSON.stringify(matchedRouteDefinition),
-          "application/json",
-        );
-      }
-
+      // TODO: Trigger beforeEachRequest here
       const { pathname } = new URL(url);
       const matchedRoute = matchRoute(cache.routes, pathname);
-
-      const showEditor = projectMeta.features?.showEditorAlways;
-      let components = cache.components;
-
-      if (showEditor) {
-        const keys = Object.keys(components);
-        const values = attachIds(Object.values(components));
-
-        components = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
-      }
 
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
@@ -161,16 +134,15 @@ async function serveGustwind({
 
           let contentType = "text/html; charset=utf-8";
 
+          // TODO: Trigger beforeEachRequest for each plugin here
+          const components = cache.components;
+
           // If there's cached data, use it instead. This fixes
-          // the case in which there was an update over web socket and
+          // the case in which there was an update over  a websocket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          let layout: Component | Component[] = cache.layouts[layoutName] ||
+          const layout: Layout = cache.layouts[layoutName] ||
             matchedLayout;
-
-          if (showEditor && route.type !== "xml") {
-            layout = attachIds(layout);
-          }
 
           // TODO: Store context so that subsequent requests can find the data
           const { markup, context } = await renderPage({
@@ -179,7 +151,6 @@ async function serveGustwind({
             route,
             mode,
             pagePath: pathname,
-            twindSetup: cache.twindSetup,
             components,
             pageUtilities: cache.pageUtilities,
             pathname,
@@ -189,13 +160,6 @@ async function serveGustwind({
           if (matchedRoute.type === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
             contentType = "text/xml";
-          }
-
-          cache.layoutDefinitions[url + "layout.json"] = layout;
-          cache.routeDefinitions[url + "route.json"] = matchedRoute;
-
-          if (context) {
-            cache.contexts[url + "context.json"] = context;
           }
 
           return respond(200, markup, contentType);
@@ -246,17 +210,6 @@ async function serveGustwind({
   return () => server.serve(listener);
 }
 
-function respond(
-  status: number,
-  text: string | Uint8Array,
-  contentType = "text/plain",
-) {
-  return new Response(text, {
-    headers: { "content-type": contentType },
-    status,
-  });
-}
-
 function matchRoute(
   routes: Route["routes"],
   pathname: string,
@@ -275,22 +228,15 @@ function matchRoute(
   return match;
 }
 
-function compileRemoteGustwindScripts() {
-  const repository = "https://deno.land/x/gustwind";
+function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
   const scriptsDirectory = "gustwind-scripts";
-  const scripts = [
-    "pageEditor",
-    "toggleEditor",
-    "webSocketClient",
-    "twindRuntime",
-  ];
 
-  // TODO: See if script names can be looked up from somewhere remote easily
   return Promise.all(scripts.map(async (script) => {
-    const name = `_${script}.ts`;
     const { path } = await cache(
-      `${repository}/${scriptsDirectory}/${name}`,
+      `${repository}/${scriptsDirectory}/${script}`,
     );
+    // TODO: Validate this one
+    const name = script.split(".")[0];
 
     return compileScript({ name, path, mode: "development" });
   }));

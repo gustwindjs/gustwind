@@ -21,7 +21,7 @@ function setupTwind() {
   // It seems important to defer loading Twind shim as otherwise
   // Twind would try to evaluate too soon.
   //
-  // TODO: What should happen if twindSetup is missing?
+  // TODO: Figure out how to find twindSetup from the project
   Promise.all([
     import("https://cdn.skypack.dev/twind@0.16.16/shim?min"),
     // deno-lint-ignore no-local This is an external

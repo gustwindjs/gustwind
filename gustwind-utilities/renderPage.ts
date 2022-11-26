@@ -1,12 +1,6 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
-import {
-  getStyleTag,
-  getStyleTagProperties,
-  setupTwind,
-  tw,
-  virtualSheet,
-} from "../client-deps.ts";
+import { getStyleTag, tw, virtualSheet } from "../client-deps.ts";
 import type {
   Components,
   Context,
@@ -38,7 +32,6 @@ async function renderPage({
   mode,
   pagePath,
   pageUtilities,
-  twindSetup,
   components,
   pathname,
   dataSources,
@@ -49,18 +42,11 @@ async function renderPage({
   mode: Mode;
   pagePath: string;
   pageUtilities: Utilities;
-  twindSetup: Record<string, unknown>;
   components: Components;
   pathname: string;
   dataSources: DataSources;
 }): Promise<{ markup: string; context: DataContext; css?: string }> {
-  setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
-
-  // @ts-ignore Somehow TS gets confused here
-  stylesheet.reset();
-
   const runtimeMeta: Meta = { built: (new Date()).toString() };
-  const showEditor = projectMeta.features?.showEditorAlways;
 
   // The assumption here is that all the page scripts are compiled with Gustwind.
   // TODO: It might be a good idea to support third party scripts here as well
@@ -73,13 +59,9 @@ async function renderPage({
   }
   if (mode === "development") {
     runtimeMeta.pagePath = pagePath;
-    pageScripts.push({ type: "module", src: "/_webSocketClient.js" });
-  }
-  if (mode === "development" || showEditor) {
-    pageScripts.push({ type: "module", src: "/_twindRuntime.js" });
-    pageScripts.push({ type: "module", src: "/_toggleEditor.js" });
   }
 
+  // TODO: Trigger beforeEachRender here to capture scripts and run init code
   const dataSourceContext = await getDataSourceContext(
     route.dataSources,
     dataSources,
