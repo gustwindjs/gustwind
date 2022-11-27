@@ -80,35 +80,18 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished build", id, route, filePath);
   }
   if (type === "writeScript") {
-    const {
-      payload: {
-        outputDirectory,
-        scriptName,
-        scriptPath,
-      },
-    } = e.data;
+    const { payload: { outputDirectory, scriptName, scriptPath } } = e.data;
 
     await writeScript(outputDirectory, scriptName, scriptPath);
   }
   if (type === "writeFile") {
-    const {
-      payload: {
-        outputDirectory,
-        file,
-        data,
-      },
-    } = e.data;
+    const { payload: { outputDirectory, file, data } } = e.data;
 
     await fs.ensureDir(outputDirectory);
     await Deno.writeTextFile(path.join(outputDirectory, file), data);
   }
   if (type === "writeAssets") {
-    const {
-      payload: {
-        outputPath,
-        assetsPath,
-      },
-    } = e.data;
+    const { payload: { outputPath, assetsPath } } = e.data;
 
     await fs.copy(assetsPath, outputPath, { overwrite: true });
   }
