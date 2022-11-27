@@ -1,6 +1,5 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
-import { getStyleTag, tw, virtualSheet } from "../client-deps.ts";
 import type {
   Components,
   Context,
@@ -12,16 +11,12 @@ import type {
   Route,
 } from "../types.ts";
 import type { Component, Utilities } from "../breezewind/types.ts";
-import breezewind from "../breezewind/index.ts";
-import * as breezeExtensions from "../breezewind/extensions.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
 type Layout = Component | Component[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
-
-const stylesheet = virtualSheet();
 
 // TODO: Some kind of a lifecycle model would be useful to have here
 // as it would allow decoupling twind from the core.
@@ -87,6 +82,8 @@ async function renderPage({
   DEBUG && console.log("rendering a page with context", context);
 
   try {
+    // TODO: Trigger onRender hooks of plugins now
+    /*
     pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);
 
     const markup = await renderHTML({
@@ -97,18 +94,9 @@ async function renderPage({
     });
 
     pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
+    */
 
-    if (route.type === "xml") {
-      return { markup, context };
-    }
-
-    // https://web.dev/defer-non-critical-css/
-    const styleTag = getStyleTag(stylesheet);
-
-    return {
-      markup: injectStyleTag(markup, styleTag),
-      context,
-    };
+    return { markup, context };
   } catch (error) {
     console.error("Failed to render", route.url, error);
   }
@@ -146,29 +134,4 @@ async function getDataSourceContext(
   );
 }
 
-function injectStyleTag(markup: string, styleTag: string) {
-  const parts = markup.split("</head>");
-
-  return parts[0] + styleTag + parts[1];
-}
-
-function renderHTML({ component, components, context, utilities }: {
-  component: Layout;
-  components: Components;
-  context: Context;
-  utilities: Utilities;
-}) {
-  return breezewind({
-    component,
-    components,
-    extensions: [
-      breezeExtensions.classShortcut(tw),
-      breezeExtensions.foreach,
-      breezeExtensions.visibleIf,
-    ],
-    context,
-    utilities,
-  });
-}
-
-export { renderHTML, renderPage };
+export { renderPage };

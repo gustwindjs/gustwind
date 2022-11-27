@@ -73,6 +73,8 @@ function transformMarkdown(input: string) {
         const matchedComponent = components[token.component];
 
         if (matchedComponent) {
+          // TODO: Restore this by getting reference to the current renderer
+          // here and then using it
           const html = await renderHTML({
             component: matchedComponent,
             components: {},

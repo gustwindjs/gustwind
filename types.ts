@@ -1,4 +1,4 @@
-import type { Component } from "./breezewind/types.ts";
+import type { Component, Utilities } from "./breezewind/types.ts";
 import type { ServeCache } from "./gustwind-server/cache.ts";
 
 // This should match with ./transforms
@@ -118,6 +118,15 @@ type Context = Record<string, unknown> & {
   meta?: Record<string, unknown>;
 };
 
+type Renderer = {
+  render({ component, components, context, utilities }: {
+    component: Layout;
+    components: Components;
+    context: Context;
+    utilities: Utilities;
+  }): Promise<string> | string;
+};
+
 type Plugin<C = Record<string, unknown>> = {
   setupCache?(): Record<string, unknown>;
   beforeEachRequest?(
@@ -202,6 +211,7 @@ export type {
   Plugin,
   ProjectMeta,
   Props,
+  Renderer,
   Route,
   Scripts,
   Tasks,
