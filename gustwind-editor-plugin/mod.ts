@@ -29,13 +29,9 @@ type EditorCache = {
 };
 
 function editorPlugin(
-  projectMeta: ProjectMeta & { showEditorAlways: true },
+  projectMeta: ProjectMeta,
   // setup: Record<string, unknown>,
 ) {
-  if (!projectMeta.showEditorAlways) {
-    return {};
-  }
-
   return {
     setupCache(): EditorCache {
       return {
