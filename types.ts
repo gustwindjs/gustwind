@@ -1,4 +1,5 @@
 import type { Component } from "./breezewind/types.ts";
+import type { ServeCache } from "./gustwind-server/cache.ts";
 
 // This should match with ./transforms
 type Transform = "markdown" | "reverse";
@@ -64,7 +65,6 @@ type ProjectMeta = {
     scripts?: string[];
     transforms: string;
     pageUtilities?: string;
-    twindSetup?: string;
   };
 };
 
@@ -118,6 +118,72 @@ type Context = Record<string, unknown> & {
   meta?: Record<string, unknown>;
 };
 
+type Plugin<C = Record<string, unknown>> = {
+  setupCache?(): Record<string, unknown>;
+  beforeEachRequest?(
+    { cache, url, respond }: {
+      cache: C & ServeCache;
+      url: string;
+      respond: (status: number, text: string, type: string) => void;
+    },
+  ): void;
+  beforeEachMatchedRequest?(
+    { cache, route }: { cache: C & ServeCache; route: Route },
+  ): Promise<C & ServeCache> | (C & ServeCache);
+  beforeEachRender?(
+    { context, layout, route, url }: {
+      context: Context;
+      layout: Layout;
+      route: Route;
+      url: string;
+    },
+  ):
+    | Promise<
+      {
+        tasks?: Tasks;
+        scripts?: { type: string; src: string }[];
+      } | void
+    >
+    | {
+      tasks?: Tasks;
+      scripts?: { type: string; src: string }[];
+    }
+    | void;
+  afterEachRender?({ cache, markup, layout, context, route, url }: {
+    cache: C & ServeCache;
+    markup: string;
+    layout: Layout;
+    context: Context;
+    route: Route;
+    url: string;
+  }): Promise<{ markup?: string; cache?: C & ServeCache }> | {
+    markup?: string;
+    cache?: C & ServeCache;
+  } | void;
+  prepareBuild?(
+    { components }: { components: Components },
+  ): Promise<Tasks> | Tasks;
+};
+
+type Tasks = (WriteFileTask | WriteScriptTask)[];
+
+type WriteFileTask = {
+  type: "writeFile";
+  payload: {
+    outputDirectory: string;
+    file: string;
+    data: string;
+  };
+};
+type WriteScriptTask = {
+  type: "writeScript";
+  payload: {
+    outputDirectory: string;
+    scriptName: string;
+    scriptPath: string;
+  };
+};
+
 export type {
   Attributes,
   BuildWorkerEvent,
@@ -133,9 +199,11 @@ export type {
   Meta,
   Mode,
   ParentCategory,
+  Plugin,
   ProjectMeta,
   Props,
   Route,
   Scripts,
+  Tasks,
   Transform,
 };

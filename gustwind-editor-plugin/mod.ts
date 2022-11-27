@@ -2,16 +2,13 @@ import { attachIds } from "../utilities/attachIds.ts";
 import { dir } from "../utilities/fs.ts";
 import { fs, path } from "../server-deps.ts";
 import {
-  Components,
-  Context,
   DataContext,
   Layout,
+  Plugin,
   ProjectMeta,
   Route,
+  Tasks,
 } from "../types.ts";
-import { createWorkerPool } from "../gustwind-builder/createWorkerPool.ts";
-import { type ServeCache } from "../gustwind-server/cache.ts";
-import { respond as respondUtility } from "../gustwind-utilities/respond.ts";
 
 const pluginName = "gustwind-editor-plugin";
 const dependsOn = ["gustwind-twind-plugin"];
@@ -28,10 +25,7 @@ type EditorCache = {
   routeDefinitions: Record<string, Route>;
 };
 
-function editorPlugin(
-  projectMeta: ProjectMeta,
-  // setup: Record<string, unknown>,
-) {
+function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
   return {
     setupCache(): EditorCache {
       return {
@@ -40,13 +34,7 @@ function editorPlugin(
         routeDefinitions: {},
       };
     },
-    beforeEachRequest(
-      { cache, url, respond }: {
-        cache: ServeCache & EditorCache;
-        url: string;
-        respond: typeof respondUtility;
-      },
-    ) {
+    beforeEachRequest({ cache, url, respond }) {
       const matchedContext = cache.contexts[url];
 
       if (matchedContext) {
@@ -73,9 +61,7 @@ function editorPlugin(
         );
       }
     },
-    beforeEachMatchedRequest(
-      { cache, route }: { cache: ServeCache; route: Route },
-    ) {
+    beforeEachMatchedRequest({ cache, route }) {
       return {
         ...cache,
         components: Object.fromEntries(
@@ -88,25 +74,22 @@ function editorPlugin(
         ),
       };
     },
-    beforeEachRender() {
-      // TODO: Add tasks per route if route.type !== "xml" and we're in building mode
-      /*
-      await fs.ensureDir(dir);
-      await Deno.writeTextFile(
-        path.join(dir, "context.json"),
-        JSON.stringify(context),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "layout.json"),
-        JSON.stringify(layout),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "route.json"),
-        JSON.stringify(route),
-      );
-      */
+    beforeEachRender({ url, ...rest }) {
+      const { paths } = projectMeta;
+      const outputDirectory = path.join(paths.output, url);
 
       return {
+        tasks: rest.route.type === "xml"
+          ? []
+          : ["context", "layout", "route"].map((name) => ({
+            type: "writeFile",
+            payload: {
+              outputDirectory,
+              file: `${name}.json`,
+              // @ts-expect-error We know name is suitable by now
+              data: JSON.stringify(rest[name]),
+            },
+          })),
         scripts: [
           // TODO: Check paths and path resolution
           { type: "module", src: "/gustwind-editor-plugin/twindRuntime.js" },
@@ -115,23 +98,7 @@ function editorPlugin(
         ],
       };
     },
-    afterEachRender(
-      {
-        cache,
-        markup,
-        layout,
-        context,
-        route,
-        url,
-      }: {
-        cache: ServeCache & EditorCache;
-        markup: string;
-        layout: Layout;
-        context: Context;
-        route: Route;
-        url: string;
-      },
-    ) {
+    afterEachRender({ cache, markup, layout, context, route, url }) {
       return {
         markup,
         // TODO: Inject targets to the cache for each url
@@ -152,20 +119,16 @@ function editorPlugin(
         },
       };
     },
-    prepareBuild: async (
-      { workerPool, components }: {
-        workerPool: ReturnType<typeof createWorkerPool>;
-        components: Components;
-      },
-    ) => {
+    prepareBuild: async ({ components }) => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
       const transformDirectory = path.join(outputDirectory, "transforms");
       await fs.ensureDir(transformDirectory);
+      const tasks: Tasks = [];
 
       const transformScripts = await dir(paths.transforms, ".ts");
       transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        workerPool.addTaskToQueue({
+        tasks.push({
           type: "writeScript",
           payload: {
             outputDirectory: transformDirectory,
@@ -175,14 +138,16 @@ function editorPlugin(
         })
       );
 
-      workerPool.addTaskToQueue({
+      tasks.push({
         type: "writeFile",
         payload: {
-          dir: outputDirectory,
+          outputDirectory: outputDirectory,
           file: "components.json",
           data: JSON.stringify(components),
         },
       });
+
+      return tasks;
     },
   };
 }

@@ -93,14 +93,14 @@ self.onmessage = async (e) => {
   if (type === "writeFile") {
     const {
       payload: {
-        dir,
+        outputDirectory,
         file,
         data,
       },
     } = e.data;
 
-    await fs.ensureDir(dir);
-    await Deno.writeTextFile(path.join(dir, file), data);
+    await fs.ensureDir(outputDirectory);
+    await Deno.writeTextFile(path.join(outputDirectory, file), data);
   }
   if (type === "writeAssets") {
     const {

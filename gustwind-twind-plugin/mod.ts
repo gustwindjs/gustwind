@@ -5,33 +5,23 @@ import {
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 // import { path } from "../server-deps.ts";
-import { createWorkerPool } from "../gustwind-builder/createWorkerPool.ts";
-import { ProjectMeta, Route } from "../types.ts";
-import type { Context } from "../breezewind/types.ts";
+import { Plugin, ProjectMeta } from "../types.ts";
 
-// TODO: Extract styles.css name as a parameter to projectMeta
-// TODO: Expose custom types for ProjectMeta
 function twindPlugin(
   projectMeta: ProjectMeta,
-  _: { // setup
-    extractStylesToDirectory: string;
+  configuration: {
+    setupPath: string;
+    // TODO: Support style extraction
+    // extractStylesToDirectory: string;
   },
-) {
-  const setupRender = () => {
-    const stylesheet = virtualSheet();
-
-    return { stylesheet };
-  };
+): Plugin {
+  const stylesheet = virtualSheet();
+  const twindSetupPath = configuration.setupPath;
 
   return {
-    setupRender,
-    beforeEachRender: async (
-      { stylesheet }: ReturnType<typeof setupRender>,
-    ) => {
-      const twindSetup = projectMeta.paths.twindSetup
-        ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
-          m.default
-        )
+    beforeEachRender: async () => {
+      const twindSetup = twindSetupPath
+        ? await import("file://" + twindSetupPath).then((m) => m.default)
         : {};
 
       setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
@@ -39,24 +29,10 @@ function twindPlugin(
       // @ts-ignore Somehow TS gets confused here
       stylesheet.reset();
     },
-    afterEachRender(
-      {
-        parameters,
-        markup,
-        context,
-        route,
-      }: {
-        parameters: ReturnType<typeof setupRender>;
-        markup: string;
-        context: Context;
-        route: Route;
-      },
-    ) {
+    afterEachRender({ markup, route }) {
       if (route.type === "xml") {
-        return { markup, context };
+        return;
       }
-
-      const { stylesheet } = parameters;
 
       // https://web.dev/defer-non-critical-css/
       // TODO: Consider restoring CSS extraction
@@ -73,26 +49,20 @@ function twindPlugin(
       }
       */
 
-      const styleTag = getStyleTag(stylesheet);
-
-      return { markup: injectStyleTag(markup, styleTag) };
+      return { markup: injectStyleTag(markup, getStyleTag(stylesheet)) };
     },
-    prepareBuild: (
-      { workerPool }: {
-        workerPool: ReturnType<typeof createWorkerPool>;
-      },
-    ) => {
+    prepareBuild: () => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
 
-      workerPool.addTaskToQueue({
+      return [{
         type: "writeScript",
         payload: {
           outputDirectory,
           scriptName: "twindSetup.js",
-          scriptPath: paths.twindSetup,
+          scriptPath: twindSetupPath,
         },
-      });
+      }];
     },
   };
 }
