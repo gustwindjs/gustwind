@@ -91,6 +91,7 @@ self.onmessage = async (e) => {
     });
 
     if (route.type === "xml") {
+      await fs.ensureDir(dir);
       await Deno.writeTextFile(dir, markup);
     } else {
       await fs.ensureDir(dir);
