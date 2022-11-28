@@ -1,6 +1,7 @@
 import { attachIds } from "../../utilities/attachIds.ts";
 import { dir } from "../../utilities/fs.ts";
 import { fs, path } from "../../server-deps.ts";
+import type { Component } from "../../breezewind/types.ts";
 import {
   DataContext,
   Layout,
@@ -14,29 +15,34 @@ import {
 const meta: PluginMeta = {
   name: "gustwind-editor-plugin",
   dependsOn: ["gustwind-twind-plugin"],
-  scriptsToCompile: [
-    "pageEditor",
-    "toggleEditor",
-    "twindRuntime",
-    "webSocketClient",
-  ].map((n) => `${n}.ts`),
 };
 
+const scriptsToCompile = [
+  "pageEditor",
+  "toggleEditor",
+  "twindRuntime",
+  "webSocketClient",
+];
+
 type PluginCache = {
+  components: Record<string, Component>;
   contexts: Record<string, DataContext>;
   layoutDefinitions: Record<string, Layout>;
   routeDefinitions: Record<string, Route>;
 };
 
+// TODO: Figure out how to integrate with the watcher
+// TODO: Allow defining where to emit the scripts
 function editorPlugin(projectMeta: ProjectMeta): Plugin {
   const pluginCache: PluginCache = {
+    components: {},
     contexts: {},
     layoutDefinitions: {},
     routeDefinitions: {},
   };
 
   return {
-    beforeEachRequest({ url, respond }) {
+    beforeEachRequest({ cache, url, respond }) {
       const matchedContext = pluginCache.contexts[url];
 
       if (matchedContext) {
@@ -62,11 +68,21 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
           "application/json",
         );
       }
+
+      if (url === "/components.json") {
+        return respond(
+          200,
+          JSON.stringify(pluginCache.components),
+          "application/json",
+        );
+      }
     },
     beforeEachMatchedRequest({ cache, route }) {
       return {
         components: Object.fromEntries(
-          Object.entries(cache.components).map(([k, v]) => [k, attachIds(v)]),
+          Object.entries(pluginCache.components).map((
+            [k, v],
+          ) => [k, attachIds(v)]),
         ),
         layouts: Object.fromEntries(
           Object.entries(cache.layouts).map((
@@ -97,16 +113,19 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
           })),
         scripts: [
           // TODO: Check paths and path resolution
-          { type: "module", src: "/gustwind-editor-plugin/twindRuntime.js" },
-          { type: "module", src: "/gustwind-editor-plugin/toggleRuntime.js" },
-          { type: "module", src: "/gustwind-editor-plugin/webSocketClient.js" },
+          { type: "module", src: "/scripts/twindRuntime.js" },
+          { type: "module", src: "/scripts/toggleEditor.js" },
+          { type: "module", src: "/scripts/webSocketClient.js" },
         ],
       };
     },
     prepareBuild: async ({ components }) => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
+      // TODO: Check this
       const transformDirectory = path.join(outputDirectory, "transforms");
+      // TODO: Check this
+      const scriptsDirectory = path.join(outputDirectory, "scripts");
       await fs.ensureDir(transformDirectory);
       const tasks: Tasks = [];
 
@@ -118,6 +137,24 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
             outputDirectory: transformDirectory,
             scriptName,
             scriptPath,
+          },
+        })
+      );
+
+      scriptsToCompile.forEach((scriptName) =>
+        tasks.push({
+          type: "writeScript",
+          payload: {
+            outputDirectory: scriptsDirectory,
+            scriptName,
+            // TODO: Check how to resolve the script when consuming from remote
+            scriptPath: path.join(
+              Deno.cwd(),
+              "plugins",
+              "editor",
+              "scripts",
+              `${scriptName}.ts`,
+            ),
           },
         })
       );

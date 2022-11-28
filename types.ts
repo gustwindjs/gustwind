@@ -146,12 +146,12 @@ type PluginModule = {
 type PluginMeta = {
   name: string;
   dependsOn?: string[];
-  scriptsToCompile?: string[];
 };
 
 type Plugin = {
   beforeEachRequest?(
-    { url, respond }: {
+    { cache, url, respond }: {
+      cache: ServeCache;
       url: string;
       respond: (status: number, text: string, type: string) => void;
     },

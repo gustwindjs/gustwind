@@ -10,7 +10,6 @@ import {
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
-import { plugin } from "../plugins/editor/mod.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 

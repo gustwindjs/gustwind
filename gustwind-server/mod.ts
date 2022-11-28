@@ -5,6 +5,12 @@ import { trim } from "../utilities/string.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
+import {
+  applyAfterEachRenders,
+  applyBeforeEachRenders,
+  applyPrepareBuilds,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
 import type {
   DataSources,
@@ -45,12 +51,18 @@ async function serveGustwind({
     getDefinitions<Component>(projectPaths.components),
   ]);
 
-  cache.components = components;
   cache.routes = await expandRoutes({
     routes,
     dataSources,
   });
 
+  const plugins = await importPlugins(projectMeta);
+  const pluginTasks = await applyPrepareBuilds({ plugins, components });
+
+  // TODO: Handle tasks (i.e., implement writeScript)
+  console.log("dev - plugin tasks", pluginTasks);
+
+  /*
   if (mode === "development") {
     // TODO: This branch might be safe to eliminate since
     // meta.json scripts is capturing the dev scripts.
@@ -78,7 +90,9 @@ async function serveGustwind({
       );
     }
   }
+  */
 
+  // TODO: This should get handled by the editor plugin
   /*
   if (projectPaths.twindSetup) {
     DEBUG && console.log("Compiling project twind setup");
@@ -106,6 +120,9 @@ async function serveGustwind({
 
     cache.scripts = { ...cache.scripts, ...customScripts };
   }
+
+  // TODO: This should get handled by the editor plugin
+  /*
   if (projectPaths.transforms) {
     DEBUG && console.log("Compiling project transforms");
 
@@ -115,6 +132,7 @@ async function serveGustwind({
 
     cache.scripts = { ...cache.scripts, ...transformScripts };
   }
+  */
 
   const server = new Server({
     handler: async ({ url }) => {
@@ -137,7 +155,6 @@ async function serveGustwind({
           let contentType = "text/html; charset=utf-8";
 
           // TODO: Trigger beforeEachRequest for each plugin here
-          const components = cache.components;
 
           // If there's cached data, use it instead. This fixes
           // the case in which there was an update over  a websocket and
@@ -173,14 +190,6 @@ async function serveGustwind({
         }
 
         return respond(404, "No matching layout");
-      }
-
-      if (pathname === "/components.json") {
-        return respond(
-          200,
-          JSON.stringify(cache.components),
-          "application/json",
-        );
       }
 
       const assetPath = projectPaths.assets && _path.join(
