@@ -1,3 +1,4 @@
+import { plugin } from "../plugins/editor/mod.ts";
 import { path } from "../server-deps.ts";
 import type {
   Components,
@@ -8,6 +9,7 @@ import type {
   PluginOptions,
   ProjectMeta,
   Route,
+  Scripts,
   Tasks,
 } from "../types.ts";
 
@@ -56,9 +58,9 @@ async function applyPrepareBuilds(
   { plugins, components }: { plugins: Plugin[]; components: Components },
 ) {
   let tasks: Tasks = [];
-
   const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
     .filter(Boolean);
+
   for await (const prepareBuild of prepareBuilds) {
     // @ts-expect-error We know prepareBuild should be defined by now
     const tasksToAdd = await prepareBuild({ components });
@@ -78,17 +80,30 @@ async function applyBeforeEachRenders(
     url: string;
   },
 ) {
+  let scripts: Scripts = [];
+  let tasks: Tasks = [];
   const beforeEachRenders = plugins.map((plugin) => plugin.beforeEachRender)
     .filter(Boolean);
+
   for await (const beforeEachRender of beforeEachRenders) {
-    // @ts-expect-error We know beforeEachRender should be defined by now
-    await beforeEachRender({
-      context,
-      layout,
-      route,
-      url,
-    });
+    const ret =
+      // @ts-expect-error We know beforeEachRender should be defined by now
+      await beforeEachRender({
+        context,
+        layout,
+        route,
+        url,
+      });
+
+    if (ret?.scripts) {
+      scripts = scripts.concat(ret.scripts);
+    }
+    if (ret?.tasks) {
+      tasks = tasks.concat(ret.tasks);
+    }
   }
+
+  return { scripts, tasks };
 }
 
 async function applyAfterEachRenders(

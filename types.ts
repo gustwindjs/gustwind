@@ -46,7 +46,8 @@ type Route = {
   context?: DataContext;
   url?: string;
 };
-type Scripts = { type: string; src: string }[];
+type Scripts = Script[];
+type Script = { type: string; src: string };
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
@@ -119,6 +120,8 @@ type Layout = Component | Component[];
 // pageUtilities should consume.
 type Context = Record<string, unknown> & {
   pagePath: string;
+  projectMeta: ProjectMeta;
+  scripts: Scripts;
   meta?: Record<string, unknown>;
 };
 
@@ -163,12 +166,12 @@ type Plugin = {
     | Promise<
       {
         tasks?: Tasks;
-        scripts?: { type: string; src: string }[];
+        scripts?: Scripts;
       } | void
     >
     | {
       tasks?: Tasks;
-      scripts?: { type: string; src: string }[];
+      scripts?: Scripts;
     }
     | void;
   afterEachRender?({ markup, layout, context, route, url }: {

@@ -79,7 +79,17 @@ self.onmessage = async (e) => {
       route,
     });
 
-    await applyBeforeEachRenders({ context, layout, plugins, route, url });
+    const { scripts, tasks } = await applyBeforeEachRenders({
+      context,
+      layout,
+      plugins,
+      route,
+      url,
+    });
+
+    context.scripts = context.scripts.concat(scripts);
+    // TODO: Trigger new tasks
+
     let markup = await render({ layout, components, context, pageUtilities });
     markup = await applyAfterEachRenders({
       context,
