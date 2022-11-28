@@ -9,13 +9,13 @@ function breezewindRenderer(
   // options: {},
 ): Renderer {
   return {
-    render: async ({ component, components, context, utilities }) => {
+    render: async ({ layout, components, context, pageUtilities }) => {
       // TODO: Maybe breezewind should trigger _onRenderStart and _onRenderEnd
       // as it feels like a templating engine feature over a custom one.
-      utilities._onRenderStart && utilities._onRenderStart(context);
+      pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);
 
       const markup = await breezewind({
-        component,
+        component: layout,
         components,
         extensions: [
           // TODO: Allow defining these through configuration
@@ -24,10 +24,10 @@ function breezewindRenderer(
           breezeExtensions.visibleIf,
         ],
         context,
-        utilities,
+        utilities: pageUtilities,
       });
 
-      utilities._onRenderEnd && utilities._onRenderEnd(context);
+      pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
 
       return markup;
     },

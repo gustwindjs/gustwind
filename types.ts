@@ -123,11 +123,11 @@ type Context = Record<string, unknown> & {
 };
 
 type Renderer = {
-  render({ component, components, context, utilities }: {
-    component: Layout;
+  render({ layout, components, context, pageUtilities }: {
+    layout: Layout;
     components: Components;
     context: Context;
-    utilities: Utilities;
+    pageUtilities: Utilities;
   }): Promise<string> | string;
 };
 
@@ -162,17 +162,13 @@ type Plugin<C = Record<string, unknown>> = {
       scripts?: { type: string; src: string }[];
     }
     | void;
-  afterEachRender?({ cache, markup, layout, context, route, url }: {
-    cache: C & ServeCache;
+  afterEachRender?({ markup, layout, context, route, url }: {
     markup: string;
     layout: Layout;
     context: Context;
     route: Route;
     url: string;
-  }): Promise<{ markup?: string; cache?: C & ServeCache }> | {
-    markup?: string;
-    cache?: C & ServeCache;
-  } | void;
+  }): Promise<{ markup: string }> | { markup: string };
   prepareBuild?(
     { components }: { components: Components },
   ): Promise<Tasks> | Tasks;

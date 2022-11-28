@@ -1,7 +1,11 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
-import { importPlugins } from "../gustwind-utilities/plugins.ts";
+import {
+  applyAfterEachRenders,
+  applyBeforeEachRenders,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { importRender } from "../gustwind-utilities/render.ts";
 import { getContext } from "../gustwind-utilities/context.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
@@ -74,22 +78,17 @@ self.onmessage = async (e) => {
       projectMeta,
       route,
     });
-    plugins.forEach((plugin) =>
-      plugin.beforeEachRender &&
-      plugin.beforeEachRender({
-        context,
-        layout,
-        route,
-        url,
-      })
-    );
-    const markup = await render({
-      component: layout,
-      components,
+
+    await applyBeforeEachRenders({ context, layout, plugins, route, url });
+    let markup = await render({ layout, components, context, pageUtilities });
+    markup = await applyAfterEachRenders({
       context,
-      utilities: pageUtilities,
+      layout,
+      markup,
+      plugins,
+      route,
+      url,
     });
-    // TODO: Apply afterEachRender
 
     if (route.type === "xml") {
       await Deno.writeTextFile(dir, markup);

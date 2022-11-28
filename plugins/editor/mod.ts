@@ -81,6 +81,19 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
       const outputDirectory = path.join(paths.output, url);
 
       return {
+        // TODO: Likely cache and tasks will converge into a single
+        // definition depending on server/build.
+        cache: {
+          contexts: {
+            [url + "context.json"]: rest.context,
+          },
+          layoutDefinitions: {
+            [url + "layout.json"]: rest.layout,
+          },
+          routeDefinitions: {
+            [url + "route.json"]: rest.route,
+          },
+        },
         tasks: rest.route.type === "xml"
           ? []
           : ["context", "layout", "route"].map((name) => ({
@@ -98,26 +111,6 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
           { type: "module", src: "/gustwind-editor-plugin/toggleRuntime.js" },
           { type: "module", src: "/gustwind-editor-plugin/webSocketClient.js" },
         ],
-      };
-    },
-    afterEachRender({ cache, markup, layout, context, route, url }) {
-      return {
-        markup,
-        cache: {
-          ...cache,
-          contexts: {
-            ...cache.contexts,
-            [url + "context.json"]: context,
-          },
-          layoutDefinitions: {
-            ...cache.layoutDefinitions,
-            [url + "layout.json"]: layout,
-          },
-          routeDefinitions: {
-            ...cache.routeDefinitions,
-            [url + "route.json"]: route,
-          },
-        },
       };
     },
     prepareBuild: async ({ components }) => {

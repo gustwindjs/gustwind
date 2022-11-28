@@ -35,7 +35,7 @@ function twindPlugin(
     },
     afterEachRender({ markup, route }) {
       if (route.type === "xml") {
-        return;
+        return { markup };
       }
 
       // https://web.dev/defer-non-critical-css/
