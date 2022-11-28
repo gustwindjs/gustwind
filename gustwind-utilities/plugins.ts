@@ -17,6 +17,7 @@ async function importPlugins(projectMeta: ProjectMeta) {
 
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
+  // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of plugins) {
     const pluginModule: PluginModule = await importPlugin(
       projectMeta,
