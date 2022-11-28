@@ -143,17 +143,15 @@ type PluginMeta = {
 };
 
 type Plugin<C = Record<string, unknown>> = {
-  setupCache?(): Record<string, unknown>;
   beforeEachRequest?(
-    { cache, url, respond }: {
-      cache: C & ServeCache;
+    { url, respond }: {
       url: string;
       respond: (status: number, text: string, type: string) => void;
     },
   ): void;
   beforeEachMatchedRequest?(
     { cache, route }: { cache: C & ServeCache; route: Route },
-  ): Promise<C & ServeCache> | (C & ServeCache);
+  ): Promise<Partial<ServeCache>> | (Partial<ServeCache>);
   beforeEachRender?(
     { context, layout, route, url }: {
       context: Context;

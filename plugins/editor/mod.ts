@@ -22,29 +22,28 @@ const meta: PluginMeta = {
   ].map((n) => `${n}.ts`),
 };
 
-type EditorCache = {
+type PluginCache = {
   contexts: Record<string, DataContext>;
   layoutDefinitions: Record<string, Layout>;
   routeDefinitions: Record<string, Route>;
 };
 
-function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
+function editorPlugin(projectMeta: ProjectMeta): Plugin<PluginCache> {
+  const pluginCache: PluginCache = {
+    contexts: {},
+    layoutDefinitions: {},
+    routeDefinitions: {},
+  };
+
   return {
-    setupCache(): EditorCache {
-      return {
-        contexts: {},
-        layoutDefinitions: {},
-        routeDefinitions: {},
-      };
-    },
-    beforeEachRequest({ cache, url, respond }) {
-      const matchedContext = cache.contexts[url];
+    beforeEachRequest({ url, respond }) {
+      const matchedContext = pluginCache.contexts[url];
 
       if (matchedContext) {
         return respond(200, JSON.stringify(matchedContext), "application/json");
       }
 
-      const matchedLayoutDefinition = cache.layoutDefinitions[url];
+      const matchedLayoutDefinition = pluginCache.layoutDefinitions[url];
 
       if (matchedLayoutDefinition) {
         return respond(
@@ -54,7 +53,7 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
         );
       }
 
-      const matchedRouteDefinition = cache.routeDefinitions[url];
+      const matchedRouteDefinition = pluginCache.routeDefinitions[url];
 
       if (matchedRouteDefinition) {
         return respond(
@@ -66,7 +65,6 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
     },
     beforeEachMatchedRequest({ cache, route }) {
       return {
-        ...cache,
         components: Object.fromEntries(
           Object.entries(cache.components).map(([k, v]) => [k, attachIds(v)]),
         ),
@@ -81,20 +79,11 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
       const { paths } = projectMeta;
       const outputDirectory = path.join(paths.output, url);
 
+      pluginCache.contexts[url + "context.json"] = rest.context;
+      pluginCache.contexts[url + "layout.json"] = rest.layout;
+      pluginCache.contexts[url + "route.json"] = rest.route;
+
       return {
-        // TODO: Likely cache and tasks will converge into a single
-        // definition depending on server/build.
-        cache: {
-          contexts: {
-            [url + "context.json"]: rest.context,
-          },
-          layoutDefinitions: {
-            [url + "layout.json"]: rest.layout,
-          },
-          routeDefinitions: {
-            [url + "route.json"]: rest.route,
-          },
-        },
         tasks: rest.route.type === "xml"
           ? []
           : ["context", "layout", "route"].map((name) => ({
