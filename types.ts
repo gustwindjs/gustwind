@@ -70,7 +70,7 @@ type ProjectMeta = {
   plugins: PluginOptions[];
 };
 
-type PluginOptions = { name: string; options: Record<string, unknown> };
+type PluginOptions = { path: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";

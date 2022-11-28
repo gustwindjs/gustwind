@@ -10,6 +10,7 @@ import type {
   ProjectMeta,
   Route,
 } from "../types.ts";
+import { path } from "../server-deps.ts";
 import type { Component, Utilities } from "../breezewind/types.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
@@ -79,22 +80,24 @@ async function renderPage({
     { context },
   );
 
+  // TODO: Move this logic outside to be frontend friendly. Renderer
+  // should be passed as a parameter instead.
+  const rendererPath = path.join(Deno.cwd(), projectMeta.renderer.path);
+  const { render } = (await import(rendererPath).then((m) => m.renderer))(
+    projectMeta,
+    projectMeta.renderer.options,
+  );
+
   DEBUG && console.log("rendering a page with context", context);
 
   try {
     // TODO: Trigger onRender hooks of plugins now
-    /*
-    pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);
-
-    const markup = await renderHTML({
+    const markup = await render({
       component: layout,
       components,
       context: { ...context, pathname },
       utilities: pageUtilities,
     });
-
-    pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
-    */
 
     return { markup, context };
   } catch (error) {

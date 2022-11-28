@@ -23,14 +23,14 @@
     "transforms": "./site/transforms",
     "pageUtilities": "./site/pageUtilities.ts"
   },
-  "renderer": { "name:": "./renderers/breezewind/mod.ts" },
+  "renderer": { "path": "./renderers/breezewind/mod.ts" },
   "plugins": [
     {
-      "name": "./plugin/twind/mod.ts",
+      "path": "./plugin/twind/mod.ts",
       "options": { "setupPath": "./site/twindSetup.ts" }
     },
     {
-      "name": "./plugins/editor/mod.ts"
+      "path": "./plugins/editor/mod.ts"
     }
   ]
 }
