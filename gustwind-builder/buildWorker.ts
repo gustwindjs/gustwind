@@ -3,7 +3,7 @@
 import { compileScript } from "../utilities/compileScripts.ts";
 import { importPlugins } from "../utilities/plugins.ts";
 import { importRender } from "../utilities/render.ts";
-import { renderPage } from "../gustwind-utilities/renderPage.ts";
+import { getContext } from "../utilities/context.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {
@@ -66,29 +66,28 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    // TODO: Apply beforeEachRender
+    const context = await getContext({
+      dataSources,
+      mode: "production",
+      pagePath: url,
+      pageUtilities,
+      projectMeta,
+      route,
+    });
     plugins.forEach((plugin) =>
       plugin.beforeEachRender &&
       plugin.beforeEachRender({
-        // TODO: context isn't correct yet as right now it's resolved
-        // within renderPage. Maybe context resolution needs to be separated
-        // because of this.
-        context: { pagePath: url, ...route.context },
+        context,
         layout,
         route,
         url,
       })
     );
-    const { markup } = await renderPage({
-      projectMeta,
-      layout,
-      route,
-      mode: "production",
-      pagePath: url,
+    const markup = await render({
+      component: layout,
       components,
-      pageUtilities,
-      dataSources,
-      render,
+      context,
+      utilities: pageUtilities,
     });
     // TODO: Apply afterEachRender
 

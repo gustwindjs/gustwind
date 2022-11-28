@@ -2,7 +2,6 @@ import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { getJson, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
-import { renderPage } from "../gustwind-utilities/renderPage.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
@@ -80,6 +79,7 @@ async function serveGustwind({
     }
   }
 
+  /*
   if (projectPaths.twindSetup) {
     DEBUG && console.log("Compiling project twind setup");
 
@@ -91,6 +91,8 @@ async function serveGustwind({
       mode: "development",
     })).content;
   }
+  */
+
   if (projectPaths.scripts) {
     DEBUG && console.log("Compiling project scripts");
 
@@ -145,6 +147,8 @@ async function serveGustwind({
             matchedLayout;
 
           // TODO: Store context so that subsequent requests can find the data
+          // TODO: Redo this so that plugin hooks get applied
+          /*
           const { markup, context } = await renderPage({
             projectMeta,
             layout,
@@ -157,6 +161,8 @@ async function serveGustwind({
             // TODO
             render: {},
           });
+          */
+          const markup = "";
 
           if (matchedRoute.type === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed

@@ -1,45 +1,27 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
 import type {
-  Components,
   Context,
-  DataContext,
   DataSources,
   Meta,
   Mode,
   ProjectMeta,
-  Renderer,
   Route,
 } from "../types.ts";
-import type { Component, Utilities } from "../breezewind/types.ts";
+import type { Utilities } from "../breezewind/types.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
-type Layout = Component | Component[];
-
-const DEBUG = Deno.env.get("DEBUG") === "1";
-
-async function renderPage({
-  projectMeta,
-  layout,
-  route,
-  mode,
-  pagePath,
-  pageUtilities,
-  components,
-  dataSources,
-  render,
-}: {
-  projectMeta: ProjectMeta;
-  layout: Layout;
-  route: Route;
-  mode: Mode;
-  pagePath: string;
-  pageUtilities: Utilities;
-  components: Components;
-  dataSources: DataSources;
-  render: Renderer["render"];
-}): Promise<{ markup: string; context: DataContext; css?: string }> {
+async function getContext(
+  { dataSources, mode, pagePath, pageUtilities, projectMeta, route }: {
+    dataSources: DataSources;
+    mode: Mode;
+    pagePath: string;
+    pageUtilities: Utilities;
+    projectMeta: ProjectMeta;
+    route: Route;
+  },
+) {
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
   // The assumption here is that all the page scripts are compiled with Gustwind.
@@ -47,15 +29,12 @@ async function renderPage({
   let pageScripts =
     route.scripts?.slice(0).map((s) => ({ type: "module", src: `/${s}.js` })) ||
     [];
-
   if (projectMeta.scripts) {
     pageScripts = pageScripts.concat(projectMeta.scripts);
   }
   if (mode === "development") {
     runtimeMeta.pagePath = pagePath;
   }
-
-  // TODO: Trigger beforeEachRender here to capture scripts and run init code
   const dataSourceContext = await getDataSourceContext(
     route.dataSources,
     dataSources,
@@ -78,16 +57,7 @@ async function renderPage({
     { context },
   );
 
-  DEBUG && console.log("rendering a page with context", context);
-
-  const markup = await render({
-    component: layout,
-    components,
-    context,
-    utilities: pageUtilities,
-  });
-
-  return { markup, context };
+  return context;
 }
 
 async function getDataSourceContext(
@@ -120,4 +90,4 @@ async function getDataSourceContext(
   );
 }
 
-export { renderPage };
+export { getContext };
