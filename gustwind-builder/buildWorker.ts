@@ -119,6 +119,7 @@ self.onmessage = async (e) => {
   if (type === "writeScript") {
     const { payload: { outputDirectory, scriptName, scriptPath } } = e.data;
 
+    await fs.ensureDir(outputDirectory);
     await writeScript(outputDirectory, scriptName, scriptPath);
   }
   if (type === "writeFile") {
