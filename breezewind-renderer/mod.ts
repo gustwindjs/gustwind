@@ -5,8 +5,8 @@ import type { ProjectMeta, Renderer } from "../types.ts";
 
 function breezewindRenderer(
   _projectMeta: ProjectMeta,
-  // TODO: Support configuration
-  // configuration: {},
+  // TODO: Support options
+  // options: {},
 ): Renderer {
   return {
     render: async ({ component, components, context, utilities }) => {

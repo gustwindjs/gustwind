@@ -9,14 +9,14 @@ import { Plugin, ProjectMeta } from "../types.ts";
 
 function twindPlugin(
   projectMeta: ProjectMeta,
-  configuration: {
+  options: {
     setupPath: string;
     // TODO: Support style extraction
     // extractStylesToDirectory: string;
   },
 ): Plugin {
   const stylesheet = virtualSheet();
-  const twindSetupPath = configuration.setupPath;
+  const twindSetupPath = options.setupPath;
 
   return {
     beforeEachRender: async () => {

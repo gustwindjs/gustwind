@@ -66,7 +66,11 @@ type ProjectMeta = {
     transforms: string;
     pageUtilities?: string;
   };
+  renderer: PluginOptions;
+  plugins: PluginOptions[];
 };
+
+type PluginOptions = { name: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";

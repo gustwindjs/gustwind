@@ -21,7 +21,16 @@
     "routes": "./site/routes.json",
     "scripts": ["./scripts", "./site/scripts"],
     "transforms": "./site/transforms",
-    "pageUtilities": "./site/pageUtilities.ts",
-    "twindSetup": "./site/twindSetup.ts"
-  }
+    "pageUtilities": "./site/pageUtilities.ts"
+  },
+  "renderer": { "name:": "./breezewind-renderer/mod.ts" },
+  "plugins": [
+    {
+      "name": "./gustwind-twind-plugin/mod.ts",
+      "options": { "setupPath": "./site/twindSetup.ts" }
+    },
+    {
+      "name": "./gustwind-editor-plugin/mod.ts"
+    }
+  ]
 }
