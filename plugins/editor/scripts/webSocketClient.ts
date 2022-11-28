@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 /// <reference path="./pageEditor.ts" />
-import { getPagePath } from "../../utilities/getPagePath.ts";
+import { getPagePath } from "../../../utilities/getPagePath.ts";
 
 function createWebSocket(pagePath?: string) {
   if (!pagePath) {

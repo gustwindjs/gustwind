@@ -1,6 +1,6 @@
-import { attachIds } from "../utilities/attachIds.ts";
-import { dir } from "../utilities/fs.ts";
-import { fs, path } from "../server-deps.ts";
+import { attachIds } from "../../utilities/attachIds.ts";
+import { dir } from "../../utilities/fs.ts";
+import { fs, path } from "../../server-deps.ts";
 import {
   DataContext,
   Layout,
@@ -8,16 +8,18 @@ import {
   ProjectMeta,
   Route,
   Tasks,
-} from "../types.ts";
+} from "../../types.ts";
 
-const pluginName = "gustwind-editor-plugin";
-const dependsOn = ["gustwind-twind-plugin"];
-const scriptsToCompile = [
-  "pageEditor",
-  "toggleEditor",
-  "twindRuntime",
-  "webSocketClient",
-].map((n) => `${pluginName}/${n}.ts`);
+const meta = {
+  pluginName: "gustwind-editor-plugin",
+  dependsOn: ["gustwind-twind-plugin"],
+  scriptsToCompile: [
+    "pageEditor",
+    "toggleEditor",
+    "twindRuntime",
+    "webSocketClient",
+  ].map((n) => `${n}.ts`),
+};
 
 type EditorCache = {
   contexts: Record<string, DataContext>;
@@ -152,4 +154,4 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
   };
 }
 
-export { dependsOn, editorPlugin as plugin, scriptsToCompile };
+export { editorPlugin as plugin, meta };

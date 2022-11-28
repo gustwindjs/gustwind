@@ -5,7 +5,11 @@ import {
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 // import { path } from "../server-deps.ts";
-import { Plugin, ProjectMeta } from "../types.ts";
+import { Plugin, ProjectMeta } from "../../types.ts";
+
+const meta = {
+  pluginName: "gustwind-twind-plugin",
+};
 
 function twindPlugin(
   projectMeta: ProjectMeta,
@@ -73,4 +77,4 @@ function injectStyleTag(markup: string, styleTag: string) {
   return parts[0] + styleTag + parts[1];
 }
 
-export { twindPlugin as plugin };
+export { meta, twindPlugin as plugin };

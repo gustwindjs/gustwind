@@ -1,13 +1,13 @@
 /// <reference lib="dom" />
-import { getParents } from "../../utilities/getParents.ts";
-import { changeTag } from "../../utilities/changeTag.ts";
-import { traverseComponents } from "../../utilities/traverseComponents.ts";
-import breezewind from "../../breezewind/index.ts";
-import * as breezeExtensions from "../../breezewind/extensions.ts";
-import { draggable, produce, tw } from "../../client-deps.ts";
-// import { getPagePath } from "../../utilities/getPagePath.ts";
-import type { Components, DataContext, Route } from "../../types.ts";
-import type { Component as BreezeComponent } from "../../breezewind/types.ts";
+import { getParents } from "../../../utilities/getParents.ts";
+import { changeTag } from "../../../utilities/changeTag.ts";
+import { traverseComponents } from "../../../utilities/traverseComponents.ts";
+import breezewind from "../../../breezewind/index.ts";
+import * as breezeExtensions from "../../../breezewind/extensions.ts";
+import { draggable, produce, tw } from "../../../client-deps.ts";
+// import { getPagePath } from "../../../utilities/getPagePath.ts";
+import type { Components, DataContext, Route } from "../../../types.ts";
+import type { Component as BreezeComponent } from "../../../breezewind/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
