@@ -28,7 +28,7 @@ type PluginCache = {
   routeDefinitions: Record<string, Route>;
 };
 
-function editorPlugin(projectMeta: ProjectMeta): Plugin<PluginCache> {
+function editorPlugin(projectMeta: ProjectMeta): Plugin {
   const pluginCache: PluginCache = {
     contexts: {},
     layoutDefinitions: {},

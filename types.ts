@@ -142,7 +142,7 @@ type PluginMeta = {
   scriptsToCompile?: string[];
 };
 
-type Plugin<C = Record<string, unknown>> = {
+type Plugin = {
   beforeEachRequest?(
     { url, respond }: {
       url: string;
@@ -150,7 +150,7 @@ type Plugin<C = Record<string, unknown>> = {
     },
   ): void;
   beforeEachMatchedRequest?(
-    { cache, route }: { cache: C & ServeCache; route: Route },
+    { cache, route }: { cache: ServeCache; route: Route },
   ): Promise<Partial<ServeCache>> | (Partial<ServeCache>);
   beforeEachRender?(
     { context, layout, route, url }: {
