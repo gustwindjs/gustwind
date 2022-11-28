@@ -42,7 +42,7 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
   };
 
   return {
-    beforeEachRequest({ cache, url, respond }) {
+    beforeEachRequest({ url, respond }) {
       const matchedContext = pluginCache.contexts[url];
 
       if (matchedContext) {

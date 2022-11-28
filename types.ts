@@ -150,8 +150,7 @@ type PluginMeta = {
 
 type Plugin = {
   beforeEachRequest?(
-    { cache, url, respond }: {
-      cache: ServeCache;
+    { url, respond }: {
       url: string;
       respond: (status: number, text: string, type: string) => void;
     },

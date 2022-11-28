@@ -176,6 +176,7 @@ async function serveGustwind({
             context,
             pageUtilities,
           });
+
           markup = await applyAfterEachRenders({
             context,
             layout,
