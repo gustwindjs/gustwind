@@ -18,7 +18,6 @@ import type {
   ProjectMeta,
   Renderer,
 } from "../types.ts";
-import { plugin } from "../plugins/editor/mod.ts";
 
 let id: string;
 let components: Components;

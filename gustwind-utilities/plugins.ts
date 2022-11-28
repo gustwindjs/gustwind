@@ -33,7 +33,9 @@ async function importPlugins(projectMeta: ProjectMeta) {
     }
   }
 
-  return loadedPlugins;
+  // Since plugin initialization has been applied already, we can treat
+  // what's returned as plugins even if there's a bit more data now.
+  return loadedPlugins as Plugin[];
 }
 
 async function importPlugin(
