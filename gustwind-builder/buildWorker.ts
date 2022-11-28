@@ -18,6 +18,7 @@ import type {
   ProjectMeta,
   Renderer,
 } from "../types.ts";
+import { BuildWorkerMessageTypes } from "../types.ts";
 
 let id: string;
 let components: Components;
@@ -88,7 +89,10 @@ self.onmessage = async (e) => {
     });
 
     context.scripts = context.scripts.concat(scripts);
-    // TODO: Trigger new tasks
+    self.postMessage({
+      type: BuildWorkerMessageTypes["addTasks"],
+      payload: tasks,
+    });
 
     let markup = await render({ layout, components, context, pageUtilities });
     markup = await applyAfterEachRenders({
@@ -129,7 +133,7 @@ self.onmessage = async (e) => {
     await fs.copy(assetsPath, outputPath, { overwrite: true });
   }
 
-  self.postMessage({});
+  self.postMessage({ type: BuildWorkerMessageTypes["finished"] });
 };
 
 async function writeScript(

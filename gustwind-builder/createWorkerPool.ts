@@ -1,3 +1,5 @@
+import { BuildWorkerMessageTypes } from "../types.ts";
+
 type WorkerStatus = "created" | "processing" | "waiting";
 type WorkerWrapper = { status: WorkerStatus; worker: Worker };
 
@@ -28,12 +30,7 @@ function createWorkerPool<E>(amount: number) {
     }
   };
   const waitingTasks: E[] = [];
-  const workers: WorkerWrapper[] = Array.from(
-    { length: amount },
-    () => createWorker(onReady),
-  );
-
-  return {
+  const api = {
     addTaskToEach: (task: E) => {
       workers.forEach((workerWrapper) => {
         workerWrapper.status = "processing";
@@ -57,9 +54,18 @@ function createWorkerPool<E>(amount: number) {
       onWorkFinished = cb;
     },
   };
+  const workers: WorkerWrapper[] = Array.from(
+    { length: amount },
+    () => createWorker<E>(onReady, api.addTaskToQueue),
+  );
+
+  return api;
 }
 
-function createWorker(onReady: (WorkerWrapper: WorkerWrapper) => void) {
+function createWorker<E>(
+  onReady: (WorkerWrapper: WorkerWrapper) => void,
+  addTaskToQueue: (task: E) => void,
+) {
   const ret: WorkerWrapper = {
     status: "created",
     worker: new Worker(
@@ -67,7 +73,15 @@ function createWorker(onReady: (WorkerWrapper: WorkerWrapper) => void) {
       { type: "module" },
     ),
   };
-  ret.worker.onmessage = () => onReady(ret);
+  ret.worker.onmessage = ({ data: { type, payload } }) => {
+    if (type === BuildWorkerMessageTypes["addTasks"]) {
+      payload.forEach(addTaskToQueue);
+    } else if (type === BuildWorkerMessageTypes["finished"]) {
+      onReady(ret);
+    } else {
+      throw new Error(`Unknown message type ${type}`);
+    }
+  };
 
   return ret;
 }

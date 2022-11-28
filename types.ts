@@ -75,6 +75,10 @@ type PluginOptions = { path: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
+enum BuildWorkerMessageTypes {
+  "finished",
+  "addTasks",
+}
 type BuildWorkerEvent =
   | {
     type: "init";
@@ -188,6 +192,7 @@ type Plugin = {
 
 type Tasks = BuildWorkerEvent[];
 
+export { BuildWorkerMessageTypes };
 export type {
   Attributes,
   BuildWorkerEvent,
