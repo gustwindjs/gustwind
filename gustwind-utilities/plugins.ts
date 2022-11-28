@@ -1,5 +1,6 @@
 import { path } from "../server-deps.ts";
 import type {
+  Components,
   Context,
   Layout,
   Plugin,
@@ -7,6 +8,7 @@ import type {
   PluginOptions,
   ProjectMeta,
   Route,
+  Tasks,
 } from "../types.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
@@ -47,6 +49,23 @@ async function importPlugin(
   const module = await import(pluginPath);
 
   return { ...module, ...module.plugin(projectMeta, pluginDefinition.options) };
+}
+
+async function applyPrepareBuilds(
+  { plugins, components }: { plugins: Plugin[]; components: Components },
+) {
+  let tasks: Tasks = [];
+
+  const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
+    .filter(Boolean);
+  for await (const prepareBuild of prepareBuilds) {
+    // @ts-expect-error We know prepareBuild should be defined by now
+    const tasksToAdd = await prepareBuild({ components });
+
+    tasks = tasks.concat(tasksToAdd);
+  }
+
+  return tasks;
 }
 
 async function applyBeforeEachRenders(
@@ -103,6 +122,7 @@ async function applyAfterEachRenders(
 export {
   applyAfterEachRenders,
   applyBeforeEachRenders,
+  applyPrepareBuilds,
   importPlugin,
   importPlugins,
 };

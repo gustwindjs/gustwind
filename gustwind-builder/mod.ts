@@ -3,9 +3,14 @@ import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { flattenRoutes } from "../gustwind-utilities/flattenRoutes.ts";
+import {
+  applyPrepareBuilds,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
+import { plugin } from "../plugins/editor/mod.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -117,6 +122,10 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         assetsPath: projectPaths.assets,
       },
     });
+
+    const plugins = await importPlugins(projectMeta);
+    const pluginTasks = await applyPrepareBuilds({ plugins, components });
+    pluginTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
     if (DEBUG) {
       const initTime = performance.now();

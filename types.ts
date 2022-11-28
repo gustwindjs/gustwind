@@ -92,7 +92,7 @@ type BuildWorkerEvent =
   | {
     type: "writeFile";
     payload: {
-      dir: string;
+      outputDirectory: string;
       file: string;
       data: string;
     };
@@ -185,24 +185,7 @@ type Plugin<C = Record<string, unknown>> = {
   ): Promise<Tasks> | Tasks;
 };
 
-type Tasks = (WriteFileTask | WriteScriptTask)[];
-
-type WriteFileTask = {
-  type: "writeFile";
-  payload: {
-    outputDirectory: string;
-    file: string;
-    data: string;
-  };
-};
-type WriteScriptTask = {
-  type: "writeScript";
-  payload: {
-    outputDirectory: string;
-    scriptName: string;
-    scriptPath: string;
-  };
-};
+type Tasks = BuildWorkerEvent[];
 
 export type {
   Attributes,
