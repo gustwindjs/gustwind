@@ -4,7 +4,7 @@ import {
   virtualSheet,
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
-// import { path } from "../server-deps.ts";
+// import { path } from "../../server-deps.ts";
 import { Plugin, ProjectMeta } from "../../types.ts";
 
 const meta = {
