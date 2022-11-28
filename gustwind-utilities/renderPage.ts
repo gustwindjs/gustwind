@@ -19,8 +19,6 @@ type Layout = Component | Component[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-// TODO: Some kind of a lifecycle model would be useful to have here
-// as it would allow decoupling twind from the core.
 async function renderPage({
   projectMeta,
   layout,
