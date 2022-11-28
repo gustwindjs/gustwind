@@ -34,4 +34,4 @@ function breezewindRenderer(
   };
 }
 
-export { breezewindRenderer as renderer };
+export { breezewindRenderer as plugin };

@@ -209,6 +209,7 @@ export type {
   Mode,
   ParentCategory,
   Plugin,
+  PluginOptions,
   ProjectMeta,
   Props,
   Renderer,

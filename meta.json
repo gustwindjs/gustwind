@@ -26,7 +26,7 @@
   "renderer": { "path": "./renderers/breezewind/mod.ts" },
   "plugins": [
     {
-      "path": "./plugin/twind/mod.ts",
+      "path": "./plugins/twind/mod.ts",
       "options": { "setupPath": "./site/twindSetup.ts" }
     },
     {

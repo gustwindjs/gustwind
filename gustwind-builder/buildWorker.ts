@@ -4,9 +4,9 @@ import { compileScript } from "../utilities/compileScripts.ts";
 import {
   applyAfterEachRenders,
   applyBeforeEachRenders,
+  importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
-import { importRender } from "../gustwind-utilities/render.ts";
 import { getContext } from "../gustwind-utilities/context.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
@@ -18,6 +18,7 @@ import type {
   ProjectMeta,
   Renderer,
 } from "../types.ts";
+import { plugin } from "../plugins/editor/mod.ts";
 
 let id: string;
 let components: Components;
@@ -50,7 +51,8 @@ self.onmessage = async (e) => {
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
       : {};
 
-    render = await importRender(projectMeta);
+    const plugin = await importPlugin(projectMeta, projectMeta.renderer);
+    render = plugin.render;
 
     // TODO: Load plugins + trigger them here for init
     plugins = await importPlugins(projectMeta);
