@@ -1,6 +1,7 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
+import { getRender } from "../utilities/render.ts";
 import { renderPage } from "../gustwind-utilities/renderPage.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
@@ -9,6 +10,7 @@ import type {
   Components,
   DataSources,
   ProjectMeta,
+  Renderer,
 } from "../types.ts";
 
 let id: string;
@@ -16,6 +18,7 @@ let components: Components;
 let dataSources: DataSources;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
+let render: Renderer["render"];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -39,6 +42,8 @@ self.onmessage = async (e) => {
     pageUtilities = projectMeta.paths.pageUtilities
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
       : {};
+
+    render = await getRender(projectMeta);
 
     DEBUG && console.log("worker - finished init", id);
   }
@@ -65,6 +70,7 @@ self.onmessage = async (e) => {
       pageUtilities,
       pathname: url,
       dataSources,
+      render,
     });
 
     if (route.type === "xml") {

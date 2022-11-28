@@ -8,9 +8,9 @@ import type {
   Meta,
   Mode,
   ProjectMeta,
+  Renderer,
   Route,
 } from "../types.ts";
-import { path } from "../server-deps.ts";
 import type { Component, Utilities } from "../breezewind/types.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
@@ -31,6 +31,7 @@ async function renderPage({
   components,
   pathname,
   dataSources,
+  render,
 }: {
   projectMeta: ProjectMeta;
   layout: Layout;
@@ -41,6 +42,7 @@ async function renderPage({
   components: Components;
   pathname: string;
   dataSources: DataSources;
+  render: Renderer["render"];
 }): Promise<{ markup: string; context: DataContext; css?: string }> {
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
@@ -78,14 +80,6 @@ async function renderPage({
     props,
     { ...defaultUtilities, ...pageUtilities } as Utilities,
     { context },
-  );
-
-  // TODO: Move this logic outside to be frontend friendly. Renderer
-  // should be passed as a parameter instead.
-  const rendererPath = path.join(Deno.cwd(), projectMeta.renderer.path);
-  const { render } = (await import(rendererPath).then((m) => m.renderer))(
-    projectMeta,
-    projectMeta.renderer.options,
   );
 
   DEBUG && console.log("rendering a page with context", context);
