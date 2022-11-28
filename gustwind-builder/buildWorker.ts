@@ -53,7 +53,6 @@ self.onmessage = async (e) => {
     const plugin = await importPlugin(projectMeta, projectMeta.renderer);
     render = plugin.render;
 
-    // TODO: Load plugins + trigger them here for init
     plugins = await importPlugins(projectMeta);
 
     DEBUG && console.log("worker - finished init", id);
