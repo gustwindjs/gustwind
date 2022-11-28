@@ -2,6 +2,7 @@ import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
+import { getContext } from "../gustwind-utilities/context.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
@@ -9,6 +10,7 @@ import {
   applyAfterEachRenders,
   applyBeforeEachRenders,
   applyPrepareBuilds,
+  importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
@@ -87,6 +89,9 @@ async function serveGustwind({
   }
   */
 
+  const plugin = await importPlugin(projectMeta, projectMeta.renderer);
+  const render = plugin.render;
+
   const plugins = await importPlugins(projectMeta);
   const pluginTasks = await applyPrepareBuilds({ plugins, components });
   const pluginScripts = pluginTasks.filter(({ type }) => type === "writeScript")
@@ -138,32 +143,47 @@ async function serveGustwind({
 
           let contentType = "text/html; charset=utf-8";
 
-          // TODO: Trigger beforeEachRequest for each plugin here
-
           // If there's cached data, use it instead. This fixes
-          // the case in which there was an update over  a websocket and
+          // the case in which there was an update over a websocket and
           // also avoids the need to hit the file system for getting
           // the latest data.
           const layout: Layout = cache.layouts[layoutName] ||
             matchedLayout;
 
-          // TODO: Store context so that subsequent requests can find the data
-          // TODO: Redo this so that plugin hooks get applied
-          /*
-          const { markup, context } = await renderPage({
-            projectMeta,
-            layout,
-            route,
-            mode,
-            pagePath: pathname,
-            components,
-            pageUtilities: cache.pageUtilities,
+          const pageUtilities = cache.pageUtilities;
+          const context = await getContext({
             dataSources,
-            // TODO
-            render: {},
+            mode: "production",
+            pagePath: url,
+            pageUtilities,
+            projectMeta,
+            route,
           });
-          */
-          const markup = "";
+
+          const { scripts } = await applyBeforeEachRenders({
+            context,
+            layout,
+            plugins,
+            route,
+            url,
+          });
+
+          context.scripts = context.scripts.concat(scripts);
+
+          let markup = await render({
+            layout,
+            components,
+            context,
+            pageUtilities,
+          });
+          markup = await applyAfterEachRenders({
+            context,
+            layout,
+            markup,
+            plugins,
+            route,
+            url,
+          });
 
           if (matchedRoute.type === "xml") {
             // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
