@@ -64,12 +64,7 @@ function createWorker(onReady: (WorkerWrapper: WorkerWrapper) => void) {
     status: "created",
     worker: new Worker(
       new URL("./buildWorker.ts", import.meta.url).href,
-      {
-        type: "module",
-        deno: {
-          permissions: "inherit",
-        },
-      },
+      { type: "module" },
     ),
   };
   ret.worker.onmessage = () => onReady(ret);
