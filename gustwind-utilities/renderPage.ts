@@ -45,7 +45,7 @@ async function renderPage({
   const runtimeMeta: Meta = { built: (new Date()).toString() };
 
   // The assumption here is that all the page scripts are compiled with Gustwind.
-  // TODO: It might be a good idea to support third party scripts here as well
+  // TODO: It might be a good idea to support third-party scripts here as well
   let pageScripts =
     route.scripts?.slice(0).map((s) => ({ type: "module", src: `/${s}.js` })) ||
     [];
@@ -82,21 +82,14 @@ async function renderPage({
 
   DEBUG && console.log("rendering a page with context", context);
 
-  try {
-    // TODO: Trigger onRender hooks of plugins now
-    const markup = await render({
-      component: layout,
-      components,
-      context: { ...context, pathname },
-      utilities: pageUtilities,
-    });
+  const markup = await render({
+    component: layout,
+    components,
+    context: { ...context, pathname },
+    utilities: pageUtilities,
+  });
 
-    return { markup, context };
-  } catch (error) {
-    console.error("Failed to render", route.url, error);
-  }
-
-  return { markup: "", context: {} };
+  return { markup, context };
 }
 
 async function getDataSourceContext(

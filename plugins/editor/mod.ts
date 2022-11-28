@@ -103,7 +103,6 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin<EditorCache> {
     afterEachRender({ cache, markup, layout, context, route, url }) {
       return {
         markup,
-        // TODO: Inject targets to the cache for each url
         cache: {
           ...cache,
           contexts: {

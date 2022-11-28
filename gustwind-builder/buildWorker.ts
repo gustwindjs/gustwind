@@ -1,7 +1,8 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
-import { getRender } from "../utilities/render.ts";
+import { importPlugins } from "../utilities/plugins.ts";
+import { importRender } from "../utilities/render.ts";
 import { renderPage } from "../gustwind-utilities/renderPage.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
@@ -9,6 +10,7 @@ import type {
   BuildWorkerEvent,
   Components,
   DataSources,
+  Plugin,
   ProjectMeta,
   Renderer,
 } from "../types.ts";
@@ -19,6 +21,7 @@ let dataSources: DataSources;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
 let render: Renderer["render"];
+let plugins: Plugin[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -43,7 +46,10 @@ self.onmessage = async (e) => {
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
       : {};
 
-    render = await getRender(projectMeta);
+    render = await importRender(projectMeta);
+
+    // TODO: Load plugins + trigger them here for init
+    plugins = await importPlugins(projectMeta);
 
     DEBUG && console.log("worker - finished init", id);
   }
@@ -60,6 +66,19 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
+    // TODO: Apply beforeEachRender
+    plugins.forEach((plugin) =>
+      plugin.beforeEachRender &&
+      plugin.beforeEachRender({
+        // TODO: context isn't correct yet as right now it's resolved
+        // within renderPage. Maybe context resolution needs to be separated
+        // because of this.
+        context: { pagePath: url, ...route.context },
+        layout,
+        route,
+        url,
+      })
+    );
     const { markup } = await renderPage({
       projectMeta,
       layout,
@@ -72,6 +91,7 @@ self.onmessage = async (e) => {
       dataSources,
       render,
     });
+    // TODO: Apply afterEachRender
 
     if (route.type === "xml") {
       await Deno.writeTextFile(dir, markup);
