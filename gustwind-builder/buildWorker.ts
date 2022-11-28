@@ -1,9 +1,9 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
-import { importPlugins } from "../utilities/plugins.ts";
-import { importRender } from "../utilities/render.ts";
-import { getContext } from "../utilities/context.ts";
+import { importPlugins } from "../gustwind-utilities/plugins.ts";
+import { importRender } from "../gustwind-utilities/render.ts";
+import { getContext } from "../gustwind-utilities/context.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {
