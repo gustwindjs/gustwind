@@ -1,11 +1,11 @@
-import { dir } from "./fs.ts";
 import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Mode } from "../types.ts";
 
-async function compileScripts(scriptsPath: string, mode: Mode) {
-  const scripts = await Promise.all(await dir(scriptsPath, ".ts"));
-
-  return Promise.all(scripts.map(
+async function compileScripts(
+  paths: { path: string; name: string }[],
+  mode: Mode,
+) {
+  return Promise.all(paths.map(
     ({ path, name }) => compileScript({ path, name, mode }),
   ));
 }

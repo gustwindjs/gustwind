@@ -1,6 +1,6 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
-import { getJson, resolvePaths } from "../utilities/fs.ts";
+import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
@@ -56,16 +56,11 @@ async function serveGustwind({
     dataSources,
   });
 
-  const plugins = await importPlugins(projectMeta);
-  const pluginTasks = await applyPrepareBuilds({ plugins, components });
-
-  // TODO: Handle tasks (i.e., implement writeScript)
-  console.log("dev - plugin tasks", pluginTasks);
-
+  // TODO: This branch might be safe to eliminate since
+  // meta.json scripts is capturing the dev scripts.
   /*
   if (mode === "development") {
-    // TODO: This branch might be safe to eliminate since
-    // meta.json scripts is capturing the dev scripts.
+
     if (import.meta.url.startsWith("file:///")) {
       DEBUG && console.log("Compiling local scripts");
 
@@ -92,47 +87,36 @@ async function serveGustwind({
   }
   */
 
-  // TODO: This should get handled by the editor plugin
-  /*
-  if (projectPaths.twindSetup) {
-    DEBUG && console.log("Compiling project twind setup");
-
-    const name = "twindSetup.js";
-
-    cache.scripts[name] = (await compileScript({
-      path: projectPaths.twindSetup,
-      name,
-      mode: "development",
-    })).content;
-  }
-  */
+  const plugins = await importPlugins(projectMeta);
+  const pluginTasks = await applyPrepareBuilds({ plugins, components });
+  const pluginScripts = pluginTasks.filter(({ type }) => type === "writeScript")
+    .map(({ payload }) => ({
+      // @ts-expect-error This is writeScript by now
+      path: payload.scriptPath,
+      // @ts-expect-error This is writeScript by now
+      name: payload.scriptName,
+    }));
+  let scriptsToCompile: { path: string; name: string }[] = [];
 
   if (projectPaths.scripts) {
+    const scripts = await Promise.all(
+      projectPaths.scripts.map((s) => dir(s, ".ts")),
+    );
+
+    scriptsToCompile = scriptsToCompile.concat(scripts.flat());
+  }
+
+  if (pluginScripts) {
+    scriptsToCompile = scriptsToCompile.concat(pluginScripts);
+  }
+
+  if (scriptsToCompile) {
     DEBUG && console.log("Compiling project scripts");
 
-    const customScripts = Object.fromEntries(
-      (await Promise.all(
-        projectPaths.scripts.map(async (s) =>
-          Object.entries(await compileScriptsToJavaScript(s))
-        ),
-      )).flat(),
-    );
+    const customScripts = await compileScriptsToJavaScript(scriptsToCompile);
 
     cache.scripts = { ...cache.scripts, ...customScripts };
   }
-
-  // TODO: This should get handled by the editor plugin
-  /*
-  if (projectPaths.transforms) {
-    DEBUG && console.log("Compiling project transforms");
-
-    const transformScripts = await compileScriptsToJavaScript(
-      projectPaths.transforms,
-    );
-
-    cache.scripts = { ...cache.scripts, ...transformScripts };
-  }
-  */
 
   const server = new Server({
     handler: async ({ url }) => {
@@ -258,10 +242,12 @@ function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
   }));
 }
 
-async function compileScriptsToJavaScript(path: string) {
+async function compileScriptsToJavaScript(
+  paths: { path: string; name: string }[],
+) {
   try {
     return Object.fromEntries(
-      (await compileScripts(path, "development")).map(
+      (await compileScripts(paths, "development")).map(
         ({ name, content }) => {
           return [name.replace(".ts", ".js"), content];
         },

@@ -113,6 +113,8 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
           })),
         scripts: [
           // TODO: Check paths and path resolution
+          // Note that the page editor is loaded lazily by toggleEditor.
+          // Because of that it's not included to this reference list.
           { type: "module", src: "/scripts/twindRuntime.js" },
           { type: "module", src: "/scripts/toggleEditor.js" },
           { type: "module", src: "/scripts/webSocketClient.js" },
@@ -146,7 +148,7 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
           type: "writeScript",
           payload: {
             outputDirectory: scriptsDirectory,
-            scriptName,
+            scriptName: `${scriptName}.ts`,
             // TODO: Check how to resolve the script when consuming from remote
             scriptPath: path.join(
               Deno.cwd(),
