@@ -131,6 +131,17 @@ type Renderer = {
   }): Promise<string> | string;
 };
 
+type PluginModule = {
+  meta: PluginMeta;
+  plugin: Plugin;
+};
+
+type PluginMeta = {
+  name: string;
+  dependsOn?: string[];
+  scriptsToCompile?: string[];
+};
+
 type Plugin<C = Record<string, unknown>> = {
   setupCache?(): Record<string, unknown>;
   beforeEachRequest?(
@@ -209,6 +220,8 @@ export type {
   Mode,
   ParentCategory,
   Plugin,
+  PluginMeta,
+  PluginModule,
   PluginOptions,
   ProjectMeta,
   Props,

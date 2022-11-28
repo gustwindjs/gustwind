@@ -4,11 +4,11 @@ import {
   virtualSheet,
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
-// import { path } from "../../server-deps.ts";
-import { Plugin, ProjectMeta } from "../../types.ts";
+import { path } from "../../server-deps.ts";
+import { Plugin, PluginMeta, ProjectMeta } from "../../types.ts";
 
-const meta = {
-  pluginName: "gustwind-twind-plugin",
+const meta: PluginMeta = {
+  name: "gustwind-twind-plugin",
 };
 
 function twindPlugin(
@@ -20,7 +20,7 @@ function twindPlugin(
   },
 ): Plugin {
   const stylesheet = virtualSheet();
-  const twindSetupPath = options.setupPath;
+  const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
   return {
     beforeEachRender: async () => {

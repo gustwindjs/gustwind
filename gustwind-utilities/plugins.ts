@@ -3,6 +3,7 @@ import type {
   Context,
   Layout,
   Plugin,
+  PluginModule,
   PluginOptions,
   ProjectMeta,
   Route,
@@ -10,16 +11,29 @@ import type {
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
-  const loadedPlugins: Plugin[] = [];
+  const loadedPlugins: PluginModule[] = [];
 
+  // TODO: Probably this logic should be revisited to make it more robust
+  // with dependency cycles etc.
   for await (const pluginDefinition of plugins) {
-    const plugin = await importPlugin(projectMeta, pluginDefinition);
+    const pluginModule: PluginModule = await importPlugin(
+      projectMeta,
+      pluginDefinition,
+    );
+    const { dependsOn } = pluginModule.meta;
+    const dependencyIndex = loadedPlugins.findIndex(
+      ({ meta: { name } }) => dependsOn?.includes(name),
+    );
 
-    console.log("found plugin", plugin);
+    // If there are dependencies, make sure the plugin is evaluated last
+    if (dependencyIndex < 0) {
+      loadedPlugins.unshift(pluginModule);
+    } else {
+      loadedPlugins.push(pluginModule);
+    }
   }
 
-  // TODO: Sort plugins to dependency order
-  return [];
+  return loadedPlugins;
 }
 
 async function importPlugin(

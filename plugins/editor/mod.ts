@@ -5,13 +5,14 @@ import {
   DataContext,
   Layout,
   Plugin,
+  PluginMeta,
   ProjectMeta,
   Route,
   Tasks,
 } from "../../types.ts";
 
-const meta = {
-  pluginName: "gustwind-editor-plugin",
+const meta: PluginMeta = {
+  name: "gustwind-editor-plugin",
   dependsOn: ["gustwind-twind-plugin"],
   scriptsToCompile: [
     "pageEditor",
