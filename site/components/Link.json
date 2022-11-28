@@ -4,7 +4,7 @@
   "classList": {
     "font-bold": [
       { "utility": "get", "parameters": ["props", "href"] },
-      { "utility": "get", "parameters": ["context", "pathname"] }
+      { "utility": "get", "parameters": ["context", "pagePath"] }
     ]
   },
   "children": {

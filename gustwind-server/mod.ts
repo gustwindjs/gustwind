@@ -153,8 +153,9 @@ async function serveGustwind({
             pagePath: pathname,
             components,
             pageUtilities: cache.pageUtilities,
-            pathname,
             dataSources,
+            // TODO
+            render: {},
           });
 
           if (matchedRoute.type === "xml") {

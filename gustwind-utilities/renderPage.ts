@@ -27,7 +27,6 @@ async function renderPage({
   pagePath,
   pageUtilities,
   components,
-  pathname,
   dataSources,
   render,
 }: {
@@ -38,7 +37,6 @@ async function renderPage({
   pagePath: string;
   pageUtilities: Utilities;
   components: Components;
-  pathname: string;
   dataSources: DataSources;
   render: Renderer["render"];
 }): Promise<{ markup: string; context: DataContext; css?: string }> {
@@ -85,7 +83,7 @@ async function renderPage({
   const markup = await render({
     component: layout,
     components,
-    context: { ...context, pathname },
+    context,
     utilities: pageUtilities,
   });
 

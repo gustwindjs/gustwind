@@ -87,7 +87,6 @@ self.onmessage = async (e) => {
       pagePath: url,
       components,
       pageUtilities,
-      pathname: url,
       dataSources,
       render,
     });

@@ -26,11 +26,11 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
         classList: {
           "font-bold": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "mx-2": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
@@ -39,7 +39,7 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
       extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
-        pathname: "foo",
+        pagePath: "foo",
       },
     }),
     '<span class="font-bold mx-2">testing</span>',
@@ -61,11 +61,11 @@ Deno.test("classList shortcut works with different class types", async () => {
         classList: {
           "font-bold": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "mx-2": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
@@ -74,7 +74,7 @@ Deno.test("classList shortcut works with different class types", async () => {
       extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
-        pathname: "foo",
+        pagePath: "foo",
       },
     }),
     '<span class="bg-red-200 foo font-bold mx-2">testing</span>',

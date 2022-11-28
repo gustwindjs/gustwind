@@ -173,13 +173,13 @@ import extensions from "breezewind/extensions";
 
 breeze({
   component: {
-    visibleIf: [{ utility: "get", parameters: ["context", "pathname"] }],
+    visibleIf: [{ utility: "get", parameters: ["context", "pagePath"] }],
     type: "a",
     class: "underline",
     classList: {
       "font-bold": [
         "gustwind.js.org",
-        { utility: "get", parameters: ["context", "pathname"] }
+        { utility: "get", parameters: ["context", "pagePath"] }
       ]
     },
     attributes: {
@@ -189,7 +189,7 @@ breeze({
     children: "Link to Gustwind",
   },
   components: { ... },
-  context: { pathname: "gustwind.js.org" },
+  context: { pagePath: "gustwind.js.org" },
   extensions: [
     extensions.classShortcut(tw),
     extensions.foreach,
