@@ -133,7 +133,7 @@ type Renderer = {
   render({ layout, components, context, pageUtilities }: {
     layout: Layout;
     components: Components;
-    context: Context;
+    context: Context | {};
     pageUtilities: Utilities;
   }): Promise<string> | string;
 };

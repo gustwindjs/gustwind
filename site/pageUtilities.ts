@@ -20,19 +20,23 @@ function tw(_: Context, input: string) {
 
 let renderStart: number;
 
-function _onRenderStart(_: Context) {
+function _onRenderStart(_?: Context) {
   // This is triggered when page rendering begins.
   // It's a good spot for clearing ids caches (think anchoring)
   // or benchmarking.
   renderStart = performance.now();
 }
 
-function _onRenderEnd(context: Context) {
+// TODO: Make context mandatory again. This needs _onRenderStart/_onRenderEnd
+// handling directly within breezewind.
+function _onRenderEnd(context?: Context) {
   const renderEnd = performance.now();
 
-  console.log(
-    `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
-  );
+  if (context) {
+    console.log(
+      `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
+    );
+  }
 }
 
 export { _onRenderEnd, _onRenderStart, dateToISO, markdown, testUtility, tw };

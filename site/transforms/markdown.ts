@@ -1,9 +1,6 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
-// TODO: This dependency on twind is nasty as has an implicit dependency on
-// plugins/twind/mod.ts setup
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
-// import { renderHTML } from "../../gustwind-utilities/renderPage.ts";
+import { plugin } from "../../renderers/breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
@@ -32,6 +29,11 @@ marked.setOptions({
     return highlight.highlight(code, { language }).value;
   },
 });
+
+// TODO: This dependency on twind is nasty as has an implicit dependency on
+// plugins/twind/mod.ts setup
+const tw = pageUtilities.tw;
+const renderHTML = plugin().render;
 
 function transformMarkdown(input: string) {
   if (typeof input !== "string") {
@@ -83,7 +85,14 @@ function transformMarkdown(input: string) {
             context: {},
             utilities: pageUtilities,
           }); */
-          const html = "";
+          // const html = "";
+          const html = await renderHTML({
+            layout: matchedComponent,
+            components: {},
+            context: {},
+            // @ts-expect-error TODO: Fix this by changing _onRenderStart/onRenderEnd handling
+            pageUtilities,
+          });
 
           token.html = html;
         } else {
