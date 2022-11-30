@@ -1,16 +1,21 @@
 import { path } from "../server-deps.ts";
+import { getContext } from "./context.ts";
 import type {
   Components,
   Context,
+  DataSources,
   Layout,
+  Mode,
   Plugin,
   PluginModule,
   PluginOptions,
   ProjectMeta,
+  Renderer,
   Route,
   Scripts,
   Tasks,
 } from "../types.ts";
+import { Utilities } from "../breezewind/types.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
@@ -51,6 +56,72 @@ async function importPlugin(
   const module = await import(pluginPath);
 
   return { ...module, ...module.plugin(projectMeta, pluginDefinition.options) };
+}
+
+async function applyPlugins(
+  {
+    plugins,
+    dataSources,
+    mode,
+    url,
+    pageUtilities,
+    projectMeta,
+    route,
+    layout,
+    components,
+    render,
+  }: {
+    components: Components;
+    dataSources: DataSources;
+    layout: Layout;
+    mode: Mode;
+    pageUtilities: Utilities;
+    projectMeta: ProjectMeta;
+    route: Route;
+    plugins: Plugin[];
+    url: string;
+    render: Renderer["render"];
+  },
+) {
+  await applyBeforeEachContext({ plugins });
+
+  const context = await getContext({
+    dataSources,
+    mode,
+    url,
+    pageUtilities,
+    projectMeta,
+    route,
+  });
+
+  const { scripts, tasks } = await applyBeforeEachRenders({
+    context,
+    layout,
+    plugins,
+    route,
+    url,
+  });
+
+  context.scripts = context.scripts.concat(scripts);
+
+  const markup = await render({
+    layout,
+    components,
+    context,
+    pageUtilities,
+  });
+
+  return {
+    markup: await applyAfterEachRenders({
+      context,
+      layout,
+      markup,
+      plugins,
+      route,
+      url,
+    }),
+    tasks,
+  };
 }
 
 async function applyPrepareBuilds(
@@ -152,6 +223,7 @@ export {
   applyAfterEachRenders,
   applyBeforeEachContext,
   applyBeforeEachRenders,
+  applyPlugins,
   applyPrepareBuilds,
   importPlugin,
   importPlugins,

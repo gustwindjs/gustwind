@@ -5,6 +5,7 @@ import {
   applyAfterEachRenders,
   applyBeforeEachContext,
   applyBeforeEachRenders,
+  applyPlugins,
   importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
@@ -72,39 +73,22 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
 
-    await applyBeforeEachContext({ plugins });
-
-    const context = await getContext({
+    const { markup, tasks } = await applyPlugins({
+      plugins,
       dataSources,
       mode: "production",
-      pagePath: url,
+      url,
       pageUtilities,
       projectMeta,
       route,
-    });
-
-    const { scripts, tasks } = await applyBeforeEachRenders({
-      context,
       layout,
-      plugins,
-      route,
-      url,
+      components,
+      render,
     });
 
-    context.scripts = context.scripts.concat(scripts);
     self.postMessage({
       type: BuildWorkerMessageTypes["addTasks"],
       payload: tasks,
-    });
-
-    let markup = await render({ layout, components, context, pageUtilities });
-    markup = await applyAfterEachRenders({
-      context,
-      layout,
-      markup,
-      plugins,
-      route,
-      url,
     });
 
     if (route.type === "xml") {

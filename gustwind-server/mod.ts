@@ -2,14 +2,11 @@ import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
-import { getContext } from "../gustwind-utilities/context.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
-  applyAfterEachRenders,
-  applyBeforeEachContext,
-  applyBeforeEachRenders,
+  applyPlugins,
   applyPrepareBuilds,
   importPlugin,
   importPlugins,
@@ -155,41 +152,17 @@ async function serveGustwind({
           // This logic might belong to a plugin.
           const pageUtilities = cache.pageUtilities;
 
-          await applyBeforeEachContext({ plugins });
-
-          const context = await getContext({
+          const { markup } = await applyPlugins({
+            plugins,
             dataSources,
             mode,
-            pagePath: url,
+            url,
             pageUtilities,
             projectMeta,
             route,
-          });
-
-          const { scripts } = await applyBeforeEachRenders({
-            context,
-            layout,
-            plugins,
-            route,
-            url,
-          });
-
-          context.scripts = context.scripts.concat(scripts);
-
-          let markup = await render({
             layout,
             components,
-            context,
-            pageUtilities,
-          });
-
-          markup = await applyAfterEachRenders({
-            context,
-            layout,
-            markup,
-            plugins,
-            route,
-            url,
+            render,
           });
 
           if (matchedRoute.type === "xml") {

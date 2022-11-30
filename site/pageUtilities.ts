@@ -30,9 +30,9 @@ function _onRenderStart(_?: Context) {
 // TODO: Make context mandatory again. This needs _onRenderStart/_onRenderEnd
 // handling directly within breezewind.
 function _onRenderEnd(context?: Context) {
-  const renderEnd = performance.now();
+  if (context?.pagePath) {
+    const renderEnd = performance.now();
 
-  if (context) {
     console.log(
       `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
     );

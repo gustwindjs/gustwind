@@ -13,10 +13,10 @@ import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
 async function getContext(
-  { dataSources, mode, pagePath, pageUtilities, projectMeta, route }: {
+  { dataSources, mode, url, pageUtilities, projectMeta, route }: {
     dataSources: DataSources;
     mode: Mode;
-    pagePath: string;
+    url: string;
     pageUtilities: Utilities;
     projectMeta: ProjectMeta;
     route: Route;
@@ -32,15 +32,16 @@ async function getContext(
   if (projectMeta.scripts) {
     pageScripts = pageScripts.concat(projectMeta.scripts);
   }
+  // TODO: Rename pagePath as url across the project
   if (mode === "development") {
-    runtimeMeta.pagePath = pagePath;
+    runtimeMeta.pagePath = url;
   }
   const dataSourceContext = await getDataSourceContext(
     route.dataSources,
     dataSources,
   );
   const context: Context = {
-    pagePath,
+    pagePath: url,
     projectMeta,
     scripts: pageScripts,
     ...route.context,
