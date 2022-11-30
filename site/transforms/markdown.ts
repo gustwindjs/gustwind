@@ -1,6 +1,7 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
-// TODO: Restore by injecting tw to each transform
-// import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+// TODO: This dependency on twind is nasty as has an implicit dependency on
+// plugins/twind/mod.ts setup
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 // import { renderHTML } from "../../gustwind-utilities/renderPage.ts";
 import type { Component } from "../../breezewind/types.ts";
@@ -97,10 +98,9 @@ function transformMarkdown(input: string) {
   // https://marked.js.org/using_pro#renderer
   // https://github.com/markedjs/marked/blob/master/src/Renderer.js
   marked.use({
-    //renderer: {
-    //code(code: string, infostring: string): string {
-    //  const lang = ((infostring || "").match(/\S*/) || [])[0];
-    /*
+    renderer: {
+      code(code: string, infostring: string): string {
+        const lang = ((infostring || "").match(/\S*/) || [])[0];
         // @ts-ignore How to type this?
         if (this.options.highlight) {
           // @ts-ignore How to type this?
@@ -178,7 +178,7 @@ function transformMarkdown(input: string) {
           "</" +
           type + ">\n";
       },
-    },*/
+    },
   });
 
   return { content: marked(input), tableOfContents };

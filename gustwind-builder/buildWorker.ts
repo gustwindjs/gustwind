@@ -3,6 +3,7 @@
 import { compileScript } from "../utilities/compileScripts.ts";
 import {
   applyAfterEachRenders,
+  applyBeforeEachContext,
   applyBeforeEachRenders,
   importPlugin,
   importPlugins,
@@ -70,6 +71,8 @@ self.onmessage = async (e) => {
     } = e.data;
 
     DEBUG && console.log("worker - starting to build", id, route, filePath);
+
+    await applyBeforeEachContext({ plugins });
 
     const context = await getContext({
       dataSources,

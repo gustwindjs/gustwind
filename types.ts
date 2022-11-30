@@ -149,6 +149,7 @@ type PluginMeta = {
 };
 
 type Plugin = {
+  beforeEachContext?(): void;
   beforeEachRequest?(
     { url, respond }: {
       url: string;

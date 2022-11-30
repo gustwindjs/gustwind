@@ -1,6 +1,6 @@
 import { attachIds } from "../../utilities/attachIds.ts";
-import { dir } from "../../utilities/fs.ts";
-import { fs, path } from "../../server-deps.ts";
+// import { dir } from "../../utilities/fs.ts";
+import { path } from "../../server-deps.ts";
 import type { Component } from "../../breezewind/types.ts";
 import {
   DataContext,
@@ -121,16 +121,17 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
         ],
       };
     },
-    prepareBuild: async ({ components }) => {
+    prepareBuild: ({ components }) => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
       // TODO: Check this
-      const transformDirectory = path.join(outputDirectory, "transforms");
+      // const transformDirectory = path.join(outputDirectory, "transforms");
+
       // TODO: Check this
       const scriptsDirectory = path.join(outputDirectory, "scripts");
-      await fs.ensureDir(transformDirectory);
       const tasks: Tasks = [];
 
+      /*
       const transformScripts = await dir(paths.transforms, ".ts");
       transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
         tasks.push({
@@ -142,6 +143,7 @@ function editorPlugin(projectMeta: ProjectMeta): Plugin {
           },
         })
       );
+      */
 
       scriptsToCompile.forEach((scriptName) =>
         tasks.push({

@@ -1,4 +1,3 @@
-import { plugin } from "../plugins/editor/mod.ts";
 import { path } from "../server-deps.ts";
 import type {
   Components,
@@ -71,6 +70,20 @@ async function applyPrepareBuilds(
   return tasks;
 }
 
+async function applyBeforeEachContext(
+  { plugins }: {
+    plugins: Plugin[];
+  },
+) {
+  const beforeEachContexts = plugins.map((plugin) => plugin.beforeEachContext)
+    .filter(Boolean);
+
+  for await (const beforeEachContext of beforeEachContexts) {
+    // @ts-expect-error We know beforeEachContext should be defined by now
+    await beforeEachContext();
+  }
+}
+
 async function applyBeforeEachRenders(
   { context, layout, plugins, route, url }: {
     context: Context;
@@ -137,6 +150,7 @@ async function applyAfterEachRenders(
 
 export {
   applyAfterEachRenders,
+  applyBeforeEachContext,
   applyBeforeEachRenders,
   applyPrepareBuilds,
   importPlugin,

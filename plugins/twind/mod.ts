@@ -23,7 +23,7 @@ function twindPlugin(
   const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
   return {
-    beforeEachRender: async () => {
+    beforeEachContext: async () => {
       const twindSetup = twindSetupPath
         ? await import("file://" + twindSetupPath).then((m) => m.default)
         : {};

@@ -8,6 +8,7 @@ import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyAfterEachRenders,
+  applyBeforeEachContext,
   applyBeforeEachRenders,
   applyPrepareBuilds,
   importPlugin,
@@ -151,9 +152,12 @@ async function serveGustwind({
             matchedLayout;
 
           const pageUtilities = cache.pageUtilities;
+
+          await applyBeforeEachContext({ plugins });
+
           const context = await getContext({
             dataSources,
-            mode: "production",
+            mode,
             pagePath: url,
             pageUtilities,
             projectMeta,
