@@ -75,49 +75,6 @@ type PluginOptions = { path: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
-enum BuildWorkerMessageTypes {
-  "finished",
-  "addTasks",
-}
-type BuildWorkerEvent =
-  | {
-    type: "init";
-    payload: { components: Components; projectMeta: ProjectMeta };
-  }
-  | {
-    type: "build";
-    payload: {
-      layout: Layout;
-      route: Route;
-      pagePath: string;
-      dir: string;
-      url: string;
-    };
-  }
-  | {
-    type: "writeFile";
-    payload: {
-      outputDirectory: string;
-      file: string;
-      data: string;
-    };
-  }
-  | {
-    type: "writeScript";
-    payload: {
-      outputDirectory: string;
-      scriptName: string;
-      scriptPath?: string;
-    };
-  }
-  | {
-    type: "writeAssets";
-    payload: {
-      outputPath: string;
-      assetsPath: ProjectMeta["paths"]["assets"];
-    };
-  };
-
 type Layout = Component | Component[];
 
 // This is the context used when rendering a page. It's also the type
@@ -192,10 +149,51 @@ type Plugin = {
 
 type Tasks = BuildWorkerEvent[];
 
-export { BuildWorkerMessageTypes };
+type BuildWorkerEvent =
+  | {
+    type: "init";
+    payload: { components: Components; projectMeta: ProjectMeta };
+  }
+  | {
+    type: "build";
+    payload: {
+      layout: Layout;
+      route: Route;
+      pagePath: string;
+      dir: string;
+      url: string;
+    };
+  }
+  | {
+    type: "writeFile";
+    payload: {
+      outputDirectory: string;
+      file: string;
+      data: string;
+    };
+  }
+  | {
+    type: "writeScript";
+    payload: {
+      outputDirectory: string;
+      scriptName: string;
+      scriptPath?: string;
+    };
+  }
+  | {
+    type: "writeAssets";
+    payload: {
+      outputPath: string;
+      assetsPath: ProjectMeta["paths"]["assets"];
+    };
+  };
+
+type BuildWorkerMessageTypes = "finished" | "addTasks";
+
 export type {
   Attributes,
   BuildWorkerEvent,
+  BuildWorkerMessageTypes,
   Category,
   Components,
   Context,

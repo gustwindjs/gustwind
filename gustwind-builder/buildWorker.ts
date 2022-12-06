@@ -2,14 +2,10 @@
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
 import {
-  applyAfterEachRenders,
-  applyBeforeEachContext,
-  applyBeforeEachRenders,
   applyPlugins,
   importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
-import { getContext } from "../gustwind-utilities/context.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {
@@ -20,7 +16,6 @@ import type {
   ProjectMeta,
   Renderer,
 } from "../types.ts";
-import { BuildWorkerMessageTypes } from "../types.ts";
 
 let id: string;
 let components: Components;
@@ -87,7 +82,7 @@ self.onmessage = async (e) => {
     });
 
     self.postMessage({
-      type: BuildWorkerMessageTypes["addTasks"],
+      type: "addTasks",
       payload: tasks,
     });
 
@@ -121,7 +116,7 @@ self.onmessage = async (e) => {
     await fs.copy(assetsPath, outputPath, { overwrite: true });
   }
 
-  self.postMessage({ type: BuildWorkerMessageTypes["finished"] });
+  self.postMessage({ type: "finished" });
 };
 
 async function writeScript(

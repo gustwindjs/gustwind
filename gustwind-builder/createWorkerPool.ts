@@ -1,5 +1,3 @@
-import { BuildWorkerMessageTypes } from "../types.ts";
-
 type WorkerStatus = "created" | "processing" | "waiting";
 type WorkerWrapper = { status: WorkerStatus; worker: Worker };
 
@@ -74,9 +72,9 @@ function createWorker<E>(
     ),
   };
   ret.worker.onmessage = ({ data: { type, payload } }) => {
-    if (type === BuildWorkerMessageTypes["addTasks"]) {
+    if (type === "addTasks") {
       payload.forEach(addTaskToQueue);
-    } else if (type === BuildWorkerMessageTypes["finished"]) {
+    } else if (type === "finished") {
       onReady(ret);
     } else {
       throw new Error(`Unknown message type ${type}`);
