@@ -45,7 +45,6 @@ type ProjectMeta = {
   paths: {
     assets?: string;
     components: string;
-    dataSources: string;
     layouts: string;
     output: string;
     scripts?: string[];

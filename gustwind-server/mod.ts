@@ -11,15 +11,7 @@ import {
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type {
-  DataSources,
-  Layout,
-  Mode,
-  ProjectMeta,
-  Renderer,
-  Route,
-  Router,
-} from "../types.ts";
+import type { Layout, Mode, ProjectMeta, Renderer, Router } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -29,13 +21,11 @@ async function serveGustwind({
   projectRoot,
   mode,
   initialCache,
-  dataSources,
 }: {
   projectMeta: ProjectMeta;
   projectRoot: string;
   mode: Mode;
   initialCache?: ServeCache;
-  dataSources: DataSources;
 }) {
   // The cache is populated based on an external source (web socket, fs). If there's
   // something in the cache, then the routing logic will refer to it instead of
@@ -153,7 +143,6 @@ async function serveGustwind({
 
           const { markup } = await applyPlugins({
             plugins,
-            dataSources,
             mode,
             url,
             pageUtilities,

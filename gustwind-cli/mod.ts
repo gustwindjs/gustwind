@@ -95,20 +95,12 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log("Starting development server");
 
     const projectPaths = projectMeta.paths;
-
-    const dataSources = projectPaths.dataSources
-      ? await import(
-        "file://" + path.join(projectRoot, projectPaths.dataSources)
-      ).then((m) => m)
-      : {};
-
     const mode = "development";
     const initialCache = getCache();
     await watchAll({
       cache: initialCache,
       projectRoot: projectRoot,
       projectPaths,
-      dataSources,
     });
 
     // TODO: Watch pageUtilities file to update the cache on change
@@ -121,6 +113,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       : {};
 
     // TODO: Watch twindSetup file to update the cache on change
+    /*
     initialCache.twindSetup = projectPaths.twindSetup
       ? await import(
         "file://" + path.join(projectRoot, projectPaths.twindSetup) +
@@ -136,13 +129,13 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
         "twind setup",
         initialCache.twindSetup,
       );
+    */
 
     const serve = await serveGustwind({
       projectMeta,
       projectRoot,
       mode,
       initialCache,
-      dataSources,
     });
 
     const port = projectMeta.port;

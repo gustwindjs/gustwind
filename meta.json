@@ -15,7 +15,6 @@
   "paths": {
     "assets": "./assets",
     "components": "./site/components",
-    "dataSources": "./site/dataSources.ts",
     "layouts": "./site/layouts",
     "output": "./build",
     "scripts": ["./scripts", "./site/scripts"],
@@ -26,6 +25,7 @@
   "router": {
     "path": "./routers/breezewind/mod.ts",
     "options": {
+      "dataSourcesPath": "./site/dataSources.ts",
       "routesPath": "./site/routes.json"
     }
   },

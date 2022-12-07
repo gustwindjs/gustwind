@@ -3,7 +3,6 @@ import { getContext } from "./context.ts";
 import type {
   Components,
   Context,
-  DataSources,
   Layout,
   Mode,
   Plugin,
@@ -16,7 +15,6 @@ import type {
   Tasks,
 } from "../types.ts";
 import { Utilities } from "../breezewind/types.ts";
-import { plugin } from "../routers/breezewind/mod.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
@@ -65,7 +63,6 @@ async function importPlugin<P = Plugin>(
 async function applyPlugins(
   {
     plugins,
-    dataSources,
     mode,
     url,
     pageUtilities,
@@ -76,7 +73,6 @@ async function applyPlugins(
     render,
   }: {
     components: Components;
-    dataSources: DataSources;
     layout: Layout;
     mode: Mode;
     pageUtilities: Utilities;
@@ -96,7 +92,6 @@ async function applyPlugins(
   // The question is, can data source processing be deferred somehow
   // to avoid this problem? If yes, where/how should it happen?
   const context = await getContext({
-    dataSources,
     mode,
     url,
     pageUtilities,

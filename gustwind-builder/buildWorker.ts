@@ -11,7 +11,6 @@ import type { Utilities } from "../breezewind/types.ts";
 import type {
   BuildWorkerEvent,
   Components,
-  DataSources,
   Plugin,
   ProjectMeta,
   Renderer,
@@ -19,7 +18,6 @@ import type {
 
 let id: string;
 let components: Components;
-let dataSources: DataSources;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
 let render: Renderer["render"];
@@ -39,10 +37,6 @@ self.onmessage = async (e) => {
 
     components = payload.components;
     projectMeta = payload.projectMeta;
-
-    dataSources = projectMeta.paths.dataSources
-      ? await import("file://" + projectMeta.paths.dataSources).then((m) => m)
-      : {};
 
     pageUtilities = projectMeta.paths.pageUtilities
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
@@ -73,7 +67,6 @@ self.onmessage = async (e) => {
 
     const { markup, tasks } = await applyPlugins({
       plugins,
-      dataSources,
       mode: "production",
       url,
       pageUtilities,

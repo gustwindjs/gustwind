@@ -1,13 +1,13 @@
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
-import { getJson, watch } from "../utilities/fs.ts";
+import { watch } from "../utilities/fs.ts";
 import { getDefinition } from "../gustwind-utilities/getDefinitions.ts";
-import { expandRoute } from "../gustwind-utilities/expandRoutes.ts";
 import { path as _path } from "../server-deps.ts";
 import { getWebsocketServer } from "./webSockets.ts";
-import type { DataSources, ProjectMeta, Route } from "../types.ts";
+import type { ProjectMeta } from "../types.ts";
 import type { ServeCache } from "./cache.ts";
 import type { Component } from "../breezewind/types.ts";
 
+/*
 function watchDataSourceInputs(
   { wss, path, cache, dataSources }: {
     wss: ReturnType<typeof getWebsocketServer>;
@@ -45,6 +45,7 @@ function watchDataSourceInputs(
     });
   });
 }
+*/
 
 function watchMeta(
   wss: ReturnType<typeof getWebsocketServer>,
@@ -107,6 +108,7 @@ function watchComponents(
   });
 }
 
+/*
 function watchDataSources(
   wss: ReturnType<typeof getWebsocketServer>,
   path?: string,
@@ -169,6 +171,7 @@ function getInputsToWatch(routeDefinition: Route["routes"]) {
 
   return Array.from(new Set(inputsToWatch));
 }
+*/
 
 function watchLayouts(
   wss: ReturnType<typeof getWebsocketServer>,
@@ -276,27 +279,26 @@ function watchScripts(
   );
 }
 
-async function watchAll(
-  { cache, projectRoot, projectPaths, dataSources }: {
+function watchAll(
+  { cache, projectRoot, projectPaths }: {
     cache: ServeCache;
     projectRoot: string;
     projectPaths: ProjectMeta["paths"];
-    dataSources: DataSources;
   },
 ) {
   const wss = getWebsocketServer();
 
-  watchDataSourceInputs({
+  /*watchDataSourceInputs({
     wss,
     path: projectRoot,
     cache,
     dataSources,
-  });
+  });*/
   watchScripts(wss, cache, projectPaths.scripts);
   watchMeta(wss, projectRoot);
   watchComponents(wss, cache, projectPaths.components);
-  watchDataSources(wss, projectPaths.dataSources);
-  await watchRoutes(wss, projectPaths.routes);
+  // watchDataSources(wss, projectPaths.dataSources);
+  // await watchRoutes(wss, projectPaths.routes);
   watchLayouts(wss, cache, projectPaths.layouts);
   watchTransforms(wss, projectPaths.transforms);
 }
@@ -304,11 +306,10 @@ async function watchAll(
 export {
   watchAll,
   watchComponents,
-  watchDataSourceInputs,
-  watchDataSources,
+  // watchDataSources,
   watchLayouts,
   watchMeta,
-  watchRoutes,
+  // watchRoutes,
   watchScripts,
   watchTransforms,
 };
