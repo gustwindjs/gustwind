@@ -153,18 +153,18 @@ type BuildWorkerEvent =
     };
   }
   | {
+    type: "writeFiles";
+    payload: {
+      inputDirectory: string;
+      outputDirectory: string;
+    };
+  }
+  | {
     type: "writeScript";
     payload: {
       outputDirectory: string;
       scriptName: string;
       scriptPath?: string;
-    };
-  }
-  | {
-    type: "writeAssets";
-    payload: {
-      outputPath: string;
-      assetsPath: ProjectMeta["paths"]["assets"];
     };
   };
 

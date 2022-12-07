@@ -29,7 +29,6 @@ async function serveGustwind({
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache = initialCache || getCache();
-  const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
@@ -152,32 +151,6 @@ async function serveGustwind({
         }
 
         return respond(404, "No matching layout");
-      }
-
-      const assetPath = projectPaths.assets && _path.join(
-        projectPaths.assets,
-        _path.relative(assetsPath || "", trim(pathname, "/")),
-      );
-
-      try {
-        if (assetPath) {
-          const asset = await Deno.readFile(assetPath);
-
-          return respond(200, asset, lookup(assetPath));
-        }
-      } catch (_error) {
-        // TODO: What to do with possible errors?
-        DEBUG && console.error(_error);
-      }
-
-      if (pathname.endsWith(".js")) {
-        const matchedScript = cache.scripts[trim(pathname, "/")];
-
-        if (matchedScript) {
-          return respond(200, matchedScript, "text/javascript");
-        }
-
-        return respond(404, "No matching script");
       }
 
       return respond(404, "No matching route");

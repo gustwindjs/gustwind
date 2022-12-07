@@ -20,7 +20,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     }`,
   );
 
-  const assetsPath = projectMeta.paths.assets;
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
@@ -80,14 +79,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         routes,
       );
     }
-
-    assetsPath && workerPool.addTaskToQueue({
-      type: "writeAssets",
-      payload: {
-        outputPath: path.join(outputDirectory, assetsPath),
-        assetsPath: projectPaths.assets,
-      },
-    });
 
     if (DEBUG) {
       const initTime = performance.now();

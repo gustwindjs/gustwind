@@ -7,7 +7,6 @@
     "url": "https://gustwind.js.org/"
   },
   "paths": {
-    "assets": "./assets",
     "output": "./build"
   },
   "renderer": {
@@ -26,6 +25,12 @@
     }
   },
   "plugins": [
+    {
+      "path": "./plugins/asset/mod.ts",
+      "options": {
+        "assetsPath": "./assets"
+      }
+    },
     {
       "path": "./plugins/script/mod.ts",
       "options": {
