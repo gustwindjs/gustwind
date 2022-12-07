@@ -7,17 +7,7 @@ type Props = Record<string, string | undefined>;
 type Attributes = Record<string, any>;
 type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
-type Library = {
-  id: string;
-  description: string;
-  logo?: string;
-  name: string;
-  links: {
-    site?: string;
-    github?: string;
-  };
-  tags: string[];
-};
+
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
 type MarkdownWithFrontmatter = {
@@ -191,7 +181,6 @@ export type {
   DataSource,
   DataSources,
   Layout,
-  Library,
   MarkdownWithFrontmatter,
   Meta,
   Mode,
