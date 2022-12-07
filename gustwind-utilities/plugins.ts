@@ -73,12 +73,6 @@ async function applyPlugins(
 ) {
   await applyBeforeEachContext({ plugins });
 
-  // TODO: The tricky bit here is that applyBeforeEachContext
-  // might have side effects (twind) that are needed by data source
-  // transforms (i.e., using twind within markdown processing).
-  //
-  // The question is, can data source processing be deferred somehow
-  // to avoid this problem? If yes, where/how should it happen?
   const context = await getContext({
     mode,
     url,

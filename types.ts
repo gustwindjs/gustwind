@@ -2,9 +2,6 @@
 import type { Component } from "./breezewind/types.ts";
 import type { ServeCache } from "./gustwind-server/cache.ts";
 
-// This should match with ./transforms
-type Transform = "markdown" | "reverse";
-
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
@@ -45,7 +42,6 @@ type ProjectMeta = {
   paths: {
     assets?: string;
     output: string;
-    transforms: string;
   };
   renderer: PluginOptions;
   router: PluginOptions;
@@ -211,5 +207,4 @@ export type {
   Router,
   Scripts,
   Tasks,
-  Transform,
 };

@@ -8,8 +8,7 @@
   },
   "paths": {
     "assets": "./assets",
-    "output": "./build",
-    "transforms": "./site/transforms"
+    "output": "./build"
   },
   "renderer": {
     "path": "./renderers/breezewind/mod.ts",

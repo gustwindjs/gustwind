@@ -207,6 +207,7 @@ function watchLayouts(
   });
 }
 
+/*
 function watchTransforms(
   wss: ReturnType<typeof getWebsocketServer>,
   path?: string,
@@ -232,6 +233,7 @@ function watchTransforms(
     },
   });
 }
+*/
 
 // TODO: This should get imports from each script and watch them as well
 function watchScripts(
@@ -300,7 +302,7 @@ function watchAll(
   // watchDataSources(wss, projectPaths.dataSources);
   // await watchRoutes(wss, projectPaths.routes);
   watchLayouts(wss, cache, projectPaths.layouts);
-  watchTransforms(wss, projectPaths.transforms);
+  // watchTransforms(wss, projectPaths.transforms);
 }
 
 export {
@@ -311,5 +313,5 @@ export {
   watchMeta,
   // watchRoutes,
   watchScripts,
-  watchTransforms,
+  // watchTransforms,
 };

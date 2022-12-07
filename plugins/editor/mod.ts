@@ -127,26 +127,10 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
     prepareBuild: () => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
-      // TODO: Check this
-      // const transformDirectory = path.join(outputDirectory, "transforms");
 
       // TODO: This should be managed by the scripts plugin!
       const scriptsDirectory = path.join(outputDirectory, "scripts");
       const tasks: Tasks = [];
-
-      /*
-      const transformScripts = await dir(paths.transforms, ".ts");
-      transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        tasks.push({
-          type: "writeScript",
-          payload: {
-            outputDirectory: transformDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
-      );
-      */
 
       scriptsToCompile.forEach((scriptName) =>
         tasks.push({
