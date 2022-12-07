@@ -5,15 +5,15 @@ const meta: PluginMeta = {
   name: "gustwind-asset-plugin",
 };
 
-async function assetPlugin(
+function assetPlugin(
   // TODO: Model asset output path
   { assetsPath }: {
     // TODO: Consider supporting an array of directories
     assetsPath: string;
   },
   projectMeta: ProjectMeta,
-): Promise<Plugin> {
-  const outputDirectory = projectMeta.paths.output;
+): Plugin {
+  const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
   const inputDirectory = path.join(cwd, assetsPath);
 

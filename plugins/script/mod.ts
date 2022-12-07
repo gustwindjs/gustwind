@@ -15,7 +15,7 @@ async function scriptPlugin(
   },
   projectMeta: ProjectMeta,
 ): Promise<Plugin> {
-  const outputDirectory = projectMeta.paths.output;
+  const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
 
   const foundScripts = (await Promise.all(

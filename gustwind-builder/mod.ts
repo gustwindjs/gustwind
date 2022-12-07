@@ -1,5 +1,5 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { getJson, resolvePaths } from "../utilities/fs.ts";
+import { getJson } from "../utilities/fs.ts";
 import {
   applyPrepareBuilds,
   importPlugin,
@@ -10,7 +10,8 @@ import type { BuildWorkerEvent, ProjectMeta, Router } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function build(projectMeta: ProjectMeta, projectRoot: string) {
+async function build(projectMeta: ProjectMeta) {
+  const { outputDirectory } = projectMeta;
   const amountOfBuildThreads = getAmountOfThreads(
     projectMeta.amountOfBuildThreads,
   );
@@ -20,9 +21,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     }`,
   );
 
-  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
-
-  const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
   // TODO: Trigger beforeEachRequest for each plugin here
@@ -34,8 +32,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     type: "init",
     payload: { projectMeta },
   });
-
-  const outputDirectory = projectPaths.output;
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
@@ -126,9 +122,7 @@ function getAmountOfThreads(
 }
 
 if (import.meta.main) {
-  const projectMeta = await getJson<ProjectMeta>("./meta.json");
-
-  build(projectMeta, Deno.cwd());
+  build(await getJson<ProjectMeta>("./meta.json"));
 }
 
 export { build };

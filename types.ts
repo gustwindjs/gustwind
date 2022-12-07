@@ -29,10 +29,7 @@ type ProjectMeta = {
   port: number;
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;
-  paths: {
-    assets?: string;
-    output: string;
-  };
+  outputDirectory: string;
   renderer: PluginOptions;
   router: PluginOptions;
   plugins: PluginOptions[];

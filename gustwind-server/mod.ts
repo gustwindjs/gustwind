@@ -16,12 +16,10 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 
 async function serveGustwind({
   projectMeta,
-  projectRoot,
   mode,
   initialCache,
 }: {
   projectMeta: ProjectMeta;
-  projectRoot: string;
   mode: Mode;
   initialCache?: ServeCache;
 }) {
@@ -29,9 +27,9 @@ async function serveGustwind({
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache = initialCache || getCache();
-  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
+  // projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
-  const projectPaths = projectMeta.paths;
+  // const projectPaths = projectMeta.paths;
 
   // TODO: This branch might be safe to eliminate since
   // meta.json scripts is capturing the dev scripts.

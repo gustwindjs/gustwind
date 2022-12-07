@@ -19,6 +19,7 @@ function twindPlugin(
   },
   projectMeta: ProjectMeta,
 ): Plugin {
+  const { outputDirectory } = projectMeta;
   const stylesheet = virtualSheet();
   const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
@@ -40,7 +41,7 @@ function twindPlugin(
       return [{
         type: "writeScript",
         payload: {
-          outputDirectory: projectMeta.paths.output,
+          outputDirectory,
           scriptName: "twindSetup.js",
           scriptPath: twindSetupPath,
         },

@@ -6,9 +6,7 @@
     "siteName": "Gustwind",
     "url": "https://gustwind.js.org/"
   },
-  "paths": {
-    "output": "./build"
-  },
+  "outputDirectory": "./build",
   "renderer": {
     "path": "./renderers/breezewind/mod.ts",
     "options": {

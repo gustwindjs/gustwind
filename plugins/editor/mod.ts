@@ -94,8 +94,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
     },
     */
     beforeEachRender({ url, ...rest }) {
-      const { paths } = projectMeta;
-      const outputDirectory = path.join(paths.output, url);
+      const outputDirectory = path.join(projectMeta.outputDirectory, url);
 
       pluginCache.contexts[url + "context.json"] = rest.context;
       // TODO: Do a lookup against layout data here
@@ -125,8 +124,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
       };
     },
     prepareBuild: () => {
-      const { paths } = projectMeta;
-      const outputDirectory = paths.output;
+      const { outputDirectory } = projectMeta;
 
       // TODO: This should be managed by the scripts plugin!
       const scriptsDirectory = path.join(outputDirectory, "scripts");
