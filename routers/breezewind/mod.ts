@@ -4,7 +4,6 @@ import { getJson } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
 import type { Route, Router } from "../../types.ts";
 
-// TODO: Should data source loading go through this?
 async function plugin(
   { dataSourcesPath, routesPath }: {
     dataSourcesPath: string;
