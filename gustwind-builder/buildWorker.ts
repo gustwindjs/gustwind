@@ -10,14 +10,12 @@ import { fs, nanoid, path } from "../server-deps.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type {
   BuildWorkerEvent,
-  Components,
   Plugin,
   ProjectMeta,
   Renderer,
 } from "../types.ts";
 
 let id: string;
-let components: Components;
 let projectMeta: ProjectMeta;
 let pageUtilities: Utilities;
 let render: Renderer["render"];
@@ -35,7 +33,6 @@ self.onmessage = async (e) => {
 
     const { payload } = e.data;
 
-    components = payload.components;
     projectMeta = payload.projectMeta;
 
     pageUtilities = projectMeta.paths.pageUtilities
