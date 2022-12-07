@@ -135,7 +135,7 @@ type Plugin = {
 
 type Router = {
   getAllRoutes(): Promise<Record<string, Route>>;
-  getRoute(): Promise<Route> | undefined;
+  matchRoute(url: string): Promise<Route> | undefined;
 };
 
 type Route = {

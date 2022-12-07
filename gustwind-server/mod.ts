@@ -124,7 +124,7 @@ async function serveGustwind({
     handler: async ({ url }) => {
       // TODO: Trigger beforeEachRequest here
       const { pathname } = new URL(url);
-      const matchedRoute = matchRoute(cache.routes, pathname);
+      const matchedRoute = await router.matchRoute(pathname);
 
       if (matchedRoute) {
         const layoutName = matchedRoute.layout;
@@ -207,24 +207,6 @@ async function serveGustwind({
   const listener = Deno.listen({ port: projectMeta.port });
 
   return () => server.serve(listener);
-}
-
-function matchRoute(
-  routes: Route["routes"],
-  pathname: string,
-): Route | undefined {
-  if (!routes) {
-    return;
-  }
-
-  const parts = trim(pathname, "/").split("/");
-  const match = routes[pathname] || routes[parts[0]];
-
-  if (match && match.routes && parts.length > 1) {
-    return matchRoute(match.routes, parts.slice(1).join("/"));
-  }
-
-  return match;
 }
 
 function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
