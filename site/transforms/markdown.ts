@@ -95,8 +95,6 @@ async function transformMarkdown(input: string) {
             layout: matchedComponent,
             components: {},
             context: {},
-            // @ts-expect-error TODO: Fix this by changing _onRenderStart/onRenderEnd handling
-            pageUtilities,
           });
 
           token.html = html;

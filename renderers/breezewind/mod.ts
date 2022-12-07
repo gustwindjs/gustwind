@@ -7,20 +7,29 @@ import type { Component } from "../../breezewind/types.ts";
 import type { Renderer } from "../../types.ts";
 
 async function breezewindRenderer(
-  { componentsPath, layoutsPath }: {
+  { componentsPath, layoutsPath, pageUtilitiesPath }: {
     componentsPath: string;
     layoutsPath: string;
+    pageUtilitiesPath: string;
   },
 ): Promise<Renderer> {
   const cwd = Deno.cwd();
 
-  const [components, layouts] = await Promise.all([
+  // TODO: Use this for cache busting modules in watch mode
+  // "?cache=" +
+  // new Date().getTime()
+  //
+  // Maybe it's a good default for an import helper
+  const [components, layouts, pageUtilities] = await Promise.all([
     getDefinitions<Component>(path.join(cwd, componentsPath)),
     getDefinitions<Component>(path.join(cwd, layoutsPath)),
+    pageUtilitiesPath
+      ? await import("file://" + path.join(cwd, pageUtilitiesPath))
+      : {},
   ]);
 
   return {
-    render: async ({ route, context, pageUtilities }) => {
+    render: async ({ route, context }) => {
       // TODO: Maybe breezewind should trigger _onRenderStart and _onRenderEnd
       // as it feels like a templating engine feature over a custom one.
       pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);

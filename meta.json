@@ -16,14 +16,14 @@
     "assets": "./assets",
     "output": "./build",
     "scripts": ["./scripts", "./site/scripts"],
-    "transforms": "./site/transforms",
-    "pageUtilities": "./site/pageUtilities.ts"
+    "transforms": "./site/transforms"
   },
   "renderer": {
     "path": "./renderers/breezewind/mod.ts",
     "options": {
       "componentsPath": "./site/components",
-      "layoutsPath": "./site/layouts"
+      "layoutsPath": "./site/layouts",
+      "pageUtilitiesPath": "./site/pageUtilities.ts"
     }
   },
   "router": {

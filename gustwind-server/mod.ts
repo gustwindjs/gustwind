@@ -134,15 +134,10 @@ async function serveGustwind({
           // const layout: Layout = cache.layouts[layoutName] ||
           // matchedLayout;
 
-          // TODO: Check how/when page utilities are loaded for the server
-          // This logic might belong to a plugin.
-          const pageUtilities = cache.pageUtilities;
-
           const { markup } = await applyPlugins({
             plugins,
             mode,
             url,
-            pageUtilities,
             projectMeta,
             route,
             render,

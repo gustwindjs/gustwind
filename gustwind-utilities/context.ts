@@ -1,15 +1,13 @@
 // This file is loaded both on client and server so it's important
 // to keep related imports at minimum.
 import type { Context, Meta, Mode, ProjectMeta, Route } from "../types.ts";
-import type { Utilities } from "../breezewind/types.ts";
 import { applyUtilities } from "../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
 async function getContext(
-  { mode, url, pageUtilities, projectMeta, route }: {
+  { mode, url, projectMeta, route }: {
     mode: Mode;
     url: string;
-    pageUtilities: Utilities;
     projectMeta: ProjectMeta;
     route: Route;
   },
@@ -39,9 +37,11 @@ async function getContext(
     ...projectMeta.meta,
     ...route.meta,
   };
+  // TODO: This feels like a break in abstraction. Push to a plugin!
   context.meta = await applyUtilities(
     props,
-    { ...defaultUtilities, ...pageUtilities } as Utilities,
+    // @ts-expect-error This is ok
+    defaultUtilities,
     { context },
   );
 

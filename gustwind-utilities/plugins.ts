@@ -12,7 +12,6 @@ import type {
   Scripts,
   Tasks,
 } from "../types.ts";
-import { Utilities } from "../breezewind/types.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
@@ -61,13 +60,11 @@ async function applyPlugins(
     plugins,
     mode,
     url,
-    pageUtilities,
     projectMeta,
     route,
     render,
   }: {
     mode: Mode;
-    pageUtilities: Utilities;
     projectMeta: ProjectMeta;
     route: Route;
     plugins: Plugin[];
@@ -86,7 +83,6 @@ async function applyPlugins(
   const context = await getContext({
     mode,
     url,
-    pageUtilities,
     projectMeta,
     route,
   });
@@ -103,7 +99,6 @@ async function applyPlugins(
   const markup = await render({
     route,
     context,
-    pageUtilities,
   });
 
   return {

@@ -7,7 +7,6 @@ import {
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type { Utilities } from "../breezewind/types.ts";
 import type {
   BuildWorkerEvent,
   Plugin,
@@ -17,7 +16,6 @@ import type {
 
 let id: string;
 let projectMeta: ProjectMeta;
-let pageUtilities: Utilities;
 let render: Renderer["render"];
 let plugins: Plugin[];
 
@@ -34,10 +32,6 @@ self.onmessage = async (e) => {
     const { payload } = e.data;
 
     projectMeta = payload.projectMeta;
-
-    pageUtilities = projectMeta.paths.pageUtilities
-      ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
-      : {};
 
     const plugin = await importPlugin<Renderer>(
       projectMeta.renderer,
@@ -65,7 +59,6 @@ self.onmessage = async (e) => {
       plugins,
       mode: "production",
       url,
-      pageUtilities,
       projectMeta,
       route,
       render,

@@ -1,4 +1,5 @@
-import type { Component, Utilities } from "./breezewind/types.ts";
+// TODO: Eliminate direct dependency on breezewind types
+import type { Component } from "./breezewind/types.ts";
 import type { ServeCache } from "./gustwind-server/cache.ts";
 
 // This should match with ./transforms
@@ -47,7 +48,6 @@ type ProjectMeta = {
     output: string;
     scripts?: string[];
     transforms: string;
-    pageUtilities?: string;
   };
   renderer: PluginOptions;
   router: PluginOptions;
@@ -60,8 +60,7 @@ type Meta = Record<string, string>;
 type Mode = "development" | "production";
 type Layout = Component | Component[];
 
-// This is the context used when rendering a page. It's also the type
-// pageUtilities should consume.
+// This is the context used when rendering a page
 type Context = Record<string, unknown> & {
   pagePath: string;
   projectMeta: ProjectMeta;
@@ -70,10 +69,9 @@ type Context = Record<string, unknown> & {
 };
 
 type Renderer = {
-  render({ route, context, pageUtilities }: {
+  render({ route, context }: {
     route: Route;
     context: Context | {};
-    pageUtilities: Utilities;
   }): Promise<string> | string;
 };
 
