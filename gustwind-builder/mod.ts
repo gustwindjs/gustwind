@@ -47,8 +47,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   });
 
   const outputDirectory = projectPaths.output;
-  const router = await importPlugin<Router>(projectMeta.router, projectMeta);
-  const routes = router.getAllRoutes();
+  const router = await importPlugin<Router>(
+    projectMeta.router,
+    projectMeta,
+  );
+
+  const routes = await router.getAllRoutes();
 
   if (!routes) {
     throw new Error("No routes found");

@@ -49,13 +49,11 @@ async function importPlugins(projectMeta: ProjectMeta) {
 async function importPlugin<P = Plugin>(
   pluginDefinition: PluginOptions,
   projectMeta: ProjectMeta,
-): Promise<P> {
+): Promise<PluginModule & P> {
   // TODO: Add logic against url based plugins
   const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
   const module = await import(pluginPath);
-  const pluginApi = Promise.resolve(
-    module.plugin(pluginDefinition.options, projectMeta),
-  );
+  const pluginApi = await module.plugin(pluginDefinition.options, projectMeta);
 
   return { ...module, ...pluginApi };
 }

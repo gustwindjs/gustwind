@@ -72,12 +72,16 @@ async function serveGustwind({
   }
   */
 
-  const router = await importPlugin<Router>(projectMeta.router, projectMeta);
-  const plugin = await importPlugin<Renderer>(
+  const router = await importPlugin<
+    (projectMeta: ProjectMeta) => Router
+  >(
+    projectMeta.router,
+    projectMeta,
+  );
+  const { render } = await importPlugin<Renderer>(
     projectMeta.renderer,
     projectMeta,
   );
-  const render = plugin.render;
 
   const plugins = await importPlugins(projectMeta);
   const pluginTasks = await applyPrepareBuilds({ plugins, components });

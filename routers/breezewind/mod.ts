@@ -1,6 +1,7 @@
 import { expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { getJson } from "../../utilities/fs.ts";
+import { path } from "../../server-deps.ts";
 import type { Route, Router } from "../../types.ts";
 
 // TODO: Should data source loading go through this?
@@ -10,11 +11,14 @@ async function plugin(
     routesPath: string;
   },
 ): Promise<Router> {
-  const routes = await getJson<Record<string, Route>>(routesPath);
+  const cwd = Deno.cwd();
+  const routes = await getJson<Record<string, Route>>(
+    path.join(cwd, routesPath),
+  );
 
   // TODO: How to handle watching + cache on change?
   const dataSources = dataSourcesPath
-    ? await import("file://" + dataSourcesPath).then((m) => m)
+    ? await import("file://" + path.join(cwd, dataSourcesPath)).then((m) => m)
     : {};
 
   return {
