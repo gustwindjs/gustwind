@@ -41,12 +41,10 @@ type DataSources = Record<string, () => unknown[]>;
 type ProjectMeta = {
   port: number;
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
-  scripts?: Scripts;
   meta: Meta;
   paths: {
     assets?: string;
     output: string;
-    scripts?: string[];
     transforms: string;
   };
   renderer: PluginOptions;
@@ -64,7 +62,6 @@ type Layout = Component | Component[];
 type Context = Record<string, unknown> & {
   pagePath: string;
   projectMeta: ProjectMeta;
-  scripts: Scripts;
   meta?: Record<string, unknown>;
 };
 
@@ -132,6 +129,8 @@ type Route = {
   type?: "html" | "xml";
   layout: string;
   meta: Meta;
+  // TODO: This should come as an extension from the script plugin
+  // if it is enabled
   scripts?: Scripts;
   routes?: Record<string, Route>;
   dataSources?: DataSource[];

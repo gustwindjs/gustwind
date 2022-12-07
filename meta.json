@@ -6,16 +6,9 @@
     "siteName": "Gustwind",
     "url": "https://gustwind.js.org/"
   },
-  "scripts": [
-    {
-      "type": "text/javascript",
-      "src": "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
-    }
-  ],
   "paths": {
     "assets": "./assets",
     "output": "./build",
-    "scripts": ["./scripts", "./site/scripts"],
     "transforms": "./site/transforms"
   },
   "renderer": {
@@ -34,6 +27,18 @@
     }
   },
   "plugins": [
+    {
+      "path": "./plugins/script/mod.ts",
+      "options": {
+        "scripts": [
+          {
+            "type": "text/javascript",
+            "src": "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
+          }
+        ],
+        "scriptsPath": ["./scripts", "./site/scripts"]
+      }
+    },
     {
       "path": "./plugins/twind/mod.ts",
       "options": { "setupPath": "./site/twindSetup.ts" }

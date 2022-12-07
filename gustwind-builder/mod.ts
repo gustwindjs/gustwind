@@ -1,5 +1,5 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
+import { getJson, resolvePaths } from "../utilities/fs.ts";
 import {
   applyPrepareBuilds,
   importPlugin,
@@ -78,25 +78,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
         routes,
-      );
-    }
-
-    if (projectPaths.scripts) {
-      const projectScripts = (await Promise.all(
-        projectPaths.scripts.map((p) => dir(p, ".ts")),
-      )).flat();
-
-      DEBUG && console.log("found project scripts", projectScripts);
-
-      projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        workerPool.addTaskToQueue({
-          type: "writeScript",
-          payload: {
-            outputDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
       );
     }
 

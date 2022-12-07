@@ -32,7 +32,6 @@ type PluginCache = {
 };
 
 // TODO: Figure out how to integrate with the watcher
-// TODO: Allow defining where to emit the scripts
 function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
   const pluginCache: PluginCache = {
     components: {},
@@ -131,7 +130,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
       // TODO: Check this
       // const transformDirectory = path.join(outputDirectory, "transforms");
 
-      // TODO: Check this
+      // TODO: This should be managed by the scripts plugin!
       const scriptsDirectory = path.join(outputDirectory, "scripts");
       const tasks: Tasks = [];
 

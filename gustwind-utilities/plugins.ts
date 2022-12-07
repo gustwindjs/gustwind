@@ -9,7 +9,6 @@ import type {
   ProjectMeta,
   Renderer,
   Route,
-  Scripts,
   Tasks,
 } from "../types.ts";
 
@@ -87,14 +86,14 @@ async function applyPlugins(
     route,
   });
 
-  const { scripts, tasks } = await applyBeforeEachRenders({
+  const { /* scripts, */ tasks } = await applyBeforeEachRenders({
     context,
     plugins,
     route,
     url,
   });
 
-  context.scripts = context.scripts.concat(scripts);
+  // context.scripts = context.scripts.concat(scripts);
 
   const markup = await render({
     route,
@@ -152,7 +151,7 @@ async function applyBeforeEachRenders(
     url: string;
   },
 ) {
-  let scripts: Scripts = [];
+  // let scripts: Scripts = [];
   let tasks: Tasks = [];
   const beforeEachRenders = plugins.map((plugin) => plugin.beforeEachRender)
     .filter(Boolean);
@@ -162,15 +161,17 @@ async function applyBeforeEachRenders(
       // @ts-expect-error We know beforeEachRender should be defined by now
       await beforeEachRender({ context, route, url });
 
+    /*
     if (ret?.scripts) {
       scripts = scripts.concat(ret.scripts);
     }
+    */
     if (ret?.tasks) {
       tasks = tasks.concat(ret.tasks);
     }
   }
 
-  return { scripts, tasks };
+  return { /* scripts, */ tasks };
 }
 
 async function applyAfterEachRenders(
