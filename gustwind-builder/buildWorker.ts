@@ -48,7 +48,10 @@ self.onmessage = async (e) => {
       ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
       : {};
 
-    const plugin = await importPlugin(projectMeta, projectMeta.renderer);
+    const plugin = await importPlugin<Renderer>(
+      projectMeta.renderer,
+      projectMeta,
+    );
     render = plugin.render;
 
     plugins = await importPlugins(projectMeta);

@@ -1,4 +1,4 @@
-import type { Route } from "../types.ts";
+import type { Route } from "../../types.ts";
 
 function flattenRoutes(
   routes?: Record<string, Route>,

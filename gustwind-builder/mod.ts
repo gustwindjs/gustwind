@@ -1,14 +1,13 @@
 import { esbuild, fs, path } from "../server-deps.ts";
 import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
-import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
-import { flattenRoutes } from "../gustwind-utilities/flattenRoutes.ts";
 import {
   applyPrepareBuilds,
+  importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
+import type { BuildWorkerEvent, ProjectMeta, Router } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -29,8 +28,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
-  const [routes, layouts, components] = await Promise.all([
-    getJson<Record<string, Route>>(projectPaths.routes),
+  const [layouts, components] = await Promise.all([
     getDefinitions<Component | Component[]>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
@@ -48,26 +46,18 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     },
   });
 
-  const dataSources = projectPaths.dataSources
-    ? await import("file://" + projectPaths.dataSources).then((m) => m)
-    : {};
-
-  const expandedRoutes = flattenRoutes(
-    await expandRoutes({
-      routes,
-      dataSources,
-    }),
-  );
   const outputDirectory = projectPaths.output;
+  const router = await importPlugin<Router>(projectMeta.router, projectMeta);
+  const routes = router.getAllRoutes();
 
-  if (!expandedRoutes) {
+  if (!routes) {
     throw new Error("No routes found");
   }
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    Object.entries(expandedRoutes).forEach(([url, route]) => {
+    Object.entries(routes).forEach(([url, route]) => {
       if (!route.layout) {
         return;
       }
@@ -89,7 +79,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
-        expandedRoutes,
+        routes,
       );
     }
 
@@ -140,7 +130,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
         const endTime = performance.now();
         const duration = endTime - startTime;
-        const routeAmount = Object.keys(expandedRoutes).length;
+        const routeAmount = Object.keys(routes).length;
 
         console.log(
           `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${

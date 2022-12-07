@@ -26,8 +26,8 @@ async function importPlugins(projectMeta: ProjectMeta) {
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of plugins) {
     const pluginModule: PluginModule = await importPlugin(
-      projectMeta,
       pluginDefinition,
+      projectMeta,
     );
     const { dependsOn } = pluginModule.meta;
     const dependencyIndex = loadedPlugins.findIndex(
@@ -47,15 +47,15 @@ async function importPlugins(projectMeta: ProjectMeta) {
   return loadedPlugins as Plugin[];
 }
 
-async function importPlugin(
-  projectMeta: ProjectMeta,
+async function importPlugin<P = Plugin>(
   pluginDefinition: PluginOptions,
-) {
+  projectMeta: ProjectMeta,
+): Promise<P> {
   // TODO: Add logic against url based plugins
   const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
   const module = await import(pluginPath);
 
-  return { ...module, ...module.plugin(projectMeta, pluginDefinition.options) };
+  return { ...module, ...module.plugin(pluginDefinition.options, projectMeta) };
 }
 
 async function applyPlugins(

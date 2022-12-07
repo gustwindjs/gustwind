@@ -4,7 +4,6 @@ import * as breezeExtensions from "../../breezewind/extensions.ts";
 import type { Renderer } from "../../types.ts";
 
 function breezewindRenderer(
-  // _projectMeta: ProjectMeta,
   // TODO: Support options. Something like tw should be an option.
   // options: {},
 ): Renderer {

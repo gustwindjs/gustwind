@@ -1,9 +1,8 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
-import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
+import { dir, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
-import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyPlugins,
@@ -17,7 +16,9 @@ import type {
   Layout,
   Mode,
   ProjectMeta,
+  Renderer,
   Route,
+  Router,
 } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
 
@@ -45,16 +46,10 @@ async function serveGustwind({
 
   const projectPaths = projectMeta.paths;
 
-  const [routes, layouts, components] = await Promise.all([
-    getJson<Record<string, Route>>(projectPaths.routes),
+  const [layouts, components] = await Promise.all([
     getDefinitions<Component | Component[]>(projectPaths.layouts),
     getDefinitions<Component>(projectPaths.components),
   ]);
-
-  cache.routes = await expandRoutes({
-    routes,
-    dataSources,
-  });
 
   // TODO: This branch might be safe to eliminate since
   // meta.json scripts is capturing the dev scripts.
@@ -87,7 +82,11 @@ async function serveGustwind({
   }
   */
 
-  const plugin = await importPlugin(projectMeta, projectMeta.renderer);
+  const router = await importPlugin<Router>(projectMeta.router, projectMeta);
+  const plugin = await importPlugin<Renderer>(
+    projectMeta.renderer,
+    projectMeta,
+  );
   const render = plugin.render;
 
   const plugins = await importPlugins(projectMeta);

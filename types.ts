@@ -32,20 +32,6 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-type Route = {
-  type?: "html" | "xml";
-  layout?: string;
-  meta: Meta;
-  scripts?: Scripts;
-  routes?: Record<string, Route>;
-  dataSources?: DataSource[];
-  expand?: {
-    matchBy?: { dataSource: DataSource; slug: string };
-  };
-  // These are attached later
-  context?: DataContext;
-  url?: string;
-};
 type Scripts = Script[];
 type Script = { type: string; src: string };
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
@@ -62,12 +48,12 @@ type ProjectMeta = {
     dataSources: string;
     layouts: string;
     output: string;
-    routes: string;
     scripts?: string[];
     transforms: string;
     pageUtilities?: string;
   };
   renderer: PluginOptions;
+  router: PluginOptions;
   plugins: PluginOptions[];
 };
 
@@ -147,6 +133,26 @@ type Plugin = {
   ): Promise<Tasks> | Tasks;
 };
 
+type Router = {
+  getAllRoutes(): Route[];
+  getRoute(): Route | undefined;
+};
+
+type Route = {
+  type?: "html" | "xml";
+  layout?: string;
+  meta: Meta;
+  scripts?: Scripts;
+  routes?: Record<string, Route>;
+  dataSources?: DataSource[];
+  expand?: {
+    matchBy?: { dataSource: DataSource; slug: string };
+  };
+  // These are attached later
+  context?: DataContext;
+  url?: string;
+};
+
 type Tasks = BuildWorkerEvent[];
 
 type BuildWorkerEvent =
@@ -214,6 +220,7 @@ export type {
   Props,
   Renderer,
   Route,
+  Router,
   Scripts,
   Tasks,
   Transform,

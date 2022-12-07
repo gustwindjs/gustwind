@@ -2,7 +2,7 @@ import { attachIds } from "../../utilities/attachIds.ts";
 // import { dir } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
 import type { Component } from "../../breezewind/types.ts";
-import {
+import type {
   DataContext,
   Layout,
   Plugin,
@@ -33,7 +33,7 @@ type PluginCache = {
 
 // TODO: Figure out how to integrate with the watcher
 // TODO: Allow defining where to emit the scripts
-function editorPlugin(projectMeta: ProjectMeta): Plugin {
+function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
   const pluginCache: PluginCache = {
     components: {},
     contexts: {},

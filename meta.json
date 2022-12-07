@@ -18,12 +18,17 @@
     "dataSources": "./site/dataSources.ts",
     "layouts": "./site/layouts",
     "output": "./build",
-    "routes": "./site/routes.json",
     "scripts": ["./scripts", "./site/scripts"],
     "transforms": "./site/transforms",
     "pageUtilities": "./site/pageUtilities.ts"
   },
   "renderer": { "path": "./renderers/breezewind/mod.ts" },
+  "router": {
+    "path": "./routers/breezewind/mod.ts",
+    "options": {
+      "routesPath": "./site/routes.json"
+    }
+  },
   "plugins": [
     {
       "path": "./plugins/twind/mod.ts",

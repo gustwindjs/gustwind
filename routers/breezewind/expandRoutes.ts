@@ -1,6 +1,6 @@
-import { path as _path } from "../server-deps.ts";
-import { get } from "../utilities/functional.ts";
-import type { DataSources, Route } from "../types.ts";
+import { path as _path } from "../../server-deps.ts";
+import { get } from "../../utilities/functional.ts";
+import type { DataSources, Route } from "../../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {
   routes: Route["routes"];
@@ -63,6 +63,7 @@ async function expandRoute(
     const expandedRoutes: Record<string, Route> = {};
     const dataSourceResults = await dataSource.apply(
       undefined,
+      // @ts-expect-error This is fine.
       matchBy.dataSource.parameters,
     );
 
