@@ -4,10 +4,10 @@ import { getJson } from "../../utilities/fs.ts";
 import type { ProjectMeta, Route, Router } from "../../types.ts";
 
 // TODO: Should data source loading go through this?
-function plugin(
+async function plugin(
   { routesPath }: { routesPath: string },
-): Router {
-  const routes = getJson<Record<string, Route>>(routesPath);
+): Promise<Router> {
+  const routes = await getJson<Record<string, Route>>(routesPath);
 
   /*
   const dataSources = projectPaths.dataSources
@@ -15,22 +15,15 @@ function plugin(
     : {};
   */
 
-  // TODO: This should accept a route definition
-  // and return an evaluated definition that includes things like
-  // project meta at least
-
-  /*
-  const expandedRoutes = flattenRoutes(
-    await expandRoutes({
-      routes,
-      dataSources,
-    }),
-  );
-  */
-
   return {
-    getAllRoutes() {
-      return [];
+    getAllRoutes: async () => {
+      return flattenRoutes(
+        await expandRoutes({
+          routes,
+          // TODO: Figure out where/how to load data sources
+          dataSources,
+        }),
+      );
     },
     getRoute() {
       return undefined;

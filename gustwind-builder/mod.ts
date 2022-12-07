@@ -83,8 +83,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       );
     }
 
-    // TODO: Trigger prepareBuild hooks of plugins here
-
     if (projectPaths.scripts) {
       const projectScripts = (await Promise.all(
         projectPaths.scripts.map((p) => dir(p, ".ts")),

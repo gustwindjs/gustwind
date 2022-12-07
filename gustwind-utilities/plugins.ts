@@ -16,6 +16,7 @@ import type {
   Tasks,
 } from "../types.ts";
 import { Utilities } from "../breezewind/types.ts";
+import { plugin } from "../routers/breezewind/mod.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
@@ -54,8 +55,11 @@ async function importPlugin<P = Plugin>(
   // TODO: Add logic against url based plugins
   const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
   const module = await import(pluginPath);
+  const pluginApi = Promise.resolve(
+    module.plugin(pluginDefinition.options, projectMeta),
+  );
 
-  return { ...module, ...module.plugin(pluginDefinition.options, projectMeta) };
+  return { ...module, ...pluginApi };
 }
 
 async function applyPlugins(

@@ -134,8 +134,8 @@ type Plugin = {
 };
 
 type Router = {
-  getAllRoutes(): Route[];
-  getRoute(): Route | undefined;
+  getAllRoutes(): Promise<Record<string, Route>>;
+  getRoute(): Promise<Route> | undefined;
 };
 
 type Route = {
