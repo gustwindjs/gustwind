@@ -22,15 +22,13 @@ async function plugin(
     : {};
 
   return {
-    getAllRoutes: async () => {
-      // TODO: Handle reading data source contents to each route here as well
-      return flattenRoutes(
+    getAllRoutes: async () =>
+      flattenRoutes(
         await expandRoutes({
           routes,
           dataSources,
         }),
-      );
-    },
+      ),
     matchRoute(url: string) {
       // TODO: This should check if the given url exists in the route definition
       // To keep this fast, it should avoid flattening/expanding beforehand and
