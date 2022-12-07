@@ -2,7 +2,6 @@ import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { dir, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
-import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyPlugins,
@@ -11,8 +10,7 @@ import {
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { Layout, Mode, ProjectMeta, Renderer, Router } from "../types.ts";
-import type { Component } from "../breezewind/types.ts";
+import type { Mode, ProjectMeta, Renderer, Router } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -35,11 +33,6 @@ async function serveGustwind({
   projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
 
   const projectPaths = projectMeta.paths;
-
-  const [layouts, components] = await Promise.all([
-    getDefinitions<Component | Component[]>(projectPaths.layouts),
-    getDefinitions<Component>(projectPaths.components),
-  ]);
 
   // TODO: This branch might be safe to eliminate since
   // meta.json scripts is capturing the dev scripts.
@@ -84,7 +77,7 @@ async function serveGustwind({
   );
 
   const plugins = await importPlugins(projectMeta);
-  const pluginTasks = await applyPrepareBuilds({ plugins, components });
+  const pluginTasks = await applyPrepareBuilds({ plugins });
   const pluginScripts = pluginTasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now
@@ -138,8 +131,8 @@ async function serveGustwind({
           // the case in which there was an update over a websocket and
           // also avoids the need to hit the file system for getting
           // the latest data.
-          const layout: Layout = cache.layouts[layoutName] ||
-            matchedLayout;
+          // const layout: Layout = cache.layouts[layoutName] ||
+          // matchedLayout;
 
           // TODO: Check how/when page utilities are loaded for the server
           // This logic might belong to a plugin.
@@ -152,8 +145,6 @@ async function serveGustwind({
             pageUtilities,
             projectMeta,
             route,
-            layout,
-            components,
             render,
           });
 

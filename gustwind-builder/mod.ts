@@ -1,6 +1,5 @@
 import { esbuild, fs, path } from "../server-deps.ts";
 import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
-import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
 import {
   applyPrepareBuilds,
   importPlugin,
@@ -8,7 +7,6 @@ import {
 } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, ProjectMeta, Router } from "../types.ts";
-import type { Component } from "../breezewind/types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -28,11 +26,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   const projectPaths = projectMeta.paths;
   const startTime = performance.now();
 
-  const [layouts, components] = await Promise.all([
-    getDefinitions<Component | Component[]>(projectPaths.layouts),
-    getDefinitions<Component>(projectPaths.components),
-  ]);
-
   // TODO: Trigger beforeEachRequest for each plugin here
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfBuildThreads,
@@ -40,10 +33,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
   workerPool.addTaskToEach({
     type: "init",
-    payload: {
-      components,
-      projectMeta,
-    },
+    payload: { projectMeta },
   });
 
   const outputDirectory = projectPaths.output;
@@ -52,7 +42,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
     await Deno.remove(outputDirectory, { recursive: true });
 
     const plugins = await importPlugins(projectMeta);
-    const pluginTasks = await applyPrepareBuilds({ plugins, components });
+    const pluginTasks = await applyPrepareBuilds({ plugins });
     pluginTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
     const router = await importPlugin<Router>(
@@ -74,7 +64,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       workerPool.addTaskToQueue({
         type: "build",
         payload: {
-          layout: layouts[route.layout],
           route,
           pagePath: url === "/" ? "/" : "/" + url + "/",
           dir: path.join(outputDirectory, url),

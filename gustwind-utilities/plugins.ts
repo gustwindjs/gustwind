@@ -1,9 +1,7 @@
 import { path } from "../server-deps.ts";
 import { getContext } from "./context.ts";
 import type {
-  Components,
   Context,
-  Layout,
   Mode,
   Plugin,
   PluginModule,
@@ -66,12 +64,8 @@ async function applyPlugins(
     pageUtilities,
     projectMeta,
     route,
-    layout,
-    components,
     render,
   }: {
-    components: Components;
-    layout: Layout;
     mode: Mode;
     pageUtilities: Utilities;
     projectMeta: ProjectMeta;
@@ -99,7 +93,6 @@ async function applyPlugins(
 
   const { scripts, tasks } = await applyBeforeEachRenders({
     context,
-    layout,
     plugins,
     route,
     url,
@@ -108,8 +101,7 @@ async function applyPlugins(
   context.scripts = context.scripts.concat(scripts);
 
   const markup = await render({
-    layout,
-    components,
+    route,
     context,
     pageUtilities,
   });
@@ -117,7 +109,6 @@ async function applyPlugins(
   return {
     markup: await applyAfterEachRenders({
       context,
-      layout,
       markup,
       plugins,
       route,
@@ -128,7 +119,7 @@ async function applyPlugins(
 }
 
 async function applyPrepareBuilds(
-  { plugins, components }: { plugins: Plugin[]; components: Components },
+  { plugins }: { plugins: Plugin[] },
 ) {
   let tasks: Tasks = [];
   const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
@@ -136,7 +127,7 @@ async function applyPrepareBuilds(
 
   for await (const prepareBuild of prepareBuilds) {
     // @ts-expect-error We know prepareBuild should be defined by now
-    const tasksToAdd = await prepareBuild({ components });
+    const tasksToAdd = await prepareBuild();
 
     tasks = tasks.concat(tasksToAdd);
   }
@@ -159,9 +150,8 @@ async function applyBeforeEachContext(
 }
 
 async function applyBeforeEachRenders(
-  { context, layout, plugins, route, url }: {
+  { context, plugins, route, url }: {
     context: Context;
-    layout: Layout;
     plugins: Plugin[];
     route: Route;
     url: string;
@@ -175,12 +165,7 @@ async function applyBeforeEachRenders(
   for await (const beforeEachRender of beforeEachRenders) {
     const ret =
       // @ts-expect-error We know beforeEachRender should be defined by now
-      await beforeEachRender({
-        context,
-        layout,
-        route,
-        url,
-      });
+      await beforeEachRender({ context, route, url });
 
     if (ret?.scripts) {
       scripts = scripts.concat(ret.scripts);
@@ -194,9 +179,8 @@ async function applyBeforeEachRenders(
 }
 
 async function applyAfterEachRenders(
-  { context, layout, markup, plugins, route, url }: {
+  { context, markup, plugins, route, url }: {
     context: Context;
-    layout: Layout;
     markup: string;
     plugins: Plugin[];
     route: Route;
@@ -210,7 +194,6 @@ async function applyAfterEachRenders(
     // @ts-expect-error We know afterEachRender should be defined by now
     const { markup: updatedMarkup } = await afterEachRender({
       context,
-      layout,
       markup,
       route,
       url,

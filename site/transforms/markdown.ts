@@ -33,7 +33,11 @@ marked.setOptions({
 // TODO: This dependency on twind is nasty as has an implicit dependency on
 // plugins/twind/mod.ts setup
 const tw = pageUtilities.tw;
-const renderHTML = plugin().render;
+
+// TODO: Restore this one, figure out how to deal with the paths
+// const renderHTML =
+//  (await plugin({ componentsPath: "", layoutsPath: "" })).render;
+const renderHTML = () => "";
 
 async function transformMarkdown(input: string) {
   if (typeof input !== "string") {

@@ -44,8 +44,6 @@ type ProjectMeta = {
   meta: Meta;
   paths: {
     assets?: string;
-    components: string;
-    layouts: string;
     output: string;
     scripts?: string[];
     transforms: string;
@@ -72,9 +70,8 @@ type Context = Record<string, unknown> & {
 };
 
 type Renderer = {
-  render({ layout, components, context, pageUtilities }: {
-    layout: Layout;
-    components: Components;
+  render({ route, context, pageUtilities }: {
+    route: Route;
     context: Context | {};
     pageUtilities: Utilities;
   }): Promise<string> | string;
@@ -102,9 +99,8 @@ type Plugin = {
     { cache, route }: { cache: ServeCache; route: Route },
   ): Promise<Partial<ServeCache>> | (Partial<ServeCache>);
   beforeEachRender?(
-    { context, layout, route, url }: {
+    { context, route, url }: {
       context: Context;
-      layout: Layout;
       route: Route;
       url: string;
     },
@@ -120,16 +116,13 @@ type Plugin = {
       scripts?: Scripts;
     }
     | void;
-  afterEachRender?({ markup, layout, context, route, url }: {
+  afterEachRender?({ markup, context, route, url }: {
     markup: string;
-    layout: Layout;
     context: Context;
     route: Route;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
-  prepareBuild?(
-    { components }: { components: Components },
-  ): Promise<Tasks> | Tasks;
+  prepareBuild?(): Promise<Tasks> | Tasks;
 };
 
 type Router = {
@@ -139,7 +132,7 @@ type Router = {
 
 type Route = {
   type?: "html" | "xml";
-  layout?: string;
+  layout: string;
   meta: Meta;
   scripts?: Scripts;
   routes?: Record<string, Route>;
@@ -157,12 +150,11 @@ type Tasks = BuildWorkerEvent[];
 type BuildWorkerEvent =
   | {
     type: "init";
-    payload: { components: Components; projectMeta: ProjectMeta };
+    payload: { projectMeta: ProjectMeta };
   }
   | {
     type: "build";
     payload: {
-      layout: Layout;
       route: Route;
       pagePath: string;
       dir: string;

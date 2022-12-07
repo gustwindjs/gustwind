@@ -55,7 +55,6 @@ self.onmessage = async (e) => {
   if (type === "build") {
     const {
       payload: {
-        layout,
         route,
         filePath,
         dir,
@@ -72,8 +71,6 @@ self.onmessage = async (e) => {
       pageUtilities,
       projectMeta,
       route,
-      layout,
-      components,
       render,
     });
 

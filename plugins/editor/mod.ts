@@ -77,6 +77,8 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         );
       }
     },
+    // TODO: How to pull layout data from renderer here?
+    /*
     beforeEachMatchedRequest({ cache, route }) {
       return {
         components: Object.fromEntries(
@@ -91,12 +93,14 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         ),
       };
     },
+    */
     beforeEachRender({ url, ...rest }) {
       const { paths } = projectMeta;
       const outputDirectory = path.join(paths.output, url);
 
       pluginCache.contexts[url + "context.json"] = rest.context;
-      pluginCache.contexts[url + "layout.json"] = rest.layout;
+      // TODO: Do a lookup against layout data here
+      //pluginCache.contexts[url + "layout.json"] = rest.route.layout;
       pluginCache.contexts[url + "route.json"] = rest.route;
 
       return {
@@ -121,7 +125,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         ],
       };
     },
-    prepareBuild: ({ components }) => {
+    prepareBuild: () => {
       const { paths } = projectMeta;
       const outputDirectory = paths.output;
       // TODO: Check this
@@ -163,6 +167,10 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         })
       );
 
+      // TODO: How to get components data here to write?
+      // The data is maintained by breezewind renderer so
+      // the data dependency needs to be modeled somehow as well.
+      /*
       tasks.push({
         type: "writeFile",
         payload: {
@@ -171,6 +179,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           data: JSON.stringify(components),
         },
       });
+      */
 
       return tasks;
     },

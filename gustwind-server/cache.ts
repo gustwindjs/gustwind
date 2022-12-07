@@ -1,16 +1,14 @@
-import type { Component, Utilities } from "../breezewind/types.ts";
+import type { Utilities } from "../breezewind/types.ts";
 
 type ServeCache = {
-  components: Record<string, Component>;
-  layouts: Record<string, Component | Component[]>;
+  // TODO: Eliminate
   scripts: Record<string, string>;
+  // TODO: Eliminate
   pageUtilities: Utilities;
 };
 
 function getCache(): ServeCache {
   return {
-    components: {},
-    layouts: {},
     scripts: {},
     pageUtilities: {},
   };
