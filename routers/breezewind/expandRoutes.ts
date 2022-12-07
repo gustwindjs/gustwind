@@ -61,46 +61,87 @@ async function expandRoute(
     }
 
     const expandedRoutes: Record<string, Route> = {};
+    const dataSourceParameter = matchBy.dataSource.parameters;
     const dataSourceResults = await dataSource.apply(
       undefined,
       // @ts-expect-error This is fine.
-      matchBy.dataSource.parameters,
+      dataSourceParameter,
     );
 
-    // TODO: Give a warning if dataSource isn't an array
-    Array.isArray(dataSourceResults) && dataSourceResults.forEach((match) => {
-      const u = get(match, matchBy.slug) as string;
+    if (Array.isArray(dataSourceResults)) {
+      dataSourceResults.forEach((match) => {
+        const u = get(match, matchBy.slug) as string;
 
-      if (!u) {
-        throw new Error(
-          `Route ${matchBy.slug} is missing from ${
-            JSON.stringify(match, null, 2)
-          } with slug ${matchBy.slug} within ${url} route`,
-        );
-      }
+        if (!u) {
+          throw new Error(
+            `Route ${matchBy.slug} is missing from ${
+              JSON.stringify(match, null, 2)
+            } with slug ${matchBy.slug} within ${url} route`,
+          );
+        }
 
-      // @ts-ignore route.expand exists by now for sure
-      const { meta, layout } = route.expand;
+        // @ts-ignore route.expand exists by now for sure
+        const { meta, layout } = route.expand;
 
-      // @ts-ignore Not sure how to type this
-      expandedRoutes[u] = {
-        meta,
-        layout,
-        context: {
-          ...expandedRoutes[u]?.context,
-          [matchBy.dataSource.name]: match,
-        },
-        url: u,
-      };
-    });
+        // @ts-ignore Not sure how to type this
+        expandedRoutes[u] = {
+          meta,
+          layout,
+          context: {
+            ...expandedRoutes[u]?.context,
+            [matchBy.dataSource.name]: match,
+          },
+          url: u,
+        };
+      });
+    } else {
+      console.warn("data source results are not an array");
+    }
 
     ret = {
       ...route,
       routes: { ...(route.routes || {}), ...expandedRoutes },
     };
+  } else if (route.dataSources) {
+    const context = await getDataSourceContext(
+      route.dataSources,
+      dataSources,
+    );
+
+    return [url, { ...ret, url, context }];
   }
 
   return [url, { ...ret, url }];
+}
+
+async function getDataSourceContext(
+  dataSourceIds?: Route["dataSources"],
+  dataSources?: DataSources,
+): Promise<Record<string, unknown>> {
+  if (!dataSourceIds || !dataSources) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    await Promise.all(
+      dataSourceIds.map(async ({ name, operation, parameters }) => {
+        const dataSource = dataSources[operation];
+
+        if (!dataSource) {
+          throw new Error(`Data source ${operation} was not found!`);
+        }
+
+        return [
+          name,
+          await dataSource.apply(
+            undefined,
+            // @ts-expect-error This is fine
+            Array.isArray(parameters) ? parameters : [],
+          ),
+        ];
+      }),
+    ),
+  );
 }
 
 export { expandRoute, expandRoutes };

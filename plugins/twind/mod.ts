@@ -22,17 +22,31 @@ function twindPlugin(
   const stylesheet = virtualSheet();
   const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
+  async function prepareStylesheet() {
+    const twindSetup = twindSetupPath
+      ? await import("file://" + twindSetupPath).then((m) => m.default)
+      : {};
+
+    setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
+
+    // @ts-ignore Somehow TS gets confused here
+    stylesheet.reset();
+  }
+
   return {
-    beforeEachContext: async () => {
-      const twindSetup = twindSetupPath
-        ? await import("file://" + twindSetupPath).then((m) => m.default)
-        : {};
+    prepareBuild: async () => {
+      await prepareStylesheet();
 
-      setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
-
-      // @ts-ignore Somehow TS gets confused here
-      stylesheet.reset();
+      return [{
+        type: "writeScript",
+        payload: {
+          outputDirectory: projectMeta.paths.output,
+          scriptName: "twindSetup.js",
+          scriptPath: twindSetupPath,
+        },
+      }];
     },
+    beforeEachContext: prepareStylesheet,
     afterEachRender({ markup, route }) {
       if (route.type === "xml") {
         return { markup };
@@ -54,19 +68,6 @@ function twindPlugin(
       */
 
       return { markup: injectStyleTag(markup, getStyleTag(stylesheet)) };
-    },
-    prepareBuild: () => {
-      const { paths } = projectMeta;
-      const outputDirectory = paths.output;
-
-      return [{
-        type: "writeScript",
-        payload: {
-          outputDirectory,
-          scriptName: "twindSetup.js",
-          scriptPath: twindSetupPath,
-        },
-      }];
     },
   };
 }

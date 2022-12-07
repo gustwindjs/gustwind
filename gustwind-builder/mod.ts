@@ -47,19 +47,24 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   });
 
   const outputDirectory = projectPaths.output;
-  const router = await importPlugin<Router>(
-    projectMeta.router,
-    projectMeta,
-  );
-
-  const routes = await router.getAllRoutes();
-
-  if (!routes) {
-    throw new Error("No routes found");
-  }
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
+
+    const plugins = await importPlugins(projectMeta);
+    const pluginTasks = await applyPrepareBuilds({ plugins, components });
+    pluginTasks.forEach((task) => workerPool.addTaskToQueue(task));
+
+    const router = await importPlugin<Router>(
+      projectMeta.router,
+      projectMeta,
+    );
+
+    const routes = await router.getAllRoutes();
+
+    if (!routes) {
+      throw new Error("No routes found");
+    }
 
     Object.entries(routes).forEach(([url, route]) => {
       if (!route.layout) {
@@ -113,10 +118,6 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
         assetsPath: projectPaths.assets,
       },
     });
-
-    const plugins = await importPlugins(projectMeta);
-    const pluginTasks = await applyPrepareBuilds({ plugins, components });
-    pluginTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
     if (DEBUG) {
       const initTime = performance.now();

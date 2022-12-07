@@ -7,6 +7,7 @@ function dateToISO(_: Context, date: string) {
 }
 
 function markdown(_: Context, input: string) {
+  // @ts-expect-error This is fine
   return md(input).content;
 }
 

@@ -35,8 +35,9 @@ marked.setOptions({
 const tw = pageUtilities.tw;
 const renderHTML = plugin().render;
 
-function transformMarkdown(input: string) {
+async function transformMarkdown(input: string) {
   if (typeof input !== "string") {
+    console.error("input", input);
     throw new Error("transformMarkdown - passed wrong type of input");
   }
 
@@ -190,7 +191,7 @@ function transformMarkdown(input: string) {
     },
   });
 
-  return { content: marked(input), tableOfContents };
+  return { content: await marked(input), tableOfContents };
 }
 
 export default transformMarkdown;
