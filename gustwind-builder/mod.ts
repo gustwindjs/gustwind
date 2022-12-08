@@ -20,10 +20,7 @@ async function build(projectMeta: ProjectMeta) {
       amountOfBuildThreads > 1 ? "s" : ""
     }`,
   );
-
   const startTime = performance.now();
-
-  // TODO: Trigger beforeEachRequest for each plugin here
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfBuildThreads,
   );
@@ -86,6 +83,7 @@ async function build(projectMeta: ProjectMeta) {
       workerPool.onWorkFinished(() => {
         workerPool.terminate();
 
+        // TODO: This might belong to the script plugin in a cleanup phase
         esbuild.stop();
 
         const endTime = performance.now();
