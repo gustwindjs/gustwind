@@ -123,6 +123,8 @@ breeze({
 });
 ```
 
+To detect when rendering has started and ended (useful for instrumentation), you can use `_onRenderStart(context: Context)` and `_onRenderEnd(context: Context)`. Each triggers once during the rendering process.
+
 ### Context
 
 To allow injecting data from outside to templates, Breezewind implements a global context. Use it like this:

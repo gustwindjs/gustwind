@@ -40,11 +40,16 @@ type Extension = (
   utilities?: Utilities,
 ) => Promise<BaseComponent>;
 
-type Utilities = Record<
-  string,
-  // deno-lint-ignore no-explicit-any
-  (context: Context, ...args: any) => string | Promise<string>
->;
+type Utilities =
+  & Record<
+    string,
+    // deno-lint-ignore no-explicit-any
+    (context: Context, ...args: any) => string | Promise<string> | void
+  >
+  & {
+    _onRenderStart?: (context: Context) => void;
+    _onRenderEnd?: (context: Context) => void;
+  };
 
 export type {
   ClassComponent,

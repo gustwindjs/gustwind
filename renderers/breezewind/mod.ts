@@ -29,12 +29,8 @@ async function breezewindRenderer(
   ]);
 
   return {
-    render: async ({ route, context }) => {
-      // TODO: Maybe breezewind should trigger _onRenderStart and _onRenderEnd
-      // as it feels like a templating engine feature over a custom one.
-      pageUtilities._onRenderStart && pageUtilities._onRenderStart(context);
-
-      const markup = await breezewind({
+    render: ({ route, context }) =>
+      breezewind({
         component: layouts[route.layout],
         components,
         extensions: [
@@ -45,12 +41,7 @@ async function breezewindRenderer(
         ],
         context,
         utilities: pageUtilities,
-      });
-
-      pageUtilities._onRenderEnd && pageUtilities._onRenderEnd(context);
-
-      return markup;
-    },
+      }),
   };
 }
 
