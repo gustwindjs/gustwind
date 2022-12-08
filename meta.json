@@ -1,6 +1,6 @@
 {
   "port": 3000,
-  "amountOfBuildThreads": 1,
+  "amountOfBuildThreads": "cpuHalf",
   "meta": {
     "language": "en",
     "siteName": "Gustwind",
