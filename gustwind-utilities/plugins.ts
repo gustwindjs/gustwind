@@ -11,7 +11,6 @@ import type {
   Route,
   Tasks,
 } from "../types.ts";
-import { plugin } from "../plugins/twind/mod.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
