@@ -207,34 +207,6 @@ function watchLayouts(
   });
 }
 
-/*
-function watchTransforms(
-  wss: ReturnType<typeof getWebsocketServer>,
-  path?: string,
-) {
-  if (!path) {
-    return;
-  }
-
-  watch({
-    directory: path,
-    handler: (matchedPath) => {
-      if (!matchedPath.endsWith(".ts")) {
-        return;
-      }
-
-      console.log("Changed transforms", matchedPath);
-      wss.clients.forEach((socket) => {
-        // TODO: Update transform cache? Since these go through
-        // import(), likely tracking timestamps of updates would be enough
-        // as then those could be used for invalidation
-        socket.send(JSON.stringify({ type: "reloadPage" }));
-      });
-    },
-  });
-}
-*/
-
 // TODO: This should get imports from each script and watch them as well
 function watchScripts(
   wss: ReturnType<typeof getWebsocketServer>,
@@ -302,7 +274,6 @@ function watchAll(
   // watchDataSources(wss, projectPaths.dataSources);
   // await watchRoutes(wss, projectPaths.routes);
   watchLayouts(wss, cache, projectPaths.layouts);
-  // watchTransforms(wss, projectPaths.transforms);
 }
 
 export {
@@ -313,5 +284,4 @@ export {
   watchMeta,
   // watchRoutes,
   watchScripts,
-  // watchTransforms,
 };
