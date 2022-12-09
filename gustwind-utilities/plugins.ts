@@ -11,6 +11,7 @@ import type {
   Route,
   Tasks,
 } from "../types.ts";
+import { plugin } from "../plugins/twind/mod.ts";
 
 async function importPlugins(projectMeta: ProjectMeta) {
   const { plugins } = projectMeta;
@@ -71,23 +72,24 @@ async function applyPlugins(
     render: Renderer["render"];
   },
 ) {
-  await applyBeforeEachContext({ plugins });
+  const pluginContext = await applyBeforeEachContext({ plugins, route });
 
-  const context = await getContext({
-    mode,
-    url,
-    projectMeta,
-    route,
-  });
+  const context = {
+    ...(await getContext({
+      mode,
+      url,
+      projectMeta,
+      route,
+    })),
+    ...pluginContext,
+  };
 
-  const { /* scripts, */ tasks } = await applyBeforeEachRenders({
+  const { tasks } = await applyBeforeEachRenders({
     context,
     plugins,
     route,
     url,
   });
-
-  // context.scripts = context.scripts.concat(scripts);
 
   const markup = await render({
     route,
@@ -124,17 +126,26 @@ async function applyPrepareBuilds(
 }
 
 async function applyBeforeEachContext(
-  { plugins }: {
+  { plugins, route }: {
     plugins: Plugin[];
+    route: Route;
   },
 ) {
+  let context = {};
   const beforeEachContexts = plugins.map((plugin) => plugin.beforeEachContext)
     .filter(Boolean);
 
   for await (const beforeEachContext of beforeEachContexts) {
-    // @ts-expect-error We know beforeEachContext should be defined by now
-    await beforeEachContext();
+    if (beforeEachContext) {
+      const ret = await beforeEachContext({ route });
+
+      if (ret?.context) {
+        context = { ...context, ...ret.context };
+      }
+    }
   }
+
+  return context;
 }
 
 async function applyBeforeEachRenders(
@@ -145,7 +156,6 @@ async function applyBeforeEachRenders(
     url: string;
   },
 ) {
-  // let scripts: Scripts = [];
   let tasks: Tasks = [];
   const beforeEachRenders = plugins.map((plugin) => plugin.beforeEachRender)
     .filter(Boolean);
@@ -155,17 +165,12 @@ async function applyBeforeEachRenders(
       // @ts-expect-error We know beforeEachRender should be defined by now
       await beforeEachRender({ context, route, url });
 
-    /*
-    if (ret?.scripts) {
-      scripts = scripts.concat(ret.scripts);
-    }
-    */
     if (ret?.tasks) {
       tasks = tasks.concat(ret.tasks);
     }
   }
 
-  return { /* scripts, */ tasks };
+  return { tasks };
 }
 
 async function applyAfterEachRenders(

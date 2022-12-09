@@ -66,7 +66,13 @@ type PluginMeta = {
 };
 
 type Plugin = {
-  beforeEachContext?(): void;
+  beforeEachContext?({ route }: { route: Route }):
+    | Promise<{ context: Record<string, unknown> }>
+    | Promise<void>
+    | {
+      context: Record<string, unknown>;
+    }
+    | void;
   beforeEachRequest?(
     { url, respond }: {
       url: string;

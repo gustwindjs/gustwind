@@ -22,12 +22,6 @@ async function scriptPlugin(
     scriptsPath.map((p) => dir(path.join(cwd, p), ".ts")),
   )).flat();
 
-  // TODO: Support route.scripts and capture them here
-  // The assumption here is that all the page scripts are compiled with Gustwind.
-  // TODO: It might be a good idea to support third-party scripts here as well
-  /*let pageScripts =
-    route.scripts?.slice(0).map((s) => ({ type: "module", src: `/${s}.js` })) ||
-    [];*/
   return {
     prepareBuild: () => {
       return foundScripts.map(({ name: scriptName, path: scriptPath }) => ({
@@ -39,12 +33,13 @@ async function scriptPlugin(
         },
       }));
     },
-    beforeEachRender() {
-      // TODO: Figure out what to do here
+    beforeEachContext({ route }) {
       return {
-        scripts: scripts.concat(
-          foundScripts.map((s) => ({ type: "module", src: s.name })),
-        ),
+        context: {
+          scripts: scripts.concat(
+            foundScripts.map((s) => ({ type: "module", src: s.name })),
+          ).concat(route.scripts || []),
+        },
       };
     },
   };
