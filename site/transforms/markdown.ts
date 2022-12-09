@@ -1,6 +1,6 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
-import { plugin } from "../../renderers/breezewind/mod.ts";
+import { renderHTML } from "../../renderers/breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
@@ -33,11 +33,6 @@ marked.setOptions({
 // TODO: This dependency on twind is nasty as has an implicit dependency on
 // plugins/twind/mod.ts setup
 const tw = pageUtilities.tw;
-
-// TODO: Restore this one, figure out how to deal with the paths
-// const renderHTML =
-//  (await plugin({ componentsPath: "", layoutsPath: "" })).render;
-const renderHTML = () => "";
 
 async function transformMarkdown(input: string) {
   if (typeof input !== "string") {
@@ -82,22 +77,11 @@ async function transformMarkdown(input: string) {
         const matchedComponent = components[token.component];
 
         if (matchedComponent) {
-          // TODO: Restore this by getting reference to the current renderer
-          // here and then using it
-          /* const html = await renderHTML({
+          token.html = await renderHTML({
             component: matchedComponent,
             components: {},
-            context: {},
             utilities: pageUtilities,
-          }); */
-          // const html = "";
-          const html = await renderHTML({
-            layout: matchedComponent,
-            components: {},
-            context: {},
           });
-
-          token.html = html;
         } else {
           throw new Error(
             `Failed to find a matching component for ${token.component}`,

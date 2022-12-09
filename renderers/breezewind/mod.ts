@@ -30,19 +30,32 @@ async function breezewindRenderer(
 
   return {
     render: ({ route, context }) =>
-      breezewind({
+      renderHTML({
         component: layouts[route.layout],
         components,
-        extensions: [
-          // TODO: Allow defining these through configuration
-          breezeExtensions.classShortcut(tw),
-          breezeExtensions.foreach,
-          breezeExtensions.visibleIf,
-        ],
         context,
         utilities: pageUtilities,
       }),
   };
 }
 
-export { breezewindRenderer as plugin };
+function renderHTML(
+  { component, components, context, utilities }: Parameters<
+    typeof breezewind
+  >[0],
+) {
+  return breezewind({
+    component,
+    components,
+    extensions: [
+      // TODO: Allow defining these through configuration
+      breezeExtensions.classShortcut(tw),
+      breezeExtensions.foreach,
+      breezeExtensions.visibleIf,
+    ],
+    context,
+    utilities,
+  });
+}
+
+export { breezewindRenderer as plugin, renderHTML };

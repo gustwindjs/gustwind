@@ -1,6 +1,6 @@
 import md from "./transforms/markdown.ts";
 import { tw as twind } from "../client-deps.ts";
-import type { Context } from "../types.ts";
+import type { Context } from "../breezewind/types.ts";
 
 function dateToISO(_: Context, date: string) {
   return (new Date(date)).toISOString();
@@ -21,17 +21,15 @@ function tw(_: Context, input: string) {
 
 let renderStart: number;
 
-function _onRenderStart(_?: Context) {
+function _onRenderStart() {
   // This is triggered when page rendering begins.
   // It's a good spot for clearing ids caches (think anchoring)
   // or benchmarking.
   renderStart = performance.now();
 }
 
-// TODO: Make context mandatory again. This needs _onRenderStart/_onRenderEnd
-// handling directly within breezewind.
-function _onRenderEnd(context?: Context) {
-  if (context?.pagePath) {
+function _onRenderEnd(context: Context) {
+  if (context.pagePath) {
     const renderEnd = performance.now();
 
     console.log(
