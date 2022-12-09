@@ -19,7 +19,6 @@
     "path": "./routers/breezewind/mod.ts",
     "options": {
       "dataSourcesPath": "./site/dataSources.ts",
-      "include": ["/"],
       "routesPath": "./site/routes.json"
     }
   },
