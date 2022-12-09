@@ -6,9 +6,8 @@ function dateToISO(_: Context, date: string) {
   return (new Date(date)).toISOString();
 }
 
-function markdown(_: Context, input: string) {
-  // @ts-expect-error This is fine
-  return md(input).content;
+async function markdown(_: Context, input: string) {
+  return (await md(input)).content;
 }
 
 function testUtility(_: Context, input: string) {
