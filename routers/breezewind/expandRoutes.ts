@@ -102,7 +102,9 @@ async function expandRoute(
       ...route,
       routes: { ...(route.routes || {}), ...expandedRoutes },
     };
-  } else if (route.dataSources) {
+  }
+
+  if (route.dataSources) {
     const context = await getDataSourceContext(
       route.dataSources,
       dataSources,
