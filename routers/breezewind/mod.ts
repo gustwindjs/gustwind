@@ -5,8 +5,9 @@ import { path } from "../../server-deps.ts";
 import type { Route, Router } from "../../types.ts";
 
 async function plugin(
-  { dataSourcesPath, routesPath }: {
+  { dataSourcesPath, include, routesPath }: {
     dataSourcesPath: string;
+    include: string[];
     routesPath: string;
   },
 ): Promise<Router> {
@@ -21,13 +22,24 @@ async function plugin(
     : {};
 
   return {
-    getAllRoutes: async () =>
-      flattenRoutes(
+    getAllRoutes: async () => {
+      const allRoutes = flattenRoutes(
         await expandRoutes({
           routes,
           dataSources,
         }),
-      ),
+      );
+
+      if (include) {
+        return Object.fromEntries(
+          Object.entries(
+            allRoutes,
+          ).filter(([url]) => include.includes(url)),
+        );
+      }
+
+      return allRoutes;
+    },
     matchRoute(url: string) {
       // TODO: This should check if the given url exists in the route definition
       // To keep this fast, it should avoid flattening/expanding beforehand and
