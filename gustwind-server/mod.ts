@@ -4,7 +4,7 @@ import { dir } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import type { Mode, ProjectMeta } from "../types.ts";
+import type { Mode, ProjectMeta, Tasks } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -15,7 +15,7 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  const fs: Record<string, string> = {};
+  let fs: Record<string, string> = {};
   const { plugins, router, tasks } = await importPlugins(projectMeta);
 
   // TODO: Write these to virtual fs
@@ -44,13 +44,7 @@ async function serveGustwind({
           route: matchedRoute,
         });
 
-        tasks.forEach(({ type, payload }) => {
-          switch (type) {
-            case "writeFile":
-              fs[`/${payload.file}`] = payload.data;
-              break;
-          }
-        });
+        fs = { ...fs, ...evaluateTasks(tasks) };
 
         // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
         return respond(
@@ -72,6 +66,20 @@ async function serveGustwind({
   const listener = Deno.listen({ port: projectMeta.port });
 
   return () => server.serve(listener);
+}
+
+function evaluateTasks(tasks: Tasks) {
+  const ret: Record<string, string> = {};
+
+  tasks.forEach(({ type, payload }) => {
+    switch (type) {
+      case "writeFile":
+        ret[`/${payload.file}`] = payload.data;
+        break;
+    }
+  });
+
+  return ret;
 }
 
 /*
