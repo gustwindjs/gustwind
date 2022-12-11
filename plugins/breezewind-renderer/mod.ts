@@ -41,9 +41,12 @@ async function breezewindRenderer(
         context,
         utilities: pageUtilities,
       }),
-    onMessage: ({ type }) => {
+    onMessage: ({ type, payload }: { type: string; payload: string }) => {
       if (type === "get-components") {
         return components;
+      }
+      if (type === "get-renderer") {
+        return layouts[payload];
       } else {
         throw new Error(
           `breezewind-renderer-plugin - Unknown message type: ${type}`,

@@ -96,15 +96,25 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
       };
     },
     */
-    beforeEachRender({ url, ...rest }) {
+    beforeEachRender({ url, send, route, context }) {
       const outputDirectory = path.join(projectMeta.outputDirectory, url);
 
-      pluginCache.contexts[url + "context.json"] = rest.context;
-      // TODO: Do a lookup against layout data here
-      //pluginCache.contexts[url + "layout.json"] = rest.route.layout;
-      pluginCache.contexts[url + "route.json"] = rest.route;
+      const lookup = {
+        context,
+        layout: send(
+          "breezewind-renderer-plugin",
+          { type: "get-renderer", payload: route.layout },
+        ),
+        route,
+      };
 
-      return rest.route.type === "xml"
+      // TODO: Consider eliminating pluginCache and deriving instead
+      pluginCache.contexts[url + "context.json"] = context;
+      // @ts-expect-error Assume this is fine or crashes the runtime
+      pluginCache.contexts[url + "layout.json"] = lookup.layout;
+      pluginCache.contexts[url + "route.json"] = route;
+
+      return route.type === "xml"
         ? []
         : ["context", "layout", "route"].map((name) => ({
           type: "writeFile",
@@ -112,7 +122,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
             outputDirectory,
             file: `${name}.json`,
             // @ts-expect-error We know name is suitable by now
-            data: JSON.stringify(rest[name]),
+            data: JSON.stringify(lookup[name]),
           },
         }));
     },

@@ -75,25 +75,7 @@ async function preparePlugins(
     .filter(Boolean);
   const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
     .filter(Boolean);
-  const send: Send = (pluginName, message) => {
-    const foundPlugin = plugins.find(({ meta: { name } }) =>
-      pluginName === name
-    );
-
-    if (foundPlugin) {
-      if (foundPlugin.onMessage) {
-        return foundPlugin.onMessage(message);
-      } else {
-        throw new Error(
-          `Plugin ${pluginName} does not have an onMessage handler`,
-        );
-      }
-    } else {
-      throw new Error(
-        `Tried to send a plugin (${pluginName}) that does not exist`,
-      );
-    }
-  };
+  const send = getSend(plugins);
 
   for await (const sendMessage of messageSenders) {
     if (sendMessage) {
@@ -129,6 +111,7 @@ async function applyPlugins(
     url: string;
   },
 ) {
+  const send = getSend(plugins);
   const pluginContext = await applyPrepareContext({ plugins, route });
 
   const context = {
@@ -145,6 +128,7 @@ async function applyPlugins(
     context,
     plugins,
     route,
+    send,
     url,
   });
 
@@ -152,6 +136,7 @@ async function applyPlugins(
     context,
     plugins,
     route,
+    send,
     url,
   });
 
@@ -161,9 +146,32 @@ async function applyPlugins(
       markup,
       plugins,
       route,
+      send,
       url,
     }),
     tasks,
+  };
+}
+
+function getSend(plugins: (PluginModule & Plugin)[]): Send {
+  return (pluginName, message) => {
+    const foundPlugin = plugins.find(({ meta: { name } }) =>
+      pluginName === name
+    );
+
+    if (foundPlugin) {
+      if (foundPlugin.onMessage) {
+        return foundPlugin.onMessage(message);
+      } else {
+        throw new Error(
+          `Plugin ${pluginName} does not have an onMessage handler`,
+        );
+      }
+    } else {
+      throw new Error(
+        `Tried to send a plugin (${pluginName}) that does not exist`,
+      );
+    }
   };
 }
 
@@ -229,10 +237,11 @@ async function applyPrepareContext(
 }
 
 async function applyBeforeEachRenders(
-  { context, plugins, route, url }: {
+  { context, plugins, route, send, url }: {
     context: Context;
     plugins: (PluginModule & Plugin)[];
     route: Route;
+    send: Send;
     url: string;
   },
 ) {
@@ -243,7 +252,7 @@ async function applyBeforeEachRenders(
   for await (const beforeEachRender of beforeEachRenders) {
     const tasksToAdd =
       // @ts-expect-error We know beforeEachRender should be defined by now
-      await beforeEachRender({ context, route, url });
+      await beforeEachRender({ context, route, send, url });
 
     if (tasksToAdd) {
       tasks = tasks.concat(tasksToAdd);
@@ -254,10 +263,11 @@ async function applyBeforeEachRenders(
 }
 
 async function applyRenders(
-  { context, plugins, route, url }: {
+  { context, plugins, route, send, url }: {
     context: Context;
     plugins: (PluginModule & Plugin)[];
     route: Route;
+    send: Send;
     url: string;
   },
 ) {
@@ -270,18 +280,19 @@ async function applyRenders(
   for await (const render of renders) {
     markup =
       // @ts-expect-error We know render should be defined by now
-      await render({ context, route, url });
+      await render({ context, route, send, url });
   }
 
   return markup;
 }
 
 async function applyAfterEachRenders(
-  { context, markup, plugins, route, url }: {
+  { context, markup, plugins, route, send, url }: {
     context: Context;
     markup: string;
     plugins: (PluginModule & Plugin)[];
     route: Route;
+    send: Send;
     url: string;
   },
 ) {
@@ -294,6 +305,7 @@ async function applyAfterEachRenders(
       context,
       markup,
       route,
+      send,
       url,
     });
 

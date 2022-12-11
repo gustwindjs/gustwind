@@ -79,8 +79,9 @@ type Plugin = {
     { cache, route }: { cache: ServeCache; route: Route },
   ): Promise<Partial<ServeCache>> | (Partial<ServeCache>);
   beforeEachRender?(
-    { context, route, url }: {
+    { context, send, route, url }: {
       context: Context;
+      send: Send;
       route: Route;
       url: string;
     },
@@ -90,15 +91,17 @@ type Plugin = {
     >
     | Tasks
     | void;
-  render?({ route, context, url }: {
+  render?({ route, context, send, url }: {
     route: Route;
     context: Context;
+    send: Send;
     url: string;
   }): Promise<string> | string;
-  afterEachRender?({ markup, context, route, url }: {
+  afterEachRender?({ markup, context, route, send, url }: {
     markup: string;
     context: Context;
     route: Route;
+    send: Send;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(message: SendMessage): void;
