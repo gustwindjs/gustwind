@@ -1,4 +1,4 @@
-import { expandRoutes } from "./expandRoutes.ts";
+import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { getJson } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
@@ -46,8 +46,18 @@ async function plugin(
 
       return allRoutes;
     },
-    matchRoute(url: string) {
-      return matchRoute(routes, url);
+    matchRoute: async (url: string) => {
+      const matchedRoute = matchRoute(routes, url);
+
+      if (matchedRoute) {
+        const [_, route] = await expandRoute({
+          url,
+          route: matchedRoute,
+          dataSources,
+        });
+
+        return route;
+      }
     },
   };
 }

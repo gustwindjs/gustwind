@@ -97,7 +97,7 @@ type Plugin = {
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(message: SendMessage): void;
   getAllRoutes?(): Promise<Record<string, Route>>;
-  matchRoute?(url: string): Promise<Route> | Route | undefined;
+  matchRoute?(url: string): Promise<Route | undefined> | Route | undefined;
 };
 
 type Send = (
