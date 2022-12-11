@@ -9,7 +9,6 @@ import { VERSION } from "../version.ts";
 import type { ProjectMeta } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { serveGustwind } from "../gustwind-server/mod.ts";
-import { getCache } from "../gustwind-server/cache.ts";
 
 function usage() {
   console.log(`
@@ -93,20 +92,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     // const projectPaths = projectMeta.paths;
     const mode = "development";
-    const initialCache = getCache();
-
-    /*
-    await watchAll({
-      cache: initialCache,
-      projectRoot: projectRoot,
-      projectPaths,
-    });
-    */
 
     const serve = await serveGustwind({
       projectMeta,
       mode,
-      initialCache,
     });
 
     const port = projectMeta.port;

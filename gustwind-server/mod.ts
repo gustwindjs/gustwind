@@ -4,7 +4,6 @@ import { dir } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import { getCache, type ServeCache } from "./cache.ts";
 import type { Mode, ProjectMeta } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -12,18 +11,11 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 async function serveGustwind({
   projectMeta,
   mode,
-  initialCache,
 }: {
   projectMeta: ProjectMeta;
   mode: Mode;
-  initialCache?: ServeCache;
 }) {
-  // The cache is populated based on an external source (web socket, fs). If there's
-  // something in the cache, then the routing logic will refer to it instead of
-  // the original entries loaded from the file system.
-  const cache = initialCache || getCache();
-
-  const { router, tasks } = await importPlugins(projectMeta);
+  const { plugins, router, tasks } = await importPlugins(projectMeta);
   const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now
@@ -33,24 +25,9 @@ async function serveGustwind({
     }));
   let scriptsToCompile: { path: string; name: string }[] = [];
 
-  if (projectPaths.scripts) {
-    const scripts = await Promise.all(
-      projectPaths.scripts.map((s) => dir(s, ".ts")),
-    );
-
-    scriptsToCompile = scriptsToCompile.concat(scripts.flat());
-  }
-
+  // TODO: Handle through tasks or compile on demand?
   if (pluginScripts) {
     scriptsToCompile = scriptsToCompile.concat(pluginScripts);
-  }
-
-  if (scriptsToCompile) {
-    DEBUG && console.log("Compiling project scripts");
-
-    const customScripts = await compileScriptsToJavaScript(scriptsToCompile);
-
-    cache.scripts = { ...cache.scripts, ...customScripts };
   }
 
   const server = new Server({
