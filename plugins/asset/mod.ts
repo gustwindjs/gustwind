@@ -6,10 +6,10 @@ const meta: PluginMeta = {
 };
 
 function assetPlugin(
-  // TODO: Model asset output path
-  { assetsPath }: {
+  { assetsPath, outputPath }: {
     // TODO: Consider supporting an array of directories
     assetsPath: string;
+    outputPath: string;
   },
   projectMeta: ProjectMeta,
 ): Plugin {
@@ -23,7 +23,7 @@ function assetPlugin(
         type: "writeFiles",
         payload: {
           inputDirectory,
-          outputDirectory,
+          outputDirectory: path.join(outputDirectory, outputPath),
         },
       }];
     },

@@ -26,7 +26,8 @@
     {
       "path": "./plugins/asset/mod.ts",
       "options": {
-        "assetsPath": "./assets"
+        "assetsPath": "./assets",
+        "outputPath": "./assets"
       }
     },
     {
