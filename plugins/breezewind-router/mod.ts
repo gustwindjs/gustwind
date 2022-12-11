@@ -2,6 +2,7 @@ import { expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { getJson } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
+import { trim } from "../../utilities/string.ts";
 import type { Plugin, PluginMeta, Route } from "../../types.ts";
 
 const meta: PluginMeta = {
@@ -46,25 +47,21 @@ async function plugin(
       return allRoutes;
     },
     matchRoute(url: string) {
-      // TODO: This should check if the given url exists in the route definition
-      // To keep this fast, it should avoid flattening/expanding beforehand and
-      // should evaluate dataSources only if a route was found
-      return undefined;
+      return matchRoute(routes, url);
     },
   };
 }
 
-/*
 function matchRoute(
-  routes: Route["routes"],
-  pathname: string,
+  routes: Record<string, Route>,
+  url: string,
 ): Route | undefined {
   if (!routes) {
     return;
   }
 
-  const parts = trim(pathname, "/").split("/");
-  const match = routes[pathname] || routes[parts[0]];
+  const parts = trim(url, "/").split("/");
+  const match = routes[url] || routes[parts[0]];
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
@@ -72,6 +69,5 @@ function matchRoute(
 
   return match;
 }
-*/
 
 export { meta, plugin };
