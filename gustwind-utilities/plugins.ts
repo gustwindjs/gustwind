@@ -9,6 +9,7 @@ import type {
   ProjectMeta,
   Renderer,
   Route,
+  Send,
   Tasks,
 } from "../types.ts";
 
@@ -37,9 +38,7 @@ async function importPlugins(projectMeta: ProjectMeta) {
     }
   }
 
-  // Since plugin initialization has been applied already, we can treat
-  // what's returned as plugins even if there's a bit more data now.
-  return loadedPlugins as Plugin[];
+  return loadedPlugins;
 }
 
 async function importPlugin<P = Plugin>(
@@ -66,7 +65,7 @@ async function applyPlugins(
     mode: Mode;
     projectMeta: ProjectMeta;
     route: Route;
-    plugins: Plugin[];
+    plugins: (PluginModule & Plugin)[];
     url: string;
     render: Renderer["render"];
   },
@@ -107,18 +106,48 @@ async function applyPlugins(
   };
 }
 
-async function applyPrepareBuilds(
-  { plugins }: { plugins: Plugin[] },
+async function preparePlugins(
+  { plugins }: { plugins: (PluginModule & Plugin)[] },
 ) {
   let tasks: Tasks = [];
+  const messageSenders = plugins.map((plugin) => plugin.sendMessages)
+    .filter(Boolean);
   const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
     .filter(Boolean);
+  const send: Send = (pluginName, message) => {
+    const foundPlugin = plugins.find(({ meta: { name } }) =>
+      pluginName === name
+    );
+
+    if (foundPlugin) {
+      if (foundPlugin.onMessage) {
+        foundPlugin.onMessage(message);
+      } else {
+        throw new Error(
+          `Plugin ${pluginName} does not have an onMessage handler`,
+        );
+      }
+    } else {
+      throw new Error(
+        `Tried to send a plugin (${pluginName}) that does not exist`,
+      );
+    }
+  };
+
+  for await (const sendMessage of messageSenders) {
+    if (sendMessage) {
+      await sendMessage({ send });
+    }
+  }
 
   for await (const prepareBuild of prepareBuilds) {
-    // @ts-expect-error We know prepareBuild should be defined by now
-    const tasksToAdd = await prepareBuild();
+    if (prepareBuild) {
+      const tasksToAdd = await prepareBuild();
 
-    tasks = tasks.concat(tasksToAdd);
+      if (tasksToAdd) {
+        tasks = tasks.concat(tasksToAdd);
+      }
+    }
   }
 
   return tasks;
@@ -126,7 +155,7 @@ async function applyPrepareBuilds(
 
 async function applyBeforeEachContext(
   { plugins, route }: {
-    plugins: Plugin[];
+    plugins: (PluginModule & Plugin)[];
     route: Route;
   },
 ) {
@@ -150,7 +179,7 @@ async function applyBeforeEachContext(
 async function applyBeforeEachRenders(
   { context, plugins, route, url }: {
     context: Context;
-    plugins: Plugin[];
+    plugins: (PluginModule & Plugin)[];
     route: Route;
     url: string;
   },
@@ -160,12 +189,12 @@ async function applyBeforeEachRenders(
     .filter(Boolean);
 
   for await (const beforeEachRender of beforeEachRenders) {
-    const ret =
+    const tasksToAdd =
       // @ts-expect-error We know beforeEachRender should be defined by now
       await beforeEachRender({ context, route, url });
 
-    if (ret?.tasks) {
-      tasks = tasks.concat(ret.tasks);
+    if (tasksToAdd) {
+      tasks = tasks.concat(tasksToAdd);
     }
   }
 
@@ -176,7 +205,7 @@ async function applyAfterEachRenders(
   { context, markup, plugins, route, url }: {
     context: Context;
     markup: string;
-    plugins: Plugin[];
+    plugins: (PluginModule & Plugin)[];
     route: Route;
     url: string;
   },
@@ -204,7 +233,7 @@ export {
   applyBeforeEachContext,
   applyBeforeEachRenders,
   applyPlugins,
-  applyPrepareBuilds,
   importPlugin,
   importPlugins,
+  preparePlugins,
 };

@@ -21,10 +21,13 @@ async function scriptPlugin(
   const foundScripts = (await Promise.all(
     scriptsPath.map((p) => dir(path.join(cwd, p), ".ts")),
   )).flat();
+  let receivedScripts: { name: string; path: string }[] = [];
 
   return {
     prepareBuild: () => {
-      return foundScripts.map(({ name: scriptName, path: scriptPath }) => ({
+      return foundScripts.concat(receivedScripts).map((
+        { name: scriptName, path: scriptPath },
+      ) => ({
         type: "writeScript",
         payload: {
           outputDirectory,
@@ -41,6 +44,16 @@ async function scriptPlugin(
           ).concat(route.scripts || []),
         },
       };
+    },
+    onMessage({ type, payload }) {
+      if (type === "add-scripts") {
+        // @ts-expect-error It's not clear how to type this
+        receivedScripts = receivedScripts.concat(payload);
+      } else {
+        throw new Error(
+          `gustwind-script-plugin - Unknown message type: ${type}`,
+        );
+      }
     },
   };
 }

@@ -64,8 +64,15 @@ type PluginMeta = {
 };
 
 type Plugin = {
+  // Send messages to other plugins before other hooks are applied. This
+  // is useful for giving specific instructions on what to do.
+  sendMessages?(
+    { send }: {
+      send: Send;
+    },
+  ): Promise<Tasks> | Tasks | void;
   // Return additional tasks to perform per build
-  prepareBuild?(): Promise<Tasks> | Tasks;
+  prepareBuild?(): Promise<Tasks> | Tasks | void;
   // Run setup before context is resolved or add something to it
   prepareContext?({ route }: { route: Route }):
     | Promise<{ context: Record<string, unknown> }>
@@ -91,9 +98,9 @@ type Plugin = {
     },
   ):
     | Promise<
-      { tasks?: Tasks } | void
+      Tasks | void
     >
-    | { tasks?: Tasks }
+    | Tasks
     | void;
   afterEachRender?({ markup, context, route, url }: {
     markup: string;
@@ -101,7 +108,14 @@ type Plugin = {
     route: Route;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
+  onMessage?(message: SendMessage): void;
 };
+
+type Send = (
+  pluginName: string,
+  { type, payload }: SendMessage,
+) => void;
+type SendMessage = { type: string; payload: unknown };
 
 type Router = {
   getAllRoutes(): Promise<Record<string, Route>>;
@@ -194,5 +208,6 @@ export type {
   Route,
   Router,
   Scripts,
+  Send,
   Tasks,
 };

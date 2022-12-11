@@ -14,7 +14,7 @@ import type {
 
 const meta: PluginMeta = {
   name: "gustwind-editor-plugin",
-  dependsOn: ["gustwind-twind-plugin"],
+  dependsOn: ["gustwind-twind-plugin", "gustwind-script-plugin"],
 };
 
 const scriptsToCompile = [
@@ -101,20 +101,19 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
       //pluginCache.contexts[url + "layout.json"] = rest.route.layout;
       pluginCache.contexts[url + "route.json"] = rest.route;
 
-      return {
-        tasks: rest.route.type === "xml"
-          ? []
-          : ["context", "layout", "route"].map((name) => ({
-            type: "writeFile",
-            payload: {
-              outputDirectory,
-              file: `${name}.json`,
-              // @ts-expect-error We know name is suitable by now
-              data: JSON.stringify(rest[name]),
-            },
-          })),
-        // TODO: Communicate to the script plugin that these are needed
-        /*
+      return rest.route.type === "xml"
+        ? []
+        : ["context", "layout", "route"].map((name) => ({
+          type: "writeFile",
+          payload: {
+            outputDirectory,
+            file: `${name}.json`,
+            // @ts-expect-error We know name is suitable by now
+            data: JSON.stringify(rest[name]),
+          },
+        }));
+      // TODO: Communicate to the script plugin that these are needed
+      /*
         scripts: [
           // TODO: Check paths and path resolution
           // Note that the page editor is loaded lazily by toggleEditor.
@@ -124,33 +123,21 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           { type: "module", src: "/scripts/webSocketClient.js" },
         ],
         */
-      };
     },
-    prepareBuild: () => {
-      const { outputDirectory } = projectMeta;
+    // TODO: This portion belongs to the script plugin!
+    sendMessages: ({ send }) => {
+      const cwd = Deno.cwd();
 
-      // TODO: This should be managed by the scripts plugin!
-      const scriptsDirectory = path.join(outputDirectory, "scripts");
-      const tasks: Tasks = [];
+      send("gustwind-script-plugin", {
+        type: "add-scripts",
+        payload: scriptsToCompile.map((name) => ({
+          // TODO: How to make this work in the remote case?
+          path: path.join(cwd, "plugins", "editor", "scripts", `${name}.ts`),
+          name: `${name}.ts`,
+        })),
+      });
 
-      scriptsToCompile.forEach((scriptName) =>
-        tasks.push({
-          type: "writeScript",
-          payload: {
-            outputDirectory: scriptsDirectory,
-            scriptName: `${scriptName}.ts`,
-            // TODO: Check how to resolve the script when consuming from remote
-            scriptPath: path.join(
-              Deno.cwd(),
-              "plugins",
-              "editor",
-              "scripts",
-              `${scriptName}.ts`,
-            ),
-          },
-        })
-      );
-
+      /*
       // TODO: How to get components data here to write?
       // The data is maintained by breezewind renderer so
       // the data dependency needs to be modeled somehow as well.
@@ -165,7 +152,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
       });
       */
 
-      return tasks;
+      // return tasks;
     },
   };
 }

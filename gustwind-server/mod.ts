@@ -5,9 +5,9 @@ import { trim } from "../utilities/string.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyPlugins,
-  applyPrepareBuilds,
   importPlugin,
   importPlugins,
+  preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
 import type { Mode, ProjectMeta, Renderer, Router } from "../types.ts";
@@ -74,7 +74,7 @@ async function serveGustwind({
   );
 
   const plugins = await importPlugins(projectMeta);
-  const pluginTasks = await applyPrepareBuilds({ plugins });
+  const pluginTasks = await preparePlugins({ plugins });
   const pluginScripts = pluginTasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now
