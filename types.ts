@@ -1,11 +1,6 @@
-// TODO: Eliminate direct dependency on breezewind types
-import type { Component } from "./breezewind/types.ts";
-import type { ServeCache } from "./gustwind-server/cache.ts";
-
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
 
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
@@ -36,7 +31,6 @@ type PluginOptions = { path: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
-type Layout = Component | Component[];
 
 // This is the context used when rendering a page
 type Context = Record<string, unknown> & {
@@ -75,9 +69,6 @@ type Plugin = {
       respond: (status: number, text: string, type: string) => void;
     },
   ): void;
-  beforeEachMatchedRequest?(
-    { cache, route }: { cache: ServeCache; route: Route },
-  ): Promise<Partial<ServeCache>> | (Partial<ServeCache>);
   beforeEachRender?(
     { context, send, route, url }: {
       context: Context;
@@ -106,7 +97,7 @@ type Plugin = {
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(message: SendMessage): void;
   getAllRoutes?(): Promise<Record<string, Route>>;
-  matchRoute?(url: string): Promise<Route> | undefined;
+  matchRoute?(url: string): Promise<Route> | Route | undefined;
 };
 
 type Send = (
@@ -117,6 +108,8 @@ type SendMessage = { type: string; payload?: unknown };
 
 type Route = {
   type?: "html" | "xml";
+  // TODO: This should come as an extension from the renderer plugin
+  // if it is enabled
   layout: string;
   meta: Meta;
   // TODO: This should come as an extension from the script plugin
@@ -181,12 +174,10 @@ export type {
   BuildWorkerEvent,
   BuildWorkerMessageTypes,
   Category,
-  Components,
   Context,
   DataContext,
   DataSource,
   DataSources,
-  Layout,
   MarkdownWithFrontmatter,
   Meta,
   Mode,
