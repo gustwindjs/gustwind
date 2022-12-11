@@ -62,7 +62,7 @@ type Plugin = {
   // Return additional tasks to perform per build
   prepareBuild?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
   // Run setup before context is resolved or add something to it
-  prepareContext?({ route }: { route: Route }):
+  prepareContext?({ send, route }: { send: Send; route: Route }):
     | Promise<{ context: Record<string, unknown> }>
     | Promise<void>
     | {

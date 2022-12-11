@@ -112,7 +112,7 @@ async function applyPlugins(
   },
 ) {
   const send = getSend(plugins);
-  const pluginContext = await applyPrepareContext({ plugins, route });
+  const pluginContext = await applyPrepareContext({ plugins, send, route });
 
   const context = {
     ...(await getContext({
@@ -214,9 +214,10 @@ async function applyMatchRoutes(
 }
 
 async function applyPrepareContext(
-  { plugins, route }: {
+  { plugins, route, send }: {
     plugins: (PluginModule & Plugin)[];
     route: Route;
+    send: Send;
   },
 ) {
   let context = {};
@@ -225,7 +226,7 @@ async function applyPrepareContext(
 
   for await (const prepareContext of prepareContexts) {
     if (prepareContext) {
-      const ret = await prepareContext({ route });
+      const ret = await prepareContext({ send, route });
 
       if (ret?.context) {
         context = { ...context, ...ret.context };
