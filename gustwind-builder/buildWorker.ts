@@ -78,9 +78,11 @@ self.onmessage = async (e) => {
     await Deno.writeTextFile(path.join(outputDirectory, file), data);
   }
   if (type === "writeFiles") {
-    const { payload: { inputDirectory, outputDirectory } } = e.data;
+    const { payload: { inputDirectory, outputDirectory, outputPath } } = e.data;
 
-    await fs.copy(inputDirectory, outputDirectory, { overwrite: true });
+    await fs.copy(inputDirectory, path.join(outputDirectory, outputPath), {
+      overwrite: true,
+    });
   }
 
   self.postMessage({ type: "finished" });

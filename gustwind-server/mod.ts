@@ -1,12 +1,9 @@
-import { cache, lookup, path as _path, Server } from "../server-deps.ts";
+import { cache, lookup, path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
-import { dir } from "../utilities/fs.ts";
-import { trim } from "../utilities/string.ts";
+import { dirSync } from "../utilities/fs.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import type { Mode, ProjectMeta, Tasks } from "../types.ts";
-
-const DEBUG = Deno.env.get("DEBUG") === "1";
 
 async function serveGustwind({
   projectMeta,
@@ -15,19 +12,8 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  let fs: Record<string, string> = {};
   const { plugins, router, tasks } = await importPlugins(projectMeta);
-
-  // TODO: Write these to virtual fs
-  const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
-    .map(({ payload }) => ({
-      // @ts-expect-error This is writeScript by now
-      path: payload.scriptPath,
-      // @ts-expect-error This is writeScript by now
-      name: payload.scriptName,
-    }));
-
-  console.log("plugin scripts", pluginScripts);
+  let fs = evaluateTasks(tasks);
 
   const server = new Server({
     handler: async ({ url }) => {
@@ -57,7 +43,16 @@ async function serveGustwind({
       const matchedFsItem = fs[pathname];
 
       if (matchedFsItem) {
-        return respond(200, matchedFsItem, lookup(pathname));
+        switch (matchedFsItem.type) {
+          case "file":
+            return respond(200, matchedFsItem.data, lookup(pathname));
+          case "path": {
+            const assetPath = matchedFsItem.path;
+            const asset = await Deno.readFile(assetPath);
+
+            return respond(200, asset, lookup(assetPath));
+          }
+        }
       }
 
       return respond(404, "No matching route");
@@ -69,15 +64,49 @@ async function serveGustwind({
 }
 
 function evaluateTasks(tasks: Tasks) {
-  const ret: Record<string, string> = {};
+  const ret: Record<
+    string,
+    { type: "file"; data: string } | {
+      type: "path";
+      path: string;
+    }
+  > = {};
 
   tasks.forEach(({ type, payload }) => {
     switch (type) {
       case "writeFile":
-        ret[`/${payload.file}`] = payload.data;
+        ret[`/${payload.file}`] = {
+          type: "file",
+          data: payload.data,
+        };
+        break;
+      case "writeFiles": {
+        const outputBasename = path.basename(payload.outputPath);
+
+        dirSync(payload.inputDirectory).forEach((file) => {
+          ret[`/${outputBasename}/${file.name}`] = {
+            type: "path",
+            path: file.path,
+          };
+        });
+        break;
+      }
+      case "writeScript":
+        // TODO: writeScript
         break;
     }
   });
+
+  // TODO
+  /*
+  const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
+    .map(({ payload }) => ({
+      // @ts-expect-error This is writeScript by now
+      path: payload.scriptPath,
+      // @ts-expect-error This is writeScript by now
+      name: payload.scriptName,
+    }));
+  */
 
   return ret;
 }

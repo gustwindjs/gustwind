@@ -4,12 +4,13 @@ import { path } from "../../server-deps.ts";
 import type { Component } from "../../breezewind/types.ts";
 import type {
   DataContext,
-  Layout,
   Plugin,
   PluginMeta,
   ProjectMeta,
   Route,
 } from "../../types.ts";
+
+type Layout = Component | Component[];
 
 const meta: PluginMeta = {
   name: "gustwind-editor-plugin",

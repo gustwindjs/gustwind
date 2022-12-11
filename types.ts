@@ -156,6 +156,7 @@ type BuildWorkerEvent =
     payload: {
       inputDirectory: string;
       outputDirectory: string;
+      outputPath: string;
     };
   }
   | {

@@ -23,30 +23,12 @@ function assetPlugin(
         type: "writeFiles",
         payload: {
           inputDirectory,
-          outputDirectory: path.join(outputDirectory, outputPath),
+          outputDirectory,
+          outputPath,
         },
       }];
     },
   };
 }
-
-// TODO: Server
-/*
-      const assetPath = projectPaths.assets && _path.join(
-        projectPaths.assets,
-        _path.relative(assetsPath || "", trim(pathname, "/")),
-      );
-
-      try {
-        if (assetPath) {
-          const asset = await Deno.readFile(assetPath);
-
-          return respond(200, asset, lookup(assetPath));
-        }
-      } catch (_error) {
-        // TODO: What to do with possible errors?
-        DEBUG && console.error(_error);
-      }
-*/
 
 export { assetPlugin as plugin, meta };
