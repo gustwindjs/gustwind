@@ -24,7 +24,8 @@ const scriptsToCompile = [
   "pageEditor",
   "toggleEditor",
   "twindRuntime",
-  "webSocketClient",
+  // TODO: Re-enable
+  // "webSocketClient",
 ];
 
 type PluginCache = {
