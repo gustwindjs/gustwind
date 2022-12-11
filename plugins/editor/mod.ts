@@ -163,6 +163,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           // @ts-expect-error This is fine.
           Object.entries(layouts).map((
             [k, v],
+            // @ts-expect-error This is fine.
           ) => [k, route.type === "xml" ? v : attachIds(v)]),
         ),
       });
