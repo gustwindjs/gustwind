@@ -25,7 +25,7 @@ async function breezewindRenderer(
   // new Date().getTime()
   //
   // Maybe it's a good default for an import helper
-  const [components, layouts, pageUtilities] = await Promise.all([
+  let [components, layouts, pageUtilities] = await Promise.all([
     getDefinitions<Component>(path.join(cwd, componentsPath)),
     getDefinitions<Component>(path.join(cwd, layoutsPath)),
     pageUtilitiesPath
@@ -41,16 +41,36 @@ async function breezewindRenderer(
         context,
         utilities: pageUtilities,
       }),
-    onMessage: ({ type, payload }: { type: string; payload: string }) => {
-      if (type === "get-components") {
-        return components;
-      }
-      if (type === "get-renderer") {
-        return layouts[payload];
-      } else {
-        throw new Error(
-          `breezewind-renderer-plugin - Unknown message type: ${type}`,
-        );
+    onMessage: (
+      { type, payload }:
+        | { type: "get-components"; payload: undefined }
+        | {
+          type: "update-components";
+          payload: Component;
+        }
+        | { type: "get-renderer"; payload: string }
+        | { type: "get-layouts"; payload: undefined }
+        | { type: "update-layouts"; payload: Component },
+    ) => {
+      switch (type) {
+        case "get-components":
+          return components;
+        case "get-layouts":
+          return layouts;
+        case "get-renderer":
+          return layouts[payload];
+        case "update-components":
+          // @ts-expect-error This is fine.
+          components = payload;
+          break;
+        case "update-layouts":
+          // @ts-expect-error This is fine.
+          layouts = payload;
+          break;
+        default:
+          throw new Error(
+            `breezewind-renderer-plugin - Unknown message type: ${type}`,
+          );
       }
     },
   };

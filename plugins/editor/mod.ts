@@ -45,6 +45,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
   };
 
   return {
+    // TODO: Redo this one (reconsider respond method)
     beforeEachRequest({ url, respond }) {
       const matchedContext = pluginCache.contexts[url];
 
@@ -80,23 +81,6 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         );
       }
     },
-    // TODO: How to pull layout data from renderer here?
-    /*
-    beforeEachMatchedRequest({ cache, route }) {
-      return {
-        components: Object.fromEntries(
-          Object.entries(pluginCache.components).map((
-            [k, v],
-          ) => [k, attachIds(v)]),
-        ),
-        layouts: Object.fromEntries(
-          Object.entries(cache.layouts).map((
-            [k, v],
-          ) => [k, route.type === "xml" ? v : attachIds(v)]),
-        ),
-      };
-    },
-    */
     beforeEachRender({ url, send, route, context }) {
       const outputDirectory = path.join(projectMeta.outputDirectory, url);
 
@@ -152,6 +136,36 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           data: JSON.stringify(components),
         },
       }];
+    },
+    prepareContext: async ({ route, send }) => {
+      const id = "breezewind-renderer-plugin";
+
+      const components = await send(id, {
+        type: "get-components",
+      });
+      send(id, {
+        type: "update-components",
+        payload: Object.fromEntries(
+          // @ts-expect-error This is fine.
+          Object.entries(components).map((
+            [k, v],
+            // @ts-expect-error This is fine.
+          ) => [k, attachIds(v)]),
+        ),
+      });
+
+      const layouts = await send(id, {
+        type: "get-layouts",
+      });
+      send(id, {
+        type: "update-layouts",
+        payload: Object.fromEntries(
+          // @ts-expect-error This is fine.
+          Object.entries(layouts).map((
+            [k, v],
+          ) => [k, route.type === "xml" ? v : attachIds(v)]),
+        ),
+      });
     },
   };
 }
