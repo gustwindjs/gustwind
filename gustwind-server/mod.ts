@@ -15,7 +15,10 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
+  const fs: Record<string, string> = {};
   const { plugins, router, tasks } = await importPlugins(projectMeta);
+
+  // TODO: Write these to virtual fs
   const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now
@@ -23,12 +26,8 @@ async function serveGustwind({
       // @ts-expect-error This is writeScript by now
       name: payload.scriptName,
     }));
-  let scriptsToCompile: { path: string; name: string }[] = [];
 
-  // TODO: Handle through tasks or compile on demand?
-  if (pluginScripts) {
-    scriptsToCompile = scriptsToCompile.concat(pluginScripts);
-  }
+  console.log("plugin scripts", pluginScripts);
 
   const server = new Server({
     handler: async ({ url }) => {
@@ -37,18 +36,6 @@ async function serveGustwind({
       const matchedRoute = await router.matchRoute(pathname);
 
       if (matchedRoute) {
-        console.log(matchedRoute);
-
-        let contentType = "text/html; charset=utf-8";
-
-        // TODO: Restore
-        // If there's cached data, use it instead. This fixes
-        // the case in which there was an update over a websocket and
-        // also avoids the need to hit the file system for getting
-        // the latest data.
-        // const layout: Layout = cache.layouts[layoutName] ||
-        // matchedLayout;
-
         const { markup, tasks } = await applyPlugins({
           plugins,
           mode,
@@ -57,15 +44,26 @@ async function serveGustwind({
           route: matchedRoute,
         });
 
-        // TODO: Process writeFile tasks -> write to a virtual fs to serve
-        console.log("tasks", tasks);
+        tasks.forEach(({ type, payload }) => {
+          switch (type) {
+            case "writeFile":
+              fs[`/${payload.file}`] = payload.data;
+              break;
+          }
+        });
 
-        if (matchedRoute.type === "xml") {
-          // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
-          contentType = "text/xml";
-        }
+        // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+        return respond(
+          200,
+          markup,
+          matchedRoute.type === "xml" ? "text/xml" : "text/html; charset=utf-8",
+        );
+      }
 
-        return respond(200, markup, contentType);
+      const matchedFsItem = fs[pathname];
+
+      if (matchedFsItem) {
+        return respond(200, matchedFsItem, lookup(pathname));
       }
 
       return respond(404, "No matching route");
