@@ -9,12 +9,15 @@ import type {
   PluginMeta,
   ProjectMeta,
   Route,
-  Tasks,
 } from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "gustwind-editor-plugin",
-  dependsOn: ["gustwind-twind-plugin", "gustwind-script-plugin"],
+  dependsOn: [
+    "breezewind-renderer-plugin",
+    "gustwind-twind-plugin",
+    "gustwind-script-plugin",
+  ],
 };
 
 const scriptsToCompile = [
@@ -112,19 +115,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
             data: JSON.stringify(rest[name]),
           },
         }));
-      // TODO: Communicate to the script plugin that these are needed
-      /*
-        scripts: [
-          // TODO: Check paths and path resolution
-          // Note that the page editor is loaded lazily by toggleEditor.
-          // Because of that it's not included to this reference list.
-          { type: "module", src: "/scripts/twindRuntime.js" },
-          { type: "module", src: "/scripts/toggleEditor.js" },
-          { type: "module", src: "/scripts/webSocketClient.js" },
-        ],
-        */
     },
-    // TODO: This portion belongs to the script plugin!
     sendMessages: ({ send }) => {
       const cwd = Deno.cwd();
 
@@ -136,23 +127,20 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           name: `${name}.ts`,
         })),
       });
+    },
+    prepareBuild: async ({ send }) => {
+      const components = await send("breezewind-renderer-plugin", {
+        type: "get-components",
+      });
 
-      /*
-      // TODO: How to get components data here to write?
-      // The data is maintained by breezewind renderer so
-      // the data dependency needs to be modeled somehow as well.
-      /*
-      tasks.push({
+      return [{
         type: "writeFile",
         payload: {
-          outputDirectory: outputDirectory,
+          outputDirectory: projectMeta.outputDirectory,
           file: "components.json",
           data: JSON.stringify(components),
         },
-      });
-      */
-
-      // return tasks;
+      }];
     },
   };
 }

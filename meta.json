@@ -7,14 +7,6 @@
     "url": "https://gustwind.js.org/"
   },
   "outputDirectory": "./build",
-  "renderer": {
-    "path": "./renderers/breezewind/mod.ts",
-    "options": {
-      "componentsPath": "./site/components",
-      "layoutsPath": "./site/layouts",
-      "pageUtilitiesPath": "./site/pageUtilities.ts"
-    }
-  },
   "router": {
     "path": "./routers/breezewind/mod.ts",
     "options": {
@@ -23,6 +15,14 @@
     }
   },
   "plugins": [
+    {
+      "path": "./plugins/breezewind-renderer/mod.ts",
+      "options": {
+        "componentsPath": "./site/components",
+        "layoutsPath": "./site/layouts",
+        "pageUtilitiesPath": "./site/pageUtilities.ts"
+      }
+    },
     {
       "path": "./plugins/asset/mod.ts",
       "options": {

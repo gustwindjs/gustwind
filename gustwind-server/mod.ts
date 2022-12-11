@@ -10,7 +10,7 @@ import {
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { Mode, ProjectMeta, Renderer, Router } from "../types.ts";
+import type { Mode, ProjectMeta, Router } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -66,10 +66,6 @@ async function serveGustwind({
     (projectMeta: ProjectMeta) => Router
   >(
     projectMeta.router,
-    projectMeta,
-  );
-  const { render } = await importPlugin<Renderer>(
-    projectMeta.renderer,
     projectMeta,
   );
 

@@ -1,6 +1,6 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
-import { renderHTML } from "../../renderers/breezewind/mod.ts";
+import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";

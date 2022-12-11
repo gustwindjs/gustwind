@@ -1,23 +1,13 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
 import { compileScript } from "../utilities/compileScripts.ts";
-import {
-  applyPlugins,
-  importPlugin,
-  importPlugins,
-} from "../gustwind-utilities/plugins.ts";
+import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type {
-  BuildWorkerEvent,
-  Plugin,
-  ProjectMeta,
-  Renderer,
-} from "../types.ts";
+import type { BuildWorkerEvent, PluginModule, ProjectMeta } from "../types.ts";
 
 let id: string;
 let projectMeta: ProjectMeta;
-let render: Renderer["render"];
-let plugins: Plugin[];
+let plugins: PluginModule[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -32,12 +22,6 @@ self.onmessage = async (e) => {
     const { payload } = e.data;
 
     projectMeta = payload.projectMeta;
-
-    const plugin = await importPlugin<Renderer>(
-      projectMeta.renderer,
-      projectMeta,
-    );
-    render = plugin.render;
 
     plugins = await importPlugins(projectMeta);
 
@@ -61,7 +45,6 @@ self.onmessage = async (e) => {
       url,
       projectMeta,
       route,
-      render,
     });
 
     self.postMessage({

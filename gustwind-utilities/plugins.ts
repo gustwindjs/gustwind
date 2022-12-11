@@ -7,7 +7,6 @@ import type {
   PluginModule,
   PluginOptions,
   ProjectMeta,
-  Renderer,
   Route,
   Send,
   Tasks,
@@ -60,14 +59,12 @@ async function applyPlugins(
     url,
     projectMeta,
     route,
-    render,
   }: {
     mode: Mode;
     projectMeta: ProjectMeta;
     route: Route;
     plugins: (PluginModule & Plugin)[];
     url: string;
-    render: Renderer["render"];
   },
 ) {
   const pluginContext = await applyBeforeEachContext({ plugins, route });
@@ -89,9 +86,11 @@ async function applyPlugins(
     url,
   });
 
-  const markup = await render({
-    route,
+  const markup = await applyRenders({
     context,
+    plugins,
+    route,
+    url,
   });
 
   return {
@@ -121,7 +120,7 @@ async function preparePlugins(
 
     if (foundPlugin) {
       if (foundPlugin.onMessage) {
-        foundPlugin.onMessage(message);
+        return foundPlugin.onMessage(message);
       } else {
         throw new Error(
           `Plugin ${pluginName} does not have an onMessage handler`,
@@ -142,7 +141,7 @@ async function preparePlugins(
 
   for await (const prepareBuild of prepareBuilds) {
     if (prepareBuild) {
-      const tasksToAdd = await prepareBuild();
+      const tasksToAdd = await prepareBuild({ send });
 
       if (tasksToAdd) {
         tasks = tasks.concat(tasksToAdd);
@@ -201,6 +200,29 @@ async function applyBeforeEachRenders(
   return { tasks };
 }
 
+async function applyRenders(
+  { context, plugins, route, url }: {
+    context: Context;
+    plugins: (PluginModule & Plugin)[];
+    route: Route;
+    url: string;
+  },
+) {
+  const renders = plugins.map((plugin) => plugin.render)
+    .filter(Boolean);
+  let markup = "";
+
+  // In the current design, we pick only the markup of the last renderer.
+  // TODO: Does it even make sense to have multiple renderers in the system?
+  for await (const render of renders) {
+    markup =
+      // @ts-expect-error We know render should be defined by now
+      await render({ context, route, url });
+  }
+
+  return markup;
+}
+
 async function applyAfterEachRenders(
   { context, markup, plugins, route, url }: {
     context: Context;
@@ -233,6 +255,7 @@ export {
   applyBeforeEachContext,
   applyBeforeEachRenders,
   applyPlugins,
+  applyRenders,
   importPlugin,
   importPlugins,
   preparePlugins,

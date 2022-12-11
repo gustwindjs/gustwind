@@ -28,7 +28,6 @@ type ProjectMeta = {
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;
   outputDirectory: string;
-  renderer: PluginOptions;
   router: PluginOptions;
   plugins: PluginOptions[];
 };
@@ -46,13 +45,6 @@ type Context = Record<string, unknown> & {
   meta?: Record<string, unknown>;
 };
 
-type Renderer = {
-  render({ route, context }: {
-    route: Route;
-    context: Context | {};
-  }): Promise<string> | string;
-};
-
 type PluginModule = {
   meta: PluginMeta;
   plugin: Plugin;
@@ -66,13 +58,9 @@ type PluginMeta = {
 type Plugin = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
-  sendMessages?(
-    { send }: {
-      send: Send;
-    },
-  ): Promise<Tasks> | Tasks | void;
+  sendMessages?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
   // Return additional tasks to perform per build
-  prepareBuild?(): Promise<Tasks> | Tasks | void;
+  prepareBuild?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
   // Run setup before context is resolved or add something to it
   prepareContext?({ route }: { route: Route }):
     | Promise<{ context: Record<string, unknown> }>
@@ -102,6 +90,11 @@ type Plugin = {
     >
     | Tasks
     | void;
+  render?({ route, context, url }: {
+    route: Route;
+    context: Context;
+    url: string;
+  }): Promise<string> | string;
   afterEachRender?({ markup, context, route, url }: {
     markup: string;
     context: Context;
@@ -114,8 +107,8 @@ type Plugin = {
 type Send = (
   pluginName: string,
   { type, payload }: SendMessage,
-) => void;
-type SendMessage = { type: string; payload: unknown };
+) => Promise<unknown> | unknown;
+type SendMessage = { type: string; payload?: unknown };
 
 type Router = {
   getAllRoutes(): Promise<Record<string, Route>>;
@@ -204,7 +197,6 @@ export type {
   PluginOptions,
   ProjectMeta,
   Props,
-  Renderer,
   Route,
   Router,
   Scripts,

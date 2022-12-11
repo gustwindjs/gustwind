@@ -4,7 +4,12 @@ import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import type { Component } from "../../breezewind/types.ts";
-import type { Renderer } from "../../types.ts";
+import type { Plugin, PluginMeta } from "../../types.ts";
+
+const meta: PluginMeta = {
+  name: "breezewind-renderer-plugin",
+  dependsOn: [],
+};
 
 async function breezewindRenderer(
   { componentsPath, layoutsPath, pageUtilitiesPath }: {
@@ -12,7 +17,7 @@ async function breezewindRenderer(
     layoutsPath: string;
     pageUtilitiesPath: string;
   },
-): Promise<Renderer> {
+): Promise<Plugin> {
   const cwd = Deno.cwd();
 
   // TODO: Use this for cache busting modules in watch mode
@@ -36,6 +41,15 @@ async function breezewindRenderer(
         context,
         utilities: pageUtilities,
       }),
+    onMessage: ({ type }) => {
+      if (type === "get-components") {
+        return components;
+      } else {
+        throw new Error(
+          `breezewind-renderer-plugin - Unknown message type: ${type}`,
+        );
+      }
+    },
   };
 }
 
@@ -58,4 +72,4 @@ function renderHTML(
   });
 }
 
-export { breezewindRenderer as plugin, renderHTML };
+export { breezewindRenderer as plugin, meta, renderHTML };
