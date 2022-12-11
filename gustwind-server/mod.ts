@@ -37,44 +37,35 @@ async function serveGustwind({
       const matchedRoute = await router.matchRoute(pathname);
 
       if (matchedRoute) {
-        const layoutName = matchedRoute.layout;
+        console.log(matchedRoute);
 
-        if (!layoutName) {
-          return respond(404, "No matching layout");
+        let contentType = "text/html; charset=utf-8";
+
+        // TODO: Restore
+        // If there's cached data, use it instead. This fixes
+        // the case in which there was an update over a websocket and
+        // also avoids the need to hit the file system for getting
+        // the latest data.
+        // const layout: Layout = cache.layouts[layoutName] ||
+        // matchedLayout;
+
+        const { markup, tasks } = await applyPlugins({
+          plugins,
+          mode,
+          url,
+          projectMeta,
+          route: matchedRoute,
+        });
+
+        // TODO: Process writeFile tasks -> write to a virtual fs to serve
+        console.log("tasks", tasks);
+
+        if (matchedRoute.type === "xml") {
+          // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
+          contentType = "text/xml";
         }
 
-        const matchedLayout = layouts[layoutName];
-
-        if (matchedLayout) {
-          const route = matchedRoute; // TODO: Cache?
-
-          let contentType = "text/html; charset=utf-8";
-
-          // If there's cached data, use it instead. This fixes
-          // the case in which there was an update over a websocket and
-          // also avoids the need to hit the file system for getting
-          // the latest data.
-          // const layout: Layout = cache.layouts[layoutName] ||
-          // matchedLayout;
-
-          const { markup } = await applyPlugins({
-            plugins,
-            mode,
-            url,
-            projectMeta,
-            route,
-            render,
-          });
-
-          if (matchedRoute.type === "xml") {
-            // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
-            contentType = "text/xml";
-          }
-
-          return respond(200, markup, contentType);
-        }
-
-        return respond(404, "No matching layout");
+        return respond(200, markup, contentType);
       }
 
       return respond(404, "No matching route");
@@ -85,6 +76,7 @@ async function serveGustwind({
   return () => server.serve(listener);
 }
 
+/*
 function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
   const scriptsDirectory = "gustwind-scripts";
 
@@ -118,5 +110,6 @@ async function compileScriptsToJavaScript(
     return {};
   }
 }
+*/
 
 export { serveGustwind };

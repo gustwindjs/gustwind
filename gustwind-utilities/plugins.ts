@@ -205,8 +205,10 @@ async function applyMatchRoutes(
     .filter(Boolean);
 
   for await (const matchRoute of matchRoutes) {
-    if (matchRoute && matchRoute(url)) {
-      return true;
+    const matchedRoute = matchRoute && matchRoute(url);
+
+    if (matchedRoute) {
+      return matchedRoute;
     }
   }
 
