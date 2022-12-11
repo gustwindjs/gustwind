@@ -33,7 +33,7 @@ async function scriptPlugin(
         },
       }));
     },
-    beforeEachContext({ route }) {
+    prepareContext({ route }) {
       return {
         context: {
           scripts: scripts.concat(

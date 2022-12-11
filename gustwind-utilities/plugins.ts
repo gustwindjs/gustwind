@@ -131,12 +131,12 @@ async function applyBeforeEachContext(
   },
 ) {
   let context = {};
-  const beforeEachContexts = plugins.map((plugin) => plugin.beforeEachContext)
+  const prepareContexts = plugins.map((plugin) => plugin.prepareContext)
     .filter(Boolean);
 
-  for await (const beforeEachContext of beforeEachContexts) {
-    if (beforeEachContext) {
-      const ret = await beforeEachContext({ route });
+  for await (const prepareContext of prepareContexts) {
+    if (prepareContext) {
+      const ret = await prepareContext({ route });
 
       if (ret?.context) {
         context = { ...context, ...ret.context };

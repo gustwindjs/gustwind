@@ -113,6 +113,8 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
               data: JSON.stringify(rest[name]),
             },
           })),
+        // TODO: Communicate to the script plugin that these are needed
+        /*
         scripts: [
           // TODO: Check paths and path resolution
           // Note that the page editor is loaded lazily by toggleEditor.
@@ -121,6 +123,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
           { type: "module", src: "/scripts/toggleEditor.js" },
           { type: "module", src: "/scripts/webSocketClient.js" },
         ],
+        */
       };
     },
     prepareBuild: () => {

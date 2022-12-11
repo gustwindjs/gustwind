@@ -20,8 +20,6 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-type Scripts = Script[];
-type Script = { type: string; src: string };
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
@@ -66,7 +64,10 @@ type PluginMeta = {
 };
 
 type Plugin = {
-  beforeEachContext?({ route }: { route: Route }):
+  // Return additional tasks to perform per build
+  prepareBuild?(): Promise<Tasks> | Tasks;
+  // Run setup before context is resolved or add something to it
+  prepareContext?({ route }: { route: Route }):
     | Promise<{ context: Record<string, unknown> }>
     | Promise<void>
     | {
@@ -90,15 +91,9 @@ type Plugin = {
     },
   ):
     | Promise<
-      {
-        tasks?: Tasks;
-        scripts?: Scripts;
-      } | void
+      { tasks?: Tasks } | void
     >
-    | {
-      tasks?: Tasks;
-      scripts?: Scripts;
-    }
+    | { tasks?: Tasks }
     | void;
   afterEachRender?({ markup, context, route, url }: {
     markup: string;
@@ -106,7 +101,6 @@ type Plugin = {
     route: Route;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
-  prepareBuild?(): Promise<Tasks> | Tasks;
 };
 
 type Router = {
@@ -130,6 +124,8 @@ type Route = {
   context?: DataContext;
   url?: string;
 };
+type Scripts = Script[];
+type Script = { type: string; src: string };
 
 type Tasks = BuildWorkerEvent[];
 

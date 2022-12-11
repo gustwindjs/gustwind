@@ -47,7 +47,7 @@ function twindPlugin(
         },
       }];
     },
-    beforeEachContext: prepareStylesheet,
+    prepareContext: prepareStylesheet,
     afterEachRender({ markup, route }) {
       if (route.type === "xml") {
         return { markup };
