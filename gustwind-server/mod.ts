@@ -1,6 +1,6 @@
 import { cache, lookup, path as _path, Server } from "../server-deps.ts";
 import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
-import { dir, resolvePaths } from "../utilities/fs.ts";
+import { dir } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
@@ -22,40 +22,6 @@ async function serveGustwind({
   // something in the cache, then the routing logic will refer to it instead of
   // the original entries loaded from the file system.
   const cache = initialCache || getCache();
-  // projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
-
-  // const projectPaths = projectMeta.paths;
-
-  // TODO: This branch might be safe to eliminate since
-  // meta.json scripts is capturing the dev scripts.
-  /*
-  if (mode === "development") {
-
-    if (import.meta.url.startsWith("file:///")) {
-      DEBUG && console.log("Compiling local scripts");
-
-      cache.scripts = await compileScriptsToJavaScript(
-        _path.join(
-          _path.dirname(_path.fromFileUrl(import.meta.url)),
-          "..",
-          "scripts",
-        ),
-      );
-    } else {
-      DEBUG && console.log("Compiling remote scripts");
-
-      cache.scripts = Object.fromEntries(
-        // TODO: Pull custom scripts from plugins to compile here
-        (await compileRemoteGustwindScripts("https://deno.land/x/gustwind", []))
-          .map(
-            ({ name, content }) => {
-              return [name.replace(".ts", ".js"), content];
-            },
-          ),
-      );
-    }
-  }
-  */
 
   const { router, tasks } = await importPlugins(projectMeta);
   const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
