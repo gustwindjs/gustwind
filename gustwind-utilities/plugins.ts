@@ -39,7 +39,20 @@ async function importPlugins(projectMeta: ProjectMeta) {
 
   const tasks = await preparePlugins({ plugins: loadedPlugins });
 
-  return { tasks, plugins: loadedPlugins };
+  // The idea is to proxy routes from all routers so you can use multiple
+  // routers or route definitions to aggregate everything together.
+  const router = {
+    // Last definition wins
+    getAllRoutes() {
+      return applyGetAllRoutes({ plugins: loadedPlugins });
+    },
+    // First match wins
+    matchRoute(url: string) {
+      return applyMatchRoutes({ plugins: loadedPlugins, url });
+    },
+  };
+
+  return { tasks, plugins: loadedPlugins, router };
 }
 
 async function importPlugin<P = Plugin>(
@@ -152,6 +165,44 @@ async function applyPlugins(
     }),
     tasks,
   };
+}
+
+async function applyGetAllRoutes(
+  { plugins }: {
+    plugins: (PluginModule & Plugin)[];
+  },
+) {
+  const getAllRoutes = plugins.map((plugin) => plugin.getAllRoutes)
+    .filter(Boolean);
+  let ret: Record<string, Route> = {};
+
+  for await (const routeGetter of getAllRoutes) {
+    if (routeGetter) {
+      const routes = await routeGetter();
+
+      ret = { ...ret, ...routes };
+    }
+  }
+
+  return ret;
+}
+
+async function applyMatchRoutes(
+  { plugins, url }: {
+    plugins: (PluginModule & Plugin)[];
+    url: string;
+  },
+) {
+  const matchRoutes = plugins.map((plugin) => plugin.matchRoute)
+    .filter(Boolean);
+
+  for await (const matchRoute of matchRoutes) {
+    if (matchRoute && matchRoute(url)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 async function applyPrepareContext(

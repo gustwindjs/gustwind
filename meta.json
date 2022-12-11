@@ -7,14 +7,14 @@
     "url": "https://gustwind.js.org/"
   },
   "outputDirectory": "./build",
-  "router": {
-    "path": "./routers/breezewind/mod.ts",
-    "options": {
-      "dataSourcesPath": "./site/dataSources.ts",
-      "routesPath": "./site/routes.json"
-    }
-  },
   "plugins": [
+    {
+      "path": "./plugins/breezewind-router/mod.ts",
+      "options": {
+        "dataSourcesPath": "./site/dataSources.ts",
+        "routesPath": "./site/routes.json"
+      }
+    },
     {
       "path": "./plugins/breezewind-renderer/mod.ts",
       "options": {

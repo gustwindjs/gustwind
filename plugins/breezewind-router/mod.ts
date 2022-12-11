@@ -2,7 +2,12 @@ import { expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { getJson } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
-import type { Route, Router } from "../../types.ts";
+import type { Plugin, PluginMeta, Route } from "../../types.ts";
+
+const meta: PluginMeta = {
+  name: "breezewind-renderer-plugin",
+  dependsOn: [],
+};
 
 async function plugin(
   { dataSourcesPath, include, routesPath }: {
@@ -10,7 +15,7 @@ async function plugin(
     include: string[];
     routesPath: string;
   },
-): Promise<Router> {
+): Promise<Plugin> {
   const cwd = Deno.cwd();
   const routes = await getJson<Record<string, Route>>(
     path.join(cwd, routesPath),
@@ -69,4 +74,4 @@ function matchRoute(
 }
 */
 
-export { plugin };
+export { meta, plugin };

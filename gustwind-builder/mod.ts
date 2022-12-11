@@ -1,8 +1,8 @@
 import { esbuild, fs, path } from "../server-deps.ts";
 import { getJson } from "../utilities/fs.ts";
-import { importPlugin, importPlugins } from "../gustwind-utilities/plugins.ts";
+import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, ProjectMeta, Router } from "../types.ts";
+import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -29,13 +29,8 @@ async function build(projectMeta: ProjectMeta) {
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    const { tasks } = await importPlugins(projectMeta);
+    const { router, tasks } = await importPlugins(projectMeta);
     tasks.forEach((task) => workerPool.addTaskToQueue(task));
-
-    const router = await importPlugin<Router>(
-      projectMeta.router,
-      projectMeta,
-    );
 
     const routes = await router.getAllRoutes();
 

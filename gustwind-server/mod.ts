@@ -3,14 +3,9 @@ import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
 import { dir, resolvePaths } from "../utilities/fs.ts";
 import { trim } from "../utilities/string.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
-import {
-  applyPlugins,
-  importPlugin,
-  importPlugins,
-  preparePlugins,
-} from "../gustwind-utilities/plugins.ts";
+import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { getCache, type ServeCache } from "./cache.ts";
-import type { Mode, ProjectMeta, Router } from "../types.ts";
+import type { Mode, ProjectMeta } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -62,14 +57,7 @@ async function serveGustwind({
   }
   */
 
-  const router = await importPlugin<
-    (projectMeta: ProjectMeta) => Router
-  >(
-    projectMeta.router,
-    projectMeta,
-  );
-
-  const { tasks } = await importPlugins(projectMeta);
+  const { router, tasks } = await importPlugins(projectMeta);
   const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now

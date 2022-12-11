@@ -102,6 +102,8 @@ type Plugin = {
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(message: SendMessage): void;
+  getAllRoutes?(): Promise<Record<string, Route>>;
+  matchRoute?(url: string): Promise<Route> | undefined;
 };
 
 type Send = (
@@ -109,11 +111,6 @@ type Send = (
   { type, payload }: SendMessage,
 ) => Promise<unknown> | unknown;
 type SendMessage = { type: string; payload?: unknown };
-
-type Router = {
-  getAllRoutes(): Promise<Record<string, Route>>;
-  matchRoute(url: string): Promise<Route> | undefined;
-};
 
 type Route = {
   type?: "html" | "xml";
@@ -198,7 +195,6 @@ export type {
   ProjectMeta,
   Props,
   Route,
-  Router,
   Scripts,
   Send,
   Tasks,
