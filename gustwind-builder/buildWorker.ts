@@ -23,7 +23,8 @@ self.onmessage = async (e) => {
 
     projectMeta = payload.projectMeta;
 
-    plugins = await importPlugins(projectMeta);
+    const ret = await importPlugins(projectMeta);
+    plugins = ret.plugins;
 
     DEBUG && console.log("worker - finished init", id);
   }

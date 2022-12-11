@@ -1,10 +1,6 @@
 import { esbuild, fs, path } from "../server-deps.ts";
 import { getJson } from "../utilities/fs.ts";
-import {
-  importPlugin,
-  importPlugins,
-  preparePlugins,
-} from "../gustwind-utilities/plugins.ts";
+import { importPlugin, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, ProjectMeta, Router } from "../types.ts";
 
@@ -33,9 +29,8 @@ async function build(projectMeta: ProjectMeta) {
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    const plugins = await importPlugins(projectMeta);
-    const pluginTasks = await preparePlugins({ plugins });
-    pluginTasks.forEach((task) => workerPool.addTaskToQueue(task));
+    const { tasks } = await importPlugins(projectMeta);
+    tasks.forEach((task) => workerPool.addTaskToQueue(task));
 
     const router = await importPlugin<Router>(
       projectMeta.router,

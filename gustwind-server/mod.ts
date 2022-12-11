@@ -69,9 +69,8 @@ async function serveGustwind({
     projectMeta,
   );
 
-  const plugins = await importPlugins(projectMeta);
-  const pluginTasks = await preparePlugins({ plugins });
-  const pluginScripts = pluginTasks.filter(({ type }) => type === "writeScript")
+  const { tasks } = await importPlugins(projectMeta);
+  const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
     .map(({ payload }) => ({
       // @ts-expect-error This is writeScript by now
       path: payload.scriptPath,

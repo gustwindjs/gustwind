@@ -37,7 +37,9 @@ async function importPlugins(projectMeta: ProjectMeta) {
     }
   }
 
-  return loadedPlugins;
+  const tasks = await preparePlugins({ plugins: loadedPlugins });
+
+  return { tasks, plugins: loadedPlugins };
 }
 
 async function importPlugin<P = Plugin>(
@@ -50,59 +52,6 @@ async function importPlugin<P = Plugin>(
   const pluginApi = await module.plugin(pluginDefinition.options, projectMeta);
 
   return { ...module, ...pluginApi };
-}
-
-async function applyPlugins(
-  {
-    plugins,
-    mode,
-    url,
-    projectMeta,
-    route,
-  }: {
-    mode: Mode;
-    projectMeta: ProjectMeta;
-    route: Route;
-    plugins: (PluginModule & Plugin)[];
-    url: string;
-  },
-) {
-  const pluginContext = await applyBeforeEachContext({ plugins, route });
-
-  const context = {
-    ...(await getContext({
-      mode,
-      url,
-      projectMeta,
-      route,
-    })),
-    ...pluginContext,
-  };
-
-  const { tasks } = await applyBeforeEachRenders({
-    context,
-    plugins,
-    route,
-    url,
-  });
-
-  const markup = await applyRenders({
-    context,
-    plugins,
-    route,
-    url,
-  });
-
-  return {
-    markup: await applyAfterEachRenders({
-      context,
-      markup,
-      plugins,
-      route,
-      url,
-    }),
-    tasks,
-  };
 }
 
 async function preparePlugins(
@@ -152,7 +101,60 @@ async function preparePlugins(
   return tasks;
 }
 
-async function applyBeforeEachContext(
+async function applyPlugins(
+  {
+    plugins,
+    mode,
+    url,
+    projectMeta,
+    route,
+  }: {
+    mode: Mode;
+    projectMeta: ProjectMeta;
+    route: Route;
+    plugins: (PluginModule & Plugin)[];
+    url: string;
+  },
+) {
+  const pluginContext = await applyPrepareContext({ plugins, route });
+
+  const context = {
+    ...(await getContext({
+      mode,
+      url,
+      projectMeta,
+      route,
+    })),
+    ...pluginContext,
+  };
+
+  const { tasks } = await applyBeforeEachRenders({
+    context,
+    plugins,
+    route,
+    url,
+  });
+
+  const markup = await applyRenders({
+    context,
+    plugins,
+    route,
+    url,
+  });
+
+  return {
+    markup: await applyAfterEachRenders({
+      context,
+      markup,
+      plugins,
+      route,
+      url,
+    }),
+    tasks,
+  };
+}
+
+async function applyPrepareContext(
   { plugins, route }: {
     plugins: (PluginModule & Plugin)[];
     route: Route;
@@ -252,9 +254,9 @@ async function applyAfterEachRenders(
 
 export {
   applyAfterEachRenders,
-  applyBeforeEachContext,
   applyBeforeEachRenders,
   applyPlugins,
+  applyPrepareContext,
   applyRenders,
   importPlugin,
   importPlugins,

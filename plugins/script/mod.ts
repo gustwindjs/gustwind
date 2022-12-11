@@ -40,7 +40,10 @@ async function scriptPlugin(
       return {
         context: {
           scripts: scripts.concat(
-            foundScripts.map((s) => ({ type: "module", src: s.name })),
+            (foundScripts.concat(receivedScripts)).map((s) => ({
+              type: "module",
+              src: s.name.replace(".ts", ".js"),
+            })),
           ).concat(route.scripts || []),
         },
       };
