@@ -17,7 +17,6 @@ async function serveGustwind({
 
   const server = new Server({
     handler: async ({ url }) => {
-      // TODO: Trigger beforeEachRequest here
       const { pathname } = new URL(url);
       const matchedRoute = await router.matchRoute(pathname);
 

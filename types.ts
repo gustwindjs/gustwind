@@ -63,12 +63,6 @@ type Plugin = {
       context: Record<string, unknown>;
     }
     | void;
-  beforeEachRequest?(
-    { url, respond }: {
-      url: string;
-      respond: (status: number, text: string, type: string) => void;
-    },
-  ): void;
   beforeEachRender?(
     { context, send, route, url }: {
       context: Context;
