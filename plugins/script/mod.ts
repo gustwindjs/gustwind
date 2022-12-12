@@ -7,7 +7,7 @@ const meta: PluginMeta = {
 };
 
 async function scriptPlugin(
-  { scripts, scriptsPath }: {
+  { scripts: globalScripts = [], scriptsPath }: {
     scripts: Scripts;
     // TODO: Model scripts output path here
     scriptsPath: string[];
@@ -36,16 +36,17 @@ async function scriptPlugin(
       }));
     },
     prepareContext({ route }) {
-      return {
-        context: {
-          scripts: scripts.concat(
-            (foundScripts.concat(receivedScripts)).map((s) => ({
-              type: "module",
-              src: s.name.replace(".ts", ".js"),
-            })),
-          ).concat(route.scripts || []),
-        },
-      };
+      const routeScripts = route.scripts || [];
+      const scripts = globalScripts.concat(
+        (foundScripts.filter(({ name }) =>
+          routeScripts.includes(path.basename(name, path.extname(name)))
+        ).concat(receivedScripts)).map((s) => ({
+          type: "module",
+          src: s.name.replace(".ts", ".js"),
+        })),
+      );
+
+      return { context: { scripts } };
     },
     onMessage({ type, payload }) {
       if (type === "add-scripts") {

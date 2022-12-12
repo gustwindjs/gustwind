@@ -111,7 +111,7 @@ type Route = {
   meta: Meta;
   // TODO: This should come as an extension from the script plugin
   // if it is enabled
-  scripts?: Scripts;
+  scripts?: string[]; // These point to scripts directory by name
   routes?: Record<string, Route>;
   dataSources?: DataSource[];
   expand?: {
