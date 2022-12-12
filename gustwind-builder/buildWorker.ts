@@ -1,6 +1,6 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
-import { compileScript } from "../utilities/compileScripts.ts";
+import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { BuildWorkerEvent, PluginModule, ProjectMeta } from "../types.ts";
@@ -69,7 +69,10 @@ self.onmessage = async (e) => {
     const { payload: { outputDirectory, scriptName, scriptPath } } = e.data;
 
     await fs.ensureDir(outputDirectory);
-    await writeScript(outputDirectory, scriptName, scriptPath);
+    Deno.writeTextFile(
+      path.join(outputDirectory, scriptName),
+      await compileTypeScript(scriptPath, "production"),
+    );
   }
   if (type === "writeFile") {
     const { payload: { outputDirectory, file, data } } = e.data;
@@ -87,20 +90,3 @@ self.onmessage = async (e) => {
 
   self.postMessage({ type: "finished" });
 };
-
-async function writeScript(
-  outputPath: string,
-  scriptName: string,
-  scriptDirectory: string,
-) {
-  const script = await compileScript({
-    path: scriptDirectory,
-    name: scriptName,
-    mode: "production",
-  });
-  const scriptPath = path.join(outputPath, scriptName);
-
-  DEBUG && console.log("writing script", scriptPath);
-
-  return Deno.writeTextFile(scriptPath, script.content);
-}
