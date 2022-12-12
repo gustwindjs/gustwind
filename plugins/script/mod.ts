@@ -7,12 +7,14 @@ const meta: PluginMeta = {
 };
 
 async function scriptPlugin(
-  { scripts: globalScripts = [], scriptsPath }: {
-    scripts: Scripts;
-    // TODO: Model scripts output path here
-    scriptsPath: string[];
+  { options: { scripts: globalScripts = [], scriptsPath }, projectMeta }: {
+    options: {
+      scripts: Scripts;
+      // TODO: Model scripts output path here
+      scriptsPath: string[];
+    };
+    projectMeta: ProjectMeta;
   },
-  projectMeta: ProjectMeta,
 ): Promise<Plugin> {
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();

@@ -25,10 +25,12 @@ async function importPlugins(
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of plugins) {
-    const pluginModule: PluginModule = await importPlugin(
+    // TODO: Capture tasks here
+    const { pluginModule } = await importPlugin({
       pluginDefinition,
-      { ...projectMeta, mode },
-    );
+      projectMeta,
+      mode,
+    });
     const { dependsOn } = pluginModule.meta;
     const dependencyIndex = loadedPlugins.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
@@ -61,16 +63,25 @@ async function importPlugins(
   return { tasks, plugins: loadedPlugins, router };
 }
 
-async function importPlugin<P = Plugin>(
-  pluginDefinition: PluginOptions,
-  projectMeta: ProjectMeta,
-): Promise<PluginModule & P> {
+async function importPlugin({ pluginDefinition, projectMeta, mode }: {
+  pluginDefinition: PluginOptions;
+  projectMeta: ProjectMeta;
+  mode: Mode;
+}) {
   // TODO: Add logic against url based plugins
   const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
   const module = await import(pluginPath);
-  const pluginApi = await module.plugin(pluginDefinition.options, projectMeta);
+  // TODO: Inject registration logic here -> convert signature into an object
+  // TODO: This should generate tasks to return as well and those should be
+  // communicated further so the file watcher can register to watch.
+  // The big question is how to reload a plugin (just re-execute?)
+  const pluginApi = await module.plugin({
+    mode,
+    options: pluginDefinition.options,
+    projectMeta,
+  });
 
-  return { ...module, ...pluginApi };
+  return { pluginModule: { ...module, ...pluginApi } };
 }
 
 async function preparePlugins(

@@ -1,5 +1,5 @@
 import { async } from "../../server-deps.ts";
-import type { Plugin, PluginMeta, ProjectMeta } from "../../types.ts";
+import type { Mode, Plugin, PluginMeta } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -7,8 +7,10 @@ const meta: PluginMeta = {
   name: "gustwind-script-plugin",
 };
 
-function fileWatcherPlugin(_: unknown, projectMeta: ProjectMeta): Plugin {
-  if (projectMeta.mode !== "development") {
+function fileWatcherPlugin(
+  { mode }: { mode: Mode },
+): Plugin {
+  if (mode !== "development") {
     return {};
   }
 

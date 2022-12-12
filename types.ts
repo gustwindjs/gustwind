@@ -19,7 +19,6 @@ type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
-  mode?: Mode; // This is set by build/dev
   port: number;
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;

@@ -19,7 +19,7 @@ const scriptsToCompile = [
   // "twindRuntime",
 ];
 
-function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
+function editorPlugin({ projectMeta }: { projectMeta: ProjectMeta }): Plugin {
   return {
     beforeEachRender({ url, send, route, context }) {
       const outputDirectory = path.join(projectMeta.outputDirectory, url);

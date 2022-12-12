@@ -11,17 +11,22 @@ const meta: PluginMeta = {
 };
 
 async function plugin(
-  { dataSourcesPath, include, routesPath }: {
-    dataSourcesPath: string;
-    include: string[];
-    routesPath: string;
+  { options: { dataSourcesPath, include, routesPath } }: {
+    options: {
+      dataSourcesPath: string;
+      include: string[];
+      routesPath: string;
+    };
   },
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
+
+  // TODO: This should become something like load.json(path)
   const routes = await getJson<Record<string, Route>>(
     path.join(cwd, routesPath),
   );
 
+  // TODO: This should become something like load.module(path)
   // TODO: How to handle watching + cache on change?
   const dataSources = dataSourcesPath
     ? await import("file://" + path.join(cwd, dataSourcesPath)).then((m) => m)

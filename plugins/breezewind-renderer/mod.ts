@@ -12,10 +12,12 @@ const meta: PluginMeta = {
 };
 
 async function breezewindRenderer(
-  { componentsPath, layoutsPath, pageUtilitiesPath }: {
-    componentsPath: string;
-    layoutsPath: string;
-    pageUtilitiesPath: string;
+  { options: { componentsPath, layoutsPath, pageUtilitiesPath } }: {
+    options: {
+      componentsPath: string;
+      layoutsPath: string;
+      pageUtilitiesPath: string;
+    };
   },
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
