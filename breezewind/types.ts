@@ -1,4 +1,5 @@
 type Context = Record<string, unknown>;
+type Components = Record<string, Component | Component[]>;
 
 type BaseComponent = {
   type?: string | Utility;
@@ -55,6 +56,7 @@ export type {
   ClassComponent,
   ClassList,
   Component,
+  Components,
   Context,
   Extension,
   ForEachComponent,

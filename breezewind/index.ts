@@ -3,6 +3,7 @@ import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
   Component,
+  Components,
   Context,
   Extension,
   Utilities,
@@ -11,7 +12,7 @@ import type {
 
 type Options = {
   component: Component | Component[];
-  components?: Record<string, Component | Component[]>;
+  components?: Components;
   extensions?: (Extension)[];
   context?: Context;
   props?: Context;
