@@ -20,17 +20,20 @@ async function importPlugins(
 ) {
   const { plugins } = projectMeta;
   const loadedPlugins: PluginModule[] = [];
+  let initialTasks: Tasks = [];
 
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of plugins) {
     // TODO: Capture tasks here
-    const { pluginModule } = await importPlugin({
+    const { pluginModule, tasks } = await importPlugin({
       pluginDefinition,
       projectMeta,
       mode,
     });
+    initialTasks = initialTasks.concat(tasks);
+
     const { dependsOn } = pluginModule.meta;
     const dependencyIndex = loadedPlugins.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
@@ -43,6 +46,7 @@ async function importPlugins(
       loadedPlugins.push(pluginModule);
     }
   }
+  await applyOnTasksRegistered({ plugins: loadedPlugins, tasks: initialTasks });
 
   const tasks = await preparePlugins({ plugins: loadedPlugins });
   await applyOnTasksRegistered({ plugins: loadedPlugins, tasks });
@@ -81,7 +85,8 @@ async function importPlugin({ pluginDefinition, projectMeta, mode }: {
     projectMeta,
   });
 
-  return { pluginModule: { ...module, ...pluginApi } };
+  // TODO: Generate tasks based on the load api
+  return { pluginModule: { ...module, ...pluginApi }, tasks: [] };
 }
 
 async function preparePlugins(
