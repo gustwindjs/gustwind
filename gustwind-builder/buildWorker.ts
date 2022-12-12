@@ -5,6 +5,7 @@ import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
 import type { BuildWorkerEvent, PluginModule, ProjectMeta } from "../types.ts";
 
+const mode = "production";
 let id: string;
 let projectMeta: ProjectMeta;
 let plugins: PluginModule[];
@@ -23,7 +24,7 @@ self.onmessage = async (e) => {
 
     projectMeta = payload.projectMeta;
 
-    const ret = await importPlugins(projectMeta);
+    const ret = await importPlugins({ projectMeta, mode });
     plugins = ret.plugins;
 
     DEBUG && console.log("worker - finished init", id);
@@ -42,7 +43,7 @@ self.onmessage = async (e) => {
 
     const { markup, tasks } = await applyPlugins({
       plugins,
-      mode: "production",
+      mode,
       url,
       projectMeta,
       route,

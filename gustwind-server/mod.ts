@@ -11,7 +11,7 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  const { plugins, router, tasks } = await importPlugins(projectMeta);
+  const { plugins, router, tasks } = await importPlugins({ projectMeta, mode });
   let fs = await evaluateTasks(tasks);
 
   const server = new Server({

@@ -29,7 +29,10 @@ async function build(projectMeta: ProjectMeta) {
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    const { router, tasks } = await importPlugins(projectMeta);
+    const { router, tasks } = await importPlugins({
+      projectMeta,
+      mode: "production",
+    });
     tasks.forEach((task) => workerPool.addTaskToQueue(task));
 
     const routes = await router.getAllRoutes();

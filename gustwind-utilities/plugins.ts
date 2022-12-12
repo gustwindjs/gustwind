@@ -12,7 +12,9 @@ import type {
   Tasks,
 } from "../types.ts";
 
-async function importPlugins(projectMeta: ProjectMeta) {
+async function importPlugins(
+  { projectMeta, mode }: { projectMeta: ProjectMeta; mode: Mode },
+) {
   const { plugins } = projectMeta;
   const loadedPlugins: PluginModule[] = [];
 
@@ -22,7 +24,7 @@ async function importPlugins(projectMeta: ProjectMeta) {
   for await (const pluginDefinition of plugins) {
     const pluginModule: PluginModule = await importPlugin(
       pluginDefinition,
-      projectMeta,
+      { ...projectMeta, mode },
     );
     const { dependsOn } = pluginModule.meta;
     const dependencyIndex = loadedPlugins.findIndex(

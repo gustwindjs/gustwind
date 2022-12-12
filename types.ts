@@ -19,6 +19,7 @@ type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
+  mode?: Mode; // This is set by build/dev
   port: number;
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;
@@ -92,6 +93,7 @@ type Plugin = {
   onMessage?(message: SendMessage): void;
   getAllRoutes?(): Promise<Record<string, Route>>;
   matchRoute?(url: string): Promise<Route | undefined> | Route | undefined;
+  onTasksRegistered?(tasks: Tasks): void;
 };
 
 type Send = (
