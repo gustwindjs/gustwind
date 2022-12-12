@@ -6,7 +6,6 @@ const meta: PluginMeta = {
   name: "gustwind-script-plugin",
 };
 
-// TODO: Handle script compilation here as well
 async function scriptPlugin(
   { scripts, scriptsPath }: {
     scripts: Scripts;
