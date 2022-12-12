@@ -1,9 +1,8 @@
-import { cache, lookup, path, Server } from "../server-deps.ts";
-import { compileTypeScript } from "../utilities/compileTypeScript.ts";
-import { dirSync } from "../utilities/fs.ts";
+import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import type { Mode, ProjectMeta, Tasks } from "../types.ts";
+import type { Mode, ProjectMeta } from "../types.ts";
+import { evaluateTasks } from "./evaluateTasks.ts";
 
 async function serveGustwind({
   projectMeta,
@@ -60,53 +59,6 @@ async function serveGustwind({
   const listener = Deno.listen({ port: projectMeta.port });
 
   return () => server.serve(listener);
-}
-
-async function evaluateTasks(tasks: Tasks) {
-  const ret: Record<
-    string,
-    { type: "file"; data: string } | {
-      type: "path";
-      path: string;
-    }
-  > = {};
-
-  await Promise.all(tasks.map(async ({ type, payload }) => {
-    switch (type) {
-      case "writeFile":
-        ret[`/${payload.file}`] = {
-          type: "file",
-          data: payload.data,
-        };
-        break;
-      case "writeFiles": {
-        const outputBasename = path.basename(payload.outputPath);
-
-        dirSync(payload.inputDirectory).forEach((file) => {
-          ret[`/${outputBasename}/${file.name}`] = {
-            type: "path",
-            path: file.path,
-          };
-        });
-        break;
-      }
-      case "writeScript": {
-        const data = await compileTypeScript(
-          payload.scriptPath,
-          "development",
-        );
-
-        ret[`/${payload.scriptName}`] = {
-          type: "file",
-          data,
-        };
-
-        break;
-      }
-    }
-  }));
-
-  return ret;
 }
 
 /*
