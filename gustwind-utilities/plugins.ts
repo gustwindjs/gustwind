@@ -40,6 +40,7 @@ async function importPlugins(
   }
 
   const tasks = await preparePlugins({ plugins: loadedPlugins });
+  await applyOnTasksRegistered({ plugins: loadedPlugins, tasks });
 
   // The idea is to proxy routes from all routers so you can use multiple
   // routers or route definitions to aggregate everything together.
@@ -133,6 +134,7 @@ async function applyPlugins(
     send,
     url,
   });
+  await applyOnTasksRegistered({ plugins, tasks });
 
   const markup = await applyRenders({
     context,
@@ -289,6 +291,22 @@ async function applyRenders(
   }
 
   return markup;
+}
+
+async function applyOnTasksRegistered(
+  { plugins, tasks }: {
+    plugins: (PluginModule & Plugin)[];
+    tasks: Tasks;
+  },
+) {
+  const tasksRegistered = plugins.map((plugin) => plugin.onTasksRegistered)
+    .filter(Boolean);
+
+  for await (const cb of tasksRegistered) {
+    if (cb) {
+      await cb(tasks);
+    }
+  }
 }
 
 async function applyAfterEachRenders(

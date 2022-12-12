@@ -19,7 +19,7 @@ function fileWatcherPlugin(_: unknown, projectMeta: ProjectMeta): Plugin {
   // react to that and update the clients.
   return {
     onTasksRegistered(tasks) {
-      console.log("tasks registered", tasks);
+      // console.log("tasks registered", tasks);
     },
   };
 }
