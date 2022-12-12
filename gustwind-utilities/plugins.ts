@@ -12,6 +12,9 @@ import type {
   Tasks,
 } from "../types.ts";
 
+type LoadedPlugin = PluginModule & Plugin;
+type LoadedPlugins = LoadedPlugin[];
+
 async function importPlugins(
   { projectMeta, mode }: { projectMeta: ProjectMeta; mode: Mode },
 ) {
@@ -71,7 +74,7 @@ async function importPlugin<P = Plugin>(
 }
 
 async function preparePlugins(
-  { plugins }: { plugins: (PluginModule & Plugin)[] },
+  { plugins }: { plugins: LoadedPlugins },
 ) {
   let tasks: Tasks = [];
   const messageSenders = plugins.map((plugin) => plugin.sendMessages)
@@ -110,7 +113,7 @@ async function applyPlugins(
     mode: Mode;
     projectMeta: ProjectMeta;
     route: Route;
-    plugins: (PluginModule & Plugin)[];
+    plugins: LoadedPlugins;
     url: string;
   },
 ) {
@@ -157,7 +160,7 @@ async function applyPlugins(
   };
 }
 
-function getSend(plugins: (PluginModule & Plugin)[]): Send {
+function getSend(plugins: LoadedPlugins): Send {
   return (pluginName, message) => {
     const foundPlugin = plugins.find(({ meta: { name } }) =>
       pluginName === name
@@ -179,11 +182,7 @@ function getSend(plugins: (PluginModule & Plugin)[]): Send {
   };
 }
 
-async function applyGetAllRoutes(
-  { plugins }: {
-    plugins: (PluginModule & Plugin)[];
-  },
-) {
+async function applyGetAllRoutes({ plugins }: { plugins: LoadedPlugins }) {
   const getAllRoutes = plugins.map((plugin) => plugin.getAllRoutes)
     .filter(Boolean);
   let ret: Record<string, Route> = {};
@@ -200,10 +199,7 @@ async function applyGetAllRoutes(
 }
 
 async function applyMatchRoutes(
-  { plugins, url }: {
-    plugins: (PluginModule & Plugin)[];
-    url: string;
-  },
+  { plugins, url }: { plugins: LoadedPlugins; url: string },
 ) {
   const matchRoutes = plugins.map((plugin) => plugin.matchRoute)
     .filter(Boolean);
@@ -221,7 +217,7 @@ async function applyMatchRoutes(
 
 async function applyPrepareContext(
   { plugins, route, send }: {
-    plugins: (PluginModule & Plugin)[];
+    plugins: LoadedPlugins;
     route: Route;
     send: Send;
   },
@@ -246,7 +242,7 @@ async function applyPrepareContext(
 async function applyBeforeEachRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: (PluginModule & Plugin)[];
+    plugins: LoadedPlugins;
     route: Route;
     send: Send;
     url: string;
@@ -272,7 +268,7 @@ async function applyBeforeEachRenders(
 async function applyRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: (PluginModule & Plugin)[];
+    plugins: LoadedPlugins;
     route: Route;
     send: Send;
     url: string;
@@ -294,10 +290,7 @@ async function applyRenders(
 }
 
 async function applyOnTasksRegistered(
-  { plugins, tasks }: {
-    plugins: (PluginModule & Plugin)[];
-    tasks: Tasks;
-  },
+  { plugins, tasks }: { plugins: LoadedPlugins; tasks: Tasks },
 ) {
   const tasksRegistered = plugins.map((plugin) => plugin.onTasksRegistered)
     .filter(Boolean);
@@ -313,7 +306,7 @@ async function applyAfterEachRenders(
   { context, markup, plugins, route, send, url }: {
     context: Context;
     markup: string;
-    plugins: (PluginModule & Plugin)[];
+    plugins: LoadedPlugins;
     route: Route;
     send: Send;
     url: string;
