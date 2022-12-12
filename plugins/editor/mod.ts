@@ -14,9 +14,9 @@ const meta: PluginMeta = {
 const scriptsToCompile = [
   "toggleEditor",
   "pageEditor",
-  "twindRuntime",
-  // TODO: Re-enable
-  // "webSocketClient",
+  // toggleEditor pulls twindRuntime so it doesn't have to be compiled/loaded
+  // separately
+  // "twindRuntime",
 ];
 
 // TODO: Figure out how to integrate with the watcher
