@@ -30,7 +30,7 @@ async function scriptPlugin(
         type: "writeScript",
         payload: {
           outputDirectory,
-          scriptName,
+          scriptName: scriptName.replace(".ts", ".js"),
           scriptPath,
         },
       }));

@@ -1,7 +1,7 @@
 import { compileTypeScript } from "./compileTypeScript.ts";
 import type { Mode } from "../types.ts";
 
-async function compileScripts(
+function compileScripts(
   paths: { path: string; name: string }[],
   mode: Mode,
 ) {

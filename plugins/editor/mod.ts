@@ -53,7 +53,7 @@ function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
         payload: scriptsToCompile.map((name) => ({
           // TODO: How to make this work in the remote case?
           path: path.join(cwd, "plugins", "editor", "scripts", `${name}.ts`),
-          name: `${name}.ts`,
+          name: `${name}.js`,
         })),
       });
     },

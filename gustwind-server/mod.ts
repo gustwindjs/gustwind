@@ -1,5 +1,5 @@
 import { cache, lookup, path, Server } from "../server-deps.ts";
-import { compileScript, compileScripts } from "../utilities/compileScripts.ts";
+import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { dirSync } from "../utilities/fs.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
@@ -13,7 +13,7 @@ async function serveGustwind({
   mode: Mode;
 }) {
   const { plugins, router, tasks } = await importPlugins(projectMeta);
-  let fs = evaluateTasks(tasks);
+  let fs = await evaluateTasks(tasks);
 
   const server = new Server({
     handler: async ({ url }) => {
@@ -29,7 +29,7 @@ async function serveGustwind({
           route: matchedRoute,
         });
 
-        fs = { ...fs, ...evaluateTasks(tasks) };
+        fs = { ...fs, ...(await evaluateTasks(tasks)) };
 
         // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
         return respond(
@@ -62,7 +62,7 @@ async function serveGustwind({
   return () => server.serve(listener);
 }
 
-function evaluateTasks(tasks: Tasks) {
+async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
     string,
     { type: "file"; data: string } | {
@@ -71,7 +71,7 @@ function evaluateTasks(tasks: Tasks) {
     }
   > = {};
 
-  tasks.forEach(({ type, payload }) => {
+  await Promise.all(tasks.map(async ({ type, payload }) => {
     switch (type) {
       case "writeFile":
         ret[`/${payload.file}`] = {
@@ -90,22 +90,21 @@ function evaluateTasks(tasks: Tasks) {
         });
         break;
       }
-      case "writeScript":
-        // TODO: writeScript
-        break;
-    }
-  });
+      case "writeScript": {
+        const data = await compileTypeScript(
+          payload.scriptPath,
+          "development",
+        );
 
-  // TODO
-  /*
-  const pluginScripts = tasks.filter(({ type }) => type === "writeScript")
-    .map(({ payload }) => ({
-      // @ts-expect-error This is writeScript by now
-      path: payload.scriptPath,
-      // @ts-expect-error This is writeScript by now
-      name: payload.scriptName,
-    }));
-  */
+        ret[`/${payload.scriptName}`] = {
+          type: "file",
+          data,
+        };
+
+        break;
+      }
+    }
+  }));
 
   return ret;
 }

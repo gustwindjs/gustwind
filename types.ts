@@ -157,7 +157,7 @@ type BuildWorkerEvent =
     payload: {
       outputDirectory: string;
       scriptName: string;
-      scriptPath?: string;
+      scriptPath: string;
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";

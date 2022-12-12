@@ -91,18 +91,14 @@ self.onmessage = async (e) => {
 async function writeScript(
   outputPath: string,
   scriptName: string,
-  scriptDirectory?: string,
+  scriptDirectory: string,
 ) {
-  if (!scriptDirectory) {
-    return Promise.resolve();
-  }
-
   const script = await compileScript({
     path: scriptDirectory,
     name: scriptName,
     mode: "production",
   });
-  const scriptPath = path.join(outputPath, scriptName.replace(".ts", ".js"));
+  const scriptPath = path.join(outputPath, scriptName);
 
   DEBUG && console.log("writing script", scriptPath);
 
