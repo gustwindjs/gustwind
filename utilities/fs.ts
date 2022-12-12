@@ -1,4 +1,4 @@
-import { async, path } from "../server-deps.ts";
+import { path } from "../server-deps.ts";
 
 function getJson<R>(filePath: string): Promise<R> {
   return Deno.readTextFile(filePath).then((d) => JSON.parse(d));
@@ -24,25 +24,4 @@ async function dir(p: string, extension?: string) {
   return ret;
 }
 
-async function watch({
-  directory,
-  handler,
-  debounceDelay,
-}: {
-  directory: string;
-  handler: (path: string, event: Deno.FsEvent) => void;
-  debounceDelay?: number;
-}) {
-  const watcher = Deno.watchFs(directory);
-
-  const trigger = async.debounce(
-    (event: Deno.FsEvent) => event.paths.forEach((p) => handler(p, event)),
-    debounceDelay || 200,
-  );
-
-  for await (const event of watcher) {
-    trigger(event);
-  }
-}
-
-export { dir, getJson, watch };
+export { dir, getJson };
