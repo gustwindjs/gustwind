@@ -29,7 +29,7 @@ async function plugin(
     path.join(cwd, routesPath),
   );
   const dataSources = dataSourcesPath
-    ? load.module<DataSources>(path.join(cwd, dataSourcesPath))
+    ? await load.module<DataSources>(path.join(cwd, dataSourcesPath))
     : {};
 
   return {
