@@ -12,8 +12,8 @@ const meta: PluginMeta = {
 };
 
 const scriptsToCompile = [
-  "pageEditor",
   "toggleEditor",
+  "pageEditor",
   "twindRuntime",
   // TODO: Re-enable
   // "webSocketClient",
