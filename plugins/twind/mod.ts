@@ -42,7 +42,7 @@ function twindPlugin(
         type: "writeScript",
         payload: {
           outputDirectory,
-          scriptName: "twindSetup.js",
+          file: "twindSetup.js",
           scriptPath: twindSetupPath,
         },
       }];

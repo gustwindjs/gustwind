@@ -38,7 +38,7 @@ async function evaluateTasks(tasks: Tasks) {
           "development",
         );
 
-        ret[`/${payload.scriptName}`] = {
+        ret[`/${payload.file}`] = {
           type: "file",
           data,
         };

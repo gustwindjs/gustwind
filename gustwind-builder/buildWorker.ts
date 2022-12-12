@@ -67,11 +67,11 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished build", id, route, filePath);
   }
   if (type === "writeScript") {
-    const { payload: { outputDirectory, scriptName, scriptPath } } = e.data;
+    const { payload: { outputDirectory, file, scriptPath } } = e.data;
 
     await fs.ensureDir(outputDirectory);
     Deno.writeTextFile(
-      path.join(outputDirectory, scriptName),
+      path.join(outputDirectory, file),
       await compileTypeScript(scriptPath, "production"),
     );
   }

@@ -25,12 +25,12 @@ async function scriptPlugin(
   return {
     prepareBuild: () => {
       return foundScripts.concat(receivedScripts).map((
-        { name: scriptName, path: scriptPath },
+        { name, path: scriptPath },
       ) => ({
         type: "writeScript",
         payload: {
           outputDirectory,
-          scriptName: scriptName.replace(".ts", ".js"),
+          file: name.replace(".ts", ".js"),
           scriptPath,
         },
       }));

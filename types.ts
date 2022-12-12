@@ -158,7 +158,7 @@ type BuildWorkerEvent =
     type: "writeScript";
     payload: {
       outputDirectory: string;
-      scriptName: string;
+      file: string;
       scriptPath: string;
     };
   };

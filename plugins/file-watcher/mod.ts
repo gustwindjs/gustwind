@@ -1,6 +1,8 @@
 import { async } from "../../server-deps.ts";
 import type { Plugin, PluginMeta, ProjectMeta } from "../../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 const meta: PluginMeta = {
   name: "gustwind-script-plugin",
 };
@@ -18,25 +20,42 @@ function fileWatcherPlugin(_: unknown, projectMeta: ProjectMeta): Plugin {
   // Then another plugin (for example web socket plugin), can
   // react to that and update the clients.
   return {
+    // TODO: How to capture router data here as well (i.e., routes.json, components etc.)
     onTasksRegistered(tasks) {
-      // console.log("tasks registered", tasks);
+      const paths = tasks.map(({ type, payload }) => {
+        switch (type) {
+          case "writeScript":
+            return payload.scriptPath;
+          case "writeFiles":
+            return payload.inputDirectory;
+        }
+      }).filter(Boolean) as string[]; // TS doesn't infer this case!
+
+      DEBUG && console.log("watching paths", paths);
+
+      watch({
+        paths,
+        onChange: (path, event) => {
+          console.log("a change happened", path, event);
+        },
+      });
     },
   };
 }
 
 async function watch({
-  directory,
-  handler,
+  paths,
+  onChange,
   debounceDelay,
 }: {
-  directory: string;
-  handler: (path: string, event: Deno.FsEvent) => void;
+  paths: string[];
+  onChange: (path: string, event: Deno.FsEvent) => void;
   debounceDelay?: number;
 }) {
-  const watcher = Deno.watchFs(directory);
+  const watcher = Deno.watchFs(paths);
 
   const trigger = async.debounce(
-    (event: Deno.FsEvent) => event.paths.forEach((p) => handler(p, event)),
+    (event: Deno.FsEvent) => event.paths.forEach((p) => onChange(p, event)),
     debounceDelay || 200,
   );
 
