@@ -23,7 +23,7 @@ async function serveGustwind({
         const { markup, tasks } = await applyPlugins({
           plugins,
           mode,
-          url,
+          url: pathname,
           projectMeta,
           route: matchedRoute,
         });
