@@ -1,6 +1,6 @@
 import { path } from "../server-deps.ts";
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
-import { dirSync } from "../utilities/fs.ts";
+import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 
 async function evaluateTasks(tasks: Tasks) {
@@ -22,8 +22,9 @@ async function evaluateTasks(tasks: Tasks) {
         break;
       case "writeFiles": {
         const outputBasename = path.basename(payload.outputPath);
+        const files = await dir(payload.inputDirectory);
 
-        dirSync(payload.inputDirectory).forEach((file) => {
+        files.forEach((file) => {
           ret[`/${outputBasename}/${file.name}`] = {
             type: "path",
             path: file.path,

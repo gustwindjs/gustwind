@@ -32,26 +32,6 @@ async function dir(p: string, extension?: string) {
   return ret;
 }
 
-function dirSync(p: string, extension?: string) {
-  if (!p) {
-    throw new Error("dirSync - missing path");
-  }
-
-  const ret = [];
-
-  for (const { name } of Deno.readDirSync(p)) {
-    if (extension) {
-      if (path.extname(name) === extension) {
-        ret.push({ path: path.join(p, name), name });
-      }
-    } else {
-      ret.push({ path: path.join(p, name), name });
-    }
-  }
-
-  return ret;
-}
-
 async function watch({
   directory,
   handler,
@@ -73,4 +53,4 @@ async function watch({
   }
 }
 
-export { dir, dirSync, getJson, getJsonSync, watch };
+export { dir, getJson, getJsonSync, watch };
