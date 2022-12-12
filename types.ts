@@ -100,7 +100,10 @@ type Send = (
 ) => Promise<unknown> | unknown;
 type SendMessage = { type: string; payload?: unknown };
 
+// This type is specific to breezewind-router so it probably doesn't belong here
 type Route = {
+  context: DataContext;
+  url: string;
   type?: "html" | "xml";
   // TODO: This should come as an extension from the renderer plugin
   // if it is enabled
@@ -114,15 +117,11 @@ type Route = {
   expand?: {
     matchBy?: { dataSource: DataSource; slug: string };
   };
-  // These are attached later
-  context?: DataContext;
-  url?: string;
 };
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
 type Tasks = BuildWorkerEvent[];
-
 type BuildWorkerEvent =
   | {
     type: "init";
@@ -161,7 +160,6 @@ type BuildWorkerEvent =
       scriptPath?: string;
     };
   };
-
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
 export type {
