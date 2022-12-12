@@ -4,7 +4,7 @@ import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import type { Component } from "../../breezewind/types.ts";
-import type { Plugin, PluginMeta } from "../../types.ts";
+import type { Plugin, PluginMeta, PluginParameters } from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "breezewind-renderer-plugin",
@@ -12,13 +12,14 @@ const meta: PluginMeta = {
 };
 
 async function breezewindRenderer(
-  { options: { componentsPath, layoutsPath, pageUtilitiesPath } }: {
-    options: {
-      componentsPath: string;
-      layoutsPath: string;
-      pageUtilitiesPath: string;
-    };
-  },
+  { options: { componentsPath, layoutsPath, pageUtilitiesPath } }:
+    PluginParameters<
+      {
+        componentsPath: string;
+        layoutsPath: string;
+        pageUtilitiesPath: string;
+      }
+    >,
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
 

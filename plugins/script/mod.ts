@@ -1,20 +1,25 @@
 import { dir } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
-import type { Plugin, PluginMeta, ProjectMeta, Scripts } from "../../types.ts";
+import type {
+  Plugin,
+  PluginMeta,
+  PluginParameters,
+  Scripts,
+} from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "gustwind-script-plugin",
 };
 
 async function scriptPlugin(
-  { options: { scripts: globalScripts = [], scriptsPath }, projectMeta }: {
-    options: {
-      scripts: Scripts;
-      // TODO: Model scripts output path here
-      scriptsPath: string[];
-    };
-    projectMeta: ProjectMeta;
-  },
+  { options: { scripts: globalScripts = [], scriptsPath }, projectMeta }:
+    PluginParameters<
+      {
+        scripts: Scripts;
+        // TODO: Model scripts output path here
+        scriptsPath: string[];
+      }
+    >,
 ): Promise<Plugin> {
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();

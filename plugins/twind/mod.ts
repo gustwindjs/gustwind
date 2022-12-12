@@ -5,20 +5,17 @@ import {
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { path } from "../../server-deps.ts";
-import type { Plugin, PluginMeta, ProjectMeta } from "../../types.ts";
+import type { Plugin, PluginMeta, PluginParameters } from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "gustwind-twind-plugin",
 };
 
-function twindPlugin({ options, projectMeta }: {
-  options: {
-    setupPath: string;
-    // TODO: Support style extraction
-    // extractStylesToDirectory: string;
-  };
-  projectMeta: ProjectMeta;
-}): Plugin {
+function twindPlugin({ options, projectMeta }: PluginParameters<{
+  setupPath: string;
+  // TODO: Support style extraction
+  // extractStylesToDirectory: string;
+}>): Plugin {
   const { outputDirectory } = projectMeta;
   const stylesheet = virtualSheet();
   const twindSetupPath = path.join(Deno.cwd(), options.setupPath);

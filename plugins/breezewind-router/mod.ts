@@ -1,9 +1,14 @@
 import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import { getJson } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
-import type { Plugin, PluginMeta, Route } from "../../types.ts";
+import type {
+  DataSources,
+  Plugin,
+  PluginMeta,
+  PluginParameters,
+  Route,
+} from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "breezewind-renderer-plugin",
@@ -11,25 +16,20 @@ const meta: PluginMeta = {
 };
 
 async function plugin(
-  { options: { dataSourcesPath, include, routesPath } }: {
-    options: {
+  { options: { dataSourcesPath, include, routesPath }, load }: PluginParameters<
+    {
       dataSourcesPath: string;
       include: string[];
       routesPath: string;
-    };
-  },
+    }
+  >,
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
-
-  // TODO: This should become something like load.json(path)
-  const routes = await getJson<Record<string, Route>>(
+  const routes = await load.json<Record<string, Route>>(
     path.join(cwd, routesPath),
   );
-
-  // TODO: This should become something like load.module(path)
-  // TODO: How to handle watching + cache on change?
   const dataSources = dataSourcesPath
-    ? await import("file://" + path.join(cwd, dataSourcesPath)).then((m) => m)
+    ? load.module<DataSources>(path.join(cwd, dataSourcesPath))
     : {};
 
   return {

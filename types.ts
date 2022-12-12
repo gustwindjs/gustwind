@@ -49,6 +49,16 @@ type PluginMeta = {
   dependsOn?: string[];
 };
 
+type PluginParameters<O = {}> = {
+  load: {
+    json<T>(path: string): Promise<T>;
+    module<T>(path: string): Promise<T>;
+  };
+  mode: Mode;
+  projectMeta: ProjectMeta;
+  options: O;
+};
+
 type Plugin = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
@@ -138,6 +148,14 @@ type BuildWorkerEvent =
     };
   }
   | {
+    type: "loadJSON";
+    payload: { path: string };
+  }
+  | {
+    type: "loadModule";
+    payload: { path: string };
+  }
+  | {
     type: "writeFile";
     payload: {
       outputDirectory: string;
@@ -180,6 +198,7 @@ export type {
   PluginMeta,
   PluginModule,
   PluginOptions,
+  PluginParameters,
   ProjectMeta,
   Props,
   Route,

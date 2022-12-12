@@ -1,5 +1,6 @@
 import { path } from "../server-deps.ts";
 import { getContext } from "./context.ts";
+import { getJson } from "../utilities/fs.ts";
 import type {
   Context,
   Mode,
@@ -46,10 +47,12 @@ async function importPlugins(
       loadedPlugins.push(pluginModule);
     }
   }
-  await applyOnTasksRegistered({ plugins: loadedPlugins, tasks: initialTasks });
 
   const tasks = await preparePlugins({ plugins: loadedPlugins });
-  await applyOnTasksRegistered({ plugins: loadedPlugins, tasks });
+  await applyOnTasksRegistered({
+    plugins: loadedPlugins,
+    tasks: initialTasks.concat(tasks),
+  });
 
   // The idea is to proxy routes from all routers so you can use multiple
   // routers or route definitions to aggregate everything together.
@@ -72,21 +75,35 @@ async function importPlugin({ pluginDefinition, projectMeta, mode }: {
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
+  const tasks: Tasks = [];
   // TODO: Add logic against url based plugins
   const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
   const module = await import(pluginPath);
-  // TODO: Inject registration logic here -> convert signature into an object
-  // TODO: This should generate tasks to return as well and those should be
-  // communicated further so the file watcher can register to watch.
-  // The big question is how to reload a plugin (just re-execute?)
   const pluginApi = await module.plugin({
     mode,
     options: pluginDefinition.options,
     projectMeta,
+    load: {
+      json<T>(path: string) {
+        tasks.push({
+          type: "loadJSON",
+          payload: { path },
+        });
+
+        return getJson<T>(path);
+      },
+      module<T>(path: string) {
+        tasks.push({
+          type: "loadModule",
+          payload: { path },
+        });
+
+        return import(`${path}?cache=${new Date().getTime()}`) as T;
+      },
+    },
   });
 
-  // TODO: Generate tasks based on the load api
-  return { pluginModule: { ...module, ...pluginApi }, tasks: [] };
+  return { pluginModule: { ...module, ...pluginApi }, tasks };
 }
 
 async function preparePlugins(

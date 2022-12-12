@@ -14,18 +14,13 @@ function fileWatcherPlugin(
     return {};
   }
 
-  // TODO: This should be a no-op if mode is not development
-
-  // TODO: Set up a file watcher here
-  // It should be able to aggregate files to watch automatically
-  // and trigger a message when there's a change.
-  // Then another plugin (for example web socket plugin), can
-  // react to that and update the clients.
   return {
-    // TODO: How to capture router data here as well (i.e., routes.json, components etc.)
     onTasksRegistered(tasks) {
       const paths = tasks.map(({ type, payload }) => {
         switch (type) {
+          case "loadJSON":
+          case "loadModule":
+            return payload.path;
           case "writeScript":
             return payload.scriptPath;
           case "writeFiles":
