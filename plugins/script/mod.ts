@@ -61,17 +61,4 @@ async function scriptPlugin(
   };
 }
 
-// TODO: Server
-/*
-      if (pathname.endsWith(".js")) {
-        const matchedScript = cache.scripts[trim(pathname, "/")];
-
-        if (matchedScript) {
-          return respond(200, matchedScript, "text/javascript");
-        }
-
-        return respond(404, "No matching script");
-      }
- */
-
 export { meta, scriptPlugin as plugin };
