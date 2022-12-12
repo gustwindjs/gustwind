@@ -4,14 +4,6 @@ function getJson<R>(filePath: string): Promise<R> {
   return Deno.readTextFile(filePath).then((d) => JSON.parse(d));
 }
 
-function getJsonSync<R>(filePath: string) {
-  try {
-    return JSON.parse(Deno.readTextFileSync(filePath));
-  } catch (error) {
-    console.error("Failed to parse", filePath, error);
-  }
-}
-
 async function dir(p: string, extension?: string) {
   if (!p) {
     throw new Error("dir - missing path");
@@ -53,4 +45,4 @@ async function watch({
   }
 }
 
-export { dir, getJson, getJsonSync, watch };
+export { dir, getJson, watch };
