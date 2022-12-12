@@ -123,26 +123,6 @@ function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
     return compileScript({ name, path, mode: "development" });
   }));
 }
-
-async function compileScriptsToJavaScript(
-  paths: { path: string; name: string }[],
-) {
-  try {
-    return Object.fromEntries(
-      (await compileScripts(paths, "development")).map(
-        ({ name, content }) => {
-          return [name.replace(".ts", ".js"), content];
-        },
-      ),
-    );
-  } catch (error) {
-    DEBUG && console.error(error);
-
-    // If the scripts directory doesn't exist or something else goes wrong,
-    // above might throw
-    return {};
-  }
-}
 */
 
 export { serveGustwind };
