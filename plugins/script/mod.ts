@@ -24,6 +24,8 @@ async function scriptPlugin(
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
 
+  // TODO: Figure out how to use the load API here
+  // Maybe something like load.dir(path, '.ts') is needed
   const foundScripts = (await Promise.all(
     scriptsPath.map((p) => dir(path.join(cwd, p), ".ts")),
   )).flat();

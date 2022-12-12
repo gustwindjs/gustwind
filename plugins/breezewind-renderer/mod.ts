@@ -12,7 +12,7 @@ const meta: PluginMeta = {
 };
 
 async function breezewindRenderer(
-  { options: { componentsPath, layoutsPath, pageUtilitiesPath } }:
+  { options: { componentsPath, layoutsPath, pageUtilitiesPath }, load }:
     PluginParameters<
       {
         componentsPath: string;
@@ -23,17 +23,12 @@ async function breezewindRenderer(
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
 
-  // TODO: Use this for cache busting modules in watch mode
-  // "?cache=" +
-  // new Date().getTime()
-  //
-  // Maybe it's a good default for an import helper
   let [components, layouts, pageUtilities] = await Promise.all([
+    // TODO: Figure out how to handle directory loading. Likely these
+    // should become something like load.directory(path, format, getJSON)
     getDefinitions<Component>(path.join(cwd, componentsPath)),
     getDefinitions<Component>(path.join(cwd, layoutsPath)),
-    pageUtilitiesPath
-      ? await import("file://" + path.join(cwd, pageUtilitiesPath))
-      : {},
+    pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
   ]);
 
   return {
