@@ -19,7 +19,6 @@ const scriptsToCompile = [
   // "twindRuntime",
 ];
 
-// TODO: Figure out how to integrate with the watcher
 function editorPlugin(_: never, projectMeta: ProjectMeta): Plugin {
   return {
     beforeEachRender({ url, send, route, context }) {
