@@ -4,7 +4,7 @@ import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
 import type {
   DataSources,
-  Plugin,
+  PluginApi,
   PluginMeta,
   PluginParameters,
   Route,
@@ -23,7 +23,7 @@ async function plugin(
       routesPath: string;
     }
   >,
-): Promise<Plugin> {
+): Promise<PluginApi> {
   const cwd = Deno.cwd();
   const routes = await load.json<Record<string, Route>>(
     path.join(cwd, routesPath),

@@ -1,6 +1,6 @@
 import { attachIds } from "../../utilities/attachIds.ts";
 import { path } from "../../server-deps.ts";
-import type { Plugin, PluginMeta, PluginParameters } from "../../types.ts";
+import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "gustwind-editor-plugin",
@@ -19,7 +19,7 @@ const scriptsToCompile = [
   // "twindRuntime",
 ];
 
-function editorPlugin({ projectMeta }: PluginParameters): Plugin {
+function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
   return {
     beforeEachRender({ url, send, route, context }) {
       const outputDirectory = path.join(projectMeta.outputDirectory, url);

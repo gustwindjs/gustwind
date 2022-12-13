@@ -1,5 +1,5 @@
 import { path } from "../../server-deps.ts";
-import type { Plugin, PluginMeta, PluginParameters } from "../../types.ts";
+import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 
 const meta: PluginMeta = {
   name: "gustwind-asset-plugin",
@@ -11,7 +11,7 @@ function assetPlugin(
     assetsPath: string;
     outputPath: string;
   }>,
-): Plugin {
+): PluginApi {
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
   const inputDirectory = path.join(cwd, assetsPath);

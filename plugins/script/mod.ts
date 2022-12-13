@@ -1,6 +1,6 @@
 import { path } from "../../server-deps.ts";
 import type {
-  Plugin,
+  PluginApi,
   PluginMeta,
   PluginParameters,
   Scripts,
@@ -19,7 +19,7 @@ async function scriptPlugin(
         scriptsPath: string[];
       }
     >,
-): Promise<Plugin> {
+): Promise<PluginApi> {
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
 

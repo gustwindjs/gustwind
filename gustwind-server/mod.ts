@@ -1,8 +1,9 @@
 import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import type { Mode, ProjectMeta } from "../types.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
+// import fileWatcherPluginModule from "../plugins/file-watcher/mod.ts";
+import type { Mode, ProjectMeta } from "../types.ts";
 
 async function serveGustwind({
   projectMeta,

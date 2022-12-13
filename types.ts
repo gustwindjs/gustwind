@@ -41,7 +41,7 @@ type Context = Record<string, unknown> & {
 
 type PluginModule = {
   meta: PluginMeta;
-  plugin: Plugin;
+  api: PluginApi;
 };
 
 type PluginMeta = {
@@ -49,7 +49,7 @@ type PluginMeta = {
   dependsOn?: string[];
 };
 
-type PluginParameters<O = Record<string, never>> = {
+type PluginParameters<O = Record<string, unknown>> = {
   load: {
     dir(
       path: string,
@@ -63,7 +63,7 @@ type PluginParameters<O = Record<string, never>> = {
   options: O;
 };
 
-type Plugin = {
+type PluginApi = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
@@ -202,7 +202,7 @@ export type {
   Meta,
   Mode,
   ParentCategory,
-  Plugin,
+  PluginApi,
   PluginMeta,
   PluginModule,
   PluginOptions,

@@ -4,17 +4,16 @@ import { dir, getJson } from "../utilities/fs.ts";
 import type {
   Context,
   Mode,
-  Plugin,
+  PluginApi,
+  PluginMeta,
   PluginModule,
   PluginOptions,
+  PluginParameters,
   ProjectMeta,
   Route,
   Send,
   Tasks,
 } from "../types.ts";
-
-type LoadedPlugin = PluginModule & Plugin;
-type LoadedPlugins = LoadedPlugin[];
 
 async function importPlugins(
   { projectMeta, mode }: { projectMeta: ProjectMeta; mode: Mode },
@@ -27,24 +26,25 @@ async function importPlugins(
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of plugins) {
-    // TODO: Capture tasks here
-    const { pluginModule, tasks } = await importPlugin({
+    // TODO: Add logic against url based plugins
+    const { loadedPluginModule, tasks } = await importPlugin({
+      pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path)),
       pluginDefinition,
       projectMeta,
       mode,
     });
     initialTasks = initialTasks.concat(tasks);
 
-    const { dependsOn } = pluginModule.meta;
+    const { dependsOn } = loadedPluginModule.meta;
     const dependencyIndex = loadedPlugins.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
     );
 
     // If there are dependencies, make sure the plugin is evaluated last
     if (dependencyIndex < 0) {
-      loadedPlugins.unshift(pluginModule);
+      loadedPlugins.unshift(loadedPluginModule);
     } else {
-      loadedPlugins.push(pluginModule);
+      loadedPlugins.push(loadedPluginModule);
     }
   }
 
@@ -70,16 +70,19 @@ async function importPlugins(
   return { tasks, plugins: loadedPlugins, router };
 }
 
-async function importPlugin({ pluginDefinition, projectMeta, mode }: {
-  pluginDefinition: PluginOptions;
-  projectMeta: ProjectMeta;
-  mode: Mode;
-}) {
+async function importPlugin(
+  { pluginModule, pluginDefinition, projectMeta, mode }: {
+    pluginModule: {
+      meta: PluginMeta;
+      plugin: (args: PluginParameters) => PluginApi;
+    };
+    pluginDefinition: PluginOptions;
+    projectMeta: ProjectMeta;
+    mode: Mode;
+  },
+): Promise<{ loadedPluginModule: PluginModule; tasks: Tasks }> {
   const tasks: Tasks = [];
-  // TODO: Add logic against url based plugins
-  const pluginPath = path.join(Deno.cwd(), pluginDefinition.path);
-  const module = await import(pluginPath);
-  const pluginApi = await module.plugin({
+  const api = await pluginModule.plugin({
     mode,
     options: pluginDefinition.options,
     projectMeta,
@@ -111,16 +114,19 @@ async function importPlugin({ pluginDefinition, projectMeta, mode }: {
     },
   });
 
-  return { pluginModule: { ...module, ...pluginApi }, tasks };
+  return {
+    loadedPluginModule: { meta: pluginModule.meta, api },
+    tasks,
+  };
 }
 
 async function preparePlugins(
-  { plugins }: { plugins: LoadedPlugins },
+  { plugins }: { plugins: PluginModule[] },
 ) {
   let tasks: Tasks = [];
-  const messageSenders = plugins.map((plugin) => plugin.sendMessages)
+  const messageSenders = plugins.map(({ api }) => api.sendMessages)
     .filter(Boolean);
-  const prepareBuilds = plugins.map((plugin) => plugin.prepareBuild)
+  const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
     .filter(Boolean);
   const send = getSend(plugins);
 
@@ -154,7 +160,7 @@ async function applyPlugins(
     mode: Mode;
     projectMeta: ProjectMeta;
     route: Route;
-    plugins: LoadedPlugins;
+    plugins: PluginModule[];
     url: string;
   },
 ) {
@@ -201,15 +207,15 @@ async function applyPlugins(
   };
 }
 
-function getSend(plugins: LoadedPlugins): Send {
+function getSend(plugins: PluginModule[]): Send {
   return (pluginName, message) => {
     const foundPlugin = plugins.find(({ meta: { name } }) =>
       pluginName === name
     );
 
     if (foundPlugin) {
-      if (foundPlugin.onMessage) {
-        return foundPlugin.onMessage(message);
+      if (foundPlugin.api.onMessage) {
+        return foundPlugin.api.onMessage(message);
       } else {
         throw new Error(
           `Plugin ${pluginName} does not have an onMessage handler`,
@@ -223,8 +229,8 @@ function getSend(plugins: LoadedPlugins): Send {
   };
 }
 
-async function applyGetAllRoutes({ plugins }: { plugins: LoadedPlugins }) {
-  const getAllRoutes = plugins.map((plugin) => plugin.getAllRoutes)
+async function applyGetAllRoutes({ plugins }: { plugins: PluginModule[] }) {
+  const getAllRoutes = plugins.map(({ api }) => api.getAllRoutes)
     .filter(Boolean);
   let ret: Record<string, Route> = {};
 
@@ -240,9 +246,9 @@ async function applyGetAllRoutes({ plugins }: { plugins: LoadedPlugins }) {
 }
 
 async function applyMatchRoutes(
-  { plugins, url }: { plugins: LoadedPlugins; url: string },
+  { plugins, url }: { plugins: PluginModule[]; url: string },
 ) {
-  const matchRoutes = plugins.map((plugin) => plugin.matchRoute)
+  const matchRoutes = plugins.map(({ api }) => api.matchRoute)
     .filter(Boolean);
 
   for await (const matchRoute of matchRoutes) {
@@ -258,13 +264,13 @@ async function applyMatchRoutes(
 
 async function applyPrepareContext(
   { plugins, route, send }: {
-    plugins: LoadedPlugins;
+    plugins: PluginModule[];
     route: Route;
     send: Send;
   },
 ) {
   let context = {};
-  const prepareContexts = plugins.map((plugin) => plugin.prepareContext)
+  const prepareContexts = plugins.map(({ api }) => api.prepareContext)
     .filter(Boolean);
 
   for await (const prepareContext of prepareContexts) {
@@ -283,14 +289,14 @@ async function applyPrepareContext(
 async function applyBeforeEachRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: LoadedPlugins;
+    plugins: PluginModule[];
     route: Route;
     send: Send;
     url: string;
   },
 ) {
   let tasks: Tasks = [];
-  const beforeEachRenders = plugins.map((plugin) => plugin.beforeEachRender)
+  const beforeEachRenders = plugins.map(({ api }) => api.beforeEachRender)
     .filter(Boolean);
 
   for await (const beforeEachRender of beforeEachRenders) {
@@ -309,13 +315,13 @@ async function applyBeforeEachRenders(
 async function applyRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: LoadedPlugins;
+    plugins: PluginModule[];
     route: Route;
     send: Send;
     url: string;
   },
 ) {
-  const renders = plugins.map((plugin) => plugin.render)
+  const renders = plugins.map(({ api }) => api.render)
     .filter(Boolean);
   let markup = "";
 
@@ -331,9 +337,9 @@ async function applyRenders(
 }
 
 async function applyOnTasksRegistered(
-  { plugins, tasks }: { plugins: LoadedPlugins; tasks: Tasks },
+  { plugins, tasks }: { plugins: PluginModule[]; tasks: Tasks },
 ) {
-  const tasksRegistered = plugins.map((plugin) => plugin.onTasksRegistered)
+  const tasksRegistered = plugins.map(({ api }) => api.onTasksRegistered)
     .filter(Boolean);
 
   for await (const cb of tasksRegistered) {
@@ -347,13 +353,13 @@ async function applyAfterEachRenders(
   { context, markup, plugins, route, send, url }: {
     context: Context;
     markup: string;
-    plugins: LoadedPlugins;
+    plugins: PluginModule[];
     route: Route;
     send: Send;
     url: string;
   },
 ) {
-  const afterEachRenders = plugins.map((plugin) => plugin.afterEachRender)
+  const afterEachRenders = plugins.map(({ api }) => api.afterEachRender)
     .filter(Boolean);
   for await (const afterEachRender of afterEachRenders) {
     // TODO: Later on this should be able to create new tasks to run
