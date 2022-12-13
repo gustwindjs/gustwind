@@ -56,10 +56,6 @@ async function breezewindRenderer(
           // @ts-expect-error This is fine.
           layouts = payload;
           break;
-        default:
-          throw new Error(
-            `breezewind-renderer-plugin - Unknown message type: ${type}`,
-          );
       }
     },
   };

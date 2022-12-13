@@ -1,3 +1,4 @@
+import { path as _path } from "../../server-deps.ts";
 import { async } from "../../server-deps.ts";
 import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 
@@ -36,13 +37,15 @@ async function fileWatcherPlugin(
 
       watch({
         paths,
-        onChange: (path, event) =>
-          // TODO: Change this to * instead of websocket-plugin
-          // In other words, any plugin should be able to receive this message
-          send("websocket-plugin", {
+        onChange: (path, event) => {
+          const extension = _path.extname(path);
+          const name = _path.basename(path, extension);
+
+          send("*", {
             type: "fileChanged",
-            payload: { path, event },
-          }),
+            payload: { path, event, extension, name },
+          });
+        },
       });
     },
   };

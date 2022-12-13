@@ -221,22 +221,26 @@ async function applyPlugins(
 
 function getSend(plugins: PluginModule[]): Send {
   return (pluginName, message) => {
-    const foundPlugin = plugins.find(({ meta: { name } }) =>
-      pluginName === name
-    );
+    if (pluginName === "*") {
+      plugins.forEach(({ api }) => api.onMessage && api.onMessage(message));
+    } else {
+      const foundPlugin = plugins.find(({ meta: { name } }) =>
+        pluginName === name
+      );
 
-    if (foundPlugin) {
-      if (foundPlugin.api.onMessage) {
-        return foundPlugin.api.onMessage(message);
+      if (foundPlugin) {
+        if (foundPlugin.api.onMessage) {
+          return foundPlugin.api.onMessage(message);
+        } else {
+          throw new Error(
+            `Plugin ${pluginName} does not have an onMessage handler`,
+          );
+        }
       } else {
         throw new Error(
-          `Plugin ${pluginName} does not have an onMessage handler`,
+          `Tried to send a plugin (${pluginName}) that does not exist`,
         );
       }
-    } else {
-      throw new Error(
-        `Tried to send a plugin (${pluginName}) that does not exist`,
-      );
     }
   };
 }

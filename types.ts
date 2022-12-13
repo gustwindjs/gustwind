@@ -135,7 +135,12 @@ type SendMessageEvent =
   // websocket plugin
   | {
     type: "fileChanged";
-    payload: { path: string; event: Deno.FsEvent };
+    payload: {
+      path: string;
+      event: Deno.FsEvent;
+      extension: string;
+      name: string;
+    };
   };
 
 // This type is specific to breezewind-router so it probably doesn't belong here
