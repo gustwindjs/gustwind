@@ -1,8 +1,12 @@
 import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
-import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
+import {
+  applyPlugins,
+  importPlugin,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
-// import fileWatcherPluginModule from "../plugins/file-watcher/mod.ts";
+import * as fileWatcherPlugin from "../plugins/file-watcher/mod.ts";
 import type { Mode, ProjectMeta } from "../types.ts";
 
 async function serveGustwind({
@@ -12,9 +16,18 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  // TODO: It would be nice to load the file watcher plugin here already.
-  // Likely something like initialPlugins and an explicit import is needed.
-  const { plugins, router, tasks } = await importPlugins({ projectMeta, mode });
+  // TODO: Pass/handle meta.json connection here
+  const fileWatcherPluginModule = await importPlugin({
+    pluginModule: fileWatcherPlugin,
+    options: {},
+    projectMeta,
+    mode,
+  });
+  const { plugins, router, tasks } = await importPlugins({
+    initialImportedPlugins: [fileWatcherPluginModule],
+    projectMeta,
+    mode,
+  });
   let fs = await evaluateTasks(tasks);
 
   const server = new Server({

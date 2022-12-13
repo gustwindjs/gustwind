@@ -9,9 +9,6 @@
   "outputDirectory": "./build",
   "plugins": [
     {
-      "path": "./plugins/file-watcher/mod.ts"
-    },
-    {
       "path": "./plugins/breezewind-router/mod.ts",
       "options": {
         "dataSourcesPath": "./site/dataSources.ts",

@@ -15,12 +15,25 @@ import type {
   Tasks,
 } from "../types.ts";
 
+type ImportedPlugin = { loadedPluginModule: PluginModule; tasks: Tasks };
+
 async function importPlugins(
-  { projectMeta, mode }: { projectMeta: ProjectMeta; mode: Mode },
+  { initialImportedPlugins, projectMeta, mode }: {
+    initialImportedPlugins?: ImportedPlugin[];
+    projectMeta: ProjectMeta;
+    mode: Mode;
+  },
 ) {
   const { plugins } = projectMeta;
-  const loadedPlugins: PluginModule[] = [];
+  const loadedPluginModules: PluginModule[] = [];
   let initialTasks: Tasks = [];
+
+  if (initialImportedPlugins) {
+    initialImportedPlugins.forEach(({ loadedPluginModule, tasks }) => {
+      loadedPluginModules.push(loadedPluginModule);
+      initialTasks = initialTasks.concat(tasks);
+    });
+  }
 
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
@@ -29,28 +42,28 @@ async function importPlugins(
     // TODO: Add logic against url based plugins
     const { loadedPluginModule, tasks } = await importPlugin({
       pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path)),
-      pluginDefinition,
+      options: pluginDefinition.options,
       projectMeta,
       mode,
     });
     initialTasks = initialTasks.concat(tasks);
 
     const { dependsOn } = loadedPluginModule.meta;
-    const dependencyIndex = loadedPlugins.findIndex(
+    const dependencyIndex = loadedPluginModules.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
     );
 
     // If there are dependencies, make sure the plugin is evaluated last
     if (dependencyIndex < 0) {
-      loadedPlugins.unshift(loadedPluginModule);
+      loadedPluginModules.unshift(loadedPluginModule);
     } else {
-      loadedPlugins.push(loadedPluginModule);
+      loadedPluginModules.push(loadedPluginModule);
     }
   }
 
-  const tasks = await preparePlugins({ plugins: loadedPlugins });
+  const tasks = await preparePlugins({ plugins: loadedPluginModules });
   await applyOnTasksRegistered({
-    plugins: loadedPlugins,
+    plugins: loadedPluginModules,
     tasks: initialTasks.concat(tasks),
   });
 
@@ -59,32 +72,32 @@ async function importPlugins(
   const router = {
     // Last definition wins
     getAllRoutes() {
-      return applyGetAllRoutes({ plugins: loadedPlugins });
+      return applyGetAllRoutes({ plugins: loadedPluginModules });
     },
     // First match wins
     matchRoute(url: string) {
-      return applyMatchRoutes({ plugins: loadedPlugins, url });
+      return applyMatchRoutes({ plugins: loadedPluginModules, url });
     },
   };
 
-  return { tasks, plugins: loadedPlugins, router };
+  return { tasks, plugins: loadedPluginModules, router };
 }
 
 async function importPlugin(
-  { pluginModule, pluginDefinition, projectMeta, mode }: {
+  { pluginModule, options, projectMeta, mode }: {
     pluginModule: {
       meta: PluginMeta;
       plugin: (args: PluginParameters) => PluginApi;
     };
-    pluginDefinition: PluginOptions;
+    options: PluginOptions["options"];
     projectMeta: ProjectMeta;
     mode: Mode;
   },
-): Promise<{ loadedPluginModule: PluginModule; tasks: Tasks }> {
+): Promise<ImportedPlugin> {
   const tasks: Tasks = [];
   const api = await pluginModule.plugin({
     mode,
-    options: pluginDefinition.options,
+    options,
     projectMeta,
     load: {
       dir(path: string, extension: string) {
