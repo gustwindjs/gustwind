@@ -4,7 +4,7 @@ import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 const meta: PluginMeta = {
-  name: "gustwind-file-watcher-plugin",
+  name: "file-watcher-plugin",
 };
 
 async function fileWatcherPlugin(
@@ -18,7 +18,7 @@ async function fileWatcherPlugin(
   await load.json(metaPath);
 
   return {
-    onTasksRegistered(tasks) {
+    onTasksRegistered({ tasks, send }) {
       const paths = tasks.map(({ type, payload }) => {
         switch (type) {
           case "listDirectory":
@@ -36,9 +36,11 @@ async function fileWatcherPlugin(
 
       watch({
         paths,
-        onChange: (path, event) => {
-          console.log("a change happened", path, event);
-        },
+        onChange: (path, event) =>
+          send("websocket-plugin", {
+            type: "fileChanged",
+            payload: { path, event },
+          }),
       });
     },
   };

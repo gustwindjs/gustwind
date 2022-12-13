@@ -106,7 +106,7 @@ type PluginApi = {
   onMessage?(message: SendMessage): void;
   getAllRoutes?(): Promise<Record<string, Route>>;
   matchRoute?(url: string): Promise<Route | undefined> | Route | undefined;
-  onTasksRegistered?(tasks: Tasks): void;
+  onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 
 type Send = (
@@ -150,6 +150,10 @@ type BuildWorkerEvent =
       dir: string;
       url: string;
     };
+  }
+  | {
+    type: "fileChanged";
+    payload: { path: string; event: Deno.FsEvent };
   }
   | {
     type: "listDirectory";

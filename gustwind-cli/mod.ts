@@ -10,7 +10,9 @@ import type { ProjectMeta } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { serveGustwind } from "../gustwind-server/mod.ts";
 import { importPlugin } from "../gustwind-utilities/plugins.ts";
+import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import * as fileWatcherPlugin from "../plugins/file-watcher/mod.ts";
+import * as webSocketPlugin from "../plugins/websocket/mod.ts";
 
 function usage() {
   console.log(`
@@ -77,14 +79,22 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   if (develop) {
     const mode = "development";
     const startTime = performance.now();
+
     console.log("Starting development server");
 
+    const wss = getWebsocketServer();
     const serve = await serveGustwind({
       plugins: [
         // TODO: What to do if meta.json port changes?
         await importPlugin({
           pluginModule: fileWatcherPlugin,
           options: { metaPath },
+          projectMeta,
+          mode,
+        }),
+        await importPlugin({
+          pluginModule: webSocketPlugin,
+          options: { wss },
           projectMeta,
           mode,
         }),

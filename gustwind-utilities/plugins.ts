@@ -351,12 +351,13 @@ async function applyRenders(
 async function applyOnTasksRegistered(
   { plugins, tasks }: { plugins: PluginModule[]; tasks: Tasks },
 ) {
+  const send = getSend(plugins);
   const tasksRegistered = plugins.map(({ api }) => api.onTasksRegistered)
     .filter(Boolean);
 
   for await (const cb of tasksRegistered) {
     if (cb) {
-      await cb(tasks);
+      await cb({ send, tasks });
     }
   }
 }
