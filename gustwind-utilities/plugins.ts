@@ -83,13 +83,13 @@ async function importPlugins(
   return { tasks, plugins: loadedPluginModules, router };
 }
 
-async function importPlugin(
+async function importPlugin<O = Record<string, unknown>>(
   { pluginModule, options, projectMeta, mode }: {
     pluginModule: {
       meta: PluginMeta;
-      plugin: (args: PluginParameters) => PluginApi;
+      plugin: (args: PluginParameters<O>) => PluginApi | Promise<PluginApi>;
     };
-    options: PluginOptions["options"];
+    options: O;
     projectMeta: ProjectMeta;
     mode: Mode;
   },

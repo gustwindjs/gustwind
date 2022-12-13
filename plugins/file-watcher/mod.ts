@@ -1,5 +1,5 @@
 import { async } from "../../server-deps.ts";
-import type { Mode, PluginApi, PluginMeta } from "../../types.ts";
+import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -7,12 +7,15 @@ const meta: PluginMeta = {
   name: "gustwind-file-watcher-plugin",
 };
 
-function fileWatcherPlugin(
-  { mode }: { mode: Mode },
-): PluginApi {
+async function fileWatcherPlugin(
+  { mode, load, options: { metaPath } }: PluginParameters<{ metaPath: string }>,
+): Promise<PluginApi> {
   if (mode !== "development") {
     return {};
   }
+
+  // Connect meta.json path with the file watcher
+  await load.json(metaPath);
 
   return {
     onTasksRegistered(tasks) {

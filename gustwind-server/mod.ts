@@ -10,16 +10,18 @@ import * as fileWatcherPlugin from "../plugins/file-watcher/mod.ts";
 import type { Mode, ProjectMeta } from "../types.ts";
 
 async function serveGustwind({
+  metaPath,
   projectMeta,
   mode,
 }: {
+  metaPath: string;
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  // TODO: Pass/handle meta.json connection here
+  // TODO: Move to the cli side
   const fileWatcherPluginModule = await importPlugin({
     pluginModule: fileWatcherPlugin,
-    options: {},
+    options: { metaPath },
     projectMeta,
     mode,
   });

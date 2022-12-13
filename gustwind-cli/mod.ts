@@ -80,16 +80,16 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
-  // TODO: How to connect this to the file watcher plugin
-  const projectMeta = await getJson<ProjectMeta>(
-    path.join(projectRoot, "./meta.json"),
-  );
+  const metaPath = path.join(projectRoot, "./meta.json");
+  const projectMeta = await getJson<ProjectMeta>(metaPath);
 
   if (develop) {
     const startTime = performance.now();
     console.log("Starting development server");
 
+    // TODO: Move watch plugin declaration here
     const serve = await serveGustwind({
+      metaPath,
       projectMeta,
       mode: "development",
     });
