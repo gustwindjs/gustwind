@@ -4,7 +4,7 @@ import type { Mode, Plugin, PluginMeta } from "../../types.ts";
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 const meta: PluginMeta = {
-  name: "gustwind-script-plugin",
+  name: "gustwind-file-watcher-plugin",
 };
 
 // TODO: How to watch project meta.json
