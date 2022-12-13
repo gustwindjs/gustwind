@@ -17,7 +17,6 @@ function usage() {
 Usage: gustwind [-w|-b|-d] [-D]
 
 Options:
-  -i, --init           Initializes 'twd.ts' config file.
   -b, --build          Builds the project.
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
@@ -32,7 +31,6 @@ type CliArgs = {
   build: boolean;
   develop: boolean;
   debug: boolean;
-  init: boolean;
   _: string[];
 };
 
@@ -44,9 +42,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     build,
     develop,
     debug,
-    init,
   } = flags.parse(cliArgs, {
-    boolean: ["help", "version", "build", "develop", "debug", "init"],
+    boolean: ["help", "version", "build", "develop", "debug"],
     alias: {
       v: "version",
       h: "help",
@@ -54,7 +51,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       d: "develop",
       o: "output",
       D: "debug",
-      i: "init",
     },
   }) as CliArgs;
 
@@ -73,12 +69,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
   if (help) {
     usage();
-    return 0;
-  }
-
-  if (init) {
-    console.log("TODO: This should initialize a new project");
-
     return 0;
   }
 
