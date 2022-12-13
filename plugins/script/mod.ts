@@ -1,4 +1,3 @@
-import { dir } from "../../utilities/fs.ts";
 import { path } from "../../server-deps.ts";
 import type {
   Plugin,
