@@ -22,7 +22,7 @@ async function breezewindRenderer(
     >,
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
-  const [components, layouts, pageUtilities] = await Promise.all([
+  let [components, layouts, pageUtilities] = await Promise.all([
     getDefinitions<Component>(
       await load.dir(path.join(cwd, componentsPath), ".json"),
     ),
