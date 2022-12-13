@@ -1,3 +1,6 @@
+// TODO: Too specific
+import type { Component } from "./breezewind/types.ts";
+
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
@@ -103,7 +106,7 @@ type PluginApi = {
     send: Send;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
-  onMessage?(message: SendMessage): void;
+  onMessage?(message: SendMessageEvent): void;
   getAllRoutes?(): Promise<Record<string, Route>>;
   matchRoute?(url: string): Promise<Route | undefined> | Route | undefined;
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
@@ -111,9 +114,29 @@ type PluginApi = {
 
 type Send = (
   pluginName: string,
-  { type, payload }: SendMessage,
+  { type, payload }: SendMessageEvent,
 ) => Promise<unknown> | unknown;
-type SendMessage = { type: string; payload?: unknown };
+
+// TODO: Compose this from plugin types
+type SendMessageEvent =
+  // editor plugin
+  | {
+    type: "addScripts";
+    payload: { path: string; name: string }[];
+  }
+  | { type: "getComponents"; payload: undefined }
+  | {
+    type: "updateComponents";
+    payload: Component;
+  }
+  | { type: "getRenderer"; payload: string }
+  | { type: "getLayouts"; payload: undefined }
+  | { type: "updateLayouts"; payload: Component }
+  // websocket plugin
+  | {
+    type: "fileChanged";
+    payload: { path: string; event: Deno.FsEvent };
+  };
 
 // This type is specific to breezewind-router so it probably doesn't belong here
 type Route = {
@@ -150,10 +173,6 @@ type BuildWorkerEvent =
       dir: string;
       url: string;
     };
-  }
-  | {
-    type: "fileChanged";
-    payload: { path: string; event: Deno.FsEvent };
   }
   | {
     type: "listDirectory";

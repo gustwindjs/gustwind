@@ -37,6 +37,8 @@ async function fileWatcherPlugin(
       watch({
         paths,
         onChange: (path, event) =>
+          // TODO: Change this to * instead of websocket-plugin
+          // In other words, any plugin should be able to receive this message
           send("websocket-plugin", {
             type: "fileChanged",
             payload: { path, event },

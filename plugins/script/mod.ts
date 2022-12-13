@@ -55,8 +55,7 @@ async function scriptPlugin(
       return { context: { scripts } };
     },
     onMessage({ type, payload }) {
-      if (type === "add-scripts") {
-        // @ts-expect-error It's not clear how to type this
+      if (type === "addScripts") {
         receivedScripts = receivedScripts.concat(payload);
       } else {
         throw new Error(

@@ -28,7 +28,7 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
         context,
         layout: send(
           "breezewind-renderer-plugin",
-          { type: "get-renderer", payload: route.layout },
+          { type: "getRenderer", payload: route.layout },
         ),
         route,
       };
@@ -49,7 +49,7 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
       const cwd = Deno.cwd();
 
       send("gustwind-script-plugin", {
-        type: "add-scripts",
+        type: "addScripts",
         payload: scriptsToCompile.map((name) => ({
           // TODO: How to make this work in the remote case?
           path: path.join(cwd, "plugins", "editor", "scripts", `${name}.ts`),
@@ -59,7 +59,8 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
     },
     prepareBuild: async ({ send }) => {
       const components = await send("breezewind-renderer-plugin", {
-        type: "get-components",
+        type: "getComponents",
+        payload: undefined,
       });
 
       return [{
@@ -75,10 +76,11 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
       const id = "breezewind-renderer-plugin";
 
       const components = await send(id, {
-        type: "get-components",
+        type: "getComponents",
+        payload: undefined,
       });
       send(id, {
-        type: "update-components",
+        type: "updateComponents",
         payload: Object.fromEntries(
           // @ts-expect-error This is fine.
           Object.entries(components).map((
@@ -89,10 +91,11 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
       });
 
       const layouts = await send(id, {
-        type: "get-layouts",
+        type: "getLayouts",
+        payload: undefined,
       });
       send(id, {
-        type: "update-layouts",
+        type: "updateLayouts",
         payload: Object.fromEntries(
           // @ts-expect-error This is fine.
           Object.entries(layouts).map((

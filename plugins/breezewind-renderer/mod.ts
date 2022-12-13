@@ -40,29 +40,19 @@ async function breezewindRenderer(
         context,
         utilities: pageUtilities,
       }),
-    onMessage: (
-      { type, payload }:
-        | { type: "get-components"; payload: undefined }
-        | {
-          type: "update-components";
-          payload: Component;
-        }
-        | { type: "get-renderer"; payload: string }
-        | { type: "get-layouts"; payload: undefined }
-        | { type: "update-layouts"; payload: Component },
-    ) => {
+    onMessage: ({ type, payload }) => {
       switch (type) {
-        case "get-components":
+        case "getComponents":
           return components;
-        case "get-layouts":
+        case "getLayouts":
           return layouts;
-        case "get-renderer":
+        case "getRenderer":
           return layouts[payload];
-        case "update-components":
+        case "updateComponents":
           // @ts-expect-error This is fine.
           components = payload;
           break;
-        case "update-layouts":
+        case "updateLayouts":
           // @ts-expect-error This is fine.
           layouts = payload;
           break;
