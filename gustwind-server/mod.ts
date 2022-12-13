@@ -11,6 +11,8 @@ async function serveGustwind({
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
+  // TODO: It would be nice to load the file watcher plugin here already.
+  // Likely something like initialPlugins and an explicit import is needed.
   const { plugins, router, tasks } = await importPlugins({ projectMeta, mode });
   let fs = await evaluateTasks(tasks);
 
