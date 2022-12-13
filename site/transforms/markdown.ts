@@ -1,6 +1,7 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
+import { dir } from "../../utilities/fs.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
@@ -73,7 +74,11 @@ async function transformMarkdown(input: string) {
     // @ts-ignore How to type this?
     async walkTokens(token) {
       if (token.type === "importComponent") {
-        const components = await getDefinitions<Component>("./site/components");
+        // TODO: This is a bad coupling, there should be a better way to get information here
+        // especially if this file will be executed in the browser
+        const components = await getDefinitions<Component>(
+          await dir("./site/components", ".json"),
+        );
         const matchedComponent = components[token.component];
 
         if (matchedComponent) {
