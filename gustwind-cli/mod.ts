@@ -35,7 +35,6 @@ type CliArgs = {
 };
 
 export async function main(cliArgs: string[]): Promise<number | undefined> {
-  const projectRoot = Deno.cwd();
   const {
     help,
     version,
@@ -72,7 +71,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
-  const metaPath = path.join(projectRoot, "./meta.json");
+  const metaPath = path.join(Deno.cwd(), "meta.json");
   const projectMeta = await getJson<ProjectMeta>(metaPath);
 
   if (develop) {
