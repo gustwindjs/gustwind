@@ -1,9 +1,9 @@
 import { path } from "../server-deps.ts";
-import { dir, getJson } from "../utilities/fs.ts";
+import { getJson } from "../utilities/fs.ts";
 
-async function getDefinitions<T>(directoryPath: string) {
-  const componentFiles = await dir(directoryPath, ".json");
-
+async function getDefinitions<T>(
+  componentFiles: { path: string; name: string }[],
+) {
   const o = await Promise.all(
     componentFiles.map(({ path }) => getDefinition<T>(path)),
   );

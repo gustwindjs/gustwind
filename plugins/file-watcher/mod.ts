@@ -7,6 +7,7 @@ const meta: PluginMeta = {
   name: "gustwind-script-plugin",
 };
 
+// TODO: How to watch project meta.json
 function fileWatcherPlugin(
   { mode }: { mode: Mode },
 ): Plugin {

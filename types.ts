@@ -54,7 +54,7 @@ type PluginParameters<O = Record<string, never>> = {
     dir(
       path: string,
       extension: string,
-    ): Promise<{ name: string; path: string }>;
+    ): Promise<{ name: string; path: string }[]>;
     json<T>(path: string): Promise<T>;
     module<T>(path: string): Promise<T>;
   };

@@ -22,12 +22,13 @@ async function breezewindRenderer(
     >,
 ): Promise<Plugin> {
   const cwd = Deno.cwd();
-
-  let [components, layouts, pageUtilities] = await Promise.all([
-    // TODO: Figure out how to handle directory loading. Likely these
-    // should become something like load.directory(path, format, getJSON)
-    getDefinitions<Component>(path.join(cwd, componentsPath)),
-    getDefinitions<Component>(path.join(cwd, layoutsPath)),
+  const [components, layouts, pageUtilities] = await Promise.all([
+    getDefinitions<Component>(
+      await load.dir(path.join(cwd, componentsPath), ".json"),
+    ),
+    getDefinitions<Component>(
+      await load.dir(path.join(cwd, layoutsPath), ".json"),
+    ),
     pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
   ]);
 
