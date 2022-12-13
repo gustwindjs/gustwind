@@ -12,7 +12,7 @@ const meta: PluginMeta = {
 };
 
 async function scriptPlugin(
-  { options: { scripts: globalScripts = [], scriptsPath }, projectMeta }:
+  { load, options: { scripts: globalScripts = [], scriptsPath }, projectMeta }:
     PluginParameters<
       {
         scripts: Scripts;
@@ -24,10 +24,8 @@ async function scriptPlugin(
   const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
 
-  // TODO: Figure out how to use the load API here
-  // Maybe something like load.dir(path, '.ts') is needed
   const foundScripts = (await Promise.all(
-    scriptsPath.map((p) => dir(path.join(cwd, p), ".ts")),
+    scriptsPath.map((p) => load.dir(path.join(cwd, p), ".ts")),
   )).flat();
   let receivedScripts: { name: string; path: string }[] = [];
 

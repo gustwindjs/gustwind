@@ -49,8 +49,12 @@ type PluginMeta = {
   dependsOn?: string[];
 };
 
-type PluginParameters<O = {}> = {
+type PluginParameters<O = Record<string, never>> = {
   load: {
+    dir(
+      path: string,
+      extension: string,
+    ): Promise<{ name: string; path: string }>;
     json<T>(path: string): Promise<T>;
     module<T>(path: string): Promise<T>;
   };
@@ -146,6 +150,10 @@ type BuildWorkerEvent =
       dir: string;
       url: string;
     };
+  }
+  | {
+    type: "listDirectory";
+    payload: { path: string };
   }
   | {
     type: "loadJSON";

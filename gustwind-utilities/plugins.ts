@@ -1,6 +1,6 @@
 import { path } from "../server-deps.ts";
 import { getContext } from "./context.ts";
-import { getJson } from "../utilities/fs.ts";
+import { dir, getJson } from "../utilities/fs.ts";
 import type {
   Context,
   Mode,
@@ -84,6 +84,14 @@ async function importPlugin({ pluginDefinition, projectMeta, mode }: {
     options: pluginDefinition.options,
     projectMeta,
     load: {
+      dir(path: string, extension: string) {
+        tasks.push({
+          type: "listDirectory",
+          payload: { path },
+        });
+
+        return dir(path, extension);
+      },
       json<T>(path: string) {
         tasks.push({
           type: "loadJSON",

@@ -18,6 +18,7 @@ function fileWatcherPlugin(
     onTasksRegistered(tasks) {
       const paths = tasks.map(({ type, payload }) => {
         switch (type) {
+          case "listDirectory":
           case "loadJSON":
           case "loadModule":
             return payload.path;
