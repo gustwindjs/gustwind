@@ -80,40 +80,28 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
-  if (develop) {
-    // TODO: What to do if and when meta.json changes? Likely this needs a
-    // file watcher that's able to restart the server.
-    const projectMeta = await getJson<ProjectMeta>(
-      path.join(projectRoot, "./meta.json"),
-    );
+  // TODO: How to connect this to the file watcher plugin
+  const projectMeta = await getJson<ProjectMeta>(
+    path.join(projectRoot, "./meta.json"),
+  );
 
+  if (develop) {
     const startTime = performance.now();
     console.log("Starting development server");
 
-    // const projectPaths = projectMeta.paths;
-    const mode = "development";
-
     const serve = await serveGustwind({
       projectMeta,
-      mode,
+      mode: "development",
     });
-
-    const port = projectMeta.port;
 
     const endTime = performance.now();
     console.log(
-      `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
+      `Serving at ${projectMeta.port}, took ${
+        endTime - startTime
+      }ms to initialize`,
     );
 
-    // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
-    const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
-    await p.stdin?.write(
-      new TextEncoder().encode(
-        `http://localhost:${port}/`,
-      ),
-    );
-    p.stdin.close();
-
+    await copyToClipboard(`http://localhost:${projectMeta.port}/`);
     console.log("The server address has been copied to the clipboard");
 
     await serve();
@@ -122,10 +110,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    const projectMeta = await getJson<ProjectMeta>(
-      path.join(projectRoot, "./meta.json"),
-    );
-
     await buildProject(projectMeta);
 
     return 0;
@@ -133,6 +117,13 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
   usage();
   return 0;
+}
+
+async function copyToClipboard(input: string) {
+  // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
+  const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
+  await p.stdin?.write(new TextEncoder().encode(input));
+  p.stdin.close();
 }
 
 if (import.meta.main) {
