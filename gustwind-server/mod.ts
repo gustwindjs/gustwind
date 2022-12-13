@@ -19,6 +19,10 @@ async function serveGustwind({
     projectMeta,
     mode,
   });
+
+  // TODO: How to recalculate fs when a script (script-plugin) changes (
+  // triggered by file change plugin)?
+  // Ideally it would update **only** the script that changed and nothing else.
   let fs = await evaluateTasks(tasks);
 
   const server = new Server({
