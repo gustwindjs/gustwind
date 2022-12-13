@@ -1,32 +1,21 @@
 import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
-import {
-  applyPlugins,
-  importPlugin,
-  importPlugins,
-} from "../gustwind-utilities/plugins.ts";
+import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
+import type { ImportedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
-import * as fileWatcherPlugin from "../plugins/file-watcher/mod.ts";
 import type { Mode, ProjectMeta } from "../types.ts";
 
 async function serveGustwind({
-  metaPath,
+  plugins: initialImportedPlugins,
   projectMeta,
   mode,
 }: {
-  metaPath: string;
+  plugins?: ImportedPlugin[];
   projectMeta: ProjectMeta;
   mode: Mode;
 }) {
-  // TODO: Move to the cli side
-  const fileWatcherPluginModule = await importPlugin({
-    pluginModule: fileWatcherPlugin,
-    options: { metaPath },
-    projectMeta,
-    mode,
-  });
   const { plugins, router, tasks } = await importPlugins({
-    initialImportedPlugins: [fileWatcherPluginModule],
+    initialImportedPlugins,
     projectMeta,
     mode,
   });

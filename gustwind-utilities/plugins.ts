@@ -7,7 +7,6 @@ import type {
   PluginApi,
   PluginMeta,
   PluginModule,
-  PluginOptions,
   PluginParameters,
   ProjectMeta,
   Route,
@@ -15,7 +14,7 @@ import type {
   Tasks,
 } from "../types.ts";
 
-type ImportedPlugin = { loadedPluginModule: PluginModule; tasks: Tasks };
+export type ImportedPlugin = { loadedPluginModule: PluginModule; tasks: Tasks };
 
 async function importPlugins(
   { initialImportedPlugins, projectMeta, mode }: {
