@@ -2,14 +2,6 @@ import { attachIds } from "../../utilities/attachIds.ts";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
-const scriptsToCompile = [
-  "toggleEditor",
-  "pageEditor",
-  // toggleEditor pulls twindRuntime so it doesn't have to be compiled/loaded
-  // separately
-  // "twindRuntime",
-];
-
 const plugin: Plugin = {
   meta: {
     name: "gustwind-editor-plugin",
@@ -47,6 +39,13 @@ const plugin: Plugin = {
       },
       sendMessages: ({ send }) => {
         const cwd = Deno.cwd();
+        const scriptsToCompile = [
+          "toggleEditor",
+          "pageEditor",
+          // toggleEditor pulls twindRuntime so it doesn't have to be compiled/loaded
+          // separately
+          // "twindRuntime",
+        ];
 
         send("gustwind-script-plugin", {
           type: "addScripts",

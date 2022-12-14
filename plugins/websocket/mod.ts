@@ -1,4 +1,4 @@
-import { path as _path } from "../../server-deps.ts";
+import { path } from "../../server-deps.ts";
 import { getWebsocketServer } from "../../utilities/getWebSocketServer.ts";
 import type { Plugin } from "../../types.ts";
 
@@ -21,6 +21,25 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
     }
 
     return {
+      sendMessages: ({ send }) => {
+        const cwd = Deno.cwd();
+        const scriptsToCompile = ["webSocketClient"];
+
+        send("gustwind-script-plugin", {
+          type: "addScripts",
+          payload: scriptsToCompile.map((name) => ({
+            // TODO: How to make this work in the remote case?
+            path: path.join(
+              cwd,
+              "plugins",
+              "websocket",
+              "scripts",
+              `${name}.ts`,
+            ),
+            name: `${name}.js`,
+          })),
+        });
+      },
       onMessage({ type }) {
         if (type === "fileChanged") {
           // TODO: How to tell apart ts + other cases in a nice way?

@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-/// <reference path="./pageEditor.ts" />
+/// <reference path="../../editor/scripts/pageEditor.ts" />
 import { getPagePath } from "../../../utilities/getPagePath.ts";
 
 function createWebSocket(pagePath?: string) {
