@@ -31,6 +31,7 @@ async function plugin(
   const dataSources = dataSourcesPath
     ? await load.module<DataSources>(path.join(cwd, dataSourcesPath))
     : {};
+  let allRoutes: Record<string, Route>;
 
   return {
     getAllRoutes: async () => {
@@ -52,7 +53,18 @@ async function plugin(
       return allRoutes;
     },
     matchRoute: async (url: string) => {
-      const matchedRoute = matchRoute(routes, url);
+      // As an optimization, flatten routes only on demand.
+      // This could be optimized further by pushing more work to matchRoute
+      if (!allRoutes) {
+        allRoutes = flattenRoutes(
+          await expandRoutes({
+            routes,
+            dataSources,
+          }),
+        );
+      }
+
+      const matchedRoute = matchRoute(allRoutes, url);
 
       if (matchedRoute) {
         const [_, route] = await expandRoute({
@@ -77,8 +89,6 @@ function matchRoute(
 
   const parts = trim(url, "/").split("/");
   const match = routes[url] || routes[parts[0]];
-
-  console.log("matching", parts[0], Object.keys(routes));
 
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
