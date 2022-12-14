@@ -11,8 +11,8 @@ import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { serveGustwind } from "../gustwind-server/mod.ts";
 import { importPlugin } from "../gustwind-utilities/plugins.ts";
 import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
-import * as fileWatcherPlugin from "../plugins/file-watcher/mod.ts";
-import * as webSocketPlugin from "../plugins/websocket/mod.ts";
+import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
+import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
 
 function usage() {
   console.log(`

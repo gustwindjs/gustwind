@@ -5,69 +5,68 @@ import {
 } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { path } from "../../server-deps.ts";
-import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
+import type { Plugin } from "../../types.ts";
 
-const meta: PluginMeta = {
-  name: "gustwind-twind-plugin",
-};
-
-function twindPlugin({ options, outputDirectory }: PluginParameters<{
+const plugin: Plugin<{
   setupPath: string;
-  // TODO: Support style extraction
-  // extractStylesToDirectory: string;
-}>): PluginApi {
-  const stylesheet = virtualSheet();
-  const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
+}> = {
+  meta: {
+    name: "gustwind-twind-plugin",
+  },
+  init: ({ options, outputDirectory }) => {
+    const stylesheet = virtualSheet();
+    const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
-  async function prepareStylesheet() {
-    const twindSetup = twindSetupPath
-      ? await import("file://" + twindSetupPath).then((m) => m.default)
-      : {};
+    async function prepareStylesheet() {
+      const twindSetup = twindSetupPath
+        ? await import("file://" + twindSetupPath).then((m) => m.default)
+        : {};
 
-    setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
+      setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
 
-    // @ts-ignore Somehow TS gets confused here
-    stylesheet.reset();
-  }
+      // @ts-ignore Somehow TS gets confused here
+      stylesheet.reset();
+    }
 
-  return {
-    prepareBuild: async () => {
-      await prepareStylesheet();
+    return {
+      prepareBuild: async () => {
+        await prepareStylesheet();
 
-      return [{
-        type: "writeScript",
-        payload: {
-          outputDirectory,
-          file: "twindSetup.js",
-          scriptPath: twindSetupPath,
-        },
-      }];
-    },
-    prepareContext: prepareStylesheet,
-    afterEachRender({ markup, route }) {
-      if (route.type === "xml") {
-        return { markup };
-      }
+        return [{
+          type: "writeScript",
+          payload: {
+            outputDirectory,
+            file: "twindSetup.js",
+            scriptPath: twindSetupPath,
+          },
+        }];
+      },
+      prepareContext: prepareStylesheet,
+      afterEachRender({ markup, route }) {
+        if (route.type === "xml") {
+          return { markup };
+        }
 
-      // https://web.dev/defer-non-critical-css/
-      // TODO: Consider restoring CSS extraction
-      /*
-      const styleTag = options.extractCSS
-        ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
-        : getStyleTag(stylesheet);
+        // https://web.dev/defer-non-critical-css/
+        // TODO: Consider restoring CSS extraction
+        /*
+        const styleTag = options.extractCSS
+          ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
+          : getStyleTag(stylesheet);
 
-      let css = "";
-      if (options.extractCSS) {
-        css = getStyleTagProperties(stylesheet).textContent;
+        let css = "";
+        if (options.extractCSS) {
+          css = getStyleTagProperties(stylesheet).textContent;
 
-        TODO: Setup a task to write styles.css
-      }
-      */
+          TODO: Setup a task to write styles.css
+        }
+        */
 
-      return { markup: injectStyleTag(markup, getStyleTag(stylesheet)) };
-    },
-  };
-}
+        return { markup: injectStyleTag(markup, getStyleTag(stylesheet)) };
+      },
+    };
+  },
+};
 
 function injectStyleTag(markup: string, styleTag: string) {
   const parts = markup.split("</head>");
@@ -75,4 +74,4 @@ function injectStyleTag(markup: string, styleTag: string) {
   return parts[0] + styleTag + parts[1];
 }
 
-export { meta, twindPlugin as plugin };
+export { plugin };

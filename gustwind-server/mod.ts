@@ -1,7 +1,7 @@
 import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import type { ImportedPlugin } from "../gustwind-utilities/plugins.ts";
+import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
@@ -11,7 +11,7 @@ async function serveGustwind({
   mode,
   port,
 }: {
-  plugins?: ImportedPlugin[];
+  plugins?: LoadedPlugin[];
   pluginDefinitions: PluginOptions[];
   mode: Mode;
   port: number;

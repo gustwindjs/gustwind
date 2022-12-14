@@ -6,97 +6,94 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component } from "../../breezewind/types.ts";
-import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
+import type { Plugin } from "../../types.ts";
 
-const meta: PluginMeta = {
-  name: "breezewind-renderer-plugin",
-  dependsOn: [],
-};
-
-async function breezewindRenderer(
-  {
+const plugin: Plugin<{
+  componentsPath: string;
+  metaPath: string;
+  layoutsPath: string;
+  pageUtilitiesPath: string;
+}> = {
+  meta: {
+    name: "breezewind-renderer-plugin",
+    dependsOn: [],
+  },
+  init: async ({
     options: { componentsPath, metaPath, layoutsPath, pageUtilitiesPath },
     load,
     mode,
-  }: PluginParameters<
-    {
-      componentsPath: string;
-      metaPath: string;
-      layoutsPath: string;
-      pageUtilitiesPath: string;
-    }
-  >,
-): Promise<PluginApi> {
-  const cwd = Deno.cwd();
-  let [components, layouts, pageUtilities, meta] = await Promise.all([
-    getDefinitions<Component>(
-      await load.dir(path.join(cwd, componentsPath), ".json"),
-    ),
-    getDefinitions<Component>(
-      await load.dir(path.join(cwd, layoutsPath), ".json"),
-    ),
-    pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
-    metaPath ? load.json(metaPath) : {},
-  ]);
+  }) => {
+    const cwd = Deno.cwd();
+    let [components, layouts, pageUtilities, meta] = await Promise.all([
+      getDefinitions<Component>(
+        await load.dir(path.join(cwd, componentsPath), ".json"),
+      ),
+      getDefinitions<Component>(
+        await load.dir(path.join(cwd, layoutsPath), ".json"),
+      ),
+      pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
+      metaPath ? load.json(metaPath) : {},
+    ]);
 
-  return {
-    prepareContext: async ({ url, route }) => {
-      const runtimeMeta: Record<string, string> = {
-        built: (new Date()).toString(),
-      };
+    return {
+      prepareContext: async ({ url, route }) => {
+        const runtimeMeta: Record<string, string> = {
+          built: (new Date()).toString(),
+        };
 
-      // TODO: Rename pagePath as url across the project
-      if (mode === "development") {
-        runtimeMeta.pagePath = url;
-      }
+        // TODO: Rename pagePath as url across the project
+        if (mode === "development") {
+          runtimeMeta.pagePath = url;
+        }
 
-      const context = {
-        ...runtimeMeta,
-        ...meta,
-        ...route.meta,
-        ...route.context,
-      };
+        const context = {
+          ...runtimeMeta,
+          ...meta,
+          ...route.meta,
+          ...route.context,
+        };
 
-      return {
-        context: {
-          ...context,
-          pagePath: url,
-          meta: await applyUtilities(
-            context,
-            // @ts-expect-error This is ok
-            defaultUtilities,
-            { context },
-          ),
-        },
-      };
-    },
-    render: ({ route, context }) =>
-      renderHTML({
-        component: layouts[route.layout],
-        components,
-        context,
-        utilities: pageUtilities,
-      }),
-    onMessage: ({ type, payload }) => {
-      switch (type) {
-        case "getComponents":
-          return components;
-        case "getLayouts":
-          return layouts;
-        case "getRenderer":
-          return layouts[payload];
-        case "updateComponents":
-          // @ts-expect-error This is fine.
-          components = payload;
-          break;
-        case "updateLayouts":
-          // @ts-expect-error This is fine.
-          layouts = payload;
-          break;
-      }
-    },
-  };
-}
+        return {
+          context: {
+            ...context,
+            pagePath: url,
+            meta: await applyUtilities(
+              context,
+              // @ts-expect-error This is ok
+              defaultUtilities,
+              { context },
+            ),
+          },
+        };
+      },
+      render: ({ route, context }) =>
+        renderHTML({
+          component: layouts[route.layout],
+          components,
+          context,
+          utilities: pageUtilities,
+        }),
+      onMessage: ({ type, payload }) => {
+        switch (type) {
+          case "getComponents":
+            return components;
+          case "getLayouts":
+            return layouts;
+          case "getRenderer":
+            return layouts[payload];
+          case "updateComponents":
+            // @ts-expect-error This is fine.
+            components = payload;
+            break;
+          case "updateLayouts":
+            // @ts-expect-error This is fine.
+            layouts = payload;
+            break;
+        }
+      },
+    };
+  },
+};
 
 function renderHTML(
   { component, components, context, utilities }: Parameters<
@@ -117,4 +114,4 @@ function renderHTML(
   });
 }
 
-export { breezewindRenderer as plugin, meta, renderHTML };
+export { plugin, renderHTML };

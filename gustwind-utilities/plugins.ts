@@ -3,24 +3,23 @@ import { dir, getJson } from "../utilities/fs.ts";
 import type {
   Context,
   Mode,
+  Plugin,
   PluginApi,
-  PluginDefinition,
-  PluginMeta,
   PluginOptions,
-  PluginParameters,
   Route,
   Send,
   Tasks,
 } from "../types.ts";
 
-export type ImportedPlugin = {
-  loadedPluginDefinition: PluginDefinition;
+export type LoadedPlugin = {
+  plugin: { meta: Plugin["meta"]; api: PluginApi };
   tasks: Tasks;
 };
+type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(
   { initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
-    initialImportedPlugins?: ImportedPlugin[];
+    initialImportedPlugins?: LoadedPlugin[];
     pluginDefinitions: PluginOptions[];
     outputDirectory: string;
     mode: Mode;
@@ -30,8 +29,8 @@ async function importPlugins(
   let initialTasks: Tasks = [];
 
   if (initialImportedPlugins) {
-    initialImportedPlugins.forEach(({ loadedPluginDefinition, tasks }) => {
-      loadedPluginDefinitions.push(loadedPluginDefinition);
+    initialImportedPlugins.forEach(({ plugin, tasks }) => {
+      loadedPluginDefinitions.push(plugin);
       initialTasks = initialTasks.concat(tasks);
     });
   }
@@ -41,24 +40,25 @@ async function importPlugins(
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
     // TODO: Add logic against url based plugins
-    const { loadedPluginDefinition, tasks } = await importPlugin({
-      pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path)),
+    const { plugin, tasks } = await importPlugin({
+      pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path))
+        .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
       outputDirectory,
       mode,
     });
     initialTasks = initialTasks.concat(tasks);
 
-    const { dependsOn } = loadedPluginDefinition.meta;
+    const { dependsOn } = plugin.meta;
     const dependencyIndex = loadedPluginDefinitions.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
     );
 
     // If there are dependencies, make sure the plugin is evaluated last
     if (dependencyIndex < 0) {
-      loadedPluginDefinitions.unshift(loadedPluginDefinition);
+      loadedPluginDefinitions.unshift(plugin);
     } else {
-      loadedPluginDefinitions.push(loadedPluginDefinition);
+      loadedPluginDefinitions.push(plugin);
     }
   }
 
@@ -84,19 +84,16 @@ async function importPlugins(
   return { tasks, plugins: loadedPluginDefinitions, router };
 }
 
-async function importPlugin<O = Record<string, unknown>>(
+async function importPlugin(
   { pluginModule, options, outputDirectory, mode }: {
-    pluginModule: {
-      meta: PluginMeta;
-      plugin: (args: PluginParameters<O>) => PluginApi | Promise<PluginApi>;
-    };
-    options: O;
+    pluginModule: Plugin;
+    options: Record<string, unknown>;
     outputDirectory: string;
     mode: Mode;
   },
-): Promise<ImportedPlugin> {
+): Promise<LoadedPlugin> {
   const tasks: Tasks = [];
-  const api = await pluginModule.plugin({
+  const api = await pluginModule.init({
     mode,
     options,
     outputDirectory,
@@ -129,7 +126,7 @@ async function importPlugin<O = Record<string, unknown>>(
   });
 
   return {
-    loadedPluginDefinition: { meta: pluginModule.meta, api },
+    plugin: { meta: pluginModule.meta, api },
     tasks,
   };
 }

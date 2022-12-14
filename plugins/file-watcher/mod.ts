@@ -1,57 +1,54 @@
 import { path as _path } from "../../server-deps.ts";
 import { async } from "../../server-deps.ts";
-import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
+import type { Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-const meta: PluginMeta = {
-  name: "file-watcher-plugin",
+const plugin: Plugin<{ pluginsPath: string }> = {
+  meta: {
+    name: "file-watcher-plugin",
+  },
+  init: async ({ mode, load, options: { pluginsPath } }) => {
+    if (mode !== "development") {
+      return {};
+    }
+
+    // Connect plugins.json path with the file watcher
+    await load.json(pluginsPath);
+
+    return {
+      onTasksRegistered({ tasks, send }) {
+        const paths = tasks.map(({ type, payload }) => {
+          switch (type) {
+            case "listDirectory":
+            case "loadJSON":
+            case "loadModule":
+              return payload.path;
+            case "writeScript":
+              return payload.scriptPath;
+            case "writeFiles":
+              return payload.inputDirectory;
+          }
+        }).filter(Boolean) as string[]; // TS doesn't infer this case!
+
+        DEBUG && console.log("watching paths", paths);
+
+        watch({
+          paths,
+          onChange: (path, event) => {
+            const extension = _path.extname(path);
+            const name = _path.basename(path, extension);
+
+            send("*", {
+              type: "fileChanged",
+              payload: { path, event, extension, name },
+            });
+          },
+        });
+      },
+    };
+  },
 };
-
-async function fileWatcherPlugin(
-  { mode, load, options: { pluginsPath } }: PluginParameters<
-    { pluginsPath: string }
-  >,
-): Promise<PluginApi> {
-  if (mode !== "development") {
-    return {};
-  }
-
-  // Connect plugins.json path with the file watcher
-  await load.json(pluginsPath);
-
-  return {
-    onTasksRegistered({ tasks, send }) {
-      const paths = tasks.map(({ type, payload }) => {
-        switch (type) {
-          case "listDirectory":
-          case "loadJSON":
-          case "loadModule":
-            return payload.path;
-          case "writeScript":
-            return payload.scriptPath;
-          case "writeFiles":
-            return payload.inputDirectory;
-        }
-      }).filter(Boolean) as string[]; // TS doesn't infer this case!
-
-      DEBUG && console.log("watching paths", paths);
-
-      watch({
-        paths,
-        onChange: (path, event) => {
-          const extension = _path.extname(path);
-          const name = _path.basename(path, extension);
-
-          send("*", {
-            type: "fileChanged",
-            payload: { path, event, extension, name },
-          });
-        },
-      });
-    },
-  };
-}
 
 async function watch({
   paths,
@@ -74,4 +71,4 @@ async function watch({
   }
 }
 
-export { fileWatcherPlugin as plugin, meta };
+export { plugin };

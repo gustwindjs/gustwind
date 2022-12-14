@@ -1,32 +1,31 @@
 import { path } from "../../server-deps.ts";
-import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
+import type { Plugin } from "../../types.ts";
 
-const meta: PluginMeta = {
-  name: "gustwind-asset-plugin",
-};
+const plugin: Plugin<{
+  // TODO: Consider supporting an array of directories
+  assetsPath: string;
+  outputPath: string;
+}> = {
+  meta: {
+    name: "gustwind-asset-plugin",
+  },
+  init(
+    { options: { assetsPath, outputPath }, outputDirectory },
+  ) {
+    const cwd = Deno.cwd();
+    const inputDirectory = path.join(cwd, assetsPath);
 
-function assetPlugin(
-  { options: { assetsPath, outputPath }, outputDirectory }: PluginParameters<{
-    // TODO: Consider supporting an array of directories
-    assetsPath: string;
-    outputPath: string;
-  }>,
-): PluginApi {
-  const cwd = Deno.cwd();
-  const inputDirectory = path.join(cwd, assetsPath);
-
-  return {
-    prepareBuild: () => {
-      return [{
+    return {
+      prepareBuild: () => [{
         type: "writeFiles",
         payload: {
           inputDirectory,
           outputDirectory,
           outputPath,
         },
-      }];
-    },
-  };
-}
+      }],
+    };
+  },
+};
 
-export { assetPlugin as plugin, meta };
+export { plugin };

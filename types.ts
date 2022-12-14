@@ -29,14 +29,12 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-type PluginDefinition = {
-  meta: PluginMeta;
-  api: PluginApi;
-};
-
-type PluginMeta = {
-  name: string;
-  dependsOn?: string[];
+type Plugin<O = Record<string, unknown>> = {
+  meta: {
+    name: string;
+    dependsOn?: string[];
+  };
+  init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;
 };
 
 type PluginParameters<O = Record<string, unknown>> = {
@@ -219,9 +217,8 @@ export type {
   Meta,
   Mode,
   ParentCategory,
+  Plugin,
   PluginApi,
-  PluginDefinition,
-  PluginMeta,
   PluginOptions,
   PluginParameters,
   Props,
