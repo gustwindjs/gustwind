@@ -52,12 +52,12 @@ function twindPlugin({ options, outputDirectory }: PluginParameters<{
       // https://web.dev/defer-non-critical-css/
       // TODO: Consider restoring CSS extraction
       /*
-      const styleTag = projectMeta.features?.extractCSS
+      const styleTag = options.extractCSS
         ? `<link rel="preload" href="./styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="styles.css"></noscript>`
         : getStyleTag(stylesheet);
 
       let css = "";
-      if (projectMeta.features?.extractCSS) {
+      if (options.extractCSS) {
         css = getStyleTagProperties(stylesheet).textContent;
 
         TODO: Setup a task to write styles.css

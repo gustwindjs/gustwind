@@ -21,11 +21,6 @@ type MarkdownWithFrontmatter = {
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
-type ProjectMeta = {
-  meta: Meta;
-  plugins: PluginOptions[];
-};
-
 type PluginOptions = { path: string; options: Record<string, unknown> };
 
 type Meta = Record<string, string>;
@@ -229,7 +224,6 @@ export type {
   PluginModule,
   PluginOptions,
   PluginParameters,
-  ProjectMeta,
   Props,
   Route,
   Scripts,
