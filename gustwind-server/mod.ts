@@ -9,10 +9,12 @@ async function serveGustwind({
   plugins: initialImportedPlugins,
   projectMeta,
   mode,
+  port,
 }: {
   plugins?: ImportedPlugin[];
   projectMeta: ProjectMeta;
   mode: Mode;
+  port: number;
 }) {
   const { plugins, router, tasks } = await importPlugins({
     initialImportedPlugins,
@@ -67,7 +69,7 @@ async function serveGustwind({
       return respond(404, "No matching route");
     },
   });
-  const listener = Deno.listen({ port: projectMeta.port });
+  const listener = Deno.listen({ port });
 
   return () => server.serve(listener);
 }

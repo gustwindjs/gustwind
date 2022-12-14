@@ -22,7 +22,6 @@ type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
-  port: number;
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;
   outputDirectory: string;

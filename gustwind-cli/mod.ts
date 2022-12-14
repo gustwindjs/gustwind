@@ -22,6 +22,7 @@ Options:
   -b, --build          Builds the project.
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
+  -p, --port           Development server port.
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
 `.trim());
@@ -30,6 +31,7 @@ Options:
 type CliArgs = {
   help: boolean;
   version: boolean;
+  port: string;
   build: boolean;
   develop: boolean;
   debug: boolean;
@@ -40,16 +42,19 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   const {
     help,
     version,
+    port,
     build,
     develop,
     debug,
   } = flags.parse(cliArgs, {
     boolean: ["help", "version", "build", "develop", "debug"],
+    string: ["port"],
     alias: {
       v: "version",
       h: "help",
       b: "build",
       d: "develop",
+      p: "port",
       o: "output",
       D: "debug",
     },
@@ -85,7 +90,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     const wss = getWebsocketServer();
     const serve = await serveGustwind({
       plugins: [
-        // TODO: What to do if meta.json port changes?
         await importPlugin({
           pluginModule: fileWatcherPlugin,
           options: { metaPath },
@@ -101,16 +105,15 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       ],
       projectMeta,
       mode,
+      port: Number(port),
     });
 
     const endTime = performance.now();
     console.log(
-      `Serving at ${projectMeta.port}, took ${
-        endTime - startTime
-      }ms to initialize`,
+      `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
     );
 
-    await copyToClipboard(`http://localhost:${projectMeta.port}/`);
+    await copyToClipboard(`http://localhost:${port}/`);
     console.log("The server address has been copied to the clipboard");
 
     await serve();
