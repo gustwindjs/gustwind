@@ -4,8 +4,8 @@ import type {
   Context,
   Mode,
   PluginApi,
+  PluginDefinition,
   PluginMeta,
-  PluginModule,
   PluginOptions,
   PluginParameters,
   Route,
@@ -13,7 +13,10 @@ import type {
   Tasks,
 } from "../types.ts";
 
-export type ImportedPlugin = { loadedPluginModule: PluginModule; tasks: Tasks };
+export type ImportedPlugin = {
+  loadedPluginDefinition: PluginDefinition;
+  tasks: Tasks;
+};
 
 async function importPlugins(
   { initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
@@ -23,12 +26,12 @@ async function importPlugins(
     mode: Mode;
   },
 ) {
-  const loadedPluginModules: PluginModule[] = [];
+  const loadedPluginDefinitions: PluginDefinition[] = [];
   let initialTasks: Tasks = [];
 
   if (initialImportedPlugins) {
-    initialImportedPlugins.forEach(({ loadedPluginModule, tasks }) => {
-      loadedPluginModules.push(loadedPluginModule);
+    initialImportedPlugins.forEach(({ loadedPluginDefinition, tasks }) => {
+      loadedPluginDefinitions.push(loadedPluginDefinition);
       initialTasks = initialTasks.concat(tasks);
     });
   }
@@ -38,7 +41,7 @@ async function importPlugins(
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
     // TODO: Add logic against url based plugins
-    const { loadedPluginModule, tasks } = await importPlugin({
+    const { loadedPluginDefinition, tasks } = await importPlugin({
       pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path)),
       options: pluginDefinition.options,
       outputDirectory,
@@ -46,22 +49,22 @@ async function importPlugins(
     });
     initialTasks = initialTasks.concat(tasks);
 
-    const { dependsOn } = loadedPluginModule.meta;
-    const dependencyIndex = loadedPluginModules.findIndex(
+    const { dependsOn } = loadedPluginDefinition.meta;
+    const dependencyIndex = loadedPluginDefinitions.findIndex(
       ({ meta: { name } }) => dependsOn?.includes(name),
     );
 
     // If there are dependencies, make sure the plugin is evaluated last
     if (dependencyIndex < 0) {
-      loadedPluginModules.unshift(loadedPluginModule);
+      loadedPluginDefinitions.unshift(loadedPluginDefinition);
     } else {
-      loadedPluginModules.push(loadedPluginModule);
+      loadedPluginDefinitions.push(loadedPluginDefinition);
     }
   }
 
-  const tasks = await preparePlugins({ plugins: loadedPluginModules });
+  const tasks = await preparePlugins({ plugins: loadedPluginDefinitions });
   await applyOnTasksRegistered({
-    plugins: loadedPluginModules,
+    plugins: loadedPluginDefinitions,
     tasks: initialTasks.concat(tasks),
   });
 
@@ -70,15 +73,15 @@ async function importPlugins(
   const router = {
     // Last definition wins
     getAllRoutes() {
-      return applyGetAllRoutes({ plugins: loadedPluginModules });
+      return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
     },
     // First match wins
     matchRoute(url: string) {
-      return applyMatchRoutes({ plugins: loadedPluginModules, url });
+      return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
     },
   };
 
-  return { tasks, plugins: loadedPluginModules, router };
+  return { tasks, plugins: loadedPluginDefinitions, router };
 }
 
 async function importPlugin<O = Record<string, unknown>>(
@@ -126,13 +129,13 @@ async function importPlugin<O = Record<string, unknown>>(
   });
 
   return {
-    loadedPluginModule: { meta: pluginModule.meta, api },
+    loadedPluginDefinition: { meta: pluginModule.meta, api },
     tasks,
   };
 }
 
 async function preparePlugins(
-  { plugins }: { plugins: PluginModule[] },
+  { plugins }: { plugins: PluginDefinition[] },
 ) {
   let tasks: Tasks = [];
   const messageSenders = plugins.map(({ api }) => api.sendMessages)
@@ -167,7 +170,7 @@ async function applyPlugins(
     route,
   }: {
     route: Route;
-    plugins: PluginModule[];
+    plugins: PluginDefinition[];
     url: string;
   },
 ) {
@@ -209,7 +212,7 @@ async function applyPlugins(
   };
 }
 
-function getSend(plugins: PluginModule[]): Send {
+function getSend(plugins: PluginDefinition[]): Send {
   return (pluginName, message) => {
     if (pluginName === "*") {
       plugins.forEach(({ api }) => api.onMessage && api.onMessage(message));
@@ -235,7 +238,7 @@ function getSend(plugins: PluginModule[]): Send {
   };
 }
 
-async function applyGetAllRoutes({ plugins }: { plugins: PluginModule[] }) {
+async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
   const getAllRoutes = plugins.map(({ api }) => api.getAllRoutes)
     .filter(Boolean);
   let ret: Record<string, Route> = {};
@@ -252,7 +255,7 @@ async function applyGetAllRoutes({ plugins }: { plugins: PluginModule[] }) {
 }
 
 async function applyMatchRoutes(
-  { plugins, url }: { plugins: PluginModule[]; url: string },
+  { plugins, url }: { plugins: PluginDefinition[]; url: string },
 ) {
   const matchRoutes = plugins.map(({ api }) => api.matchRoute)
     .filter(Boolean);
@@ -270,7 +273,7 @@ async function applyMatchRoutes(
 
 async function applyPrepareContext(
   { plugins, route, send, url }: {
-    plugins: PluginModule[];
+    plugins: PluginDefinition[];
     route: Route;
     send: Send;
     url: string;
@@ -296,7 +299,7 @@ async function applyPrepareContext(
 async function applyBeforeEachRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: PluginModule[];
+    plugins: PluginDefinition[];
     route: Route;
     send: Send;
     url: string;
@@ -322,7 +325,7 @@ async function applyBeforeEachRenders(
 async function applyRenders(
   { context, plugins, route, send, url }: {
     context: Context;
-    plugins: PluginModule[];
+    plugins: PluginDefinition[];
     route: Route;
     send: Send;
     url: string;
@@ -344,7 +347,7 @@ async function applyRenders(
 }
 
 async function applyOnTasksRegistered(
-  { plugins, tasks }: { plugins: PluginModule[]; tasks: Tasks },
+  { plugins, tasks }: { plugins: PluginDefinition[]; tasks: Tasks },
 ) {
   const send = getSend(plugins);
   const tasksRegistered = plugins.map(({ api }) => api.onTasksRegistered)
@@ -361,7 +364,7 @@ async function applyAfterEachRenders(
   { context, markup, plugins, route, send, url }: {
     context: Context;
     markup: string;
-    plugins: PluginModule[];
+    plugins: PluginDefinition[];
     route: Route;
     send: Send;
     url: string;

@@ -29,7 +29,7 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-type PluginModule = {
+type PluginDefinition = {
   meta: PluginMeta;
   api: PluginApi;
 };
@@ -220,8 +220,8 @@ export type {
   Mode,
   ParentCategory,
   PluginApi,
+  PluginDefinition,
   PluginMeta,
-  PluginModule,
   PluginOptions,
   PluginParameters,
   Props,

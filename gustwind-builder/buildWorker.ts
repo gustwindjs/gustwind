@@ -3,11 +3,11 @@
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type { BuildWorkerEvent, PluginModule } from "../types.ts";
+import type { BuildWorkerEvent, PluginDefinition } from "../types.ts";
 
 const mode = "production";
 let id: string;
-let plugins: PluginModule[];
+let plugins: PluginDefinition[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
