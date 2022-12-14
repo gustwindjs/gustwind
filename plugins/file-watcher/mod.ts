@@ -9,14 +9,16 @@ const meta: PluginMeta = {
 };
 
 async function fileWatcherPlugin(
-  { mode, load, options: { metaPath } }: PluginParameters<{ metaPath: string }>,
+  { mode, load, options: { pluginsPath } }: PluginParameters<
+    { pluginsPath: string }
+  >,
 ): Promise<PluginApi> {
   if (mode !== "development") {
     return {};
   }
 
-  // Connect meta.json path with the file watcher
-  await load.json(metaPath);
+  // Connect plugins.json path with the file watcher
+  await load.json(pluginsPath);
 
   return {
     onTasksRegistered({ tasks, send }) {

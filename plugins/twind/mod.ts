@@ -11,12 +11,11 @@ const meta: PluginMeta = {
   name: "gustwind-twind-plugin",
 };
 
-function twindPlugin({ options, projectMeta }: PluginParameters<{
+function twindPlugin({ options, outputDirectory }: PluginParameters<{
   setupPath: string;
   // TODO: Support style extraction
   // extractStylesToDirectory: string;
 }>): PluginApi {
-  const { outputDirectory } = projectMeta;
   const stylesheet = virtualSheet();
   const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 

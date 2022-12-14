@@ -11,16 +11,18 @@ const meta: PluginMeta = {
 };
 
 async function scriptPlugin(
-  { load, options: { scripts: globalScripts = [], scriptsPath }, projectMeta }:
-    PluginParameters<
-      {
-        scripts: Scripts;
-        // TODO: Model scripts output path here
-        scriptsPath: string[];
-      }
-    >,
+  {
+    load,
+    options: { scripts: globalScripts = [], scriptsPath },
+    outputDirectory,
+  }: PluginParameters<
+    {
+      scripts: Scripts;
+      // TODO: Model scripts output path here
+      scriptsPath: string[];
+    }
+  >,
 ): Promise<PluginApi> {
-  const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
 
   const foundScripts = (await Promise.all(

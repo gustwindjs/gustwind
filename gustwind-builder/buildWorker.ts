@@ -3,11 +3,10 @@
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type { BuildWorkerEvent, PluginModule, ProjectMeta } from "../types.ts";
+import type { BuildWorkerEvent, PluginModule } from "../types.ts";
 
 const mode = "production";
 let id: string;
-let projectMeta: ProjectMeta;
 let plugins: PluginModule[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -20,11 +19,12 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to init", id);
 
-    const { payload } = e.data;
-
-    projectMeta = payload.projectMeta;
-
-    const ret = await importPlugins({ projectMeta, mode });
+    const { pluginDefinitions, outputDirectory } = e.data.payload;
+    const ret = await importPlugins({
+      pluginDefinitions,
+      outputDirectory,
+      mode,
+    });
     plugins = ret.plugins;
 
     DEBUG && console.log("worker - finished init", id);
@@ -43,9 +43,7 @@ self.onmessage = async (e) => {
 
     const { markup, tasks } = await applyPlugins({
       plugins,
-      mode,
       url,
-      projectMeta,
       route,
     });
 

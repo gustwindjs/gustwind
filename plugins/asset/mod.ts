@@ -6,13 +6,12 @@ const meta: PluginMeta = {
 };
 
 function assetPlugin(
-  { options: { assetsPath, outputPath }, projectMeta }: PluginParameters<{
+  { options: { assetsPath, outputPath }, outputDirectory }: PluginParameters<{
     // TODO: Consider supporting an array of directories
     assetsPath: string;
     outputPath: string;
   }>,
 ): PluginApi {
-  const { outputDirectory } = projectMeta;
   const cwd = Deno.cwd();
   const inputDirectory = path.join(cwd, assetsPath);
 

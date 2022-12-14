@@ -1,5 +1,4 @@
 import { path } from "../server-deps.ts";
-import { getContext } from "./context.ts";
 import { dir, getJson } from "../utilities/fs.ts";
 import type {
   Context,
@@ -7,8 +6,8 @@ import type {
   PluginApi,
   PluginMeta,
   PluginModule,
+  PluginOptions,
   PluginParameters,
-  ProjectMeta,
   Route,
   Send,
   Tasks,
@@ -17,13 +16,13 @@ import type {
 export type ImportedPlugin = { loadedPluginModule: PluginModule; tasks: Tasks };
 
 async function importPlugins(
-  { initialImportedPlugins, projectMeta, mode }: {
+  { initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
     initialImportedPlugins?: ImportedPlugin[];
-    projectMeta: ProjectMeta;
+    pluginDefinitions: PluginOptions[];
+    outputDirectory: string;
     mode: Mode;
   },
 ) {
-  const { plugins } = projectMeta;
   const loadedPluginModules: PluginModule[] = [];
   let initialTasks: Tasks = [];
 
@@ -37,12 +36,12 @@ async function importPlugins(
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
-  for await (const pluginDefinition of plugins) {
+  for await (const pluginDefinition of pluginDefinitions) {
     // TODO: Add logic against url based plugins
     const { loadedPluginModule, tasks } = await importPlugin({
       pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path)),
       options: pluginDefinition.options,
-      projectMeta,
+      outputDirectory,
       mode,
     });
     initialTasks = initialTasks.concat(tasks);
@@ -83,13 +82,13 @@ async function importPlugins(
 }
 
 async function importPlugin<O = Record<string, unknown>>(
-  { pluginModule, options, projectMeta, mode }: {
+  { pluginModule, options, outputDirectory, mode }: {
     pluginModule: {
       meta: PluginMeta;
       plugin: (args: PluginParameters<O>) => PluginApi | Promise<PluginApi>;
     };
     options: O;
-    projectMeta: ProjectMeta;
+    outputDirectory: string;
     mode: Mode;
   },
 ): Promise<ImportedPlugin> {
@@ -97,7 +96,7 @@ async function importPlugin<O = Record<string, unknown>>(
   const api = await pluginModule.plugin({
     mode,
     options,
-    projectMeta,
+    outputDirectory,
     load: {
       dir(path: string, extension: string) {
         tasks.push({
@@ -164,30 +163,21 @@ async function preparePlugins(
 async function applyPlugins(
   {
     plugins,
-    mode,
     url,
-    projectMeta,
     route,
   }: {
-    mode: Mode;
-    projectMeta: ProjectMeta;
     route: Route;
     plugins: PluginModule[];
     url: string;
   },
 ) {
   const send = getSend(plugins);
-  const pluginContext = await applyPrepareContext({ plugins, send, route });
-
-  const context = {
-    ...(await getContext({
-      mode,
-      url,
-      projectMeta,
-      route,
-    })),
-    ...pluginContext,
-  };
+  const context = await applyPrepareContext({
+    plugins,
+    send,
+    route,
+    url,
+  });
 
   const { tasks } = await applyBeforeEachRenders({
     context,
@@ -279,10 +269,11 @@ async function applyMatchRoutes(
 }
 
 async function applyPrepareContext(
-  { plugins, route, send }: {
+  { plugins, route, send, url }: {
     plugins: PluginModule[];
     route: Route;
     send: Send;
+    url: string;
   },
 ) {
   let context = {};
@@ -291,7 +282,7 @@ async function applyPrepareContext(
 
   for await (const prepareContext of prepareContexts) {
     if (prepareContext) {
-      const ret = await prepareContext({ send, route });
+      const ret = await prepareContext({ send, route, url });
 
       if (ret?.context) {
         context = { ...context, ...ret.context };

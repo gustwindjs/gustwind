@@ -3,23 +3,26 @@ import { respond } from "../gustwind-utilities/respond.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import type { ImportedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
-import type { Mode, ProjectMeta } from "../types.ts";
+import type { Mode, PluginOptions } from "../types.ts";
 
 async function serveGustwind({
   plugins: initialImportedPlugins,
-  projectMeta,
+  pluginDefinitions,
   mode,
   port,
 }: {
   plugins?: ImportedPlugin[];
-  projectMeta: ProjectMeta;
+  pluginDefinitions: PluginOptions[];
   mode: Mode;
   port: number;
 }) {
   const { plugins, router, tasks } = await importPlugins({
     initialImportedPlugins,
-    projectMeta,
+    pluginDefinitions,
     mode,
+    // Output directory doesn't matter for the server since it's
+    // using a virtual fs.
+    outputDirectory: "/",
   });
 
   // TODO: How to recalculate fs when a script (script-plugin) changes (
@@ -35,9 +38,7 @@ async function serveGustwind({
       if (matchedRoute) {
         const { markup, tasks } = await applyPlugins({
           plugins,
-          mode,
           url: pathname,
-          projectMeta,
           route: matchedRoute,
         });
 

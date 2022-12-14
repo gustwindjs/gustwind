@@ -6,7 +6,7 @@
 import { flags, path } from "../server-deps.ts";
 import { getJson } from "../utilities/fs.ts";
 import { VERSION } from "../version.ts";
-import type { ProjectMeta } from "../types.ts";
+import type { PluginOptions } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { serveGustwind } from "../gustwind-server/mod.ts";
 import { importPlugin } from "../gustwind-utilities/plugins.ts";
@@ -16,13 +16,14 @@ import * as webSocketPlugin from "../plugins/websocket/mod.ts";
 
 function usage() {
   console.log(`
-Usage: gustwind [-w|-b|-d] [-D]
+Usage: gustwind [-b|-d] [-D] [-p <port>] [-t <number|"cpuMax"|"cpuHalf">] [-o <directory>]
 
 Options:
   -b, --build          Builds the project.
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
   -p, --port           Development server port.
+  -o, --output         Build output directory.
   -t, --threads        Amount of threads to use during building. Accepts a number, "cpuMax", or "cpuHalf".
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
@@ -34,6 +35,7 @@ type CliArgs = {
   version: boolean;
   port: string;
   threads: string;
+  output: string;
   build: boolean;
   develop: boolean;
   debug: boolean;
@@ -46,12 +48,13 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     version,
     port,
     threads,
+    output: outputDirectory,
     build,
     develop,
     debug,
   } = flags.parse(cliArgs, {
     boolean: ["help", "version", "build", "develop", "debug"],
-    string: ["port", "threads"],
+    string: ["port", "threads", "output"],
     alias: {
       v: "version",
       h: "help",
@@ -82,8 +85,9 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
-  const metaPath = path.join(Deno.cwd(), "meta.json");
-  const projectMeta = await getJson<ProjectMeta>(metaPath);
+  // TODO: Allow passing this as a parameter
+  const pluginsPath = path.join(Deno.cwd(), "plugins.json");
+  const pluginDefinitions = await getJson<PluginOptions[]>(pluginsPath);
 
   if (develop) {
     const mode = "development";
@@ -96,18 +100,18 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       plugins: [
         await importPlugin({
           pluginModule: fileWatcherPlugin,
-          options: { metaPath },
-          projectMeta,
+          options: { pluginsPath },
+          outputDirectory,
           mode,
         }),
         await importPlugin({
           pluginModule: webSocketPlugin,
           options: { wss },
-          projectMeta,
+          outputDirectory,
           mode,
         }),
       ],
-      projectMeta,
+      pluginDefinitions,
       mode,
       port: Number(port),
     });
@@ -126,7 +130,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    await buildProject(projectMeta, threads);
+    await buildProject({ outputDirectory, pluginDefinitions, threads });
 
     return 0;
   }

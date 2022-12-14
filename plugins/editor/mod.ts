@@ -19,10 +19,10 @@ const scriptsToCompile = [
   // "twindRuntime",
 ];
 
-function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
+function editorPlugin({ outputDirectory }: PluginParameters): PluginApi {
   return {
-    beforeEachRender({ url, send, route, context }) {
-      const outputDirectory = path.join(projectMeta.outputDirectory, url);
+    beforeEachRender({ context, url, send, route }) {
+      const outputDir = path.join(outputDirectory, url);
 
       const lookup = {
         context,
@@ -38,7 +38,7 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
         : ["context", "layout", "route"].map((name) => ({
           type: "writeFile",
           payload: {
-            outputDirectory,
+            outputDirectory: outputDir,
             file: `${name}.json`,
             // @ts-expect-error We know name is suitable by now
             data: JSON.stringify(lookup[name]),
@@ -66,7 +66,7 @@ function editorPlugin({ projectMeta }: PluginParameters): PluginApi {
       return [{
         type: "writeFile",
         payload: {
-          outputDirectory: projectMeta.outputDirectory,
+          outputDirectory,
           file: "components.json",
           data: JSON.stringify(components),
         },

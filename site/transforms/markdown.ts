@@ -158,6 +158,7 @@ async function transformMarkdown(input: string) {
         }
 
         if (text === "<file>") {
+          // TODO: Show a nice error in case href is not found in the fs
           return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
         }
 

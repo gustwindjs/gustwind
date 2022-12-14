@@ -1,13 +1,17 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { getJson } from "../utilities/fs.ts";
 import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
+import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function build(projectMeta: ProjectMeta, threads: string) {
-  const { outputDirectory } = projectMeta;
+async function build(
+  { outputDirectory, threads, pluginDefinitions }: {
+    outputDirectory: string;
+    threads: string;
+    pluginDefinitions: PluginOptions[];
+  },
+) {
   const amountOfThreads = getAmountOfThreads(threads);
 
   if (!amountOfThreads) {
@@ -26,14 +30,15 @@ async function build(projectMeta: ProjectMeta, threads: string) {
 
   workerPool.addTaskToEach({
     type: "init",
-    payload: { projectMeta },
+    payload: { pluginDefinitions, outputDirectory },
   });
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
     const { router, tasks } = await importPlugins({
-      projectMeta,
+      pluginDefinitions,
+      outputDirectory,
       mode: "production",
     });
     tasks.forEach((task) => workerPool.addTaskToQueue(task));
@@ -111,10 +116,6 @@ function getAmountOfThreads(amountOfThreads: string) {
   }
 
   return Number(amountOfThreads);
-}
-
-if (import.meta.main) {
-  build(await getJson<ProjectMeta>("./meta.json"), "cpuMax");
 }
 
 export { build };

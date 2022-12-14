@@ -23,7 +23,6 @@ type DataSources = Record<string, () => unknown[]>;
 
 type ProjectMeta = {
   meta: Meta;
-  outputDirectory: string;
   plugins: PluginOptions[];
 };
 
@@ -33,11 +32,7 @@ type Meta = Record<string, string>;
 type Mode = "development" | "production";
 
 // This is the context used when rendering a page
-type Context = Record<string, unknown> & {
-  pagePath: string;
-  projectMeta: ProjectMeta;
-  meta?: Record<string, unknown>;
-};
+type Context = Record<string, unknown>;
 
 type PluginModule = {
   meta: PluginMeta;
@@ -59,7 +54,7 @@ type PluginParameters<O = Record<string, unknown>> = {
     module<T>(path: string): Promise<T>;
   };
   mode: Mode;
-  projectMeta: ProjectMeta;
+  outputDirectory: string;
   options: O;
 };
 
@@ -70,7 +65,9 @@ type PluginApi = {
   // Return additional tasks to perform per build
   prepareBuild?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
   // Run setup before context is resolved or add something to it
-  prepareContext?({ send, route }: { send: Send; route: Route }):
+  prepareContext?(
+    { send, route, url }: { send: Send; route: Route; url: string },
+  ):
     | Promise<{ context: Record<string, unknown> }>
     | Promise<void>
     | {
@@ -165,7 +162,7 @@ type Tasks = BuildWorkerEvent[];
 type BuildWorkerEvent =
   | {
     type: "init";
-    payload: { projectMeta: ProjectMeta };
+    payload: { pluginDefinitions: PluginOptions[]; outputDirectory: string };
   }
   | {
     type: "build";

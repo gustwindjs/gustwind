@@ -78,6 +78,8 @@ function matchRoute(
   const parts = trim(url, "/").split("/");
   const match = routes[url] || routes[parts[0]];
 
+  console.log("matching", parts[0], Object.keys(routes));
+
   if (match && match.routes && parts.length > 1) {
     return matchRoute(match.routes, parts.slice(1).join("/"));
   }

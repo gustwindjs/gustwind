@@ -2,7 +2,9 @@ import { tw } from "../../client-deps.ts";
 import { path } from "../../server-deps.ts";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
+import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
+import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component } from "../../breezewind/types.ts";
 import type { PluginApi, PluginMeta, PluginParameters } from "../../types.ts";
 
@@ -12,17 +14,21 @@ const meta: PluginMeta = {
 };
 
 async function breezewindRenderer(
-  { options: { componentsPath, layoutsPath, pageUtilitiesPath }, load }:
-    PluginParameters<
-      {
-        componentsPath: string;
-        layoutsPath: string;
-        pageUtilitiesPath: string;
-      }
-    >,
+  {
+    options: { componentsPath, metaPath, layoutsPath, pageUtilitiesPath },
+    load,
+    mode,
+  }: PluginParameters<
+    {
+      componentsPath: string;
+      metaPath: string;
+      layoutsPath: string;
+      pageUtilitiesPath: string;
+    }
+  >,
 ): Promise<PluginApi> {
   const cwd = Deno.cwd();
-  let [components, layouts, pageUtilities] = await Promise.all([
+  let [components, layouts, pageUtilities, meta] = await Promise.all([
     getDefinitions<Component>(
       await load.dir(path.join(cwd, componentsPath), ".json"),
     ),
@@ -30,9 +36,40 @@ async function breezewindRenderer(
       await load.dir(path.join(cwd, layoutsPath), ".json"),
     ),
     pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
+    metaPath ? load.json(metaPath) : {},
   ]);
 
   return {
+    prepareContext: async ({ url, route }) => {
+      const runtimeMeta: Record<string, string> = {
+        built: (new Date()).toString(),
+      };
+
+      // TODO: Rename pagePath as url across the project
+      if (mode === "development") {
+        runtimeMeta.pagePath = url;
+      }
+
+      const context = {
+        ...runtimeMeta,
+        ...meta,
+        ...route.meta,
+        ...route.context,
+      };
+
+      return {
+        context: {
+          ...context,
+          pagePath: url,
+          meta: await applyUtilities(
+            context,
+            // @ts-expect-error This is ok
+            defaultUtilities,
+            { context },
+          ),
+        },
+      };
+    },
     render: ({ route, context }) =>
       renderHTML({
         component: layouts[route.layout],
