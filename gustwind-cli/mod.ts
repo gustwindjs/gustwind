@@ -23,6 +23,7 @@ Options:
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
   -p, --port           Development server port.
+  -t, --threads        Amount of threads to use during building. Accepts a number, "cpuMax", or "cpuHalf".
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
 `.trim());
@@ -32,6 +33,7 @@ type CliArgs = {
   help: boolean;
   version: boolean;
   port: string;
+  threads: string;
   build: boolean;
   develop: boolean;
   debug: boolean;
@@ -43,17 +45,19 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     help,
     version,
     port,
+    threads,
     build,
     develop,
     debug,
   } = flags.parse(cliArgs, {
     boolean: ["help", "version", "build", "develop", "debug"],
-    string: ["port"],
+    string: ["port", "threads"],
     alias: {
       v: "version",
       h: "help",
       b: "build",
       d: "develop",
+      t: "threads",
       p: "port",
       o: "output",
       D: "debug",
@@ -122,7 +126,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    await buildProject(projectMeta);
+    await buildProject(projectMeta, threads);
 
     return 0;
   }

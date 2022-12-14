@@ -6,19 +6,22 @@ import type { BuildWorkerEvent, ProjectMeta } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function build(projectMeta: ProjectMeta) {
+async function build(projectMeta: ProjectMeta, threads: string) {
   const { outputDirectory } = projectMeta;
-  const amountOfBuildThreads = getAmountOfThreads(
-    projectMeta.amountOfBuildThreads,
-  );
+  const amountOfThreads = getAmountOfThreads(threads);
+
+  if (!amountOfThreads) {
+    throw new Error(`Passed unknown amount of threads ${amountOfThreads}`);
+  }
+
   console.log(
-    `Building to static with ${amountOfBuildThreads} thread${
-      amountOfBuildThreads > 1 ? "s" : ""
+    `Building to static with ${amountOfThreads} thread${
+      amountOfThreads > 1 ? "s" : ""
     }`,
   );
   const startTime = performance.now();
   const workerPool = createWorkerPool<BuildWorkerEvent>(
-    amountOfBuildThreads,
+    amountOfThreads,
   );
 
   workerPool.addTaskToEach({
@@ -98,9 +101,7 @@ async function build(projectMeta: ProjectMeta) {
   });
 }
 
-function getAmountOfThreads(
-  amountOfThreads: ProjectMeta["amountOfBuildThreads"],
-) {
+function getAmountOfThreads(amountOfThreads: string) {
   if (amountOfThreads === "cpuMax") {
     // -1 since the main thread needs one CPU but at least one
     return Math.max(navigator.hardwareConcurrency - 1, 1);
@@ -109,11 +110,11 @@ function getAmountOfThreads(
     return Math.max(Math.ceil(navigator.hardwareConcurrency / 2), 1);
   }
 
-  return amountOfThreads;
+  return Number(amountOfThreads);
 }
 
 if (import.meta.main) {
-  build(await getJson<ProjectMeta>("./meta.json"));
+  build(await getJson<ProjectMeta>("./meta.json"), "cpuMax");
 }
 
 export { build };
