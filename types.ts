@@ -26,7 +26,6 @@ type ProjectMeta = {
   amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
   meta: Meta;
   outputDirectory: string;
-  router: PluginOptions;
   plugins: PluginOptions[];
 };
 
