@@ -1,6 +1,10 @@
 import { lookup, Server } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
-import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
+import {
+  applyOnTasksRegistered,
+  applyPlugins,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
@@ -33,14 +37,18 @@ async function serveGustwind({
   const server = new Server({
     handler: async ({ url }) => {
       const { pathname } = new URL(url);
-      const matchedRoute = await router.matchRoute(pathname);
+      const matched = await router.matchRoute(pathname);
 
-      if (matchedRoute) {
+      if (matched && matched.route) {
         const { markup, tasks } = await applyPlugins({
           plugins,
           url: pathname,
-          route: matchedRoute,
+          route: matched.route,
         });
+
+        // Connect tasks that came from the router with plugins that are interested
+        // in them (i.e., the file watcher).
+        await applyOnTasksRegistered({ plugins, tasks: matched.tasks });
 
         fs = { ...fs, ...(await evaluateTasks(tasks)) };
 
@@ -48,7 +56,9 @@ async function serveGustwind({
         return respond(
           200,
           markup,
-          matchedRoute.type === "xml" ? "text/xml" : "text/html; charset=utf-8",
+          matched.route.type === "xml"
+            ? "text/xml"
+            : "text/html; charset=utf-8",
         );
       }
 

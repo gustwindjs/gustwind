@@ -28,8 +28,10 @@ const plugin: Plugin<{ pluginsPath: string }> = {
               return payload.scriptPath;
             case "writeFiles":
               return payload.inputDirectory;
+            case "watchPaths":
+              return payload.paths;
           }
-        }).filter(Boolean) as string[]; // TS doesn't infer this case!
+        }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!
 
         DEBUG && console.log("watching paths", paths);
 

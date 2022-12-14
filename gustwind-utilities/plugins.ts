@@ -389,6 +389,7 @@ async function applyAfterEachRenders(
 export {
   applyAfterEachRenders,
   applyBeforeEachRenders,
+  applyOnTasksRegistered,
   applyPlugins,
   applyPrepareContext,
   applyRenders,

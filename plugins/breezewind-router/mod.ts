@@ -4,6 +4,8 @@ import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
 import type { DataSources, Plugin, Route } from "../../types.ts";
 
+type Routes = Record<string, Route>;
+
 const plugin: Plugin<{
   dataSourcesPath: string;
   include: string[];
@@ -15,22 +17,16 @@ const plugin: Plugin<{
   },
   init: async ({ options: { dataSourcesPath, include, routesPath }, load }) => {
     const cwd = Deno.cwd();
-    const routes = await load.json<Record<string, Route>>(
+    const routes = await load.json<Routes>(
       path.join(cwd, routesPath),
     );
     const dataSources = dataSourcesPath
       ? await load.module<DataSources>(path.join(cwd, dataSourcesPath))
       : {};
-    let allRoutes: Record<string, Route>;
 
     return {
       getAllRoutes: async () => {
-        const allRoutes = flattenRoutes(
-          await expandRoutes({
-            routes,
-            dataSources,
-          }),
-        );
+        const { allRoutes } = await getAllRoutes(routes, dataSources);
 
         if (include) {
           return Object.fromEntries(
@@ -43,17 +39,10 @@ const plugin: Plugin<{
         return allRoutes;
       },
       matchRoute: async (url: string) => {
-        // As an optimization, flatten routes only on demand.
-        // This could be optimized further by pushing more work to matchRoute
-        if (!allRoutes) {
-          allRoutes = flattenRoutes(
-            await expandRoutes({
-              routes,
-              dataSources,
-            }),
-          );
-        }
-
+        const { allRoutes, allParameters } = await getAllRoutes(
+          routes,
+          dataSources,
+        );
         const matchedRoute = matchRoute(allRoutes, url);
 
         if (matchedRoute) {
@@ -63,12 +52,29 @@ const plugin: Plugin<{
             dataSources,
           });
 
-          return route;
+          return {
+            route,
+            tasks: [{
+              type: "watchPaths",
+              payload: { paths: allParameters },
+            }],
+          };
         }
+
+        return { route: undefined, tasks: [] };
       },
     };
   },
 };
+
+async function getAllRoutes(routes: Routes, dataSources: DataSources) {
+  const { allRoutes, allParameters } = await expandRoutes({
+    routes,
+    dataSources,
+  });
+
+  return { allRoutes: flattenRoutes(allRoutes), allParameters };
+}
 
 function matchRoute(
   routes: Record<string, Route>,

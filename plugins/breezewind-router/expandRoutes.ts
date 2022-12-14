@@ -3,35 +3,42 @@ import { get } from "../../utilities/functional.ts";
 import type { DataSources, Route } from "../../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {
-  routes: Route["routes"];
+  routes: Record<string, Route>;
   dataSources: DataSources;
-}): Promise<NonNullable<Route["routes"]>> {
-  if (!routes) {
-    throw new Error("Missing route definition");
-  }
-
-  const ret: Record<string, Route> = {};
+}): Promise<
+  NonNullable<{ allRoutes: Record<string, Route>; allParameters: string[] }>
+> {
+  const allRoutes: Record<string, Route> = {};
+  let allParameters: string[] = [];
 
   // Resolve promises in series to avoid race conditions in resolving
   for (
     const [url, route] of Object.entries(routes)
   ) {
-    const [expandedUrl, expandedRoute] = await expandRoute({
+    const [expandedUrl, expandedRoute, parameters] = await expandRoute({
       url,
       route,
       dataSources,
     });
 
-    ret[expandedUrl] = expandedRoute;
+    allRoutes[expandedUrl] = expandedRoute;
+    allParameters = allParameters.concat(parameters);
   }
 
   // / is an exception. If it has an expansion, then it has to be added
   // to the root as otherwise the router won't find it later.
-  if (ret["/"]) {
-    return { ...ret, ...ret["/"].routes, "/": { ...ret["/"], routes: {} } };
+  if (allRoutes["/"]) {
+    return {
+      allRoutes: {
+        ...allRoutes,
+        ...allRoutes["/"].routes,
+        "/": { ...allRoutes["/"], routes: {} },
+      },
+      allParameters,
+    };
   }
 
-  return ret;
+  return { allRoutes, allParameters };
 }
 
 async function expandRoute(
@@ -40,8 +47,9 @@ async function expandRoute(
     route: Route;
     dataSources: DataSources;
   },
-): Promise<[string, Route]> {
+): Promise<[string, Route, string[]]> {
   let ret = { ...route };
+  let allParameters: string[] = [];
 
   if (route.expand) {
     const { matchBy } = route.expand;
@@ -61,12 +69,13 @@ async function expandRoute(
     }
 
     const expandedRoutes: Record<string, Route> = {};
-    const dataSourceParameter = matchBy.dataSource.parameters;
+    const dataSourceParameters = matchBy.dataSource.parameters as string[];
     const dataSourceResults = await dataSource.apply(
       undefined,
       // @ts-expect-error This is fine.
-      dataSourceParameter,
+      dataSourceParameters,
     );
+    allParameters = allParameters.concat(dataSourceParameters);
 
     if (Array.isArray(dataSourceResults)) {
       dataSourceResults.forEach((match) => {
@@ -105,26 +114,31 @@ async function expandRoute(
   }
 
   if (route.dataSources) {
-    const context = await getDataSourceContext(
+    const { context, capturedParameters } = await getDataSourceContext(
       route.dataSources,
       dataSources,
     );
 
-    return [url, { ...ret, url, context }];
+    if (capturedParameters) {
+      allParameters = allParameters.concat(capturedParameters);
+    }
+
+    return [url, { ...ret, url, context }, allParameters];
   }
 
-  return [url, { ...ret, url }];
+  return [url, { ...ret, url }, allParameters];
 }
 
 async function getDataSourceContext(
   dataSourceIds?: Route["dataSources"],
   dataSources?: DataSources,
-): Promise<Record<string, unknown>> {
+) {
   if (!dataSourceIds || !dataSources) {
     return {};
   }
+  let capturedParameters: string[] = [];
 
-  return Object.fromEntries(
+  const context = Object.fromEntries(
     await Promise.all(
       dataSourceIds.map(async ({ name, operation, parameters }) => {
         const dataSource = dataSources[operation];
@@ -132,6 +146,8 @@ async function getDataSourceContext(
         if (!dataSource) {
           throw new Error(`Data source ${operation} was not found!`);
         }
+
+        capturedParameters = capturedParameters.concat(parameters as string[]);
 
         return [
           name,
@@ -144,6 +160,8 @@ async function getDataSourceContext(
       }),
     ),
   );
+
+  return { context, capturedParameters };
 }
 
 export { expandRoute, expandRoutes };

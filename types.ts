@@ -94,8 +94,13 @@ type PluginApi = {
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(message: SendMessageEvent): void;
-  getAllRoutes?(): Promise<Record<string, Route>>;
-  matchRoute?(url: string): Promise<Route | undefined> | Route | undefined;
+  getAllRoutes?(): Promise<Record<string, Route>> | Record<string, Route>;
+  matchRoute?(
+    url: string,
+  ): Promise<{ route?: Route; tasks: Tasks }> | {
+    route?: Route;
+    tasks: Tasks;
+  };
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 
@@ -177,6 +182,10 @@ type BuildWorkerEvent =
   | {
     type: "loadModule";
     payload: { path: string };
+  }
+  | {
+    type: "watchPaths";
+    payload: { paths: string[] };
   }
   | {
     type: "writeFile";
