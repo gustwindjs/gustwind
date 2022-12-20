@@ -1,14 +1,12 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
-import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import presetTypography from "https://esm.sh/@twind/preset-typography@1.0.5";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
 // This has to run before tw can work!
 install({
-  presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
+  presets: [presetTailwind()],
 });
 
 Deno.test("class shortcut extension", async () => {
