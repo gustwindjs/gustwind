@@ -66,12 +66,15 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished build", id, route, filePath);
   }
   if (type === "writeScript") {
+    const isDevelopingLocally = import.meta.url.startsWith("file:///");
     const { payload: { outputDirectory, file, scriptPath } } = e.data;
 
     await fs.ensureDir(outputDirectory);
     Deno.writeTextFile(
       path.join(outputDirectory, file),
-      await compileTypeScript(scriptPath, "production"),
+      isDevelopingLocally
+        ? await compileTypeScript(scriptPath, "production")
+        : await fetch(scriptPath).then((res) => res.text()),
     );
   }
   if (type === "writeFile") {

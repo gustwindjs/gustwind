@@ -49,11 +49,21 @@ const plugin: Plugin = {
 
         send("gustwind-script-plugin", {
           type: "addScripts",
-          payload: scriptsToCompile.map((name) => ({
-            // TODO: How to make this work in the remote case?
-            path: path.join(cwd, "plugins", "editor", "scripts", `${name}.ts`),
-            name: `${name}.js`,
-          })),
+          payload: scriptsToCompile.map((name) => {
+            const suffix = path.join(
+              "plugins",
+              "editor",
+              "scripts",
+              `${name}.ts`,
+            );
+
+            return ({
+              localPath: path.join(cwd, suffix),
+              // TODO: It would be good to take gustwind version into account
+              remotePath: path.join("https://deno.land/x/gustwind", suffix),
+              name: `${name}.js`,
+            });
+          }),
         });
       },
       prepareBuild: async ({ send }) => {

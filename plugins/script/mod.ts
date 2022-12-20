@@ -19,11 +19,22 @@ const plugin: Plugin<{
     const foundScripts = (await Promise.all(
       scriptsPath.map((p) => load.dir(path.join(cwd, p), ".ts")),
     )).flat();
-    let receivedScripts: { name: string; path: string }[] = [];
+    let receivedScripts: {
+      name: string;
+      localPath: string;
+      remotePath: string;
+    }[] = [];
 
     return {
       prepareBuild: () => {
-        return foundScripts.concat(receivedScripts).map((
+        const isDevelopingLocally = import.meta.url.startsWith("file:///");
+
+        return foundScripts.concat(
+          receivedScripts.map(({ name, localPath, remotePath }) => ({
+            name,
+            path: isDevelopingLocally ? localPath : remotePath,
+          })),
+        ).map((
           { name, path: scriptPath },
         ) => ({
           type: "writeScript",
@@ -39,9 +50,11 @@ const plugin: Plugin<{
         const scripts = globalScripts.concat(
           (foundScripts.filter(({ name }) =>
             routeScripts.includes(path.basename(name, path.extname(name)))
-          ).concat(receivedScripts)).map((s) => ({
+          ).map(({ name }) => name).concat(
+            receivedScripts.map(({ name }) => name),
+          )).map((name) => ({
             type: "module",
-            src: s.name.replace(".ts", ".js"),
+            src: name.replace(".ts", ".js"),
           })),
         );
 

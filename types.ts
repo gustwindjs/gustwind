@@ -114,7 +114,7 @@ type SendMessageEvent =
   // editor plugin
   | {
     type: "addScripts";
-    payload: { path: string; name: string }[];
+    payload: { localPath: string; remotePath: string; name: string }[];
   }
   | { type: "getComponents"; payload: undefined }
   | {

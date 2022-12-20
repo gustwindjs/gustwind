@@ -33,10 +33,13 @@ async function evaluateTasks(tasks: Tasks) {
         break;
       }
       case "writeScript": {
-        const data = await compileTypeScript(
-          payload.scriptPath,
-          "development",
-        );
+        const isDevelopingLocally = import.meta.url.startsWith("file:///");
+        const data = isDevelopingLocally
+          ? await compileTypeScript(
+            payload.scriptPath,
+            "development",
+          )
+          : await fetch(payload.scriptPath).then((res) => res.text());
 
         ret[`/${payload.file}`] = {
           type: "file",
