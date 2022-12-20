@@ -16,9 +16,9 @@
     }
   },
   {
-    "path": "./plugins/asset/mod.ts",
+    "path": "./plugins/copy/mod.ts",
     "options": {
-      "assetsPath": "./assets",
+      "inputPath": "./assets",
       "outputPath": "./assets"
     }
   },

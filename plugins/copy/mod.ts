@@ -3,17 +3,17 @@ import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
   // TODO: Consider supporting an array of directories
-  assetsPath: string;
+  inputPath: string;
   outputPath: string;
 }> = {
   meta: {
-    name: "gustwind-asset-plugin",
+    name: "gustwind-copy-plugin",
   },
   init(
-    { options: { assetsPath, outputPath }, outputDirectory },
+    { options: { inputPath, outputPath }, outputDirectory },
   ) {
     const cwd = Deno.cwd();
-    const inputDirectory = path.join(cwd, assetsPath);
+    const inputDirectory = path.join(cwd, inputPath);
 
     return {
       prepareBuild: () => [{
