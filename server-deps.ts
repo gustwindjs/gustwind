@@ -9,7 +9,6 @@ import { cache } from "https://deno.land/x/cache@0.2.13/mod.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.15.13/mod.js";
 import { nanoid } from "https://cdn.skypack.dev/nanoid@4.0.0?min";
 import * as websockets from "https://deno.land/x/websocket@v0.1.4/mod.ts";
-import * as yaml from "https://esm.sh/yaml@2.1.3";
 
 export {
   async,
@@ -22,6 +21,5 @@ export {
   path,
   Server,
   websockets,
-  yaml,
   yamlParse,
 };
