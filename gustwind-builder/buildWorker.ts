@@ -31,22 +31,11 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
-    const {
-      payload: {
-        route,
-        filePath,
-        dir,
-        url,
-      },
-    } = e.data;
+    const { payload: { route, dir, url } } = e.data;
 
-    DEBUG && console.log("worker - starting to build", id, route, filePath);
+    DEBUG && console.log("worker - starting to build", id, route);
 
-    const { markup, tasks } = await applyPlugins({
-      plugins,
-      url,
-      route,
-    });
+    const { markup, tasks } = await applyPlugins({ plugins, url, route });
 
     self.postMessage({
       type: "addTasks",
@@ -63,7 +52,7 @@ self.onmessage = async (e) => {
       );
     }
 
-    DEBUG && console.log("worker - finished build", id, route, filePath);
+    DEBUG && console.log("worker - finished build", id, route);
   }
   if (type === "writeScript") {
     const isDevelopingLocally = import.meta.url.startsWith("file:///");

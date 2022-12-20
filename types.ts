@@ -166,7 +166,6 @@ type BuildWorkerEvent =
     type: "build";
     payload: {
       route: Route;
-      pagePath: string;
       dir: string;
       url: string;
     };

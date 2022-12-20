@@ -58,7 +58,6 @@ async function build(
         type: "build",
         payload: {
           route,
-          pagePath: url === "/" ? "/" : "/" + url + "/",
           dir: path.join(outputDirectory, url),
           url: url === "/" ? "/" : "/" + url + "/",
         },
