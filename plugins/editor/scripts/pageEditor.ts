@@ -1,10 +1,12 @@
 /// <reference lib="dom" />
+import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.3?min";
+import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";
 import breezewind from "../../../breezewind/index.ts";
 import * as breezeExtensions from "../../../breezewind/extensions.ts";
-import { draggable, produce, tw } from "../../../client-deps.ts";
 // import { getPagePath } from "../../../utilities/getPagePath.ts";
 import type { DataContext, Route } from "../../../types.ts";
 import type { Component, Components } from "../../../breezewind/types.ts";
