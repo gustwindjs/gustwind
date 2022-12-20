@@ -1,5 +1,6 @@
 import md from "./transforms/markdown.ts";
-import { tw as twind } from "../client-deps.ts";
+// This fails unless it's using ?min
+import { tw as twind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import type { Context } from "../breezewind/types.ts";
 
 function dateToISO(_: Context, date: string) {
