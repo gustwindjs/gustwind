@@ -11,7 +11,7 @@ import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component } from "../../breezewind/types.ts";
 import type { Plugin } from "../../types.ts";
 
-// This has to run before tw can work!
+// TODO: This is a leak in abstraction and should be handled otherwise.
 install({
   presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
 });

@@ -1,14 +1,8 @@
 import { extract, install } from "https://esm.sh/@twind/core@1.1.1";
 import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import presetTypography from "https://esm.sh/@twind/preset-typography@1.0.5";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
-
-// This has to run before tw can work!
-install({
-  presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
-});
 
 const plugin: Plugin<{
   setupPath: string;
@@ -20,12 +14,17 @@ const plugin: Plugin<{
     const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
     async function prepareStylesheet() {
-      //const twindSetup = twindSetupPath
-      //  ? await import("file://" + twindSetupPath).then((m) => m.default)
-      //  : {};
+      const twindSetup = twindSetupPath
+        ? await import("file://" + twindSetupPath).then((m) => m.default)
+        : { presets: [] };
 
-      // TODO: Allow customization by the user again
-      // setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
+      // This has to run before tw can work!
+      install({
+        ...twindSetup,
+        presets: [presetAutoprefix(), presetTailwind()].concat(
+          twindSetup.presets,
+        ),
+      });
     }
 
     return {
