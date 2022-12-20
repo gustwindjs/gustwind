@@ -3,7 +3,8 @@
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type { BuildWorkerEvent, PluginDefinition } from "../types.ts";
+import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
+import type { BuildWorkerEvent } from "../types.ts";
 
 const mode = "production";
 let id: string;

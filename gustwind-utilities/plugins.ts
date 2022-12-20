@@ -15,7 +15,7 @@ export type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi };
   tasks: Tasks;
 };
-type PluginDefinition = LoadedPlugin["plugin"];
+export type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(
   { initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
