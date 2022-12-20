@@ -1,11 +1,14 @@
-import {
-  getStyleTag,
-  // getStyleTagProperties,
-  virtualSheet,
-} from "https://cdn.skypack.dev/twind@0.16.16/sheets";
-import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { extract, install } from "https://esm.sh/@twind/core@1.1.1";
+import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
+import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
+import presetTypography from "https://esm.sh/@twind/preset-typography@1.0.5";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
+
+// This has to run before tw can work!
+install({
+  presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
+});
 
 const plugin: Plugin<{
   setupPath: string;
@@ -14,18 +17,15 @@ const plugin: Plugin<{
     name: "gustwind-twind-plugin",
   },
   init: ({ options, outputDirectory }) => {
-    const stylesheet = virtualSheet();
     const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
 
     async function prepareStylesheet() {
-      const twindSetup = twindSetupPath
-        ? await import("file://" + twindSetupPath).then((m) => m.default)
-        : {};
+      //const twindSetup = twindSetupPath
+      //  ? await import("file://" + twindSetupPath).then((m) => m.default)
+      //  : {};
 
-      setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
-
-      // @ts-ignore Somehow TS gets confused here
-      stylesheet.reset();
+      // TODO: Allow customization by the user again
+      // setupTwind({ sheet: stylesheet, mode: "silent", ...twindSetup });
     }
 
     return {
@@ -62,16 +62,18 @@ const plugin: Plugin<{
         }
         */
 
-        return { markup: injectStyleTag(markup, getStyleTag(stylesheet)) };
+        // https://twind.style/packages/@twind/core#extract
+        const { html, css } = extract(markup);
+
+        return {
+          markup: html.replace(
+            "</head>",
+            `<style data-twind>${css}</style></head>`,
+          ),
+        };
       },
     };
   },
 };
-
-function injectStyleTag(markup: string, styleTag: string) {
-  const parts = markup.split("</head>");
-
-  return parts[0] + styleTag + parts[1];
-}
 
 export { plugin };

@@ -1,13 +1,15 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { virtualSheet } from "https://cdn.skypack.dev/twind@0.16.16/sheets";
-import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16";
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
+import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
+import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
+import presetTypography from "https://esm.sh/@twind/preset-typography@1.0.5";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
-const stylesheet = virtualSheet();
-
-setupTwind({ sheet: stylesheet, mode: "silent" });
+// This has to run before tw can work!
+install({
+  presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
+});
 
 Deno.test("class shortcut extension", async () => {
   assertEquals(
@@ -43,7 +45,7 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
         pagePath: "foo",
       },
     }),
-    '<span class="font-bold mx-2">testing</span>',
+    '<span class="#wgocpl #wf2app">testing</span>',
   );
 });
 
@@ -78,7 +80,7 @@ Deno.test("classList shortcut works with different class types", async () => {
         pagePath: "foo",
       },
     }),
-    '<span class="bg-red-200 foo font-bold mx-2">testing</span>',
+    '<span class="foo #3h0el7 #wgocpl #wf2app">testing</span>',
   );
 });
 
