@@ -1,4 +1,4 @@
-import { tw } from "../../client-deps.ts";
+import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { path } from "../../server-deps.ts";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
