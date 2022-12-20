@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.3?min";
 import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";

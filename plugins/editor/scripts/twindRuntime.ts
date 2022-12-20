@@ -12,38 +12,28 @@ if (!("Deno" in globalThis)) {
 }
 
 function setupTwind() {
-  const defaultSetup = {
-    // https://twind.dev/handbook/configuration.html#mode
-    mode: "silent",
-    target: document.body,
-  };
-
   // It seems important to defer loading Twind shim as otherwise
   // Twind would try to evaluate too soon.
-  //
-  // TODO: Figure out how to find twindSetup from the project
   Promise.all([
-    import("https://cdn.skypack.dev/twind@0.16.16/shim?min"),
-    // deno-lint-ignore no-local This is an external
+    import("https://esm.sh/@twind/core@1.1.1"),
+    // This is an external!
+    // TODO: Figure out how to mute Deno linter here
     import("/twindSetup.js"),
-  ]).then(([{ setup }, m]) => {
+  ]).then(([{ install, tw }, m]) => {
     console.log("loaded custom twind setup", m.default);
 
-    setup({
-      ...defaultSetup,
-      ...m.default,
-    });
+    install(m.default);
 
-    import("https://cdn.skypack.dev/twind@0.16.16?min").then(({ tw }) => {
-      globalTw = tw;
-      setupComplete = true;
-      listeners.forEach((listener) => listener(tw));
-    });
+    // @ts-expect-error TODO: Figure out how to type this
+    globalTw = tw;
+    setupComplete = true;
+    // @ts-expect-error This is fine.
+    listeners.forEach((listener) => listener(tw));
   });
 }
 
 function registerListener(cb: Listener) {
-  console.log("registering a twind runtime listener");
+  console.log("Registering a twind runtime listener");
 
   if (setupComplete) {
     cb(globalTw);

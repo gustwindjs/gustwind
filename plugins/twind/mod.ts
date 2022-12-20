@@ -1,6 +1,4 @@
 import { extract, install } from "https://esm.sh/@twind/core@1.1.1";
-import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
-import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
@@ -19,12 +17,7 @@ const plugin: Plugin<{
         : { presets: [] };
 
       // This has to run before tw can work!
-      install({
-        ...twindSetup,
-        presets: [presetAutoprefix(), presetTailwind()].concat(
-          twindSetup.presets,
-        ),
-      });
+      install(twindSetup);
     }
 
     return {

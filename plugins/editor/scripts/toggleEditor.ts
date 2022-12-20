@@ -8,7 +8,7 @@ if (!("Deno" in globalThis)) {
 }
 
 function init(tw: Tw) {
-  console.log("initializing editor");
+  console.log("Initializing editor");
 
   let loadedAlready = false;
   const toggleButton = document.createElement("button");
