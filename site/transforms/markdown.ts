@@ -31,8 +31,6 @@ marked.setOptions({
   },
 });
 
-// TODO: This dependency on twind is nasty as has an implicit dependency on
-// plugins/twind/mod.ts setup
 const tw = pageUtilities.tw;
 
 async function transformMarkdown(input: string) {
