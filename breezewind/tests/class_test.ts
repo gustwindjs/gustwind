@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-
-import { setupTwind, tw, virtualSheet } from "../../client-deps.ts";
+import { virtualSheet } from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
+import { setupTwind, tw } from "../../client-deps.ts";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 

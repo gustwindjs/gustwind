@@ -2,7 +2,7 @@ import {
   getStyleTag,
   // getStyleTagProperties,
   virtualSheet,
-} from "https://cdn.skypack.dev/twind@0.16.16/sheets?min";
+} from "https://cdn.skypack.dev/twind@0.16.16/sheets";
 import { setup as setupTwind } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
