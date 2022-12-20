@@ -1,4 +1,6 @@
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
+import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
+import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
+import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
 import { path } from "../../server-deps.ts";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
@@ -7,6 +9,11 @@ import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component } from "../../breezewind/types.ts";
 import type { Plugin } from "../../types.ts";
+
+// This has to run before tw can work!
+install({
+  presets: [presetAutoprefix(), presetTailwind()],
+});
 
 const plugin: Plugin<{
   componentsPath: string;
