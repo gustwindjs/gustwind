@@ -1,5 +1,5 @@
 import { path as _path } from "../../server-deps.ts";
-import { async } from "../../server-deps.ts";
+import * as async from "https://deno.land/std@0.161.0/async/mod.ts";
 import type { Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";

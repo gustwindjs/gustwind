@@ -3,7 +3,8 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags, path } from "../server-deps.ts";
+import { path } from "../server-deps.ts";
+import * as flags from "https://deno.land/std@0.161.0/flags/mod.ts";
 import { getJson } from "../utilities/fs.ts";
 import { VERSION } from "../version.ts";
 import type { PluginOptions } from "../types.ts";

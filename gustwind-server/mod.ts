@@ -1,4 +1,5 @@
-import { lookup, Server } from "../server-deps.ts";
+import { Server } from "https://deno.land/std@0.161.0/http/server.ts";
+import { lookup } from "https://deno.land/x/media_types@v3.0.3/mod.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyOnTasksRegistered,
