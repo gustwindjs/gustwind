@@ -10,7 +10,7 @@ import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
-async function serveGustwind({
+function serveGustwind({
   plugins: initialImportedPlugins,
   pluginDefinitions,
   mode,
