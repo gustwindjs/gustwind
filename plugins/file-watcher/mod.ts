@@ -61,7 +61,7 @@ async function watch({
   onChange: (path: string, event: Deno.FsEvent) => void;
   debounceDelay?: number;
 }) {
-  const watcher = Deno.watchFs(paths);
+  const watcher = Deno.watchFs(paths.filter((p) => !p.startsWith("http")));
 
   const trigger = async.debounce(
     (event: Deno.FsEvent) => event.paths.forEach((p) => onChange(p, event)),
