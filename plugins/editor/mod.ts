@@ -1,3 +1,4 @@
+import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
@@ -59,7 +60,7 @@ const plugin: Plugin = {
                 `${name}.ts`,
               ),
               // TODO: It would be good to take gustwind version into account
-              remotePath: path.join(
+              remotePath: urlJoin(
                 "https://deno.land/x/gustwind",
                 "plugins",
                 "editor",
