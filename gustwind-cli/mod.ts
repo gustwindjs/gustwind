@@ -15,6 +15,8 @@ import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
 import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 function usage() {
   console.log(`
 Usage: gustwind [-b|-d] [-D] [-p <port>] [-t <number|"cpuMax"|"cpuHalf">] [-o <directory>]
@@ -87,6 +89,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   const cwd = Deno.cwd();
+
+  DEBUG && console.log(`cwd is ${cwd}`);
 
   // TODO: Allow passing this as a parameter
   const pluginsPath = path.join(cwd, "plugins.json");
