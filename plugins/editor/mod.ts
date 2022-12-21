@@ -49,17 +49,23 @@ const plugin: Plugin = {
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: scriptsToCompile.map((name) => {
-            const suffix = path.join(
-              "plugins",
-              "editor",
-              "scripts",
-              `${name}.ts`,
-            );
-
+            // TODO: Find some simplification for this
             return ({
-              localPath: path.join(cwd, suffix),
+              localPath: path.join(
+                cwd,
+                "plugins",
+                "editor",
+                "scripts",
+                `${name}.ts`,
+              ),
               // TODO: It would be good to take gustwind version into account
-              remotePath: path.join("https://deno.land/x/gustwind", suffix),
+              remotePath: path.join(
+                "https://deno.land/x/gustwind",
+                "plugins",
+                "editor",
+                "compiled-scripts",
+                `${name}.ts`,
+              ),
               name: `${name}.js`,
             });
           }),
