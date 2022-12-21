@@ -20,22 +20,21 @@ async function serveGustwind({
   mode: Mode;
   port: number;
 }) {
-  const { plugins, router, tasks } = await importPlugins({
-    initialImportedPlugins,
-    pluginDefinitions,
-    mode,
-    // Output directory doesn't matter for the server since it's
-    // using a virtual fs.
-    outputDirectory: "/",
-  });
-
-  // TODO: How to recalculate fs when a script (script-plugin) changes (
-  // triggered by file change plugin)?
-  // Ideally it would update **only** the script that changed and nothing else.
-  let fs = await evaluateTasks(tasks);
-
   const server = new Server({
     handler: async ({ url }) => {
+      // This needs to happen per request since data (components etc.) might
+      // update due to a change in the file system.
+      const { plugins, router, tasks } = await importPlugins({
+        initialImportedPlugins,
+        pluginDefinitions,
+        mode,
+        // Output directory doesn't matter for the server since it's
+        // using a virtual fs.
+        outputDirectory: "/",
+      });
+
+      let fs = await evaluateTasks(tasks);
+
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(pathname);
 
