@@ -11,9 +11,9 @@ async function compile(input: string) {
       components: {},
       context: {},
       extensions: [
+        breezeExtensions.visibleIf,
         breezeExtensions.classShortcut(tw),
         breezeExtensions.foreach,
-        breezeExtensions.visibleIf,
       ],
     });
   } catch (_error) {

@@ -289,9 +289,9 @@ async function createPageEditor(
     // @ts-ignore: TODO: Fix type
     context,
     extensions: [
+      breezeExtensions.visibleIf,
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
-      breezeExtensions.visibleIf,
     ],
   });
 
@@ -316,9 +316,9 @@ async function createComponentEditor(
     // @ts-ignore: TODO: Fix type
     context,
     extensions: [
+      breezeExtensions.visibleIf,
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
-      breezeExtensions.visibleIf,
     ],
   });
 

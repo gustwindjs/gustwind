@@ -193,9 +193,9 @@ breeze({
   components: { ... },
   context: { pagePath: "gustwind.js.org" },
   extensions: [
+    extensions.visibleIf,
     extensions.classShortcut(tw),
     extensions.foreach,
-    extensions.visibleIf,
   ],
   utilities: {},
 });
