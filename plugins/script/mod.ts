@@ -10,12 +10,11 @@ const plugin: Plugin<{
     name: "gustwind-script-plugin",
   },
   init: async ({
+    cwd,
     load,
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
   }) => {
-    const cwd = Deno.cwd();
-
     const foundScripts = (await Promise.all(
       scriptsPath.map((p) => load.dir(path.join(cwd, p), ".ts")),
     )).flat();

@@ -86,8 +86,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
+  const cwd = Deno.cwd();
+
   // TODO: Allow passing this as a parameter
-  const pluginsPath = path.join(Deno.cwd(), "plugins.json");
+  const pluginsPath = path.join(cwd, "plugins.json");
   const pluginDefinitions = await getJson<PluginOptions[]>(pluginsPath);
 
   if (develop) {
@@ -98,14 +100,17 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     const wss = getWebsocketServer();
     const serve = serveGustwind({
+      cwd,
       plugins: [
         await importPlugin({
+          cwd,
           pluginModule: fileWatcherPlugin,
           options: { pluginsPath },
           outputDirectory,
           mode,
         }),
         await importPlugin({
+          cwd,
           pluginModule: webSocketPlugin,
           options: { wss },
           outputDirectory,
@@ -134,7 +139,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    await buildProject({ outputDirectory, pluginDefinitions, threads });
+    await buildProject({ cwd, outputDirectory, pluginDefinitions, threads });
 
     return 0;
   }

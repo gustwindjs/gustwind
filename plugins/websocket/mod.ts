@@ -6,7 +6,7 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
   meta: {
     name: "websocket-plugin",
   },
-  init: ({ mode, options: { wss } }) => {
+  init: ({ cwd, mode, options: { wss } }) => {
     if (mode !== "development") {
       return {};
     }
@@ -22,7 +22,6 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
 
     return {
       sendMessages: ({ send }) => {
-        const cwd = Deno.cwd();
         const scriptsToCompile = ["webSocketClient"];
 
         send("gustwind-script-plugin", {

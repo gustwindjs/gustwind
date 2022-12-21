@@ -11,11 +11,13 @@ import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
 function serveGustwind({
+  cwd,
   plugins: initialImportedPlugins,
   pluginDefinitions,
   mode,
   port,
 }: {
+  cwd: string;
   plugins?: LoadedPlugin[];
   pluginDefinitions: PluginOptions[];
   mode: Mode;
@@ -26,6 +28,7 @@ function serveGustwind({
       // This needs to happen per request since data (components etc.) might
       // update due to a change in the file system.
       const { plugins, router, tasks } = await importPlugins({
+        cwd,
         initialImportedPlugins,
         pluginDefinitions,
         mode,
@@ -84,21 +87,5 @@ function serveGustwind({
 
   return () => server.serve(listener);
 }
-
-/*
-function compileRemoteGustwindScripts(repository: string, scripts: string[]) {
-  const scriptsDirectory = "gustwind-scripts";
-
-  return Promise.all(scripts.map(async (script) => {
-    const { path } = await cache(
-      `${repository}/${scriptsDirectory}/${script}`,
-    );
-    // TODO: Validate this one
-    const name = script.split(".")[0];
-
-    return compileScript({ name, path, mode: "development" });
-  }));
-}
-*/
 
 export { serveGustwind };

@@ -38,6 +38,7 @@ type Plugin<O = Record<string, unknown>> = {
 };
 
 type PluginParameters<O = Record<string, unknown>> = {
+  cwd: string;
   load: {
     dir(
       path: string,
@@ -160,7 +161,11 @@ type Tasks = BuildWorkerEvent[];
 type BuildWorkerEvent =
   | {
     type: "init";
-    payload: { pluginDefinitions: PluginOptions[]; outputDirectory: string };
+    payload: {
+      cwd: string;
+      pluginDefinitions: PluginOptions[];
+      outputDirectory: string;
+    };
   }
   | {
     type: "build";

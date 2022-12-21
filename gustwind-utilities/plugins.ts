@@ -18,7 +18,8 @@ export type LoadedPlugin = {
 export type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(
-  { initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
+  { cwd, initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
+    cwd: string;
     initialImportedPlugins?: LoadedPlugin[];
     pluginDefinitions: PluginOptions[];
     outputDirectory: string;
@@ -41,9 +42,10 @@ async function importPlugins(
   for await (const pluginDefinition of pluginDefinitions) {
     const isDevelopingLocally = import.meta.url.startsWith("file:///");
     const { plugin, tasks } = await importPlugin({
+      cwd,
       pluginModule: await import(
         isDevelopingLocally
-          ? path.join(Deno.cwd(), pluginDefinition.path)
+          ? path.join(cwd, pluginDefinition.path)
           : pluginDefinition.path
       )
         .then(({ plugin }) => plugin),
@@ -89,7 +91,8 @@ async function importPlugins(
 }
 
 async function importPlugin(
-  { pluginModule, options, outputDirectory, mode }: {
+  { cwd, pluginModule, options, outputDirectory, mode }: {
+    cwd: string;
     pluginModule: Plugin;
     options: Record<string, unknown>;
     outputDirectory: string;
@@ -98,6 +101,7 @@ async function importPlugin(
 ): Promise<LoadedPlugin> {
   const tasks: Tasks = [];
   const api = await pluginModule.init({
+    cwd,
     mode,
     options,
     outputDirectory,

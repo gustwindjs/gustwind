@@ -15,8 +15,9 @@ const plugin: Plugin<{
     name: "breezewind-renderer-plugin",
     dependsOn: [],
   },
-  init: async ({ options: { dataSourcesPath, include, routesPath }, load }) => {
-    const cwd = Deno.cwd();
+  init: async (
+    { cwd, options: { dataSourcesPath, include, routesPath }, load },
+  ) => {
     const routes = await load.json<Routes>(
       path.join(cwd, routesPath),
     );

@@ -11,7 +11,7 @@ const plugin: Plugin = {
       "gustwind-script-plugin",
     ],
   },
-  init: ({ outputDirectory }) => {
+  init: ({ cwd, outputDirectory }) => {
     return {
       beforeEachRender({ context, url, send, route }) {
         const outputDir = path.join(outputDirectory, url);
@@ -38,7 +38,6 @@ const plugin: Plugin = {
           }));
       },
       sendMessages: ({ send }) => {
-        const cwd = Deno.cwd();
         const scriptsToCompile = [
           "toggleEditor",
           "pageEditor",

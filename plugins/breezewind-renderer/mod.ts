@@ -32,11 +32,11 @@ const plugin: Plugin<{
     dependsOn: [],
   },
   init: async ({
+    cwd,
     options: { componentsPath, metaPath, layoutsPath, pageUtilitiesPath },
     load,
     mode,
   }) => {
-    const cwd = Deno.cwd();
     let [components, layouts, pageUtilities, meta] = await Promise.all([
       getDefinitions<Component>(
         await load.dir(path.join(cwd, componentsPath), ".json"),

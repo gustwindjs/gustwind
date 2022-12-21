@@ -6,7 +6,8 @@ import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 async function build(
-  { outputDirectory, threads, pluginDefinitions }: {
+  { cwd, outputDirectory, threads, pluginDefinitions }: {
+    cwd: string;
     outputDirectory: string;
     threads: string;
     pluginDefinitions: PluginOptions[];
@@ -30,13 +31,14 @@ async function build(
 
   workerPool.addTaskToEach({
     type: "init",
-    payload: { pluginDefinitions, outputDirectory },
+    payload: { cwd, pluginDefinitions, outputDirectory },
   });
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
     const { router, tasks } = await importPlugins({
+      cwd,
       pluginDefinitions,
       outputDirectory,
       mode: "production",

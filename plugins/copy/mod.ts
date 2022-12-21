@@ -10,9 +10,8 @@ const plugin: Plugin<{
     name: "gustwind-copy-plugin",
   },
   init(
-    { options: { inputPath, outputPath }, outputDirectory },
+    { cwd, options: { inputPath, outputPath }, outputDirectory },
   ) {
-    const cwd = Deno.cwd();
     const inputDirectory = path.join(cwd, inputPath);
 
     return {

@@ -8,8 +8,8 @@ const plugin: Plugin<{
   meta: {
     name: "gustwind-twind-plugin",
   },
-  init: ({ options, outputDirectory }) => {
-    const twindSetupPath = path.join(Deno.cwd(), options.setupPath);
+  init: ({ cwd, options, outputDirectory }) => {
+    const twindSetupPath = path.join(cwd, options.setupPath);
 
     async function prepareStylesheet() {
       const twindSetup = twindSetupPath

@@ -20,8 +20,9 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to init", id);
 
-    const { pluginDefinitions, outputDirectory } = e.data.payload;
+    const { cwd, pluginDefinitions, outputDirectory } = e.data.payload;
     const ret = await importPlugins({
+      cwd,
       pluginDefinitions,
       outputDirectory,
       mode,
