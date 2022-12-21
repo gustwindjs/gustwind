@@ -59,6 +59,13 @@ self.onmessage = async (e) => {
     const isDevelopingLocally = import.meta.url.startsWith("file:///");
     const { payload: { outputDirectory, file, scriptPath } } = e.data;
 
+    DEBUG &&
+      console.log(
+        "worker - writing script",
+        scriptPath,
+        path.join(outputDirectory, file),
+      );
+
     await fs.ensureDir(outputDirectory);
     Deno.writeTextFile(
       path.join(outputDirectory, file),
