@@ -128,7 +128,8 @@ async function importPlugin(
           payload: { path },
         });
 
-        return import(`${path}?cache=${new Date().getTime()}`) as T;
+        // TODO: Is it enough to support only local paths here?
+        return import(`file://${path}?cache=${new Date().getTime()}`) as T;
       },
     },
   });
