@@ -123,6 +123,8 @@ breeze({
 });
 ```
 
+To detect when rendering has started and ended (useful for instrumentation), you can use `_onRenderStart(context: Context)` and `_onRenderEnd(context: Context)`. Each triggers once during the rendering process.
+
 ### Context
 
 To allow injecting data from outside to templates, Breezewind implements a global context. Use it like this:
@@ -173,13 +175,13 @@ import extensions from "breezewind/extensions";
 
 breeze({
   component: {
-    visibleIf: [{ utility: "get", parameters: ["context", "pathname"] }],
+    visibleIf: [{ utility: "get", parameters: ["context", "pagePath"] }],
     type: "a",
     class: "underline",
     classList: {
       "font-bold": [
         "gustwind.js.org",
-        { utility: "get", parameters: ["context", "pathname"] }
+        { utility: "get", parameters: ["context", "pagePath"] }
       ]
     },
     attributes: {
@@ -189,11 +191,11 @@ breeze({
     children: "Link to Gustwind",
   },
   components: { ... },
-  context: { pathname: "gustwind.js.org" },
+  context: { pagePath: "gustwind.js.org" },
   extensions: [
+    extensions.visibleIf,
     extensions.classShortcut(tw),
     extensions.foreach,
-    extensions.visibleIf,
   ],
   utilities: {},
 });

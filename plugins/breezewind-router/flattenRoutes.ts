@@ -1,13 +1,9 @@
-import type { Route } from "../types.ts";
+import type { Route } from "../../types.ts";
 
 function flattenRoutes(
-  routes?: Record<string, Route>,
+  routes: Record<string, Route>,
   prefix?: string,
 ): Record<string, Route> {
-  if (!routes) {
-    return {};
-  }
-
   return Object.fromEntries(
     Object.entries(routes).flatMap(([url, route]) => {
       if (route.routes) {

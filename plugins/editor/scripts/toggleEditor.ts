@@ -1,14 +1,14 @@
 /// <reference lib="dom" />
-import type { Tw } from "./_twindRuntime.ts";
+import type { Tw } from "./twindRuntime.ts";
 
 if (!("Deno" in globalThis)) {
-  import("./_twindRuntime.ts").then((m) => {
+  import("./twindRuntime.ts").then((m) => {
     m.registerListener(init);
   });
 }
 
 function init(tw: Tw) {
-  console.log("initializing editor");
+  console.log("Initializing editor");
 
   let loadedAlready = false;
   const toggleButton = document.createElement("button");
@@ -17,7 +17,7 @@ function init(tw: Tw) {
   );
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = async () => {
-    const m = await import("./_pageEditor.ts");
+    const m = await import("./pageEditor.ts");
 
     if (loadedAlready) {
       m.toggleEditorVisibility();

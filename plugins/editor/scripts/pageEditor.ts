@@ -1,13 +1,15 @@
 /// <reference lib="dom" />
-import { getParents } from "../utilities/getParents.ts";
-import { changeTag } from "../utilities/changeTag.ts";
-import { traverseComponents } from "../utilities/traverseComponents.ts";
-import breezewind from "../breezewind/index.ts";
-import * as breezeExtensions from "../breezewind/extensions.ts";
-import { draggable, produce, tw } from "../client-deps.ts";
-// import { getPagePath } from "../utilities/getPagePath.ts";
-import type { Components, DataContext, Route } from "../types.ts";
-import type { Component as BreezeComponent } from "../breezewind/types.ts";
+import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.3?min";
+import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
+import { tw } from "https://esm.sh/@twind/core@1.1.1";
+import { getParents } from "../../../utilities/getParents.ts";
+import { changeTag } from "../../../utilities/changeTag.ts";
+import { traverseComponents } from "../../../utilities/traverseComponents.ts";
+import breezewind from "../../../breezewind/index.ts";
+import * as breezeExtensions from "../../../breezewind/extensions.ts";
+// import { getPagePath } from "../../../utilities/getPagePath.ts";
+import type { DataContext, Route } from "../../../types.ts";
+import type { Component, Components } from "../../../breezewind/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
@@ -26,7 +28,7 @@ declare global {
 }
 
 type EditorState = {
-  layout: BreezeComponent;
+  layout: Component;
   meta: Route["meta"];
   selectionId?: string;
 };
@@ -113,7 +115,7 @@ let editedElement: Element;
 function validElementSelected(
   editorContainer: HTMLElement,
   target: HTMLElement,
-  layout: BreezeComponent,
+  layout: Component,
 ) {
   let previousContent: string;
   const selectionId = target.dataset.id;
@@ -197,7 +199,7 @@ function updateElementContent(
     return;
   }
 
-  const nextLayout = produce(layout, (draftLayout: BreezeComponent) => {
+  const nextLayout = produce(layout, (draftLayout: Component) => {
     traverseComponents(draftLayout, (p) => {
       if (p?.attributes?.["data-id"] === selectionId) {
         p.children = newContent;
@@ -215,7 +217,7 @@ function updateElementContent(
 
 const editorsId = "editors";
 
-function createEditorContainer(layout: BreezeComponent, route: Route) {
+function createEditorContainer(layout: Component, route: Route) {
   let editorsElement = document.getElementById(editorsId);
   const initialState: EditorState = {
     layout,
@@ -287,9 +289,9 @@ async function createPageEditor(
     // @ts-ignore: TODO: Fix type
     context,
     extensions: [
+      breezeExtensions.visibleIf,
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
-      breezeExtensions.visibleIf,
     ],
   });
 
@@ -314,9 +316,9 @@ async function createComponentEditor(
     // @ts-ignore: TODO: Fix type
     context,
     extensions: [
+      breezeExtensions.visibleIf,
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
-      breezeExtensions.visibleIf,
     ],
   });
 
@@ -478,11 +480,11 @@ function elementChanged(
 }
 
 function produceNextLayout(
-  layout: BreezeComponent,
+  layout: Component,
   selectionId: EditorState["selectionId"],
-  matched: (p: BreezeComponent, elements: HTMLElement[]) => void,
+  matched: (p: Component, elements: HTMLElement[]) => void,
 ) {
-  return produce(layout, (draftLayout: BreezeComponent) => {
+  return produce(layout, (draftLayout: Component) => {
     traverseComponents(draftLayout, (p) => {
       if (p?.attributes?.["data-id"] === selectionId) {
         matched(

@@ -1,7 +1,7 @@
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
-import { tw } from "https://cdn.skypack.dev/twind@0.16.16?min";
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
-import { renderHTML } from "../../gustwind-utilities/renderPage.ts";
+import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
+import { dir } from "../../utilities/fs.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
@@ -31,8 +31,11 @@ marked.setOptions({
   },
 });
 
-function transformMarkdown(input: string) {
+const tw = pageUtilities.tw;
+
+async function transformMarkdown(input: string) {
   if (typeof input !== "string") {
+    console.error("input", input);
     throw new Error("transformMarkdown - passed wrong type of input");
   }
 
@@ -69,18 +72,19 @@ function transformMarkdown(input: string) {
     // @ts-ignore How to type this?
     async walkTokens(token) {
       if (token.type === "importComponent") {
-        const components = await getDefinitions<Component>("./site/components");
+        // TODO: This is a bad coupling, there should be a better way to get information here
+        // especially if this file will be executed in the browser
+        const components = await getDefinitions<Component>(
+          await dir("./site/components", ".json"),
+        );
         const matchedComponent = components[token.component];
 
         if (matchedComponent) {
-          const html = await renderHTML({
+          token.html = await renderHTML({
             component: matchedComponent,
             components: {},
-            context: {},
             utilities: pageUtilities,
           });
-
-          token.html = html;
         } else {
           throw new Error(
             `Failed to find a matching component for ${token.component}`,
@@ -96,7 +100,6 @@ function transformMarkdown(input: string) {
     renderer: {
       code(code: string, infostring: string): string {
         const lang = ((infostring || "").match(/\S*/) || [])[0];
-
         // @ts-ignore How to type this?
         if (this.options.highlight) {
           // @ts-ignore How to type this?
@@ -153,6 +156,7 @@ function transformMarkdown(input: string) {
         }
 
         if (text === "<file>") {
+          // TODO: Show a nice error in case href is not found in the fs
           return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
         }
 
@@ -177,7 +181,7 @@ function transformMarkdown(input: string) {
     },
   });
 
-  return { content: marked(input), tableOfContents };
+  return { content: await marked(input), tableOfContents };
 }
 
 export default transformMarkdown;

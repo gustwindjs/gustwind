@@ -1,5 +1,6 @@
-import type { Layout } from "../types.ts";
 import type { Component } from "../breezewind/types.ts";
+
+type Layout = Component | Component[];
 
 function traverseComponents(
   components: Layout,

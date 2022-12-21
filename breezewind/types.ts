@@ -1,4 +1,5 @@
 type Context = Record<string, unknown>;
+type Components = Record<string, Component | Component[]>;
 
 type BaseComponent = {
   type?: string | Utility;
@@ -40,16 +41,22 @@ type Extension = (
   utilities?: Utilities,
 ) => Promise<BaseComponent>;
 
-type Utilities = Record<
-  string,
-  // deno-lint-ignore no-explicit-any
-  (context: Context, ...args: any) => string | Promise<string>
->;
+type Utilities =
+  & Record<
+    string,
+    // deno-lint-ignore no-explicit-any
+    (context: Context, ...args: any) => string | Promise<string> | void
+  >
+  & {
+    _onRenderStart?: (context: Context) => void;
+    _onRenderEnd?: (context: Context) => void;
+  };
 
 export type {
   ClassComponent,
   ClassList,
   Component,
+  Components,
   Context,
   Extension,
   ForEachComponent,

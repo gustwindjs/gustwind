@@ -1,96 +1,63 @@
 import { esbuild, fs, path } from "../server-deps.ts";
-import { attachIds } from "../utilities/attachIds.ts";
-import { dir, getJson, resolvePaths } from "../utilities/fs.ts";
-import { getDefinitions } from "../gustwind-utilities/getDefinitions.ts";
-import { expandRoutes } from "../gustwind-utilities/expandRoutes.ts";
-import { flattenRoutes } from "../gustwind-utilities/flattenRoutes.ts";
+import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
-import type { BuildWorkerEvent, ProjectMeta, Route } from "../types.ts";
-import type { Component } from "../breezewind/types.ts";
+import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-async function build(projectMeta: ProjectMeta, projectRoot: string) {
-  const amountOfBuildThreads = getAmountOfThreads(
-    projectMeta.amountOfBuildThreads,
-  );
-  console.log(
-    `Building to static with ${amountOfBuildThreads} thread${
-      amountOfBuildThreads > 1 ? "s" : ""
-    }`,
-  );
+async function build(
+  { outputDirectory, threads, pluginDefinitions }: {
+    outputDirectory: string;
+    threads: string;
+    pluginDefinitions: PluginOptions[];
+  },
+) {
+  const amountOfThreads = getAmountOfThreads(threads);
 
-  const assetsPath = projectMeta.paths.assets;
-  projectMeta.paths = resolvePaths(projectRoot, projectMeta.paths);
-
-  const projectPaths = projectMeta.paths;
-  const startTime = performance.now();
-
-  let [routes, layouts, components] = await Promise.all([
-    getJson<Record<string, Route>>(projectPaths.routes),
-    getDefinitions<Component | Component[]>(projectPaths.layouts),
-    getDefinitions<Component>(projectPaths.components),
-  ]);
-
-  const showEditor = projectMeta.features?.showEditorAlways;
-
-  if (showEditor) {
-    // @ts-ignore TODO: Fix type
-    components = attachIds(components);
-
-    // @ts-ignore TODO: Fix type
-    layouts = attachIds(layouts);
+  if (!amountOfThreads) {
+    throw new Error(`Passed unknown amount of threads ${amountOfThreads}`);
   }
 
+  console.log(
+    `Building to static with ${amountOfThreads} thread${
+      amountOfThreads > 1 ? "s" : ""
+    }`,
+  );
+  const startTime = performance.now();
   const workerPool = createWorkerPool<BuildWorkerEvent>(
-    amountOfBuildThreads,
+    amountOfThreads,
   );
 
   workerPool.addTaskToEach({
     type: "init",
-    payload: {
-      components,
-      projectMeta,
-    },
+    payload: { pluginDefinitions, outputDirectory },
   });
-
-  const dataSources = projectPaths.dataSources
-    ? await import("file://" + projectPaths.dataSources).then((m) => m)
-    : {};
-
-  const expandedRoutes = flattenRoutes(
-    await expandRoutes({
-      routes,
-      dataSources,
-    }),
-  );
-  const outputDirectory = projectPaths.output;
-
-  if (!expandedRoutes) {
-    throw new Error("No routes found");
-  }
 
   await fs.ensureDir(outputDirectory).then(async () => {
     await Deno.remove(outputDirectory, { recursive: true });
 
-    Object.entries(expandedRoutes).forEach(([url, route]) => {
+    const { router, tasks } = await importPlugins({
+      pluginDefinitions,
+      outputDirectory,
+      mode: "production",
+    });
+    tasks.forEach((task) => workerPool.addTaskToQueue(task));
+
+    const routes = await router.getAllRoutes();
+
+    if (!routes) {
+      throw new Error("No routes found");
+    }
+
+    Object.entries(routes).forEach(([url, route]) => {
       if (!route.layout) {
         return;
-      }
-
-      let layout = layouts[route.layout];
-
-      if (showEditor && route.type !== "xml") {
-        // @ts-ignore: TODO: Fix type
-        layout = attachIds(layout);
       }
 
       workerPool.addTaskToQueue({
         type: "build",
         payload: {
-          layout,
           route,
-          pagePath: url === "/" ? "/" : "/" + url + "/",
           dir: path.join(outputDirectory, url),
           url: url === "/" ? "/" : "/" + url + "/",
         },
@@ -102,71 +69,9 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
 
       console.log(
         `Generated routes in ${routeGenerationTime - startTime} ms`,
-        expandedRoutes,
+        routes,
       );
     }
-
-    if (projectMeta.features?.showEditorAlways) {
-      workerPool.addTaskToQueue({
-        type: "writeScript",
-        payload: {
-          outputDirectory,
-          scriptName: "twindSetup.js",
-          scriptPath: projectPaths.twindSetup,
-        },
-      });
-
-      const transformDirectory = path.join(outputDirectory, "transforms");
-      await fs.ensureDir(transformDirectory);
-
-      const transformScripts = await dir(projectPaths.transforms, ".ts");
-      transformScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        workerPool.addTaskToQueue({
-          type: "writeScript",
-          payload: {
-            outputDirectory: transformDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
-      );
-
-      workerPool.addTaskToQueue({
-        type: "writeFile",
-        payload: {
-          dir: outputDirectory,
-          file: "components.json",
-          data: JSON.stringify(components),
-        },
-      });
-    }
-
-    if (projectPaths.scripts) {
-      const projectScripts = (await Promise.all(
-        projectPaths.scripts.map((p) => dir(p, ".ts")),
-      )).flat();
-
-      DEBUG && console.log("found project scripts", projectScripts);
-
-      projectScripts.forEach(({ name: scriptName, path: scriptPath }) =>
-        workerPool.addTaskToQueue({
-          type: "writeScript",
-          payload: {
-            outputDirectory,
-            scriptName,
-            scriptPath,
-          },
-        })
-      );
-    }
-
-    assetsPath && workerPool.addTaskToQueue({
-      type: "writeAssets",
-      payload: {
-        outputPath: path.join(outputDirectory, assetsPath),
-        assetsPath: projectPaths.assets,
-      },
-    });
 
     if (DEBUG) {
       const initTime = performance.now();
@@ -178,11 +83,12 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
       workerPool.onWorkFinished(() => {
         workerPool.terminate();
 
+        // TODO: This might belong to the script plugin in a cleanup phase
         esbuild.stop();
 
         const endTime = performance.now();
         const duration = endTime - startTime;
-        const routeAmount = Object.keys(expandedRoutes).length;
+        const routeAmount = Object.keys(routes).length;
 
         console.log(
           `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
@@ -199,9 +105,7 @@ async function build(projectMeta: ProjectMeta, projectRoot: string) {
   });
 }
 
-function getAmountOfThreads(
-  amountOfThreads: ProjectMeta["amountOfBuildThreads"],
-) {
+function getAmountOfThreads(amountOfThreads: string) {
   if (amountOfThreads === "cpuMax") {
     // -1 since the main thread needs one CPU but at least one
     return Math.max(navigator.hardwareConcurrency - 1, 1);
@@ -210,13 +114,7 @@ function getAmountOfThreads(
     return Math.max(Math.ceil(navigator.hardwareConcurrency / 2), 1);
   }
 
-  return amountOfThreads;
-}
-
-if (import.meta.main) {
-  const projectMeta = await getJson<ProjectMeta>("./meta.json");
-
-  build(projectMeta, Deno.cwd());
+  return Number(amountOfThreads);
 }
 
 export { build };

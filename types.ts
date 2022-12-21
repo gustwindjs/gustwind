@@ -1,24 +1,11 @@
+// TODO: Too specific
 import type { Component } from "./breezewind/types.ts";
-
-// This should match with ./transforms
-type Transform = "markdown" | "reverse";
 
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
-type Components = Record<string, Component>;
 type Category = { id: string; title: string; url: string };
-type Library = {
-  id: string;
-  description: string;
-  logo?: string;
-  name: string;
-  links: {
-    site?: string;
-    github?: string;
-  };
-  tags: string[];
-};
+
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
 type MarkdownWithFrontmatter = {
@@ -31,112 +18,220 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
+type DataSource = { operation: string; name: string; parameters?: unknown[] };
+type DataSources = Record<string, () => unknown[]>;
+
+type PluginOptions = { path: string; options: Record<string, unknown> };
+
+type Meta = Record<string, string>;
+type Mode = "development" | "production";
+
+// This is the context used when rendering a page
+type Context = Record<string, unknown>;
+
+type Plugin<O = Record<string, unknown>> = {
+  meta: {
+    name: string;
+    dependsOn?: string[];
+  };
+  init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;
+};
+
+type PluginParameters<O = Record<string, unknown>> = {
+  load: {
+    dir(
+      path: string,
+      extension: string,
+    ): Promise<{ name: string; path: string }[]>;
+    json<T>(path: string): Promise<T>;
+    module<T>(path: string): Promise<T>;
+  };
+  mode: Mode;
+  outputDirectory: string;
+  options: O;
+};
+
+type PluginApi = {
+  // Send messages to other plugins before other hooks are applied. This
+  // is useful for giving specific instructions on what to do.
+  sendMessages?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
+  // Return additional tasks to perform per build
+  prepareBuild?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
+  // Run setup before context is resolved or add something to it
+  prepareContext?(
+    { send, route, url }: { send: Send; route: Route; url: string },
+  ):
+    | Promise<{ context: Record<string, unknown> }>
+    | Promise<void>
+    | {
+      context: Record<string, unknown>;
+    }
+    | void;
+  beforeEachRender?(
+    { context, send, route, url }: {
+      context: Context;
+      send: Send;
+      route: Route;
+      url: string;
+    },
+  ):
+    | Promise<
+      Tasks | void
+    >
+    | Tasks
+    | void;
+  render?({ route, context, send, url }: {
+    route: Route;
+    context: Context;
+    send: Send;
+    url: string;
+  }): Promise<string> | string;
+  afterEachRender?({ markup, context, route, send, url }: {
+    markup: string;
+    context: Context;
+    route: Route;
+    send: Send;
+    url: string;
+  }): Promise<{ markup: string }> | { markup: string };
+  onMessage?(message: SendMessageEvent): void;
+  getAllRoutes?(): Promise<Record<string, Route>> | Record<string, Route>;
+  matchRoute?(
+    url: string,
+  ): Promise<{ route?: Route; tasks: Tasks }> | {
+    route?: Route;
+    tasks: Tasks;
+  };
+  onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
+};
+
+type Send = (
+  pluginName: string,
+  { type, payload }: SendMessageEvent,
+) => Promise<unknown> | unknown;
+
+// TODO: Compose this from plugin types
+type SendMessageEvent =
+  // editor plugin
+  | {
+    type: "addScripts";
+    payload: { localPath: string; remotePath: string; name: string }[];
+  }
+  | { type: "getComponents"; payload: undefined }
+  | {
+    type: "updateComponents";
+    payload: Component;
+  }
+  | { type: "getRenderer"; payload: string }
+  | { type: "getLayouts"; payload: undefined }
+  | { type: "updateLayouts"; payload: Component }
+  // websocket plugin
+  | {
+    type: "fileChanged";
+    payload: {
+      path: string;
+      event: Deno.FsEvent;
+      extension: string;
+      name: string;
+    };
+  };
+
+// This type is specific to breezewind-router so it probably doesn't belong here
 type Route = {
+  context: DataContext;
+  url: string;
   type?: "html" | "xml";
-  layout?: string;
+  // TODO: This should come as an extension from the renderer plugin
+  // if it is enabled
+  layout: string;
   meta: Meta;
-  scripts?: Scripts;
+  // TODO: This should come as an extension from the script plugin
+  // if it is enabled
+  scripts?: string[]; // These point to scripts directory by name
   routes?: Record<string, Route>;
   dataSources?: DataSource[];
   expand?: {
     matchBy?: { dataSource: DataSource; slug: string };
   };
-  // These are attached later
-  context?: DataContext;
-  url?: string;
 };
-type Scripts = { type: string; src: string }[];
-type DataSource = { operation: string; name: string; parameters?: unknown[] };
-type DataSources = Record<string, () => unknown[]>;
+type Scripts = Script[];
+type Script = { type: string; src: string };
 
-type ProjectMeta = {
-  port: number;
-  amountOfBuildThreads: number | "cpuMax" | "cpuHalf";
-  scripts?: Scripts;
-  meta: Meta;
-  paths: {
-    assets?: string;
-    components: string;
-    dataSources: string;
-    layouts: string;
-    output: string;
-    routes: string;
-    scripts?: string[];
-    transforms: string;
-    pageUtilities?: string;
-    twindSetup?: string;
-  };
-  features?: {
-    extractCSS?: boolean;
-    showEditorAlways?: boolean;
-  };
-};
-
-type Meta = Record<string, string>;
-type Mode = "development" | "production";
+type Tasks = BuildWorkerEvent[];
 type BuildWorkerEvent =
   | {
     type: "init";
-    payload: { components: Components; projectMeta: ProjectMeta };
+    payload: { pluginDefinitions: PluginOptions[]; outputDirectory: string };
   }
   | {
     type: "build";
     payload: {
-      layout: Component | Component[];
       route: Route;
-      pagePath: string;
       dir: string;
       url: string;
     };
   }
   | {
+    type: "listDirectory";
+    payload: { path: string };
+  }
+  | {
+    type: "loadJSON";
+    payload: { path: string };
+  }
+  | {
+    type: "loadModule";
+    payload: { path: string };
+  }
+  | {
+    type: "watchPaths";
+    payload: { paths: string[] };
+  }
+  | {
     type: "writeFile";
     payload: {
-      dir: string;
+      outputDirectory: string;
       file: string;
       data: string;
+    };
+  }
+  | {
+    type: "writeFiles";
+    payload: {
+      inputDirectory: string;
+      outputDirectory: string;
+      outputPath: string;
     };
   }
   | {
     type: "writeScript";
     payload: {
       outputDirectory: string;
-      scriptName: string;
-      scriptPath?: string;
-    };
-  }
-  | {
-    type: "writeAssets";
-    payload: {
-      outputPath: string;
-      assetsPath: ProjectMeta["paths"]["assets"];
+      file: string;
+      scriptPath: string;
     };
   };
-
-// This is the context used when rendering a page. It's also the type
-// pageUtilities should consume.
-type Context = Record<string, unknown> & {
-  pagePath: string;
-  meta?: Record<string, unknown>;
-};
+type BuildWorkerMessageTypes = "finished" | "addTasks";
 
 export type {
   Attributes,
   BuildWorkerEvent,
+  BuildWorkerMessageTypes,
   Category,
-  Components,
   Context,
   DataContext,
   DataSource,
   DataSources,
-  Library,
   MarkdownWithFrontmatter,
   Meta,
   Mode,
   ParentCategory,
-  ProjectMeta,
+  Plugin,
+  PluginApi,
+  PluginOptions,
+  PluginParameters,
   Props,
   Route,
   Scripts,
-  Transform,
+  Send,
+  Tasks,
 };

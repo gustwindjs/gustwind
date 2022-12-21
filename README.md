@@ -4,7 +4,6 @@ Gustwind is an experimental site generator built on top of JSON definitions usin
 * **Production mode** generates pure static HTML with CSS inlined to the files
 * **Components** defined with a JSON based component abstraction included allow you to extract shared markup and bind data to it
 * **Data sources** define how your data is fetched. At page level, it can then be connected and bound to components.
-* **Transforms** let you alter data to fit the current need. You can use them for example convert Markdown input to HTML or reverse the order of an array to generate a blog index in a specific order.
 * **Route definition** binds it all together.
 
 Please see the documentation to learn more about the concepts.

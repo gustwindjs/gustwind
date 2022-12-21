@@ -1,12 +1,13 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-
-import { setupTwind, tw, virtualSheet } from "../../client-deps.ts";
+import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
+import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
 import breeze from "../index.ts";
 import * as extensions from "../extensions.ts";
 
-const stylesheet = virtualSheet();
-
-setupTwind({ sheet: stylesheet, mode: "silent" });
+// This has to run before tw can work!
+install({
+  presets: [presetTailwind()],
+});
 
 Deno.test("class shortcut extension", async () => {
   assertEquals(
@@ -26,11 +27,11 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
         classList: {
           "font-bold": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "mx-2": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
@@ -39,10 +40,10 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
       extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
-        pathname: "foo",
+        pagePath: "foo",
       },
     }),
-    '<span class="font-bold mx-2">testing</span>',
+    '<span class="#wgocpl #wf2app">testing</span>',
   );
 });
 
@@ -61,11 +62,11 @@ Deno.test("classList shortcut works with different class types", async () => {
         classList: {
           "font-bold": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "mx-2": [
             { utility: "get", parameters: ["context", "href"] },
-            { utility: "get", parameters: ["context", "pathname"] },
+            { utility: "get", parameters: ["context", "pagePath"] },
           ],
           "my-2": [{ utility: "get", parameters: ["context", "bar"] }],
         },
@@ -74,10 +75,10 @@ Deno.test("classList shortcut works with different class types", async () => {
       extensions: [extensions.classShortcut(tw)],
       context: {
         href: "foo",
-        pathname: "foo",
+        pagePath: "foo",
       },
     }),
-    '<span class="bg-red-200 foo font-bold mx-2">testing</span>',
+    '<span class="foo #3h0el7 #wgocpl #wf2app">testing</span>',
   );
 });
 

@@ -3,10 +3,10 @@ slug: 'configuration'
 title: 'Configuration'
 description: ''
 ---
-Each project built with Gustwind needs minimal configuration to describe where to find the assets, site name, and development port:
+Each project built with Gustwind needs minimal plugin configuration.
 
-**meta.json**
+**plugins.json**
 
-[<file>](meta.json)
+[<file>](plugins.json)
 
-Most of the configuration work happens at page level so make sure to [check the concepts page](/concepts/) to understand how they go together.
+Most of the work happens at page level so make sure to [check the concepts page](/concepts/) to understand how they go together.

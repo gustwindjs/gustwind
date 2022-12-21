@@ -2,11 +2,13 @@
   "tasks": {
     "test": "deno test",
     "watch:test": "deno test --watch",
-    "start": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d",
-    "build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b",
-    "watch:build": "deno run --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b",
+    "start": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
+    "update:start:lock": "deno run --lock=deno.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
+    "watch:start": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d -p 3000",
+    "build": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
+    "update:build:lock": "deno run --lock=deno.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
+    "watch:build": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "build:breezewind-for-npm": "deno run -A build_breeze_for_npm.ts",
-    "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts",
-    "compileGustwindScripts": "deno run --allow-env --allow-read --allow-run --allow-write --unstable compileGustwindScripts.ts"
+    "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts"
   }
 }

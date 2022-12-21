@@ -1,22 +1,14 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
-import { compileScript } from "../utilities/compileScripts.ts";
-import { renderPage } from "../gustwind-utilities/renderPage.ts";
+import { compileTypeScript } from "../utilities/compileTypeScript.ts";
+import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, nanoid, path } from "../server-deps.ts";
-import type { Utilities } from "../breezewind/types.ts";
-import type {
-  BuildWorkerEvent,
-  Components,
-  DataSources,
-  ProjectMeta,
-} from "../types.ts";
+import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
+import type { BuildWorkerEvent } from "../types.ts";
 
+const mode = "production";
 let id: string;
-let components: Components;
-let dataSources: DataSources;
-let projectMeta: ProjectMeta;
-let pageUtilities: Utilities;
-let twindSetup: Record<string, unknown>;
+let plugins: PluginDefinition[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -28,141 +20,65 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to init", id);
 
-    const { payload } = e.data;
-
-    components = payload.components;
-    projectMeta = payload.projectMeta;
-
-    dataSources = projectMeta.paths.dataSources
-      ? await import("file://" + projectMeta.paths.dataSources).then((m) => m)
-      : {};
-
-    pageUtilities = projectMeta.paths.pageUtilities
-      ? await import("file://" + projectMeta.paths.pageUtilities).then((m) => m)
-      : {};
-
-    twindSetup = projectMeta.paths.twindSetup
-      ? await import("file://" + projectMeta.paths.twindSetup).then((m) =>
-        m.default
-      )
-      : {};
+    const { pluginDefinitions, outputDirectory } = e.data.payload;
+    const ret = await importPlugins({
+      pluginDefinitions,
+      outputDirectory,
+      mode,
+    });
+    plugins = ret.plugins;
 
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
-    const {
-      payload: {
-        layout,
-        route,
-        filePath,
-        dir,
-        url,
-      },
-    } = e.data;
+    const { payload: { route, dir, url } } = e.data;
 
-    DEBUG && console.log("worker - starting to build", id, route, filePath);
+    DEBUG && console.log("worker - starting to build", id, route);
 
-    const [html, context, css] = await renderPage({
-      projectMeta,
-      layout,
-      route,
-      mode: "production",
-      pagePath: url,
-      twindSetup,
-      components,
-      pageUtilities,
-      pathname: url,
-      dataSources,
+    const { markup, tasks } = await applyPlugins({ plugins, url, route });
+
+    self.postMessage({
+      type: "addTasks",
+      payload: tasks,
     });
 
-    if (css) {
-      // TODO: Push this to a task
-      await Deno.writeTextFile(path.join(dir, "styles.css"), css);
-    }
-
-    if (route.type !== "xml" && projectMeta.features?.showEditorAlways) {
-      // TODO: Can these be pushed to tasks?
-      await fs.ensureDir(dir);
-      await Deno.writeTextFile(
-        path.join(dir, "context.json"),
-        JSON.stringify(context),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "layout.json"),
-        JSON.stringify(layout),
-      );
-      await Deno.writeTextFile(
-        path.join(dir, "route.json"),
-        JSON.stringify(route),
-      );
-    }
-
     if (route.type === "xml") {
-      await Deno.writeTextFile(dir, html);
+      await Deno.writeTextFile(dir, markup);
     } else {
       await fs.ensureDir(dir);
       await Deno.writeTextFile(
         path.join(dir, "index.html"),
-        html,
+        markup,
       );
     }
 
-    DEBUG && console.log("worker - finished build", id, route, filePath);
+    DEBUG && console.log("worker - finished build", id, route);
   }
   if (type === "writeScript") {
-    const {
-      payload: {
-        outputDirectory,
-        scriptName,
-        scriptPath,
-      },
-    } = e.data;
+    const isDevelopingLocally = import.meta.url.startsWith("file:///");
+    const { payload: { outputDirectory, file, scriptPath } } = e.data;
 
-    await writeScript(outputDirectory, scriptName, scriptPath);
+    await fs.ensureDir(outputDirectory);
+    Deno.writeTextFile(
+      path.join(outputDirectory, file),
+      isDevelopingLocally
+        ? await compileTypeScript(scriptPath, "production")
+        : await fetch(scriptPath).then((res) => res.text()),
+    );
   }
   if (type === "writeFile") {
-    const {
-      payload: {
-        dir,
-        file,
-        data,
-      },
-    } = e.data;
+    const { payload: { outputDirectory, file, data } } = e.data;
 
-    await fs.ensureDir(dir);
-    await Deno.writeTextFile(path.join(dir, file), data);
+    await fs.ensureDir(outputDirectory);
+    await Deno.writeTextFile(path.join(outputDirectory, file), data);
   }
-  if (type === "writeAssets") {
-    const {
-      payload: {
-        outputPath,
-        assetsPath,
-      },
-    } = e.data;
+  if (type === "writeFiles") {
+    const { payload: { inputDirectory, outputDirectory, outputPath } } = e.data;
 
-    await fs.copy(assetsPath, outputPath, { overwrite: true });
+    await fs.copy(inputDirectory, path.join(outputDirectory, outputPath), {
+      overwrite: true,
+    });
   }
 
-  self.postMessage({});
+  self.postMessage({ type: "finished" });
 };
-
-async function writeScript(
-  outputPath: string,
-  scriptName: string,
-  scriptDirectory?: string,
-) {
-  if (!scriptDirectory) {
-    return Promise.resolve();
-  }
-
-  const script = await compileScript({
-    path: scriptDirectory,
-    name: scriptName,
-    mode: "production",
-  });
-  const scriptPath = path.join(outputPath, scriptName.replace(".ts", ".js"));
-
-  DEBUG && console.log("writing script", scriptPath);
-
-  return Deno.writeTextFile(scriptPath, script.content);
-}

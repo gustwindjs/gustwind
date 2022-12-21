@@ -3,26 +3,29 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { flags, path } from "../server-deps.ts";
+import { path } from "../server-deps.ts";
+import * as flags from "https://deno.land/std@0.161.0/flags/mod.ts";
 import { getJson } from "../utilities/fs.ts";
 import { VERSION } from "../version.ts";
-import type { ProjectMeta } from "../types.ts";
+import type { PluginOptions } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { serveGustwind } from "../gustwind-server/mod.ts";
-import { watchAll } from "../gustwind-server/watch.ts";
-import { getCache } from "../gustwind-server/cache.ts";
-
-const DEBUG = Deno.env.get("DEBUG") === "1";
+import { importPlugin } from "../gustwind-utilities/plugins.ts";
+import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
+import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
+import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
 
 function usage() {
   console.log(`
-Usage: gustwind [-w|-b|-d] [-D]
+Usage: gustwind [-b|-d] [-D] [-p <port>] [-t <number|"cpuMax"|"cpuHalf">] [-o <directory>]
 
 Options:
-  -i, --init           Initializes 'twd.ts' config file.
   -b, --build          Builds the project.
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
+  -p, --port           Development server port.
+  -o, --output         Build output directory.
+  -t, --threads        Amount of threads to use during building. Accepts a number, "cpuMax", or "cpuHalf".
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
 `.trim());
@@ -31,32 +34,37 @@ Options:
 type CliArgs = {
   help: boolean;
   version: boolean;
+  port: string;
+  threads: string;
+  output: string;
   build: boolean;
   develop: boolean;
   debug: boolean;
-  init: boolean;
   _: string[];
 };
 
 export async function main(cliArgs: string[]): Promise<number | undefined> {
-  const projectRoot = Deno.cwd();
   const {
     help,
     version,
+    port,
+    threads,
+    output: outputDirectory,
     build,
     develop,
     debug,
-    init,
   } = flags.parse(cliArgs, {
-    boolean: ["help", "version", "build", "develop", "debug", "init"],
+    boolean: ["help", "version", "build", "develop", "debug"],
+    string: ["port", "threads", "output"],
     alias: {
       v: "version",
       h: "help",
       b: "build",
       d: "develop",
+      t: "threads",
+      p: "port",
       o: "output",
       D: "debug",
-      i: "init",
     },
   }) as CliArgs;
 
@@ -78,89 +86,43 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     return 0;
   }
 
-  if (init) {
-    console.log("TODO: This should initialize a new project");
-
-    return 0;
-  }
+  // TODO: Allow passing this as a parameter
+  const pluginsPath = path.join(Deno.cwd(), "plugins.json");
+  const pluginDefinitions = await getJson<PluginOptions[]>(pluginsPath);
 
   if (develop) {
-    // TODO: What to do if and when meta.json changes? Likely this needs a
-    // file watcher that's able to restart the server.
-    const projectMeta = await getJson<ProjectMeta>(
-      path.join(projectRoot, "./meta.json"),
-    );
-
+    const mode = "development";
     const startTime = performance.now();
+
     console.log("Starting development server");
 
-    const projectPaths = projectMeta.paths;
-
-    const dataSources = projectPaths.dataSources
-      ? await import(
-        "file://" + path.join(projectRoot, projectPaths.dataSources)
-      ).then((m) => m)
-      : {};
-
-    const mode = "development";
-    const initialCache = getCache();
-    await watchAll({
-      cache: initialCache,
-      projectRoot: projectRoot,
-      projectPaths,
-      dataSources,
-    });
-
-    // TODO: Watch pageUtilities file to update the cache on change
-    initialCache.pageUtilities = projectPaths.pageUtilities
-      ? await import(
-        "file://" + path.join(projectRoot, projectPaths.pageUtilities) +
-          "?cache=" +
-          new Date().getTime()
-      ).then((m) => m)
-      : {};
-
-    // TODO: Watch twindSetup file to update the cache on change
-    initialCache.twindSetup = projectPaths.twindSetup
-      ? await import(
-        "file://" + path.join(projectRoot, projectPaths.twindSetup) +
-          "?cache=" +
-          new Date().getTime()
-      ).then((m) => m.default)
-      : {};
-
-    DEBUG &&
-      console.log(
-        "twind setup path",
-        projectPaths.twindSetup,
-        "twind setup",
-        initialCache.twindSetup,
-      );
-
+    const wss = getWebsocketServer();
     const serve = await serveGustwind({
-      projectMeta,
-      projectRoot,
+      plugins: [
+        await importPlugin({
+          pluginModule: fileWatcherPlugin,
+          options: { pluginsPath },
+          outputDirectory,
+          mode,
+        }),
+        await importPlugin({
+          pluginModule: webSocketPlugin,
+          options: { wss },
+          outputDirectory,
+          mode,
+        }),
+      ],
+      pluginDefinitions,
       mode,
-      initialCache,
-      dataSources,
+      port: Number(port),
     });
-
-    const port = projectMeta.port;
 
     const endTime = performance.now();
     console.log(
       `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
     );
 
-    // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
-    const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
-    await p.stdin?.write(
-      new TextEncoder().encode(
-        `http://localhost:${port}/`,
-      ),
-    );
-    p.stdin.close();
-
+    await copyToClipboard(`http://localhost:${port}/`);
     console.log("The server address has been copied to the clipboard");
 
     await serve();
@@ -169,17 +131,20 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    const projectMeta = await getJson<ProjectMeta>(
-      path.join(projectRoot, "./meta.json"),
-    );
-
-    await buildProject(projectMeta, projectRoot);
+    await buildProject({ outputDirectory, pluginDefinitions, threads });
 
     return 0;
   }
 
   usage();
   return 0;
+}
+
+async function copyToClipboard(input: string) {
+  // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
+  const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
+  await p.stdin?.write(new TextEncoder().encode(input));
+  p.stdin.close();
 }
 
 if (import.meta.main) {

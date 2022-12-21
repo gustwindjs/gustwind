@@ -47,14 +47,6 @@ Data sources are asynchronous functions returning arrays of objects. Then, when 
 can access the content. This would be a good spot to connect to a database,
 external API, or local data.
 
-## Transforms
-
-Transforms accept data and then perform a manipulation on it. It could for example accept a Markdown string and convert it to HTML or reverse the input given to it as below:
-
-**transforms/reverse.ts**
-
-[<file>](site/transforms/reverse.ts)
-
 ## Layouts
 
 Gustwind layouts are comparable to components:

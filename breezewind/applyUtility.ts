@@ -53,7 +53,7 @@ async function applyUtility(
   );
 
   return foundUtility.apply(
-    null,
+    undefined,
     // @ts-ignore: TODO: Figure this one out
     [context].concat(parameters),
   );

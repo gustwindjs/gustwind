@@ -3,21 +3,38 @@ import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
   Component,
+  Components,
   Context,
   Extension,
   Utilities,
   Utility,
 } from "./types.ts";
 
+type Options = {
+  component: Component | Component[];
+  components?: Components;
+  extensions?: (Extension)[];
+  context?: Context;
+  props?: Context;
+  utilities?: Utilities;
+};
+
+async function renderWithHooks(
+  options: Options,
+): Promise<string> {
+  const { context = {}, utilities } = options;
+
+  utilities?._onRenderStart && utilities._onRenderStart(context);
+
+  const ret = await render(options);
+
+  utilities?._onRenderEnd && utilities._onRenderEnd(context);
+
+  return ret;
+}
+
 async function render(
-  { component, components, extensions, context, props, utilities }: {
-    component: Component | Component[];
-    components?: Record<string, Component | Component[]>;
-    extensions?: (Extension)[];
-    context?: Context;
-    props?: Context;
-    utilities?: Utilities;
-  },
+  { component, components, extensions, context, props, utilities }: Options,
 ): Promise<string> {
   const renderUtility = (_: Context, component: unknown) =>
     isComponent(component)
@@ -233,6 +250,6 @@ async function evaluateFields(
   )).filter(Boolean);
 }
 
-export default render;
+export default renderWithHooks;
 export { isComponent };
 export type { Component, Context, Extension, Utilities, Utility };

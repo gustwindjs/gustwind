@@ -1,0 +1,1 @@
+var o=!1,i,s=[];"Deno"in globalThis||r();function r(){Promise.all([import("https://esm.sh/@twind/core@1.1.1"),import("/twindSetup.js")]).then(([{install:e,tw:t},n])=>{console.log("loaded custom twind setup",n.default),e(n.default),i=t,o=!0,s.forEach(l=>l(t))})}function p(e){console.log("Registering a twind runtime listener"),o?e(i):s.push(e)}export{p as registerListener};

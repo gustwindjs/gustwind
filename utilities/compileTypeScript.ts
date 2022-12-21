@@ -13,6 +13,8 @@ async function compileTypeScript(path: string, mode: Mode) {
     target: ["esnext"],
     treeShaking: true,
     write: false,
+    // TODO: This is a bad coupling. Externals should be
+    // configurable per script.
     external: ["/twindSetup.js"],
   }).catch((err) => console.error(err));
 

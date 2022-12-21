@@ -1,10 +1,11 @@
-import { compileGustwindScripts } from "./compileGustwindScripts.ts";
+import { compilePlugins } from "./compilePluginScripts.ts";
 
 export const VERSION = "0.32.2";
 
 export async function prepublish(_version: string) {
+  // TODO: Run breezewind tests here
   try {
-    await compileGustwindScripts("./scripts");
+    await compilePlugins();
   } catch (error) {
     console.error(error);
 

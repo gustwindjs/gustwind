@@ -1,9 +1,8 @@
-import { websockets } from "../server-deps.ts";
-import type { Component } from "../breezewind/types.ts";
+import * as websockets from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 
 type WebSocketMessage = {
   type: "update";
-  payload: { path: string; data: Component | Component[] };
+  payload: { path: string; data: unknown };
 };
 
 const getWebsocketServer = (port = 8080) => {
