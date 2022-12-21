@@ -3,6 +3,8 @@ import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
     string,
@@ -34,6 +36,14 @@ async function evaluateTasks(tasks: Tasks) {
       }
       case "writeScript": {
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
+
+        DEBUG &&
+          console.log(
+            "evaluate tasks",
+            isDevelopingLocally,
+            payload.scriptPath,
+          );
+
         const data = isDevelopingLocally
           ? await compileTypeScript(
             payload.scriptPath,
