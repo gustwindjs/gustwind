@@ -16,6 +16,11 @@ install({
   presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
 });
 
+// TODO: If a component changes, reload the file (needs handling here somehow)
+// TODO: If a layout changes, reload the file (needs handling here somehow)
+// TODO: Check if changing page utilities and meta work as well
+// One solution would be to read the data on demand instead of trying to
+// maintain it here.
 const plugin: Plugin<{
   componentsPath: string;
   metaPath: string;
@@ -73,6 +78,16 @@ const plugin: Plugin<{
             ),
           },
         };
+      },
+      beforeEachRender({ route }) {
+        return layouts[route.layout]
+          ? [{
+            type: "watchPaths",
+            payload: {
+              paths: [path.join(cwd, layoutsPath, route.layout + ".json")],
+            },
+          }]
+          : [];
       },
       render: ({ route, context }) =>
         renderHTML({
