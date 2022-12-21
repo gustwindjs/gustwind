@@ -39,9 +39,13 @@ async function importPlugins(
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
-    // TODO: Add logic against url based plugins
+    const isDevelopingLocally = import.meta.url.startsWith("file:///");
     const { plugin, tasks } = await importPlugin({
-      pluginModule: await import(path.join(Deno.cwd(), pluginDefinition.path))
+      pluginModule: await import(
+        isDevelopingLocally
+          ? path.join(Deno.cwd(), pluginDefinition.path)
+          : pluginDefinition.path
+      )
         .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
       outputDirectory,
