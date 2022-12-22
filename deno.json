@@ -6,6 +6,7 @@
     "update:start:lock": "deno run --lock=deno.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
     "watch:start": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d -p 3000",
     "build": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
+    "netlify:build": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t 1 -o ./build",
     "update:build:lock": "deno run --lock=deno.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "watch:build": "deno run --lock=deno.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "build:breezewind-for-npm": "deno run -A build_breeze_for_npm.ts",
