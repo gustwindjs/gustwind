@@ -61,10 +61,22 @@ async function watch({
   onChange: (path: string, event: Deno.FsEvent) => void;
   debounceDelay?: number;
 }) {
-  const watcher = Deno.watchFs(
-    paths.filter(Boolean).filter((p) => !p.startsWith("http")),
-  );
+  // The watcher will crash hard if there's even a single invalid path
+  const pathsToWatch = (await Promise.all(
+    paths.filter(Boolean).filter((p) => !p.startsWith("http")).map(
+      async (p) => {
+        try {
+          await Deno.lstat(p);
 
+          return p;
+        } catch (_) {
+          return;
+        }
+      },
+    ),
+  )).filter(Boolean) as string[];
+
+  const watcher = Deno.watchFs(pathsToWatch);
   const trigger = async.debounce(
     (event: Deno.FsEvent) => event.paths.forEach((p) => onChange(p, event)),
     debounceDelay || 200,
