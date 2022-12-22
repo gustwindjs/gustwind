@@ -119,7 +119,7 @@ async function transformMarkdown(input: string) {
         }
 
         return '<pre class="' +
-          tw`overflow-auto -mx-4 md:mx-0 bg-gray-100` +
+          tw({}, "overflow-auto -mx-4 md:mx-0") +
           '"><code class="' +
           // @ts-ignore How to type this?
           this.options.langPrefix +
@@ -140,7 +140,7 @@ async function transformMarkdown(input: string) {
 
         return '<a href="#' + slug + '"><h' +
           level +
-          ' class="' + tw`inline` + '"' +
+          ' class="' + tw({}, "inline") + '"' +
           ' id="' +
           slug +
           '">' +
@@ -160,7 +160,7 @@ async function transformMarkdown(input: string) {
           return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
         }
 
-        let out = '<a class="' + tw`underline` + '" href="' + href + '"';
+        let out = '<a class="' + tw({}, "underline") + '" href="' + href + '"';
         if (title) {
           out += ' title="' + title + '"';
         }
@@ -173,7 +173,7 @@ async function transformMarkdown(input: string) {
           klass = ordered
             ? "list-decimal list-inside"
             : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
+        return "<" + type + startatt + ' class="' + tw({}, klass) + '">\n' +
           body +
           "</" +
           type + ">\n";
