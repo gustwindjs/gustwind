@@ -96,3 +96,18 @@ Deno.test("class shortcut extension with getter", async () => {
     '<span class="foobar">testing</span>',
   );
 });
+
+Deno.test("class shortcut extension without tw", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "span",
+        class: { utility: "get", parameters: ["context", "demo"] },
+        children: "testing",
+      },
+      extensions: [extensions.classShortcut()],
+      context: { demo: "foobar" },
+    }),
+    '<span class="foobar">testing</span>',
+  );
+});

@@ -13,7 +13,7 @@ import type {
   VisibleIfComponent,
 } from "./types.ts";
 
-function classShortcut(tw: (...args: string[]) => string) {
+function classShortcut(tw?: (...args: string[]) => string) {
   return async function (
     component: ClassComponent,
     context: Context,
@@ -62,7 +62,7 @@ function classShortcut(tw: (...args: string[]) => string) {
         ...component,
         attributes: {
           ...component.attributes,
-          class: classes.map((c) => tw(c)).join(" "),
+          class: tw ? classes.map((c) => tw(c)).join(" ") : classes.join(" "),
         },
       };
     }

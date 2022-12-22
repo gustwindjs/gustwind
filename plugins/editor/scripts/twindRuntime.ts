@@ -9,6 +9,9 @@ const listeners: Listener[] = [];
 
 if (!("Deno" in globalThis)) {
   setupTwind();
+
+  // @ts-expect-error TODO: Figure out how to type this
+  window.registerTwListener = registerListener;
 }
 
 function setupTwind() {
@@ -23,6 +26,9 @@ function setupTwind() {
     console.log("loaded custom twind setup", m.default);
 
     install(m.default);
+
+    // @ts-expect-error TODO: Figure out how to type this
+    window.tw = tw;
 
     // @ts-expect-error TODO: Figure out how to type this
     globalTw = tw;

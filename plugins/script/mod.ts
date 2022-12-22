@@ -47,13 +47,13 @@ const plugin: Plugin<{
       prepareContext({ route }) {
         const routeScripts = route.scripts || [];
         const scripts = globalScripts.concat(
-          (foundScripts.filter(({ name }) =>
-            routeScripts.includes(path.basename(name, path.extname(name)))
-          ).map(({ name }) => name).concat(
-            receivedScripts.map(({ name }) => name),
+          ((receivedScripts.map(({ name }) => name)).concat(
+            foundScripts.filter(({ name }) =>
+              routeScripts.includes(path.basename(name, path.extname(name)))
+            ).map(({ name }) => name),
           )).map((name) => ({
             type: "module",
-            src: name.replace(".ts", ".js"),
+            src: "/" + name.replace(".ts", ".js"),
           })),
         );
 
