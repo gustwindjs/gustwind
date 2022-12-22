@@ -143,7 +143,10 @@ async function transformMarkdown(input: string) {
           slug +
           '">' +
           text +
-          '<a class="' + tw("ml-2 no-underline") + '" href="#' + slug +
+          '<a class="' +
+          tw("ml-2 no-underline text-sm align-middle mask-text") +
+          '" href="#' +
+          slug +
           '">🔗</a>\n' +
           "</h" +
           level +
