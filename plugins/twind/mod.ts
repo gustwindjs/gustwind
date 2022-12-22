@@ -34,8 +34,8 @@ const plugin: Plugin<{
         }];
       },
       prepareContext: prepareStylesheet,
-      afterEachRender({ markup, route }) {
-        if (route.type === "xml") {
+      afterEachRender({ markup, url }) {
+        if (url.endsWith(".xml")) {
           return { markup };
         }
 

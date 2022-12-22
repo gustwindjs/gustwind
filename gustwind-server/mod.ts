@@ -59,7 +59,7 @@ function serveGustwind({
         return respond(
           200,
           markup,
-          matched.route.type === "xml"
+          matched.route.url.endsWith(".xml")
             ? "text/xml"
             : "text/html; charset=utf-8",
         );

@@ -26,7 +26,7 @@ const plugin: Plugin = {
           route,
         };
 
-        return route.type === "xml"
+        return url.endsWith(".xml")
           ? []
           : ["context", "layout", "route"].map((name) => ({
             type: "writeFile",
@@ -87,7 +87,7 @@ const plugin: Plugin = {
           },
         }];
       },
-      prepareContext: async ({ route, send }) => {
+      prepareContext: async ({ send, url }) => {
         const id = "breezewind-renderer-plugin";
 
         const components = await send(id, {
@@ -116,7 +116,7 @@ const plugin: Plugin = {
             Object.entries(layouts).map((
               [k, v],
               // @ts-expect-error This is fine.
-            ) => [k, route.type === "xml" ? v : attachIds(v)]),
+            ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
           ),
         });
       },

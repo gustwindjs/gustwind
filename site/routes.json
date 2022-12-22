@@ -114,7 +114,13 @@
         "parameters": ["./blogPosts"],
         "name": "blogPosts"
       }
-    ],
-    "type": "xml"
+    ]
+  },
+  "404.html": {
+    "layout": "404",
+    "meta": {
+      "title": "Page not found",
+      "description": "This page does not exist"
+    }
   }
 }

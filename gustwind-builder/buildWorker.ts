@@ -43,7 +43,7 @@ self.onmessage = async (e) => {
       payload: tasks,
     });
 
-    if (route.type === "xml") {
+    if (url.endsWith(".xml") || url.endsWith(".html")) {
       await Deno.writeTextFile(dir, markup);
     } else {
       await fs.ensureDir(dir);
@@ -77,8 +77,12 @@ self.onmessage = async (e) => {
   if (type === "writeFile") {
     const { payload: { outputDirectory, file, data } } = e.data;
 
-    await fs.ensureDir(outputDirectory);
-    await Deno.writeTextFile(path.join(outputDirectory, file), data);
+    try {
+      await fs.ensureDir(outputDirectory);
+      await Deno.writeTextFile(path.join(outputDirectory, file), data);
+    } catch (_) {
+      // This can fail for cases like 404.html so don't write for those.
+    }
   }
   if (type === "writeFiles") {
     const { payload: { inputDirectory, outputDirectory, outputPath } } = e.data;
