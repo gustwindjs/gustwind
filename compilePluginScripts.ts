@@ -26,10 +26,10 @@ async function compilePluginScripts(inputPath: string, outputPath: string) {
         { name, content }: { name: string; content: string },
       ) => Deno.writeTextFile(path.join(outputPath, name), content)),
     );
-
-    esbuild.stop();
   } catch (error) {
     console.error(error);
+  } finally {
+    esbuild.stop();
   }
 }
 
