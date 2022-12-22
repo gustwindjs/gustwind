@@ -6,8 +6,6 @@ Breezewind is a templating engine (JSON to HTML/XML) designed with the following
 * Extensibility - There's a way to write your own syntax extensions on top of the core and it ships with a few
 * `eval` free - To allow execution in environments, such as CloudFlare Workers, it doesn't rely on `eval` or related techniques for logic
 
-> TODO: Measure performance (slowdown) against pure JavaScript based templating. This is being done at https://github.com/bebraw/ssg-benchmark.
-
 ## Installation
 
 Breezewind is available through [npm](https://www.npmjs.com/package/breezewind) or [deno.land](https://deno.land/x/gustwind). It's coupled to Gustwind releases at deno.land as I don't know yet how to publish both from a monorepo.
