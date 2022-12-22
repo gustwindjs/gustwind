@@ -1,10 +1,6 @@
 import md from "./transforms/markdown.ts";
-import { install, tw as twind } from "https://esm.sh/@twind/core@1.1.1";
-import twindSetup from "./twindSetup.ts";
+import { tw as twind } from "https://esm.sh/@twind/core@1.1.1";
 import type { Context } from "../breezewind/types.ts";
-
-// This has to run before tw can work!
-install(twindSetup);
 
 function dateToISO(_: Context, date: string) {
   return (new Date(date)).toISOString();
