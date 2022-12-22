@@ -16,8 +16,8 @@ const plugin: Plugin<{
         ? await import("file://" + twindSetupPath).then((m) => m.default)
         : { presets: [] };
 
-      // This has to run before tw can work!
-      install(twindSetup);
+      // TODO: Figure out why enabling hash breaks markdown transform styling
+      install({ ...twindSetup, hash: false });
     }
 
     return {
