@@ -9,7 +9,7 @@
   {
     "type": "html",
     "attributes": {
-      "language": {
+      "lang": {
         "utility": "get",
         "parameters": ["context", "language"]
       }
