@@ -2,17 +2,18 @@
   {
     "type": "!DOCTYPE",
     "attributes": {
-      "html": "",
-      "language": {
-        "utility": "get",
-        "parameters": ["context", "meta.language"]
-      }
+      "html": ""
     },
     "closingCharacter": ""
   },
   {
     "type": "html",
-    "attributes": {},
+    "attributes": {
+      "language": {
+        "utility": "get",
+        "parameters": ["context", "language"]
+      }
+    },
     "children": [
       {
         "type": "head",
