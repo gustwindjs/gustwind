@@ -25,9 +25,14 @@ async function evaluateTasks(tasks: Tasks) {
       case "writeFiles": {
         const outputBasename = path.basename(payload.outputPath);
         const files = await dir(payload.inputDirectory);
+        // ./ output is an exception as then output directory
+        // doesn't need to show up in the url
+        const outputPrefix = outputBasename === "."
+          ? "/"
+          : `/${outputBasename}/`;
 
         files.forEach((file) => {
-          ret[`/${outputBasename}/${file.name}`] = {
+          ret[`${outputPrefix}${file.name}`] = {
             type: "path",
             path: file.path,
           };
