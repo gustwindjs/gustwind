@@ -18,9 +18,6 @@ async function compileTypeScript(path: string, mode: Mode) {
     external: ["/twindSetup.js"],
   }).catch((err) => console.error(err));
 
-  // https://esbuild.github.io/getting-started/#deno
-  esbuild.stop();
-
   if (!result) {
     return "";
   }

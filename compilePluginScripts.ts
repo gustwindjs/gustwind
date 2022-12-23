@@ -1,17 +1,18 @@
+import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { fs, path } from "./server-deps.ts";
 import { compileScripts } from "./utilities/compileScripts.ts";
 
-function compilePlugins() {
-  return Promise.all([
-    compilePluginScripts(
-      "./plugins/editor/scripts",
-      "./plugins/editor/compiled-scripts",
-    ),
-    compilePluginScripts(
-      "./plugins/websocket/scripts",
-      "./plugins/websocket/compiled-scripts",
-    ),
-  ]);
+async function compilePlugins() {
+  await compilePluginScripts(
+    "./plugins/editor/scripts",
+    "./plugins/editor/compiled-scripts",
+  );
+  await compilePluginScripts(
+    "./plugins/websocket/scripts",
+    "./plugins/websocket/compiled-scripts",
+  );
+  // https://esbuild.github.io/getting-started/#deno
+  esbuild.stop();
 }
 
 async function compilePluginScripts(inputPath: string, outputPath: string) {

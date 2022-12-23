@@ -1,3 +1,4 @@
+import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { fs, path } from "../server-deps.ts";
 import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -84,6 +85,9 @@ async function build(
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {
         workerPool.terminate();
+
+        // https://esbuild.github.io/getting-started/#deno
+        esbuild.stop();
 
         const endTime = performance.now();
         const duration = endTime - startTime;
