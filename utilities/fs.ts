@@ -19,7 +19,7 @@ async function dir(
   if (recursive) {
     const files = (await recursiveReaddir(path)).map((p) => ({
       path: p,
-      name: _path.basename(p),
+      name: _path.relative(path, p),
     }));
 
     return extension
