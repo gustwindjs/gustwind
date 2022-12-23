@@ -12,7 +12,7 @@ async function parseHeadmatter(filename: string) {
 }
 
 async function indexMarkdown(directory: string) {
-  const files = await dir(directory, ".md");
+  const files = await dir({ path: directory, extension: ".md" });
 
   return Promise.all(
     files.map(({ path }) =>

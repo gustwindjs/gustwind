@@ -16,7 +16,9 @@ const plugin: Plugin<{
     outputDirectory,
   }) => {
     const foundScripts = (await Promise.all(
-      scriptsPath.map((p) => load.dir(path.join(cwd, p), ".ts")),
+      scriptsPath.map((p) =>
+        load.dir({ path: path.join(cwd, p), extension: ".ts" })
+      ),
     )).flat();
     let receivedScripts: {
       name: string;

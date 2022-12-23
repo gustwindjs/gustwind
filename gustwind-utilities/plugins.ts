@@ -105,13 +105,19 @@ async function importPlugin(
     options,
     outputDirectory,
     load: {
-      dir(path: string, extension: string) {
+      dir(
+        { path, extension, recursive }: {
+          path: string;
+          extension?: string;
+          recursive?: boolean;
+        },
+      ) {
         tasks.push({
           type: "listDirectory",
           payload: { path },
         });
 
-        return dir(path, extension);
+        return dir({ path, extension, recursive });
       },
       json<T>(path: string) {
         tasks.push({

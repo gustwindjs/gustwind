@@ -24,7 +24,10 @@ async function evaluateTasks(tasks: Tasks) {
         break;
       case "writeFiles": {
         const outputBasename = path.basename(payload.outputPath);
-        const files = await dir(payload.inputDirectory);
+        const files = await dir({
+          path: payload.inputDirectory,
+          recursive: true,
+        });
         // ./ output is an exception as then output directory
         // doesn't need to show up in the url
         const outputPrefix = outputBasename === "."

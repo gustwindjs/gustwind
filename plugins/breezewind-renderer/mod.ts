@@ -31,10 +31,18 @@ const plugin: Plugin<{
   }) => {
     let [components, layouts, pageUtilities, meta] = await Promise.all([
       getDefinitions<Component>(
-        await load.dir(path.join(cwd, componentsPath), ".json"),
+        await load.dir({
+          path: path.join(cwd, componentsPath),
+          extension: ".json",
+          recursive: true,
+        }),
       ),
       getDefinitions<Component>(
-        await load.dir(path.join(cwd, layoutsPath), ".json"),
+        await load.dir({
+          path: path.join(cwd, layoutsPath),
+          extension: ".json",
+          recursive: true,
+        }),
       ),
       pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
       metaPath ? load.json(metaPath) : {},

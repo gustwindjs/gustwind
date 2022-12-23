@@ -74,7 +74,7 @@ async function transformMarkdown(input: string) {
         // TODO: This is a bad coupling, there should be a better way to get information here
         // especially if this file will be executed in the browser
         const components = await getDefinitions<Component>(
-          await dir("./site/components", ".json"),
+          await dir({ path: "./site/components", extension: ".json" }),
         );
         const matchedComponent = components[token.component];
 

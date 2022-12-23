@@ -40,10 +40,11 @@ type Plugin<O = Record<string, unknown>> = {
 type PluginParameters<O = Record<string, unknown>> = {
   cwd: string;
   load: {
-    dir(
-      path: string,
-      extension: string,
-    ): Promise<{ name: string; path: string }[]>;
+    dir({ path, extension, recursive }: {
+      path: string;
+      extension?: string;
+      recursive?: boolean;
+    }): Promise<{ name: string; path: string }[]>;
     json<T>(path: string): Promise<T>;
     module<T>(path: string): Promise<T>;
   };
