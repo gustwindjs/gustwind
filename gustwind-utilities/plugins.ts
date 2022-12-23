@@ -40,13 +40,12 @@ async function importPlugins(
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
-    const isDevelopingLocally = import.meta.url.startsWith("file:///");
     const { plugin, tasks } = await importPlugin({
       cwd,
       pluginModule: await import(
-        isDevelopingLocally
-          ? path.join(cwd, pluginDefinition.path)
-          : pluginDefinition.path
+        pluginDefinition.path.startsWith("http")
+          ? pluginDefinition.path
+          : path.join(cwd, pluginDefinition.path)
       )
         .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
