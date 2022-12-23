@@ -1,4 +1,4 @@
-import { esbuild } from "../server-deps.ts";
+import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import type { Mode } from "../types.ts";
 
 async function compileTypeScript(path: string, mode: Mode) {
@@ -17,6 +17,9 @@ async function compileTypeScript(path: string, mode: Mode) {
     // configurable per script.
     external: ["/twindSetup.js"],
   }).catch((err) => console.error(err));
+
+  // https://esbuild.github.io/getting-started/#deno
+  esbuild.stop();
 
   if (!result) {
     return "";

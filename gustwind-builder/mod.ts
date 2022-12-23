@@ -1,4 +1,4 @@
-import { esbuild, fs, path } from "../server-deps.ts";
+import { fs, path } from "../server-deps.ts";
 import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
@@ -84,9 +84,6 @@ async function build(
     return new Promise((resolve) => {
       workerPool.onWorkFinished(() => {
         workerPool.terminate();
-
-        // TODO: This might belong to the script plugin in a cleanup phase
-        esbuild.stop();
 
         const endTime = performance.now();
         const duration = endTime - startTime;

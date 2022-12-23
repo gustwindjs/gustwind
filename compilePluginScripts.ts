@@ -1,4 +1,4 @@
-import { esbuild, fs, path } from "./server-deps.ts";
+import { fs, path } from "./server-deps.ts";
 import { compileScripts } from "./utilities/compileScripts.ts";
 
 function compilePlugins() {
@@ -28,8 +28,6 @@ async function compilePluginScripts(inputPath: string, outputPath: string) {
     );
   } catch (error) {
     console.error(error);
-  } finally {
-    esbuild.stop();
   }
 }
 
