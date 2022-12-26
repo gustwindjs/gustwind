@@ -25,6 +25,7 @@ Options:
   -d, --develop        Runs the project in development mode.
   -D, --debug          Output debug information during execution.
   -p, --port           Development server port.
+  -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory.
   -t, --threads        Amount of threads to use during building. Accepts a number, "cpuMax", or "cpuHalf".
   -v, --version        Shows the version number.
@@ -36,6 +37,7 @@ type CliArgs = {
   help: boolean;
   version: boolean;
   port: string;
+  plugins: string;
   threads: string;
   output: string;
   build: boolean;
@@ -49,6 +51,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     help,
     version,
     port,
+    plugins: pluginsLookupPath,
     threads,
     output: outputDirectory,
     build,
@@ -56,7 +59,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     debug,
   } = flags.parse(cliArgs, {
     boolean: ["help", "version", "build", "develop", "debug"],
-    string: ["port", "threads", "output"],
+    string: ["port", "plugins", "threads", "output"],
     alias: {
       v: "version",
       h: "help",
@@ -64,6 +67,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
       d: "develop",
       t: "threads",
       p: "port",
+      P: "plugins",
       o: "output",
       D: "debug",
     },
@@ -88,9 +92,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   const cwd = Deno.cwd();
-
-  // TODO: Allow passing this as a parameter
-  const pluginsPath = path.join(cwd, "plugins.json");
+  const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
   const pluginDefinitions = await getJson<PluginOptions[]>(pluginsPath);
 
   if (develop) {
