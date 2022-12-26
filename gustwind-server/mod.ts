@@ -23,6 +23,8 @@ function serveGustwind({
   mode: Mode;
   port: number;
 }) {
+  let pathFs: Awaited<ReturnType<typeof evaluateTasks>> = {};
+
   const server = new Server({
     handler: async ({ url }) => {
       // This needs to happen per request since data (components etc.) might
@@ -37,8 +39,7 @@ function serveGustwind({
         outputDirectory: "/",
       });
 
-      let fs = await evaluateTasks(tasks);
-
+      const fs = await evaluateTasks(tasks);
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(pathname);
 
@@ -53,7 +54,9 @@ function serveGustwind({
         // in them (i.e., the file watcher).
         await applyOnTasksRegistered({ plugins, tasks: matched.tasks });
 
-        fs = { ...fs, ...(await evaluateTasks(tasks)) };
+        // Capture potential assets created during evaluation as these might be
+        // needed later for example in the editor.
+        pathFs = await evaluateTasks(tasks);
 
         // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
         return respond(
@@ -65,7 +68,7 @@ function serveGustwind({
         );
       }
 
-      const matchedFsItem = fs[pathname];
+      const matchedFsItem = fs[pathname] || pathFs[pathname];
 
       if (matchedFsItem) {
         switch (matchedFsItem.type) {
