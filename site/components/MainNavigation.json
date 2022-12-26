@@ -1,43 +1,40 @@
 {
-  "__todo": "port to CSS only solution (needs twind 1.0)",
   "type": "div",
-  "class": "sticky top-0",
-  "attributes": {
-    "hidden": "",
-    "x-cloak": "",
-    "x-state": "true"
-  },
+  "class": "sticky top-0 sm:p-4 bg-white",
   "children": [
     {
-      "type": "span",
-      "class": "fixed top-4 right-4 text-4xl sm:hidden z-50",
+      "type": "input",
+      "class": "hidden peer",
       "attributes": {
-        "onclick": "setState(v => !v)"
-      },
-      "children": "☰"
+        "id": "nav__toggle",
+        "type": "checkbox"
+      }
     },
     {
-      "type": "nav",
-      "class": "grid sm:flex opacity-90 bg-gray-100 font-thin filter drop-shadow-sm",
+      "type": "label",
+      "class": "sm:hidden p-2 pointer-events-all absolute right-0 w-10 h-10 rounded-full bg-white flex z-50",
       "attributes": {
-        "x-attr": "",
-        "@class": {
-          "utility": "concat",
-          "parameters": [
-            "[state && '",
-            { "utility": "tw", "parameters": ["hidden"] },
-            "']"
-          ]
-        }
+        "for": "nav__toggle"
       },
       "children": [
         {
+          "type": "span",
+          "class": "w-4 h-4 leading-4 m-auto",
+          "children": "☰"
+        }
+      ]
+    },
+    {
+      "type": "nav",
+      "class": "absolute p-4 sm:p-0 sm:relative bg-white w-full transition-all -translate-y-full sm:translate-y-0 peer-checked:translate-y-0 font-thin",
+      "children": [
+        {
           "type": "div",
-          "class": "m-4 sm:w-full flex flex-col sm:flex-row sm:justify-between gap-4",
+          "class": "sm:w-full flex flex-col sm:flex-row sm:justify-between gap-4",
           "children": [
             {
               "type": "div",
-              "class": "sm:flex sm:flex-row sm:flex-wrap gap-4 sm:ml-auto sm:ml-0 grid",
+              "class": "grid sm:flex sm:flex-row sm:flex-wrap gap-4 sm:ml-auto",
               "children": [
                 {
                   "type": "a",
@@ -57,7 +54,7 @@
             },
             {
               "type": "div",
-              "class": "sm:flex sm:flex-row gap-4 sm:ml-auto sm:ml-0 grid",
+              "class": "grid sm:flex sm:flex-row gap-4 sm:ml-auto",
               "children": [
                 {
                   "type": "Link",

@@ -12,5 +12,7 @@ export default {
   rules: [
     // https://twind.style/rules#static-rules
     ["mask-text", { color: "transparent", textShadow: "0 0 black" }],
+    // For navigation
+    ["pointer-events-all", { pointerEvents: "all" }],
   ],
 };
