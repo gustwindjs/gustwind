@@ -56,15 +56,14 @@ type PluginParameters<O = Record<string, unknown>> = {
 type PluginApi = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
-  sendMessages?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
+  sendMessages?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
   // Return additional tasks to perform per build
-  prepareBuild?({ send }: { send: Send }): Promise<Tasks> | Tasks | void;
+  prepareBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
   // Run setup before context is resolved or add something to it
   prepareContext?(
     { send, route, url }: { send: Send; route: Route; url: string },
   ):
-    | Promise<{ context: Record<string, unknown> }>
-    | Promise<void>
+    | Promise<{ context: Record<string, unknown> } | void>
     | {
       context: Record<string, unknown>;
     }
@@ -126,6 +125,8 @@ type SendMessageEvent =
   | { type: "getRenderer"; payload: string }
   | { type: "getLayouts"; payload: undefined }
   | { type: "updateLayouts"; payload: Component }
+  // twind plugin
+  | { type: "twindSetupReady"; payload: { path: string } }
   // websocket plugin
   | {
     type: "fileChanged";

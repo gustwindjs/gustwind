@@ -13,6 +13,8 @@ const plugin: Plugin = {
     ],
   },
   init: ({ cwd, outputDirectory }) => {
+    let twindSetupPath = "";
+
     return {
       beforeEachRender({ context, url, send, route }) {
         const outputDir = path.join(outputDirectory, url);
@@ -38,14 +40,13 @@ const plugin: Plugin = {
             },
           }));
       },
+      onMessage: ({ type, payload }) => {
+        if (type === "twindSetupReady") {
+          twindSetupPath = payload.path;
+        }
+      },
       sendMessages: ({ send }) => {
-        const scriptsToCompile = [
-          "toggleEditor",
-          "pageEditor",
-          // toggleEditor pulls twindRuntime so it doesn't have to be compiled/loaded
-          // separately
-          // "twindRuntime",
-        ];
+        const scriptsToCompile = ["toggleEditor", "pageEditor"];
 
         send("gustwind-script-plugin", {
           type: "addScripts",
@@ -69,6 +70,10 @@ const plugin: Plugin = {
               ),
               name: `${name}.js`,
             });
+          }).concat({
+            localPath: twindSetupPath,
+            remotePath: twindSetupPath,
+            name: "twindSetup.js",
           }),
         });
       },

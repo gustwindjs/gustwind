@@ -7,8 +7,9 @@ const plugin: Plugin<{
 }> = {
   meta: {
     name: "gustwind-twind-plugin",
+    dependsOn: ["gustwind-script-plugin"],
   },
-  init: ({ cwd, options, outputDirectory }) => {
+  init: ({ cwd, options }) => {
     const twindSetupPath = path.join(cwd, options.setupPath);
 
     async function prepareStylesheet() {
@@ -21,18 +22,13 @@ const plugin: Plugin<{
     }
 
     return {
-      prepareBuild: async () => {
-        await prepareStylesheet();
-
-        return [{
-          type: "writeScript",
-          payload: {
-            outputDirectory,
-            file: "twindSetup.js",
-            scriptPath: twindSetupPath,
-          },
-        }];
+      sendMessages: ({ send }) => {
+        send("*", {
+          type: "twindSetupReady",
+          payload: { path: twindSetupPath },
+        });
       },
+      prepareBuild: prepareStylesheet,
       prepareContext: prepareStylesheet,
       afterEachRender({ markup, url }) {
         if (url.endsWith(".xml")) {
