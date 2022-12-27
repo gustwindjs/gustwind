@@ -211,7 +211,6 @@ breeze({
     type: "!DOCTYPE",
     attributes: {
       html: "",
-      language: "en",
     },
     closingCharacter: "",
   },
