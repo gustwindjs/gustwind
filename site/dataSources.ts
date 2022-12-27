@@ -1,7 +1,16 @@
 import { parse } from "https://deno.land/x/frontmatter@v0.1.4/mod.ts";
 import markdown from "./transforms/markdown.ts";
 import { dir } from "../utilities/fs.ts";
-import type { MarkdownWithFrontmatter } from "../types.ts";
+
+type MarkdownWithFrontmatter = {
+  data: {
+    slug: string;
+    title: string;
+    date: Date;
+    keywords: string[];
+  };
+  content: string;
+};
 
 async function processMarkdown(filename: string) {
   return markdown(await Deno.readTextFile(filename));

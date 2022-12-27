@@ -8,15 +8,6 @@ type Category = { id: string; title: string; url: string };
 
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
-type MarkdownWithFrontmatter = {
-  data: {
-    slug: string;
-    title: string;
-    date: Date;
-    keywords: string[];
-  };
-  content: string;
-};
 
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
@@ -234,7 +225,6 @@ export type {
   DataContext,
   DataSource,
   DataSources,
-  MarkdownWithFrontmatter,
   Meta,
   Mode,
   ParentCategory,
