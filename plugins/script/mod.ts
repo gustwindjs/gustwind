@@ -58,7 +58,7 @@ const plugin: Plugin<{
 
         if (
           !routeScriptNames.every((name) =>
-            foundScriptNames.includes(name + ".ts")
+            foundScriptNames.includes(`${name}.ts`)
           )
         ) {
           console.error(foundScriptNames, routeScriptNames);
@@ -68,7 +68,12 @@ const plugin: Plugin<{
         const scripts =
           ((receivedScripts.filter(({ isExternal }) => !isExternal)).map((
             { name },
-          ) => ({ name })).concat(routeScripts));
+          ) => ({ name })).concat(
+            routeScripts.map(({ name, ...rest }) => ({
+              name: `${name}.js`,
+              ...rest,
+            })),
+          ));
         const scriptTags = scripts.map(({ name, ...rest }) => ({
           type: "module",
           ...rest,
