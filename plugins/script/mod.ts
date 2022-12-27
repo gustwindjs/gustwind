@@ -53,20 +53,30 @@ const plugin: Plugin<{
       },
       prepareContext({ route }) {
         const routeScripts = route.scripts || [];
-        const scripts = globalScripts.concat(
-          ((receivedScripts.filter(({ isExternal }) => !isExternal).map((
-            { name },
-          ) => name)).concat(
-            foundScripts.filter(({ name }) =>
-              routeScripts.includes(path.basename(name, path.extname(name)))
-            ).map(({ name }) => name),
-          )).map((name) => ({
-            type: "module",
-            src: "/" + name.replace(".ts", ".js"),
-          })),
-        );
+        const routeScriptNames = routeScripts.map(({ name }) => name);
+        const foundScriptNames = foundScripts.map(({ name }) => name);
 
-        return { context: { scripts } };
+        if (
+          !routeScriptNames.every((name) =>
+            foundScriptNames.includes(name + ".ts")
+          )
+        ) {
+          console.error(foundScriptNames, routeScriptNames);
+          throw new Error("Route script is missing from the scripts directory");
+        }
+
+        const scripts =
+          ((receivedScripts.filter(({ isExternal }) => !isExternal)).map((
+            { name },
+          ) => ({ name })).concat(routeScripts));
+        const scriptTags = scripts.map(({ name, ...rest }) => ({
+          type: "module",
+          ...rest,
+          src: "/" + name.replace(".ts", ".js"),
+        }));
+
+        // globalScripts don't need processing since they are in the right format
+        return { context: { scripts: globalScripts.concat(scriptTags) } };
       },
       onMessage({ type, payload }) {
         if (type === "addScripts") {

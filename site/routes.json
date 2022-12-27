@@ -47,7 +47,7 @@
         "name": "document"
       }
     ],
-    "scripts": ["playground"]
+    "scripts": [{ "name": "playground" }]
   },
   "blog": {
     "layout": "blogIndex",
@@ -90,7 +90,7 @@
       "title": "Gustwind buttons",
       "description": "Secret buttons page"
     },
-    "scripts": ["hello"],
+    "scripts": [{ "name": "hello" }],
     "routes": {
       "more": {
         "layout": "buttonsPage",
@@ -98,7 +98,7 @@
           "title": "More Gustwind buttons",
           "description": "Another secret buttons page"
         },
-        "scripts": ["hello"]
+        "scripts": [{ "name": "hello" }]
       }
     }
   },
