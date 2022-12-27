@@ -118,6 +118,32 @@ Deno.test("allow rendering with props in a component", async () => {
   );
 });
 
+Deno.test("allow rendering with props containing an array in a component", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "Test",
+        props: {
+          demo: [
+            { type: "span", children: "foobar" },
+            { type: "span", children: "barfoo" },
+          ],
+        },
+      },
+      components: {
+        Test: {
+          type: "div",
+          children: {
+            utility: "render",
+            parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+          },
+        },
+      },
+    }),
+    "<div><span>foobar</span><span>barfoo</span></div>",
+  );
+});
+
 Deno.test("allow rendering pure strings", async () => {
   assertEquals(
     await breeze({
