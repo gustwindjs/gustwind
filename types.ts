@@ -115,7 +115,13 @@ type SendMessageEvent =
   // editor plugin
   | {
     type: "addScripts";
-    payload: { localPath: string; remotePath: string; name: string }[];
+    payload: {
+      isExternal?: boolean;
+      localPath: string;
+      remotePath: string;
+      name: string;
+      externals?: string[];
+    }[];
   }
   | { type: "getComponents"; payload: undefined }
   | {
@@ -214,6 +220,7 @@ type BuildWorkerEvent =
       outputDirectory: string;
       file: string;
       scriptPath: string;
+      externals?: string[];
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";

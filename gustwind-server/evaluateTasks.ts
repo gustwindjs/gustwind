@@ -54,6 +54,7 @@ async function evaluateTasks(tasks: Tasks) {
           : await compileTypeScript(
             payload.scriptPath,
             "development",
+            payload.externals,
           );
 
         ret[`/${payload.file}`] = {

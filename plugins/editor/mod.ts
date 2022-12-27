@@ -53,6 +53,7 @@ const plugin: Plugin = {
           payload: scriptsToCompile.map((name) => {
             // TODO: Find some simplification for this
             return ({
+              isExternal: false,
               localPath: path.join(
                 cwd,
                 "plugins",
@@ -69,11 +70,15 @@ const plugin: Plugin = {
                 `${name}.ts`,
               ),
               name: `${name}.js`,
+              // Twind setup will be loaded lazily
+              externals: ["/twindSetup.js"],
             });
           }).concat({
+            isExternal: true,
             localPath: twindSetupPath,
             remotePath: twindSetupPath,
             name: "twindSetup.js",
+            externals: [],
           }),
         });
       },

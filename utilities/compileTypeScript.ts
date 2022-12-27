@@ -1,7 +1,11 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import type { Mode } from "../types.ts";
 
-async function compileTypeScript(path: string, mode: Mode) {
+async function compileTypeScript(
+  path: string,
+  mode: Mode,
+  externals?: string[],
+) {
   // Reference: https://esbuild.github.io/api/
   const result = await esbuild.build({
     entryPoints: [path],
@@ -13,9 +17,7 @@ async function compileTypeScript(path: string, mode: Mode) {
     target: ["esnext"],
     treeShaking: true,
     write: false,
-    // TODO: This is a bad coupling. Externals should be
-    // configurable per script.
-    external: ["/twindSetup.js"],
+    external: externals,
   }).catch((err) => console.error(err));
 
   if (!result) {

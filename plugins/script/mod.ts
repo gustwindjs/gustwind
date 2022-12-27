@@ -15,15 +15,18 @@ const plugin: Plugin<{
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
   }) => {
-    const foundScripts = (await Promise.all(
-      scriptsPath.map((p) =>
-        load.dir({ path: path.join(cwd, p), extension: ".ts" })
-      ),
-    )).flat();
+    const foundScripts: { name: string; path: string; externals?: string[] }[] =
+      (await Promise.all(
+        scriptsPath.map((p) =>
+          load.dir({ path: path.join(cwd, p), extension: ".ts" })
+        ),
+      )).flat();
     let receivedScripts: {
+      isExternal?: boolean;
       name: string;
       localPath: string;
       remotePath: string;
+      externals?: string[];
     }[] = [];
 
     return {
@@ -31,25 +34,29 @@ const plugin: Plugin<{
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
 
         return foundScripts.concat(
-          receivedScripts.map(({ name, localPath, remotePath }) => ({
+          receivedScripts.map(({ name, localPath, remotePath, externals }) => ({
             name,
             path: isDevelopingLocally ? localPath : remotePath,
+            externals,
           })),
         ).map((
-          { name, path: scriptPath },
+          { name, path: scriptPath, externals },
         ) => ({
           type: "writeScript",
           payload: {
             outputDirectory,
             file: name.replace(".ts", ".js"),
             scriptPath,
+            externals,
           },
         }));
       },
       prepareContext({ route }) {
         const routeScripts = route.scripts || [];
         const scripts = globalScripts.concat(
-          ((receivedScripts.map(({ name }) => name)).concat(
+          ((receivedScripts.filter(({ isExternal }) => !isExternal).map((
+            { name },
+          ) => name)).concat(
             foundScripts.filter(({ name }) =>
               routeScripts.includes(path.basename(name, path.extname(name)))
             ).map(({ name }) => name),
