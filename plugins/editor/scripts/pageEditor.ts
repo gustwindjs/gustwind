@@ -95,7 +95,7 @@ function getElementSelected(editorContainer: HTMLElement) {
       : getParents(t, "data-id")[0];
 
     // Likely the user clicked on something within an editor panel for example
-    if (!closestElement) {
+    if (!closestElement || closestElement.nodeName === "BODY") {
       return;
     }
 
