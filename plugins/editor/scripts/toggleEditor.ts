@@ -1,22 +1,36 @@
 /// <reference lib="dom" />
-import type { Tw } from "./twindRuntime.ts";
 
 if (!("Deno" in globalThis)) {
-  import("./twindRuntime.ts").then((m) => {
-    m.registerListener(init);
-  });
+  init();
 }
 
-function init(tw: Tw) {
+function init() {
   console.log("Initializing editor");
 
   let loadedAlready = false;
   const toggleButton = document.createElement("button");
-  toggleButton.className = tw(
-    "fixed right-4 bottom-4 whitespace-nowrap text-lg",
-  );
+  // It's not possible to have a direct dependency on tw as
+  // this has to stay as lean as possible. tw will be loaded
+  // later if needed.
+  toggleButton.style.position = "fixed";
+  toggleButton.style.right = "1em";
+  toggleButton.style.bottom = "1em";
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = async () => {
+    const tw = await Promise.all([
+      import("https://esm.sh/@twind/core@1.1.1"),
+      // This is an external!
+      // TODO: Figure out how to mute Deno linter here
+      import("/twindSetup.js"),
+    ]).then(([{ install, tw }, m]) => {
+      console.log("loaded custom twind setup", m.default);
+
+      // TODO: Figure out why enabling hash breaks markdown transform styling
+      install({ ...m.default, hash: false });
+
+      return tw;
+    });
+
     const m = await import("./pageEditor.ts");
 
     if (loadedAlready) {
@@ -24,7 +38,7 @@ function init(tw: Tw) {
     } else {
       loadedAlready = true;
 
-      m.createEditor();
+      m.createEditor(tw);
     }
   };
 

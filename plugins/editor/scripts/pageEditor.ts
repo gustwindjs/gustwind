@@ -1,7 +1,6 @@
 /// <reference lib="dom" />
 import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.3?min";
 import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
-import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";
@@ -36,7 +35,7 @@ type PageState = {
   editor: EditorState;
 };
 
-async function createEditor() {
+async function createEditor(tw: (s: string) => string) {
   console.log("create editor");
 
   const [components, context, layout, route]: [
@@ -56,10 +55,11 @@ async function createEditor() {
   const pageEditor = await createPageEditor(
     components,
     context,
+    tw,
   );
   editorContainer.append(pageEditor);
 
-  const componentEditor = await createComponentEditor(components, context);
+  const componentEditor = await createComponentEditor(components, context, tw);
   editorContainer.append(componentEditor);
 
   // TODO: Re-enable the side effect to update FS
@@ -278,6 +278,7 @@ function updateFileSystem(state: Layout) {
 async function createPageEditor(
   components: Components,
   context: DataContext,
+  tw: (s: string) => string,
 ) {
   console.log("creating page editor");
 
@@ -307,6 +308,7 @@ async function createPageEditor(
 async function createComponentEditor(
   components: Components,
   context: DataContext,
+  tw: (s: string) => string,
 ) {
   const controlsElement = document.createElement("div");
   controlsElement.id = controlsElementId;
