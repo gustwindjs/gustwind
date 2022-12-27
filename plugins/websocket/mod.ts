@@ -1,6 +1,7 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../../server-deps.ts";
 import { getWebsocketServer } from "../../utilities/getWebSocketServer.ts";
+import scriptsToCompile from "./scriptsToCompile.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
@@ -23,11 +24,9 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
 
     return {
       sendMessages: ({ send }) => {
-        const scriptsToCompile = ["webSocketClient"];
-
         send("gustwind-script-plugin", {
           type: "addScripts",
-          payload: scriptsToCompile.map((name) => {
+          payload: scriptsToCompile.map(({ name }) => {
             // TODO: Find some simplification for this
             return ({
               localPath: path.join(

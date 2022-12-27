@@ -1,6 +1,7 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { path } from "../../server-deps.ts";
+import scriptsToCompile from "./scriptsToCompile.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin = {
@@ -46,15 +47,6 @@ const plugin: Plugin = {
         }
       },
       sendMessages: ({ send }) => {
-        const scriptsToCompile = [
-          {
-            isExternal: false,
-            name: "toggleEditor",
-            externals: ["/pageEditor.js", "/twindSetup.js"],
-          },
-          { isExternal: true, name: "pageEditor", externals: [] },
-        ];
-
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: scriptsToCompile.map(({ isExternal, name, externals }) => {
