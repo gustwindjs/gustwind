@@ -25,7 +25,8 @@ function setupTwind() {
   ]).then(([{ install, tw }, m]) => {
     console.log("loaded custom twind setup", m.default);
 
-    install(m.default);
+    // TODO: Figure out why enabling hash breaks markdown transform styling
+    install({ ...m.default, hash: false });
 
     // @ts-expect-error TODO: Figure out how to type this
     window.tw = tw;
