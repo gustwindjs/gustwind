@@ -174,8 +174,9 @@ function isComponent(input: unknown): boolean {
     return input.every(isComponent);
   }
 
-  // @ts-ignore We know it's an object by now. Maybe there's a more TS way to do this.
-  return !!(isObject(input) && input.children);
+  // Input is component if it is an object and has either children or type property.
+  // @ts-expect-error We know it's an object by now. Maybe there's a more TS way to do this.
+  return !!(isObject(input) && (input.children || input.type));
 }
 
 function toHTML(

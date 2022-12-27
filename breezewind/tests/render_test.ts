@@ -144,6 +144,100 @@ Deno.test("allow rendering with props containing an array in a component", async
   );
 });
 
+Deno.test("allow rendering with props containing an array in a component inside a composition 1", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "BaseLayout",
+        props: {
+          content: {
+            type: "Test",
+            props: {
+              demo: [
+                { type: "span", children: "foobar" },
+                { type: "span", children: "barfoo" },
+              ],
+            },
+          },
+        },
+      },
+      components: {
+        BaseLayout: {
+          type: "main",
+          children: {
+            utility: "render",
+            parameters: [
+              {
+                utility: "get",
+                parameters: ["props", "content"],
+              },
+            ],
+          },
+        },
+        Test: {
+          type: "div",
+          children: {
+            utility: "render",
+            parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+          },
+        },
+      },
+    }),
+    "<main><div><span>foobar</span><span>barfoo</span></div></main>",
+  );
+});
+
+Deno.test("allow rendering with props containing an array in a component inside a composition 2", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "BaseLayout",
+        props: {
+          content: [{
+            type: "Test",
+            props: {
+              demo: [
+                { type: "span", children: "foobar" },
+                { type: "span", children: "barfoo" },
+              ],
+            },
+          }, {
+            type: "Test",
+            props: {
+              demo: [
+                { type: "span", children: "foobar" },
+                { type: "span", children: "barfoo" },
+              ],
+            },
+          }],
+        },
+      },
+      components: {
+        BaseLayout: {
+          type: "main",
+          children: {
+            utility: "render",
+            parameters: [
+              {
+                utility: "get",
+                parameters: ["props", "content"],
+              },
+            ],
+          },
+        },
+        Test: {
+          type: "div",
+          children: {
+            utility: "render",
+            parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+          },
+        },
+      },
+    }),
+    "<main><div><span>foobar</span><span>barfoo</span></div><div><span>foobar</span><span>barfoo</span></div></main>",
+  );
+});
+
 Deno.test("allow rendering pure strings", async () => {
   assertEquals(
     await breeze({
