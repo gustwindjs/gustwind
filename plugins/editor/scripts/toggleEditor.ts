@@ -31,7 +31,9 @@ function init() {
       return tw;
     });
 
-    const m = await import("./pageEditor.ts");
+    // This is an external!
+    // TODO: Figure out how to mute Deno linter here
+    const m = await import("/pageEditor.js");
 
     if (loadedAlready) {
       m.toggleEditorVisibility();

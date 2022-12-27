@@ -46,14 +46,21 @@ const plugin: Plugin = {
         }
       },
       sendMessages: ({ send }) => {
-        const scriptsToCompile = ["toggleEditor", "pageEditor"];
+        const scriptsToCompile = [
+          {
+            isExternal: false,
+            name: "toggleEditor",
+            externals: ["/pageEditor.js", "/twindSetup.js"],
+          },
+          { isExternal: true, name: "pageEditor", externals: [] },
+        ];
 
         send("gustwind-script-plugin", {
           type: "addScripts",
-          payload: scriptsToCompile.map((name) => {
+          payload: scriptsToCompile.map(({ isExternal, name, externals }) => {
             // TODO: Find some simplification for this
             return ({
-              isExternal: false,
+              isExternal,
               localPath: path.join(
                 cwd,
                 "plugins",
@@ -70,8 +77,7 @@ const plugin: Plugin = {
                 `${name}.ts`,
               ),
               name: `${name}.js`,
-              // Twind setup will be loaded lazily
-              externals: ["/twindSetup.js"],
+              externals,
             });
           }).concat({
             isExternal: true,
