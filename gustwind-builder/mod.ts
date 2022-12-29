@@ -4,8 +4,6 @@ import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
-
 async function build(
   { cwd, outputDirectory, threads, pluginDefinitions }: {
     cwd: string;
@@ -35,75 +33,59 @@ async function build(
     payload: { cwd, pluginDefinitions, outputDirectory },
   });
 
-  await fs.ensureDir(outputDirectory).then(async () => {
-    await Deno.remove(outputDirectory, { recursive: true });
+  await fs.ensureDir(outputDirectory);
+  await Deno.remove(outputDirectory, { recursive: true });
 
-    const { router, tasks } = await importPlugins({
-      cwd,
-      pluginDefinitions,
-      outputDirectory,
-      mode: "production",
-    });
-    tasks.forEach((task) => workerPool.addTaskToQueue(task));
+  const { router, tasks } = await importPlugins({
+    cwd,
+    pluginDefinitions,
+    outputDirectory,
+    mode: "production",
+  });
+  tasks.forEach((task) => workerPool.addTaskToQueue(task));
 
-    const routes = await router.getAllRoutes();
+  const routes = await router.getAllRoutes();
 
-    if (!routes) {
-      throw new Error("No routes found");
+  if (!routes) {
+    throw new Error("No routes found");
+  }
+
+  Object.entries(routes).forEach(([url, route]) => {
+    if (!route.layout) {
+      return;
     }
 
-    Object.entries(routes).forEach(([url, route]) => {
-      if (!route.layout) {
-        return;
-      }
-
-      workerPool.addTaskToQueue({
-        type: "build",
-        payload: {
-          route,
-          dir: path.join(outputDirectory, url),
-          url: url === "/" ? "/" : "/" + url,
-        },
-      });
+    workerPool.addTaskToQueue({
+      type: "build",
+      payload: {
+        route,
+        dir: path.join(outputDirectory, url),
+        url: url === "/" ? "/" : "/" + url,
+      },
     });
+  });
 
-    if (DEBUG) {
-      const routeGenerationTime = performance.now();
+  return new Promise((resolve) => {
+    workerPool.onWorkFinished(() => {
+      workerPool.terminate();
+
+      // https://esbuild.github.io/getting-started/#deno
+      esbuild.stop();
+
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      const routeAmount = Object.keys(routes).length;
 
       console.log(
-        `Generated routes in ${routeGenerationTime - startTime} ms`,
-        routes,
+        `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
+          Math.round(
+            duration /
+              routeAmount * 1000,
+          ) / 1000
+        } ms per page.`,
       );
-    }
 
-    if (DEBUG) {
-      const initTime = performance.now();
-
-      console.log(`Generated routes and tasks in ${initTime - startTime} ms`);
-    }
-
-    return new Promise((resolve) => {
-      workerPool.onWorkFinished(() => {
-        workerPool.terminate();
-
-        // https://esbuild.github.io/getting-started/#deno
-        esbuild.stop();
-
-        const endTime = performance.now();
-        const duration = endTime - startTime;
-        const routeAmount = Object.keys(routes).length;
-
-        console.log(
-          `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-            Math.round(
-              duration /
-                routeAmount * 1000,
-            ) / 1000
-          } ms per page.`,
-        );
-
-        resolve(undefined);
-      });
+      resolve(undefined);
     });
   });
 }
