@@ -29,6 +29,8 @@ function serveGustwind({
     handler: async ({ url }) => {
       // This needs to happen per request since data (components etc.) might
       // update due to a change in the file system.
+      // TODO: Push this logic outside of the handler into the upper scope
+      // and handle change tracking internally!
       const { plugins, router, tasks } = await importPlugins({
         cwd,
         initialImportedPlugins,
