@@ -34,3 +34,10 @@ Deno.test("string is not a component", () => {
     false,
   );
 });
+
+Deno.test("null is not a component", () => {
+  assertEquals(
+    isComponent(null),
+    false,
+  );
+});

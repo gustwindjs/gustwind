@@ -7,7 +7,8 @@ function isUndefined(str?: unknown) {
 }
 
 // deno-lint-ignore no-explicit-any
-const isObject = (a: any) => !Array.isArray(a) && typeof a === "object";
+const isObject = (a: any) =>
+  a !== null && !Array.isArray(a) && typeof a === "object";
 
 function get<O = Record<string, unknown>>(
   dataContext: O,
