@@ -32,11 +32,16 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
-    const { payload: { route, dir, url } } = e.data;
+    const { payload: { routes, route, dir, url } } = e.data;
 
     DEBUG && console.log("worker - starting to build", id, route);
 
-    const { markup, tasks } = await applyPlugins({ plugins, url, route });
+    const { markup, tasks } = await applyPlugins({
+      plugins,
+      url,
+      routes,
+      route,
+    });
 
     self.postMessage({
       type: "addTasks",

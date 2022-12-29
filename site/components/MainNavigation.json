@@ -60,7 +60,7 @@
                   "type": "Link",
                   "props": {
                     "children": "Blog",
-                    "href": "/blog/"
+                    "href": "blog"
                   }
                 },
                 {

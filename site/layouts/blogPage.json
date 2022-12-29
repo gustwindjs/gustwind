@@ -15,7 +15,7 @@
         {
           "type": "p",
           "children": {
-            "utility": "markdown",
+            "utility": "processMarkdown",
             "parameters": [{
               "utility": "get",
               "parameters": ["context", "document.content"]

@@ -72,7 +72,8 @@ type PluginApi = {
     >
     | Tasks
     | void;
-  render?({ route, context, send, url }: {
+  render?({ routes, route, context, send, url }: {
+    routes: Routes;
     route: Route;
     context: Context;
     send: Send;
@@ -136,6 +137,7 @@ type SendMessageEvent =
   };
 
 // This type is specific to breezewind-router so it probably doesn't belong here
+type Routes = Record<string, Route>;
 type Route = {
   context: DataContext;
   url: string;
@@ -146,7 +148,7 @@ type Route = {
   // TODO: This should come as an extension from the script plugin
   // if it is enabled
   scripts?: { name: string }[]; // These point to scripts directory by name
-  routes?: Record<string, Route>;
+  routes?: Routes;
   dataSources?: DataSource[];
   expand?: {
     matchBy?: { dataSource: DataSource; slug: string };
@@ -168,6 +170,7 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
+      routes: Routes;
       route: Route;
       dir: string;
       url: string;
@@ -234,6 +237,7 @@ export type {
   PluginParameters,
   Props,
   Route,
+  Routes,
   Scripts,
   Send,
   Tasks,

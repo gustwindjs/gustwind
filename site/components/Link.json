@@ -4,17 +4,33 @@
   "classList": {
     "font-bold": [
       { "utility": "get", "parameters": ["props", "href"] },
-      { "utility": "get", "parameters": ["context", "pagePath"] }
+      {
+        "utility": "trim",
+        "parameters": [
+          { "utility": "get", "parameters": ["context", "pagePath"] },
+          "/"
+        ]
+      }
     ]
   },
   "children": {
-    "utility": "get",
-    "parameters": ["props", "children"]
+    "utility": "render",
+    "parameters": [
+      {
+        "utility": "get",
+        "parameters": ["props", "children"]
+      }
+    ]
   },
   "attributes": {
     "href": {
-      "utility": "get",
-      "parameters": ["props", "href"]
+      "utility": "validateUrl",
+      "parameters": [
+        {
+          "utility": "get",
+          "parameters": ["props", "href"]
+        }
+      ]
     }
   }
 }

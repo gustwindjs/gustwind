@@ -6,7 +6,7 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component } from "../../breezewind/types.ts";
-import type { Plugin } from "../../types.ts";
+import type { Plugin, Routes } from "../../types.ts";
 
 // TODO: If a component changes, reload the file (needs handling here somehow)
 // TODO: If a layout changes, reload the file (needs handling here somehow)
@@ -44,7 +44,9 @@ const plugin: Plugin<{
           recursive: true,
         }),
       ),
-      pageUtilitiesPath ? load.module(path.join(cwd, pageUtilitiesPath)) : {},
+      pageUtilitiesPath
+        ? load.module(path.join(cwd, pageUtilitiesPath))
+        : { init: ({ routes }: { routes: Routes }) => {} },
       metaPath ? load.json(metaPath) : {},
     ]);
 
@@ -89,12 +91,13 @@ const plugin: Plugin<{
           }]
           : [];
       },
-      render: ({ route, context }) =>
+      render: ({ routes, route, context }) =>
         renderHTML({
           component: layouts[route.layout],
           components,
           context,
-          utilities: pageUtilities,
+          // @ts-expect-error This is fine.
+          utilities: pageUtilities.init({ routes }),
         }),
       onMessage: ({ type, payload }) => {
         switch (type) {

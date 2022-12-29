@@ -1,40 +1,90 @@
 import md from "./transforms/markdown.ts";
 import { tw as twind } from "https://esm.sh/@twind/core@1.1.1";
 import type { Context } from "../breezewind/types.ts";
+import type { Routes } from "../types.ts";
 
-function dateToISO(_: Context, date: string) {
-  return (new Date(date)).toISOString();
-}
+function init({ routes }: { routes: Routes }) {
+  function dateToISO(_: Context, date: string) {
+    return (new Date(date)).toISOString();
+  }
 
-async function markdown(_: Context, input: string) {
-  return (await md(input)).content;
-}
+  async function processMarkdown(_: Context, input: string) {
+    return (await md(input)).content;
+  }
 
-function testUtility(_: Context, input: string) {
-  return input;
-}
+  function testUtility(_: Context, input: string) {
+    return input;
+  }
 
-function tw(_: Context, input: string) {
-  return twind(input);
-}
+  function trim(_: Context, str: string, char: string) {
+    if (!str) {
+      throw new Error("No string to trim!");
+    }
 
-let renderStart: number;
+    // Exception for /
+    if (str === char) {
+      return str;
+    }
 
-function _onRenderStart() {
-  // This is triggered when page rendering begins.
-  // It's a good spot for clearing ids caches (think anchoring)
-  // or benchmarking.
-  renderStart = performance.now();
-}
-
-function _onRenderEnd(context: Context) {
-  if (context.pagePath) {
-    const renderEnd = performance.now();
-
-    console.log(
-      `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
+    // Adapted from https://www.sitepoint.com/trimming-strings-in-javascript/
+    return str.replace(new RegExp("^[" + char + "]+"), "").replace(
+      new RegExp("[" + char + "]+$"),
+      "",
     );
   }
+
+  function tw(_: Context, input: string) {
+    return twind(input);
+  }
+
+  function validateUrl(_: Context, url: string) {
+    if (!url) {
+      return;
+    }
+
+    if (routes[url]) {
+      return url === "/" ? "/" : `/${url}/`;
+    }
+
+    // TODO: This would be a good spot to check the url doesn't 404
+    // To keep this fast, some kind of local, time-based cache would
+    // be good to have to avoid hitting the urls all the time.
+    if (url.startsWith("http")) {
+      return url;
+    }
+
+    throw new Error(`Failed to find matching url for "${url}"`);
+  }
+
+  let renderStart: number;
+
+  function _onRenderStart() {
+    // This is triggered when page rendering begins.
+    // It's a good spot for clearing ids caches (think anchoring)
+    // or benchmarking.
+    renderStart = performance.now();
+  }
+
+  function _onRenderEnd(context: Context) {
+    if (context.pagePath) {
+      const renderEnd = performance.now();
+
+      console.log(
+        `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
+      );
+    }
+  }
+
+  return {
+    _onRenderEnd,
+    _onRenderStart,
+    dateToISO,
+    processMarkdown,
+    testUtility,
+    trim,
+    tw,
+    validateUrl,
+  };
 }
 
-export { _onRenderEnd, _onRenderStart, dateToISO, markdown, testUtility, tw };
+export { init };

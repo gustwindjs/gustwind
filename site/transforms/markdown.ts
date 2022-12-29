@@ -82,7 +82,9 @@ async function transformMarkdown(input: string) {
           token.html = await renderHTML({
             component: matchedComponent,
             components: {},
-            utilities: pageUtilities,
+            // TODO: This doesn't feel right. Maybe there's a better way
+            // to handle rendering here.
+            utilities: pageUtilities.init({ routes: {} }),
           });
         } else {
           throw new Error(

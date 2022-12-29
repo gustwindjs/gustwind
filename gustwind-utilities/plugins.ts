@@ -7,6 +7,7 @@ import type {
   PluginApi,
   PluginOptions,
   Route,
+  Routes,
   Send,
   Tasks,
 } from "../types.ts";
@@ -178,8 +179,10 @@ async function applyPlugins(
   {
     plugins,
     url,
+    routes,
     route,
   }: {
+    routes: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
@@ -205,6 +208,7 @@ async function applyPlugins(
   const markup = await applyRenders({
     context,
     plugins,
+    routes,
     route,
     send,
     url,
@@ -334,10 +338,11 @@ async function applyBeforeEachRenders(
 }
 
 async function applyRenders(
-  { context, plugins, route, send, url }: {
+  { context, plugins, route, routes, send, url }: {
     context: Context;
     plugins: PluginDefinition[];
     route: Route;
+    routes: Routes;
     send: Send;
     url: string;
   },
@@ -351,7 +356,7 @@ async function applyRenders(
   for await (const render of renders) {
     markup =
       // @ts-expect-error We know render should be defined by now
-      await render({ context, route, send, url });
+      await render({ context, route, routes, send, url });
   }
 
   return markup;

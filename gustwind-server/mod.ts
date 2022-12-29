@@ -49,6 +49,7 @@ function serveGustwind({
         const { markup, tasks } = await applyPlugins({
           plugins,
           url: pathname,
+          routes: await router.getAllRoutes(),
           route: matched.route,
         });
 

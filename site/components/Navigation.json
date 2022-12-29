@@ -3,42 +3,42 @@
     "type": "Link",
     "props": {
       "children": "Modes",
-      "href": "/modes/"
+      "href": "modes"
     }
   },
   {
     "type": "Link",
     "props": {
       "children": "Configuration",
-      "href": "/configuration/"
+      "href": "configuration"
     }
   },
   {
     "type": "Link",
     "props": {
       "children": "Routing",
-      "href": "/routing/"
+      "href": "routing"
     }
   },
   {
     "type": "Link",
     "props": {
       "children": "Concepts",
-      "href": "/concepts/"
+      "href": "concepts"
     }
   },
   {
     "type": "Link",
     "props": {
       "children": "Deployment",
-      "href": "/deployment/"
+      "href": "deployment"
     }
   },
   {
     "type": "Link",
     "props": {
       "children": "Breezewind",
-      "href": "/breezewind/"
+      "href": "breezewind"
     }
   }
 ]
