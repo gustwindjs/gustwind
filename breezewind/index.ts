@@ -68,6 +68,11 @@ async function render(
     ))).join("");
   }
 
+  // TODO: Test this case
+  if (!isObject(component)) {
+    return "";
+  }
+
   let element = component.type;
   const foundComponent = element && typeof element === "string" &&
     components?.[element];
