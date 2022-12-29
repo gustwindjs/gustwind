@@ -127,7 +127,9 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     const endTime = performance.now();
     console.log(
-      `Serving at ${port}, took ${endTime - startTime}ms to initialize`,
+      `Serving at ${port}, took ${
+        (endTime - startTime).toFixed(2)
+      }ms to initialize the server`,
     );
 
     await copyToClipboard(`http://localhost:${port}/`);
