@@ -11,7 +11,7 @@ import type {
 } from "./types.ts";
 
 type Options = {
-  component: Component | Component[];
+  component: string | Component | Component[];
   components?: Components;
   extensions?: (Extension)[];
   context?: Context;
@@ -36,6 +36,10 @@ async function renderWithHooks(
 async function render(
   { component, components, extensions, context, props, utilities }: Options,
 ): Promise<string> {
+  if (typeof component === "string") {
+    return component;
+  }
+
   const renderUtility = (_: Context, component: unknown) =>
     isComponent(component)
       // @ts-ignore: This is correct due to runtime check
@@ -134,8 +138,23 @@ async function render(
     if (typeof children === "string") {
       // Nothing to do
     } else if (Array.isArray(children)) {
+      const component = await Promise.all(children.map((child) => {
+        if (typeof child === "string") {
+          return child;
+        }
+        // @ts-expect-error This is fine
+        if (child.utility) {
+          // @ts-expect-error This is fine
+          return applyUtility(child, utilities, {
+            context,
+            props: scopedProps,
+          });
+        }
+        return child;
+      }));
+
       children = await render({
-        component: children,
+        component,
         props: scopedProps,
         components,
         extensions,

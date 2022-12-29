@@ -1,6 +1,7 @@
 type Context = Record<string, unknown>;
 type Components = Record<string, Component | Component[]>;
 
+// TODO: Force at least either type or children field to exist
 type BaseComponent = {
   type?: string | Utility;
   closingCharacter?: string;
@@ -9,8 +10,7 @@ type BaseComponent = {
   bindToProps?: Record<string, Utility>;
   props?: Context;
 
-  // TODO: Should setting children be forced?
-  children?: string | Component[] | Utility;
+  children?: string | (string | Component | Utility)[] | Utility;
 };
 
 type ClassList = Record<string, Utility[]>;

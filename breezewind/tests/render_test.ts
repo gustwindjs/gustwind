@@ -81,6 +81,22 @@ Deno.test("allow rendering with context", async () => {
   );
 });
 
+Deno.test("allow rendering within an array with context", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "div",
+        children: [{
+          utility: "render",
+          parameters: [{ utility: "get", parameters: ["context", "demo"] }],
+        }],
+      },
+      context: { demo: { type: "span", children: "foobar" } },
+    }),
+    "<div><span>foobar</span></div>",
+  );
+});
+
 Deno.test("allow rendering with props", async () => {
   assertEquals(
     await breeze({
@@ -94,6 +110,41 @@ Deno.test("allow rendering with props", async () => {
       },
     }),
     "<div><span>foobar</span></div>",
+  );
+});
+
+Deno.test("allow rendering within an array with props", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "div",
+        props: { demo: { type: "span", children: "foobar" } },
+        children: [{
+          utility: "render",
+          parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+        }],
+      },
+    }),
+    "<div><span>foobar</span></div>",
+  );
+});
+
+Deno.test("allow combining render results", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "div",
+        props: { demo: { type: "span", children: "foobar" } },
+        children: [
+          {
+            utility: "render",
+            parameters: [{ utility: "get", parameters: ["props", "demo"] }],
+          },
+          "foo",
+        ],
+      },
+    }),
+    "<div><span>foobar</span>foo</div>",
   );
 });
 
