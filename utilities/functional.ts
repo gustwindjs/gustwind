@@ -2,6 +2,10 @@ function last<O>(array: O[]) {
   return array[array.length - 1];
 }
 
+function isNull(str?: unknown) {
+  return str === null;
+}
+
 function isUndefined(str?: unknown) {
   return typeof str == "undefined";
 }
@@ -33,7 +37,7 @@ function get<O = Record<string, unknown>>(
       // @ts-expect-error This is ok
       const value = dataContext[key];
 
-      return isUndefined(value) ? defaultValue : value;
+      return isUndefined(value) || isNull(value) ? defaultValue : value;
     }
 
     return defaultValue;
@@ -48,7 +52,7 @@ function get<O = Record<string, unknown>>(
     }
   });
 
-  if (isUndefined(value)) {
+  if (isUndefined(value) || isNull(value)) {
     return defaultValue;
   }
 
