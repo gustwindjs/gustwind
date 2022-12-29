@@ -69,6 +69,8 @@ async function build(
     workerPool.onWorkFinished(() => {
       workerPool.terminate();
 
+      // TODO: This might belong to some sort of cleanup phase for the
+      // script plugin.
       // https://esbuild.github.io/getting-started/#deno
       esbuild.stop();
 
