@@ -6,6 +6,7 @@ import type {
   Plugin,
   PluginApi,
   PluginOptions,
+  PluginParameters,
   Route,
   Routes,
   Send,
@@ -106,36 +107,28 @@ async function importPlugin(
     options,
     outputDirectory,
     load: {
-      dir(
-        { path, extension, recursive }: {
-          path: string;
-          extension?: string;
-          recursive?: boolean;
-        },
-      ) {
+      dir({ path, extension, recursive, type }) {
         tasks.push({
           type: "listDirectory",
-          payload: { path },
+          payload: { path, type },
         });
 
         return dir({ path, extension, recursive });
       },
-      json<T>(path: string) {
-        tasks.push({
-          type: "loadJSON",
-          payload: { path },
-        });
+      // For some reason TS doesn't infer this correctly
+      json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
+        tasks.push({ type: "loadJSON", payload });
 
-        return getJson<T>(path);
+        return getJson<T>(payload.path);
       },
-      module<T>(path: string) {
-        tasks.push({
-          type: "loadModule",
-          payload: { path },
-        });
+      // For some reason TS doesn't infer this correctly
+      module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
+        tasks.push({ type: "loadModule", payload });
 
         // TODO: Is it enough to support only local paths here?
-        return import(`file://${path}?cache=${new Date().getTime()}`) as T;
+        return import(
+          `file://${payload.path}?cache=${new Date().getTime()}`
+        ) as T;
       },
     },
   });

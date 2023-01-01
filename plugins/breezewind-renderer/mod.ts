@@ -5,8 +5,12 @@ import breezewind from "../../breezewind/index.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import type { Component } from "../../breezewind/types.ts";
+import type { Component, Utilities } from "../../breezewind/types.ts";
 import type { Plugin, Routes } from "../../types.ts";
+
+type PageUtilities = {
+  init: ({ routes }: { routes: Routes }) => Utilities;
+};
 
 // TODO: If a component changes, reload the file (needs handling here somehow)
 // TODO: If a layout changes, reload the file (needs handling here somehow)
@@ -30,25 +34,46 @@ const plugin: Plugin<{
     mode,
   }) => {
     let [components, layouts, pageUtilities, meta] = await Promise.all([
-      getDefinitions<Component>(
+      loadComponents(),
+      loadLayouts(),
+      loadPageUtilities(),
+      loadMeta(),
+    ]);
+
+    async function loadComponents() {
+      return getDefinitions<Component>(
         await load.dir({
           path: path.join(cwd, componentsPath),
           extension: ".json",
           recursive: true,
+          type: "components",
         }),
-      ),
-      getDefinitions<Component>(
+      );
+    }
+
+    async function loadLayouts() {
+      return getDefinitions<Component>(
         await load.dir({
           path: path.join(cwd, layoutsPath),
           extension: ".json",
           recursive: true,
+          type: "layouts",
         }),
-      ),
-      pageUtilitiesPath
-        ? load.module(path.join(cwd, pageUtilitiesPath))
-        : { init: (_: { routes: Routes }) => {} },
-      metaPath ? load.json(metaPath) : {},
-    ]);
+      );
+    }
+
+    async function loadPageUtilities() {
+      return pageUtilitiesPath
+        ? await load.module<PageUtilities>({
+          path: path.join(cwd, pageUtilitiesPath),
+          type: "pageUtilities",
+        })
+        : undefined;
+    }
+
+    function loadMeta() {
+      return metaPath ? load.json({ path: metaPath, type: "meta" }) : {};
+    }
 
     return {
       prepareContext: async ({ url, route }) => {
@@ -96,11 +121,35 @@ const plugin: Plugin<{
           component: layouts[route.layout],
           components,
           context,
-          // @ts-expect-error This is fine.
-          utilities: pageUtilities.init({ routes }),
+          utilities: pageUtilities && pageUtilities.init({ routes }),
         }),
-      onMessage: ({ type, payload }) => {
+      onMessage: async ({ type, payload }) => {
         switch (type) {
+          case "fileChanged": {
+            switch (payload.type) {
+              case "components": {
+                components = await loadComponents();
+
+                return;
+              }
+              case "layouts": {
+                layouts = await loadLayouts();
+
+                return;
+              }
+              case "pageUtilities": {
+                pageUtilities = await loadPageUtilities();
+
+                return;
+              }
+              case "meta": {
+                meta = await loadMeta();
+
+                return;
+              }
+            }
+            return;
+          }
           case "getComponents":
             return components;
           case "getLayouts":

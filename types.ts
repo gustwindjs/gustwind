@@ -31,13 +31,14 @@ type Plugin<O = Record<string, unknown>> = {
 type PluginParameters<O = Record<string, unknown>> = {
   cwd: string;
   load: {
-    dir({ path, extension, recursive }: {
+    dir({ path, extension, recursive, type }: {
       path: string;
+      type: string;
       extension?: string;
       recursive?: boolean;
     }): Promise<{ name: string; path: string }[]>;
-    json<T>(path: string): Promise<T>;
-    module<T>(path: string): Promise<T>;
+    json<T>({ path, type }: { path: string; type: string }): Promise<T>;
+    module<T>({ path, type }: { path: string; type: string }): Promise<T>;
   };
   mode: Mode;
   outputDirectory: string;
@@ -133,6 +134,7 @@ type SendMessageEvent =
       event: Deno.FsEvent;
       extension: string;
       name: string;
+      type: string;
     };
   };
 
@@ -178,15 +180,15 @@ type BuildWorkerEvent =
   }
   | {
     type: "listDirectory";
-    payload: { path: string };
+    payload: { path: string; type: string };
   }
   | {
     type: "loadJSON";
-    payload: { path: string };
+    payload: { path: string; type: string };
   }
   | {
     type: "loadModule";
-    payload: { path: string };
+    payload: { path: string; type: string };
   }
   | {
     type: "watchPaths";

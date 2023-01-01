@@ -18,11 +18,15 @@ const plugin: Plugin<{
   init: async (
     { cwd, options: { dataSourcesPath, include, routesPath }, load },
   ) => {
-    const routes = await load.json<Routes>(
-      path.join(cwd, routesPath),
-    );
+    const routes = await load.json<Routes>({
+      path: path.join(cwd, routesPath),
+      type: "routes",
+    });
     const dataSources = dataSourcesPath
-      ? await load.module<DataSources>(path.join(cwd, dataSourcesPath))
+      ? await load.module<DataSources>({
+        path: path.join(cwd, dataSourcesPath),
+        type: "dataSources",
+      })
       : {};
 
     return {

@@ -18,7 +18,11 @@ const plugin: Plugin<{
     const foundScripts: { name: string; path: string; externals?: string[] }[] =
       (await Promise.all(
         scriptsPath.map((p) =>
-          load.dir({ path: path.join(cwd, p), extension: ".ts" })
+          load.dir({
+            path: path.join(cwd, p),
+            extension: ".ts",
+            type: "foundScrips",
+          })
         ),
       )).flat();
     let receivedScripts: {
