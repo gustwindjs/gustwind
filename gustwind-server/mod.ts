@@ -10,7 +10,7 @@ import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
-function serveGustwind({
+async function serveGustwind({
   cwd,
   plugins: initialImportedPlugins,
   pluginDefinitions,
@@ -24,24 +24,17 @@ function serveGustwind({
   port: number;
 }) {
   let pathFs: Awaited<ReturnType<typeof evaluateTasks>> = {};
-
+  const { plugins, router, tasks } = await importPlugins({
+    cwd,
+    initialImportedPlugins,
+    pluginDefinitions,
+    mode,
+    // Output directory doesn't matter for the server since it's
+    // using a virtual fs.
+    outputDirectory: "/",
+  });
   const server = new Server({
     handler: async ({ url }) => {
-      // This needs to happen per request since data (components etc.) might
-      // update due to a change in the file system.
-      // TODO: Push this logic outside of the handler into the upper scope
-      // and handle change tracking internally!
-      const { plugins, router, tasks } = await importPlugins({
-        cwd,
-        initialImportedPlugins,
-        pluginDefinitions,
-        mode,
-        // Output directory doesn't matter for the server since it's
-        // using a virtual fs.
-        outputDirectory: "/",
-      });
-
-      const fs = await evaluateTasks(tasks);
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(pathname);
 
@@ -71,6 +64,7 @@ function serveGustwind({
         );
       }
 
+      const fs = await evaluateTasks(tasks);
       const matchedFsItem = fs[pathname] || pathFs[pathname];
 
       if (matchedFsItem) {

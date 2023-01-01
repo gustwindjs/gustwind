@@ -102,7 +102,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log("Starting development server");
 
     const wss = getWebsocketServer();
-    const serve = serveGustwind({
+    const serve = await serveGustwind({
       cwd,
       plugins: [
         await importPlugin({
