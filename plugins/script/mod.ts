@@ -15,8 +15,21 @@ const plugin: Plugin<{
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
   }) => {
-    const foundScripts: { name: string; path: string; externals?: string[] }[] =
-      (await Promise.all(
+    let foundScripts = await loadScripts();
+    let receivedScripts: {
+      isExternal?: boolean;
+      name: string;
+      localPath: string;
+      remotePath: string;
+      externals?: string[];
+    }[] = [];
+
+    async function loadScripts(): Promise<{
+      name: string;
+      path: string;
+      externals?: string[];
+    }[]> {
+      return (await Promise.all(
         scriptsPath.map((p) =>
           load.dir({
             path: path.join(cwd, p),
@@ -25,13 +38,7 @@ const plugin: Plugin<{
           })
         ),
       )).flat();
-    let receivedScripts: {
-      isExternal?: boolean;
-      name: string;
-      localPath: string;
-      remotePath: string;
-      externals?: string[];
-    }[] = [];
+    }
 
     return {
       prepareBuild: () => {
@@ -87,24 +94,31 @@ const plugin: Plugin<{
         // globalScripts don't need processing since they are in the right format
         return { context: { scripts: globalScripts.concat(scriptTags) } };
       },
-      onMessage({ type, payload }) {
+      onMessage: async ({ type, payload }) => {
+        if (type === "fileChanged") {
+          if (payload.type === "foundScripts") {
+            foundScripts = await loadScripts();
+
+            // TODO: How to avoid a race condition here with script compilation?
+            // A part of the problem is that the compilation result lives at the dev
+            // server, not at the plugin since it's messaging based. Maybe that's
+            // the right place for solving it as well.
+            //
+            // Add a custom message just for replacing scripts?
+            /*else if (type === "fileChanged") {
+              const { extension } = payload;
+
+              if (extension === ".ts") {
+                // TODO: Update changed file + trigger web socket update
+                console.log("script changed", payload);
+              }
+            }*/
+          }
+        }
+
         if (type === "addScripts") {
           receivedScripts = receivedScripts.concat(payload);
         }
-        // TODO: How to avoid a race condition here with script compilation?
-        // A part of the problem is that the compilation result lives at the dev
-        // server, not at the plugin since it's messaging based. Maybe that's
-        // the right place for solving it as well.
-        //
-        // Add a custom message just for replacing scripts?
-        /*else if (type === "fileChanged") {
-          const { extension } = payload;
-
-          if (extension === ".ts") {
-            // TODO: Update changed file + trigger web socket update
-            console.log("script changed", payload);
-          }
-        }*/
       },
     };
   },
