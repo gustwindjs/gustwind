@@ -46,7 +46,7 @@ const plugin: Plugin<{
       ),
       pageUtilitiesPath
         ? load.module(path.join(cwd, pageUtilitiesPath))
-        : { init: ({ routes }: { routes: Routes }) => {} },
+        : { init: (_: { routes: Routes }) => {} },
       metaPath ? load.json(metaPath) : {},
     ]);
 
