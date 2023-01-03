@@ -101,21 +101,6 @@ const plugin: Plugin<{
           if (payload.type === "foundScripts") {
             foundScripts = await loadScripts();
 
-            // TODO: How to avoid a race condition here with script compilation?
-            // A part of the problem is that the compilation result lives at the dev
-            // server, not at the plugin since it's messaging based. Maybe that's
-            // the right place for solving it as well.
-            //
-            // Add a custom message just for replacing scripts?
-            /*else if (type === "fileChanged") {
-              const { extension } = payload;
-
-              if (extension === ".ts") {
-                // TODO: Update changed file + trigger web socket update
-                console.log("script changed", payload);
-              }
-            }*/
-
             // TODO: Make this more refined by sending a replaceScript event
             // and the script that changed so that it can be replaced as
             // that avoids a full page reload.
