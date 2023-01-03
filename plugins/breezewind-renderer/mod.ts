@@ -123,7 +123,9 @@ const plugin: Plugin<{
           context,
           utilities: pageUtilities && pageUtilities.init({ routes }),
         }),
-      onMessage: async ({ type, payload }) => {
+      onMessage: async ({ message }) => {
+        const { type, payload } = message;
+
         switch (type) {
           case "fileChanged": {
             switch (payload.type) {

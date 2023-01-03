@@ -87,7 +87,7 @@ type PluginApi = {
     send: Send;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
-  onMessage?(message: SendMessageEvent): void;
+  onMessage?({ message }: { message: SendMessageEvent }): void;
   getAllRoutes?(): Promise<Record<string, Route>> | Record<string, Route>;
   matchRoute?(
     url: string,
@@ -117,10 +117,7 @@ type SendMessageEvent =
     }[];
   }
   | { type: "getComponents"; payload: undefined }
-  | {
-    type: "updateComponents";
-    payload: Component;
-  }
+  | { type: "updateComponents"; payload: Component }
   | { type: "getRenderer"; payload: string }
   | { type: "getLayouts"; payload: undefined }
   | { type: "updateLayouts"; payload: Component }

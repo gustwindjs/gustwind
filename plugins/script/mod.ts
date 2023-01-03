@@ -94,7 +94,9 @@ const plugin: Plugin<{
         // globalScripts don't need processing since they are in the right format
         return { context: { scripts: globalScripts.concat(scriptTags) } };
       },
-      onMessage: async ({ type, payload }) => {
+      onMessage: async ({ message }) => {
+        const { type, payload } = message;
+
         if (type === "fileChanged") {
           if (payload.type === "foundScripts") {
             foundScripts = await loadScripts();

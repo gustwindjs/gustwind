@@ -49,7 +49,7 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
           }),
         });
       },
-      onMessage({ type }) {
+      onMessage({ message: { type } }) {
         if (type === "fileChanged") {
           // TODO: How to tell apart ts + other cases in a nice way?
           // ts feels like the only exception since scripts get away

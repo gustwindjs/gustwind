@@ -41,7 +41,9 @@ const plugin: Plugin = {
             },
           }));
       },
-      onMessage: ({ type, payload }) => {
+      onMessage: ({ message }) => {
+        const { type, payload } = message;
+
         if (type === "twindSetupReady") {
           twindSetupPath = payload.path;
         }
