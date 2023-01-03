@@ -18,16 +18,24 @@ const plugin: Plugin<{
   init: async (
     { cwd, options: { dataSourcesPath, include, routesPath }, load },
   ) => {
-    const routes = await load.json<Routes>({
-      path: path.join(cwd, routesPath),
-      type: "routes",
-    });
-    const dataSources = dataSourcesPath
-      ? await load.module<DataSources>({
-        path: path.join(cwd, dataSourcesPath),
-        type: "dataSources",
-      })
-      : {};
+    let routes = await loadRoutes();
+    let dataSources = await loadDataSources();
+
+    function loadRoutes() {
+      return load.json<Routes>({
+        path: path.join(cwd, routesPath),
+        type: "routes",
+      });
+    }
+
+    async function loadDataSources() {
+      return dataSourcesPath
+        ? await load.module<DataSources>({
+          path: path.join(cwd, dataSourcesPath),
+          type: "dataSources",
+        })
+        : {};
+    }
 
     return {
       getAllRoutes: async () => {
@@ -61,12 +69,33 @@ const plugin: Plugin<{
             route,
             tasks: [{
               type: "watchPaths",
-              payload: { paths: allParameters },
+              payload: { paths: allParameters, type: "paths" },
             }],
           };
         }
 
         return { route: undefined, tasks: [] };
+      },
+      onMessage: async ({ message }) => {
+        const { type, payload } = message;
+
+        if (type === "fileChanged") {
+          switch (payload.type) {
+            case "routes": {
+              routes = await loadRoutes();
+
+              return { send: [{ type: "reloadPage" }] };
+            }
+            case "dataSources": {
+              dataSources = await loadDataSources();
+
+              return { send: [{ type: "reloadPage" }] };
+            }
+            case "paths": {
+              return { send: [{ type: "reloadPage" }] };
+            }
+          }
+        }
       },
     };
   },

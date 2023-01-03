@@ -196,7 +196,7 @@ type BuildWorkerEvent =
   }
   | {
     type: "watchPaths";
-    payload: { paths: string[] };
+    payload: { paths: string[]; type: string };
   }
   | {
     type: "writeFile";

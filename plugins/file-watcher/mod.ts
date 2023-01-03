@@ -29,13 +29,18 @@ const plugin: Plugin<{ pluginsPath: string }> = {
 
               return payload.path;
             }
+            case "watchPaths": {
+              payload.paths.forEach((path) =>
+                pathTypes.push({ path, type: payload.type })
+              );
+
+              return payload.paths;
+            }
             // TODO: Should these capture types as well?
             case "writeScript":
               return payload.scriptPath;
             case "writeFiles":
               return payload.inputDirectory;
-            case "watchPaths":
-              return payload.paths;
           }
         }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!
 
@@ -44,8 +49,11 @@ const plugin: Plugin<{ pluginsPath: string }> = {
         watch({
           paths,
           onChange: (path, event) => {
-            const match = pathTypes.find(({ path: p }) => path.startsWith(p)) ||
-              { type: "" };
+            const match = pathTypes.find(({ path: p }) =>
+              path.startsWith(p) ||
+              path.endsWith(p) ||
+              { type: "" }
+            );
             const extension = _path.extname(path);
             const name = _path.basename(path, extension);
 
