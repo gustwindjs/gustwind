@@ -115,6 +115,11 @@ const plugin: Plugin<{
                 console.log("script changed", payload);
               }
             }*/
+
+            // TODO: Make this more refined by sending a replaceScript event
+            // and the script that changed so that it can be replaced as
+            // that avoids a full page reload.
+            return { send: [{ type: "reloadPage" }] };
           }
         }
 
