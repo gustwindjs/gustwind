@@ -12,6 +12,7 @@ import type {
   Send,
   Tasks,
 } from "../types.ts";
+import { isObject } from "../utilities/functional.ts";
 
 export type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi };
@@ -220,32 +221,6 @@ async function applyPlugins(
   };
 }
 
-function getSend(plugins: PluginDefinition[]): Send {
-  return (pluginName, message) => {
-    if (pluginName === "*") {
-      plugins.forEach(({ api }) => api.onMessage && api.onMessage({ message }));
-    } else {
-      const foundPlugin = plugins.find(({ meta: { name } }) =>
-        pluginName === name
-      );
-
-      if (foundPlugin) {
-        if (foundPlugin.api.onMessage) {
-          return foundPlugin.api.onMessage({ message });
-        } else {
-          throw new Error(
-            `Plugin ${pluginName} does not have an onMessage handler`,
-          );
-        }
-      } else {
-        throw new Error(
-          `Tried to send a plugin (${pluginName}) that does not exist`,
-        );
-      }
-    }
-  };
-}
-
 async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
   const getAllRoutes = plugins.map(({ api }) => api.getAllRoutes)
     .filter(Boolean);
@@ -396,6 +371,41 @@ async function applyAfterEachRenders(
   }
 
   return markup;
+}
+
+function getSend(plugins: PluginDefinition[]): Send {
+  return async (pluginName, message) => {
+    if (pluginName === "*") {
+      const sends = (await Promise.all(
+        plugins.map(({ api }) => api.onMessage && api.onMessage({ message })),
+      )).filter(Boolean)
+        // @ts-expect-error TS inference fails here
+        .map(({ send }) => send).flat();
+
+      sends.map((message) =>
+        // @ts-expect-error TS inference fails here
+        plugins.map(({ api }) => api.onMessage && api.onMessage({ message }))
+      );
+    } else {
+      const foundPlugin = plugins.find(({ meta: { name } }) =>
+        pluginName === name
+      );
+
+      if (foundPlugin) {
+        if (foundPlugin.api.onMessage) {
+          return foundPlugin.api.onMessage({ message });
+        } else {
+          throw new Error(
+            `Plugin ${pluginName} does not have an onMessage handler`,
+          );
+        }
+      } else {
+        throw new Error(
+          `Tried to send a plugin (${pluginName}) that does not exist`,
+        );
+      }
+    }
+  };
 }
 
 export {

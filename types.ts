@@ -87,7 +87,13 @@ type PluginApi = {
     send: Send;
     url: string;
   }): Promise<{ markup: string }> | { markup: string };
-  onMessage?({ message }: { message: SendMessageEvent }): void;
+  onMessage?(
+    { message }: { message: SendMessageEvent },
+  ):
+    | void
+    | unknown
+    | { send: SendMessageEvent[] }
+    | Promise<void | unknown | { send: SendMessageEvent[] }>;
   getAllRoutes?(): Promise<Record<string, Route>> | Record<string, Route>;
   matchRoute?(
     url: string,
@@ -124,6 +130,7 @@ type SendMessageEvent =
   // twind plugin
   | { type: "twindSetupReady"; payload: { path: string } }
   // websocket plugin
+  | { type: "reloadPage"; payload: undefined }
   | {
     type: "fileChanged";
     payload: {

@@ -50,19 +50,18 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
         });
       },
       onMessage({ message: { type } }) {
-        if (type === "fileChanged") {
-          // TODO: How to tell apart ts + other cases in a nice way?
-          // ts feels like the only exception since scripts get away
-          // with replacing the script over a full refresh
+        if (type === "reloadPage") {
           sendMessage({ type: "reloadPage", payload: {} });
+        }
 
-          /*
+        // TODO: Add a separate event type for replacing scripts
+        // and trigger that from the script plugin
+        /*
               sendMessage({
                 type: "replaceScript",
                 payload: { name: `/${name}.js` },
               });
           */
-        }
       },
     };
   },

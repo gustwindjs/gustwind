@@ -132,22 +132,22 @@ const plugin: Plugin<{
               case "components": {
                 components = await loadComponents();
 
-                return;
+                return { send: [{ type: "reloadPage" }] };
               }
               case "layouts": {
                 layouts = await loadLayouts();
 
-                return;
+                return { send: [{ type: "reloadPage" }] };
               }
               case "pageUtilities": {
                 pageUtilities = await loadPageUtilities();
 
-                return;
+                return { send: [{ type: "reloadPage" }] };
               }
               case "meta": {
                 meta = await loadMeta();
 
-                return;
+                return { send: [{ type: "reloadPage" }] };
               }
             }
             return;
