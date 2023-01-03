@@ -67,7 +67,8 @@ const plugin: Plugin<{ pluginsPath: string }> = {
                 event,
                 extension,
                 name,
-                type: match.type,
+                // TODO: Should type be allowed to be ""?
+                type: match ? match.type : "",
               },
             });
           },
