@@ -2,7 +2,7 @@ import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
-import type { DataSources, Plugin, Route } from "../../types.ts";
+import type { DataSources, Plugin, Route, Tasks } from "../../types.ts";
 
 type Routes = Record<string, Route>;
 
@@ -10,13 +10,19 @@ const plugin: Plugin<{
   dataSourcesPath: string;
   include: string[];
   routesPath: string;
+  emitAllRoutes: boolean;
 }> = {
   meta: {
     name: "breezewind-renderer-plugin",
     dependsOn: [],
   },
   init: async (
-    { cwd, options: { dataSourcesPath, include, routesPath }, load },
+    {
+      cwd,
+      outputDirectory,
+      options: { dataSourcesPath, include, routesPath, emitAllRoutes },
+      load,
+    },
   ) => {
     let routes = await loadRoutes();
     let dataSources = await loadDataSources();
@@ -40,16 +46,29 @@ const plugin: Plugin<{
     return {
       getAllRoutes: async () => {
         const { allRoutes } = await getAllRoutes(routes, dataSources);
+        let includedRoutes = allRoutes;
+        let tasks: Tasks = [];
 
         if (include) {
-          return Object.fromEntries(
+          includedRoutes = Object.fromEntries(
             Object.entries(
               allRoutes,
             ).filter(([url]) => include.includes(url)),
           );
         }
 
-        return allRoutes;
+        if (emitAllRoutes) {
+          tasks = [{
+            type: "writeFile",
+            payload: {
+              outputDirectory,
+              file: "routes.json",
+              data: JSON.stringify(includedRoutes),
+            },
+          }];
+        }
+
+        return { routes: includedRoutes, tasks };
       },
       matchRoute: async (url: string) => {
         const { allRoutes, allParameters } = await getAllRoutes(

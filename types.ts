@@ -94,7 +94,9 @@ type PluginApi = {
     | unknown
     | { send: SendMessageEvent[] }
     | Promise<void | unknown | { send: SendMessageEvent[] }>;
-  getAllRoutes?(): Promise<Record<string, Route>> | Record<string, Route>;
+  getAllRoutes?():
+    | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
+    | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     url: string,
   ): Promise<{ route?: Route; tasks: Tasks }> | {

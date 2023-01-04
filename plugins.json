@@ -3,7 +3,8 @@
     "path": "./plugins/breezewind-router/mod.ts",
     "options": {
       "dataSourcesPath": "./site/dataSources.ts",
-      "routesPath": "./site/routes.json"
+      "routesPath": "./site/routes.json",
+      "emitAllRoutes": true
     }
   },
   {

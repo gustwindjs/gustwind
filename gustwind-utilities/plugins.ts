@@ -224,17 +224,19 @@ async function applyPlugins(
 async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
   const getAllRoutes = plugins.map(({ api }) => api.getAllRoutes)
     .filter(Boolean);
-  let ret: Record<string, Route> = {};
+  let allRoutes: Record<string, Route> = {};
+  let allTasks: Tasks = [];
 
   for await (const routeGetter of getAllRoutes) {
     if (routeGetter) {
-      const routes = await routeGetter();
+      const { routes, tasks } = await routeGetter();
 
-      ret = { ...ret, ...routes };
+      allRoutes = { ...allRoutes, ...routes };
+      allTasks = allTasks.concat(tasks);
     }
   }
 
-  return ret;
+  return { routes: allRoutes, tasks: allTasks };
 }
 
 async function applyMatchRoutes(

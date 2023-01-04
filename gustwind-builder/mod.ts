@@ -44,7 +44,8 @@ async function build(
   });
   tasks.forEach((task) => workerPool.addTaskToQueue(task));
 
-  const routes = await router.getAllRoutes();
+  const { routes, tasks: routerTasks } = await router.getAllRoutes();
+  routerTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
   if (!routes) {
     throw new Error("No routes found");

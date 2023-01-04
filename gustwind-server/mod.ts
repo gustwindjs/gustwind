@@ -39,10 +39,11 @@ async function serveGustwind({
       const matched = await router.matchRoute(pathname);
 
       if (matched && matched.route) {
+        const { routes, tasks: routerTasks } = await router.getAllRoutes();
         const { markup, tasks } = await applyPlugins({
           plugins,
           url: pathname,
-          routes: await router.getAllRoutes(),
+          routes,
           route: matched.route,
         });
 
@@ -52,7 +53,7 @@ async function serveGustwind({
 
         // Capture potential assets created during evaluation as these might be
         // needed later for example in the editor.
-        pathFs = await evaluateTasks(tasks);
+        pathFs = await evaluateTasks(routerTasks.concat(tasks));
 
         // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
         return respond(
