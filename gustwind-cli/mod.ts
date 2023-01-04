@@ -92,11 +92,13 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log(
       `gustwind@${VERSION}\ndeno@${deno}\nv8@${v8}\ntypescript@${typescript}`,
     );
+
     return 0;
   }
 
   if (help) {
     usage();
+
     return 0;
   }
 
@@ -186,6 +188,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   usage();
+
   return 0;
 }
 
