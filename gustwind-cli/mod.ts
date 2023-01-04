@@ -10,7 +10,8 @@ import { getJson } from "../utilities/fs.ts";
 import { VERSION } from "../version.ts";
 import type { PluginOptions } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
-import { serveGustwind } from "../gustwind-server/mod.ts";
+import { gustwindDevServer } from "../gustwind-dev-server/mod.ts";
+import { gustwindServe } from "../gustwind-serve/mod.ts";
 import { importPlugin } from "../gustwind-utilities/plugins.ts";
 import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
@@ -23,6 +24,8 @@ Usage: gustwind [-b|-d] [-D] [-p <port>] [-t <number|"cpuMax"|"cpuHalf">] [-o <d
 Options:
   -b, --build          Builds the project.
   -d, --develop        Runs the project in development mode.
+  -s, --serve          Serves the static build in a given port.
+  -i, --input          Input directory for --serve.
   -D, --debug          Output debug information during execution.
   -p, --port           Development server port.
   -P, --plugins        Plugins definition path (default: plugins.json).
@@ -39,9 +42,11 @@ type CliArgs = {
   port: string;
   plugins: string;
   threads: string;
+  input: string;
   output: string;
   build: boolean;
   develop: boolean;
+  serve: boolean;
   debug: boolean;
   _: string[];
 };
@@ -57,18 +62,22 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     build,
     develop,
     debug,
+    serve,
+    input,
   } = flags.parse(cliArgs, {
-    boolean: ["help", "version", "build", "develop", "debug"],
-    string: ["port", "plugins", "threads", "output"],
+    boolean: ["help", "version", "build", "develop", "debug", "serve"],
+    string: ["port", "plugins", "threads", "output", "input"],
     alias: {
       v: "version",
       h: "help",
       b: "build",
+      s: "serve",
       d: "develop",
       t: "threads",
       p: "port",
       P: "plugins",
       o: "output",
+      i: "input",
       D: "debug",
     },
   }) as CliArgs;
@@ -102,7 +111,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log("Starting development server");
 
     const wss = getWebsocketServer();
-    const serve = await serveGustwind({
+    const serve = await gustwindDevServer({
       cwd,
       plugins: [
         await importPlugin({
@@ -138,6 +147,34 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     // https://esbuild.github.io/getting-started/#deno
     esbuild.stop();
+
+    return;
+  }
+
+  if (serve) {
+    if (!input) {
+      throw new Error("Missing input directory");
+    }
+    const startTime = performance.now();
+
+    console.log(`Starting static server against ${input}`);
+
+    const serve = await gustwindServe({
+      cwd,
+      input,
+      port: Number(port),
+    });
+
+    const endTime = performance.now();
+    console.log(
+      `Serving at ${port}, took ${
+        (endTime - startTime).toFixed(2)
+      }ms to initialize the server`,
+    );
+
+    await copyToClipboard(`http://localhost:${port}/`);
+    console.log("The server address has been copied to the clipboard");
+    await serve();
 
     return;
   }

@@ -10,7 +10,7 @@ import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
-async function serveGustwind({
+async function gustwindDevServer({
   cwd,
   plugins: initialImportedPlugins,
   pluginDefinitions,
@@ -89,4 +89,4 @@ async function serveGustwind({
   return () => server.serve(listener);
 }
 
-export { serveGustwind };
+export { gustwindDevServer };
