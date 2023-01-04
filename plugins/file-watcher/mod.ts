@@ -50,9 +50,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
           paths,
           onChange: (path, event) => {
             const match = pathTypes.find(({ path: p }) =>
-              path.startsWith(p) ||
-              path.endsWith(p) ||
-              { type: "" }
+              path.startsWith(p) || path.endsWith(p)
             );
             const extension = _path.extname(path);
             const name = _path.basename(path, extension);
