@@ -18,7 +18,9 @@ import { evaluatePluginsDefinition } from "./evaluatePluginsDefinition.ts";
 
 function usage() {
   console.log(`
-Usage: gustwind [-b|-d] [-D] [-p <port>] [-t <number|"cpuMax"|"cpuHalf">] [-o <directory>]
+Build:   gustwind -b [-D] [-t <number|"cpuMax"|"cpuHalf">] [-o <directory>]
+Develop: gustwind -d [-D] [-p <port>]
+Serve:   gustwind -s [-D] [-p <port>] [-i <directory>]
 
 Options:
   -b, --build          Builds the project.
