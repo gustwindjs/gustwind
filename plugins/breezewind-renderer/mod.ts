@@ -6,7 +6,7 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Component, Utilities } from "../../breezewind/types.ts";
-import type { Plugin, Routes } from "../../types.ts";
+import type { Plugin, Routes, Tasks } from "../../types.ts";
 
 type PageUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
@@ -107,14 +107,19 @@ const plugin: Plugin<{
         };
       },
       beforeEachRender({ route }) {
-        return layouts[route.layout]
-          ? [{
+        let tasks: Tasks = [];
+
+        if (layouts[route.layout]) {
+          tasks = [{
             type: "watchPaths",
             payload: {
               paths: [path.join(cwd, layoutsPath, route.layout + ".json")],
+              type: "paths",
             },
-          }]
-          : [];
+          }];
+        }
+
+        return tasks;
       },
       render: ({ routes, route, context }) =>
         renderHTML({
@@ -147,6 +152,9 @@ const plugin: Plugin<{
               case "meta": {
                 meta = await loadMeta();
 
+                return { send: [{ type: "reloadPage" }] };
+              }
+              case "paths": {
                 return { send: [{ type: "reloadPage" }] };
               }
             }
