@@ -6,9 +6,7 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { path } from "../server-deps.ts";
 import * as flags from "https://deno.land/std@0.161.0/flags/mod.ts";
-import { getJson } from "../utilities/fs.ts";
 import { VERSION } from "../version.ts";
-import type { PluginOptions } from "../types.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { gustwindDevServer } from "../gustwind-dev-server/mod.ts";
 import { gustwindServe } from "../gustwind-serve/mod.ts";
@@ -16,6 +14,7 @@ import { importPlugin } from "../gustwind-utilities/plugins.ts";
 import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
 import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
+import { evaluatePluginsDefinition } from "./evaluatePluginsDefinition.ts";
 
 function usage() {
   console.log(`
@@ -103,10 +102,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   const cwd = Deno.cwd();
-  const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-  const pluginDefinitions = await getJson<PluginOptions[]>(pluginsPath);
 
   if (develop) {
+    const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
+    const pluginDefinitions = await evaluatePluginsDefinition(pluginsPath);
     const mode = "development";
     const startTime = performance.now();
 
@@ -182,6 +181,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
+    const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
+    const pluginDefinitions = await evaluatePluginsDefinition(pluginsPath);
     await buildProject({ cwd, outputDirectory, pluginDefinitions, threads });
 
     return 0;

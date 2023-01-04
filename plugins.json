@@ -29,7 +29,7 @@
       "scripts": [
         {
           "type": "text/javascript",
-          "src": "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
+          "src": "https://unpkg.com/sidewind@${SIDEWIND_VERSION}/dist/sidewind.umd.production.min.js"
         }
       ],
       "scriptsPath": ["./site/scripts"]
