@@ -34,7 +34,7 @@
       "name": "pagepath",
       "content": {
         "utility": "get",
-        "parameters": ["context", "meta.pagePath"]
+        "parameters": ["context", "pagePath"]
       }
     }
   },
