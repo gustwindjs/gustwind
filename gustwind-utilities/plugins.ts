@@ -12,7 +12,6 @@ import type {
   Send,
   Tasks,
 } from "../types.ts";
-import { isObject } from "../utilities/functional.ts";
 
 export type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi };

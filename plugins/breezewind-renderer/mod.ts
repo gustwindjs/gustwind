@@ -76,7 +76,7 @@ const plugin: Plugin<{
           built: (new Date()).toString(),
         };
 
-        // TODO: Rename pagePath as url across the project
+        // TODO: Rename pagePath as url across the project?
         if (mode === "development") {
           runtimeMeta.pagePath = url;
         }
