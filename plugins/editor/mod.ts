@@ -17,12 +17,12 @@ const plugin: Plugin = {
     let twindSetupPath = "";
 
     return {
-      beforeEachRender({ context, url, send, route }) {
+      beforeEachRender: async ({ context, url, send, route }) => {
         const outputDir = path.join(outputDirectory, url);
 
         const lookup = {
           context,
-          layout: send(
+          layout: await send(
             "breezewind-renderer-plugin",
             { type: "getRenderer", payload: route.layout },
           ),

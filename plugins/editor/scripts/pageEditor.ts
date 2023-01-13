@@ -141,7 +141,7 @@ function validElementSelected(
   };
 
   const focusOutListener = (e: Event) => {
-    const inputElement = (e.target as HTMLElement);
+    const inputElement = e.target as HTMLElement;
 
     if (!inputElement) {
       console.warn("inputListener - No element found");
