@@ -10,7 +10,7 @@ Please see the documentation to learn more about the concepts.
 
 ## Getting started
 
-There's [a simple GitHub template](https://github.com/survivejs/gustwind-template) that has basic features set up. It renders the project readme as `index.html` and you should expand/change the project to your liking.
+There's [a simple GitHub template](https://github.com/gustwindjs/gustwind-template) that has basic features set up. It renders the project readme as `index.html` and you should expand/change the project to your liking.
 
 ## Usage
 
