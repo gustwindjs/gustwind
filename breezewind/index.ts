@@ -76,7 +76,7 @@ async function render(
   let element = component.type;
   const foundComponent = element && typeof element === "string" &&
       components?.[element] && isObject(components?.[element])
-    ? { ...component, ...components?.[element] }
+    ? { ...omit(component, "type"), ...components?.[element] }
     // @ts-expect-error This is fine
     : components?.[element];
   let scopedProps = { ...props, ...component.props };
@@ -276,6 +276,16 @@ async function evaluateFields(
       return [k, value];
     }),
   )).filter(Boolean);
+}
+
+function omit(o: Record<string, unknown>, k: string) {
+  // TODO: Likely there is a better way to omit
+  // TODO: Push this to functional helpers
+  const ret = { ...o };
+
+  delete ret[k];
+
+  return ret;
 }
 
 export default renderWithHooks;
