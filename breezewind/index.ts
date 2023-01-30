@@ -75,7 +75,10 @@ async function render(
 
   let element = component.type;
   const foundComponent = element && typeof element === "string" &&
-    components?.[element] && { ...component, ...components?.[element] };
+      components?.[element] && isObject(components?.[element])
+    ? { ...component, ...components?.[element] }
+    // @ts-expect-error This is fine
+    : components?.[element];
   let scopedProps = { ...props, ...component.props };
 
   if (component.bindToProps) {
