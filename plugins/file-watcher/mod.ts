@@ -8,7 +8,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
   meta: {
     name: "file-watcher-plugin",
   },
-  init: async ({ mode, load, options: { pluginsPath } }) => {
+  init: async ({ cwd, mode, load, options: { pluginsPath } }) => {
     if (mode !== "development") {
       return {};
     }
@@ -31,7 +31,12 @@ const plugin: Plugin<{ pluginsPath: string }> = {
             }
             case "watchPaths": {
               payload.paths.forEach((path) =>
-                pathTypes.push({ path, type: payload.type })
+                pathTypes.push({
+                  // This assumes added paths aren't absolute and have been defined
+                  // against cwd
+                  path: _path.join(cwd, path),
+                  type: payload.type,
+                })
               );
 
               return payload.paths;
