@@ -75,7 +75,7 @@ async function render(
 
   let element = component.type;
   const foundComponent = element && typeof element === "string" &&
-    components?.[element];
+    components?.[element] && { ...component, ...components?.[element] };
   let scopedProps = { ...props, ...component.props };
 
   if (component.bindToProps) {

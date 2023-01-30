@@ -27,6 +27,46 @@ Deno.test("visibleIf shows element based on context", async () => {
   );
 });
 
+Deno.test("visibleIf shows a custom component", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "Demo",
+        visibleIf: [{ utility: "get", parameters: ["context", "visible"] }],
+      },
+      components: {
+        Demo: {
+          "type": "span",
+          "children": "demo",
+        },
+      },
+      extensions: [extensions.visibleIf],
+      context: { visible: true },
+    }),
+    "<span>demo</span>",
+  );
+});
+
+Deno.test("visibleIf hides a custom component", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "Demo",
+        visibleIf: [{ utility: "get", parameters: ["context", "visible"] }],
+      },
+      components: {
+        Demo: {
+          "type": "span",
+          "children": "demo",
+        },
+      },
+      extensions: [extensions.visibleIf],
+      context: { visible: false },
+    }),
+    "",
+  );
+});
+
 Deno.test("visibleIf hides element based on context", async () => {
   assertEquals(
     await breeze({
