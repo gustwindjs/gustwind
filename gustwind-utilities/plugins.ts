@@ -69,10 +69,12 @@ async function importPlugins(
     }
   }
 
-  const tasks = await preparePlugins({ plugins: loadedPluginDefinitions });
+  const { prepareTasks, finalTasks } = await preparePlugins({
+    plugins: loadedPluginDefinitions,
+  });
   await applyOnTasksRegistered({
     plugins: loadedPluginDefinitions,
-    tasks: initialTasks.concat(tasks),
+    tasks: initialTasks.concat(prepareTasks),
   });
 
   // The idea is to proxy routes from all routers so you can use multiple
@@ -88,7 +90,12 @@ async function importPlugins(
     },
   };
 
-  return { tasks, plugins: loadedPluginDefinitions, router };
+  return {
+    prepareTasks,
+    finalTasks,
+    plugins: loadedPluginDefinitions,
+    router,
+  };
 }
 
 async function importPlugin(
@@ -142,10 +149,13 @@ async function importPlugin(
 async function preparePlugins(
   { plugins }: { plugins: PluginDefinition[] },
 ) {
-  let tasks: Tasks = [];
+  let prepareTasks: Tasks = [];
+  let finalTasks: Tasks = [];
   const messageSenders = plugins.map(({ api }) => api.sendMessages)
     .filter(Boolean);
   const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
+    .filter(Boolean);
+  const finishBuilds = plugins.map(({ api }) => api.finishBuild)
     .filter(Boolean);
   const send = getSend(plugins);
 
@@ -160,12 +170,22 @@ async function preparePlugins(
       const tasksToAdd = await prepareBuild({ send });
 
       if (tasksToAdd) {
-        tasks = tasks.concat(tasksToAdd);
+        prepareTasks = prepareTasks.concat(tasksToAdd);
       }
     }
   }
 
-  return tasks;
+  for await (const finishBuild of finishBuilds) {
+    if (finishBuild) {
+      const tasksToAdd = await finishBuild({ send });
+
+      if (tasksToAdd) {
+        finalTasks = prepareTasks.concat(tasksToAdd);
+      }
+    }
+  }
+
+  return { prepareTasks, finalTasks };
 }
 
 async function applyPlugins(

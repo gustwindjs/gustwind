@@ -15,7 +15,7 @@ const plugin: Plugin<{
     const inputDirectory = path.join(cwd, inputPath);
 
     return {
-      prepareBuild: () => [{
+      finishBuild: () => [{
         type: "writeFiles",
         payload: {
           inputDirectory,

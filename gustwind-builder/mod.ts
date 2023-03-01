@@ -36,13 +36,13 @@ async function build(
   await fs.ensureDir(outputDirectory);
   await Deno.remove(outputDirectory, { recursive: true });
 
-  const { router, tasks } = await importPlugins({
+  const { router, prepareTasks, finalTasks } = await importPlugins({
     cwd,
     pluginDefinitions,
     outputDirectory,
     mode: "production",
   });
-  tasks.forEach((task) => workerPool.addTaskToQueue(task));
+  prepareTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
   const { routes, tasks: routerTasks } = await router.getAllRoutes();
   routerTasks.forEach((task) => workerPool.addTaskToQueue(task));
@@ -67,12 +67,21 @@ async function build(
     });
   });
 
+  let finishedAmounts = 0;
   return new Promise((resolve) => {
     workerPool.onWorkFinished(() => {
+      // The second finish means final tasks have run
+      if (!finishedAmounts) {
+        finalTasks.forEach((task) => workerPool.addTaskToQueue(task));
+
+        finishedAmounts++;
+
+        return;
+      }
+
       workerPool.terminate();
 
-      // TODO: This might belong to some sort of cleanup phase for the
-      // script plugin.
+      // TODO: Set up a final task for the script plugin and move this there
       // https://esbuild.github.io/getting-started/#deno
       esbuild.stop();
 
@@ -80,6 +89,7 @@ async function build(
       const duration = endTime - startTime;
       const routeAmount = Object.keys(routes).length;
 
+      // TODO: This might belong to a stats plugin
       console.log(
         `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
           Math.round(

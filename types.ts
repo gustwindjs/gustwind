@@ -49,8 +49,10 @@ type PluginApi = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
-  // Return additional tasks to perform per build
+  // Return additional tasks to perform per build preparation
   prepareBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
+  // Return additional tasks to perform per build finishing
+  finishBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
   // Run setup before context is resolved or add something to it
   prepareContext?(
     { send, route, url }: { send: Send; route: Route; url: string },
