@@ -24,7 +24,7 @@ async function gustwindDevServer({
   port: number;
 }) {
   let pathFs: Awaited<ReturnType<typeof evaluateTasks>> = {};
-  const { plugins, router, tasks } = await importPlugins({
+  const { plugins, router, prepareTasks, finalTasks } = await importPlugins({
     cwd,
     initialImportedPlugins,
     pluginDefinitions,
@@ -65,7 +65,8 @@ async function gustwindDevServer({
         );
       }
 
-      const fs = await evaluateTasks(tasks);
+      // TODO: Is this the right way to handle final tasks?
+      const fs = await evaluateTasks(prepareTasks.concat(finalTasks));
       const matchedFsItem = fs[pathname] || pathFs[pathname];
 
       if (matchedFsItem) {
