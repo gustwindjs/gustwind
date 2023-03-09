@@ -34,7 +34,7 @@ const plugin: Plugin<{
           load.dir({
             path: path.join(cwd, p),
             extension: ".ts",
-            type: "foundScrips",
+            type: "foundScripts",
           })
         ),
       )).flat();
@@ -77,14 +77,14 @@ const plugin: Plugin<{
         }
 
         const scripts =
-          ((receivedScripts.filter(({ isExternal }) => !isExternal)).map((
+          (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
             { name },
           ) => ({ name })).concat(
             routeScripts.map(({ name, ...rest }) => ({
               name: `${name}.js`,
               ...rest,
             })),
-          ));
+          );
         const scriptTags = scripts.map(({ name, ...rest }) => ({
           type: "module",
           ...rest,
