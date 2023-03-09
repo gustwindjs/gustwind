@@ -1,3 +1,4 @@
+import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { path } from "../../server-deps.ts";
 import type { Plugin, Scripts } from "../../types.ts";
 
@@ -111,6 +112,10 @@ const plugin: Plugin<{
         if (type === "addScripts") {
           receivedScripts = receivedScripts.concat(payload);
         }
+      },
+      finishBuild: () => {
+        // https://esbuild.github.io/getting-started/#deno
+        esbuild.stop();
       },
     };
   },

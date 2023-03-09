@@ -1,4 +1,3 @@
-import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { fs, path } from "../server-deps.ts";
 import { importPlugins } from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
@@ -80,10 +79,6 @@ async function build(
       }
 
       workerPool.terminate();
-
-      // TODO: Set up a final task for the script plugin and move this there
-      // https://esbuild.github.io/getting-started/#deno
-      esbuild.stop();
 
       const endTime = performance.now();
       const duration = endTime - startTime;

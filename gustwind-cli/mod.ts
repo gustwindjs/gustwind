@@ -148,6 +148,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     console.log("The server address has been copied to the clipboard");
     await serve();
 
+    // TODO: It might be better to trigger finishBuild for each plugin here
     // https://esbuild.github.io/getting-started/#deno
     esbuild.stop();
 
