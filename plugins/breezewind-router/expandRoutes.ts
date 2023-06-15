@@ -107,9 +107,20 @@ async function expandRoute(
       console.warn("data source results are not an array");
     }
 
+    // Take care to expand routes since they might have data source related logic etc.
+    // to execute.
+    const expandedRouteRoutes = await expandRoutes({
+      routes: route.routes || {},
+      dataSources,
+    });
+    allParameters = allParameters.concat(expandedRouteRoutes.allParameters);
+
     ret = {
       ...route,
-      routes: { ...(route.routes || {}), ...expandedRoutes },
+      routes: {
+        ...(expandedRouteRoutes).allRoutes,
+        ...expandedRoutes,
+      },
     };
   }
 
