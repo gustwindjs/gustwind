@@ -127,8 +127,6 @@ async function expandRoute(
   // Take care to expand routes since they might have data source related logic etc.
   // to execute.
   if (route.routes) {
-    console.log("expanding route routes", route, route.routes);
-
     const expandedRouteRoutes = await expandRoutes({
       routes: route.routes || {},
       dataSources,
