@@ -1,0 +1,48 @@
+<aside
+  class="fixed top-16 right-2 max-w-sm overflow-auto rounded filter drop-shadow"
+  x-state="getSelectedComponent(editor)"
+  x-label="selectedComponent"
+>
+  <header class="cursor-move">
+    <h2 class="p-4 font-bold bg-gray-800 text-white">Component editor</h2>
+  </header>
+  <section class="p-4 gap-4 flex flex-col bg-white filter bg-opacity-90">
+    <div>
+      <h2 class="font-bold">Content</h2>
+      <ul class="flex flex-col gap-2">
+        <li class="flex gap-2">
+          <label>type</label>
+          <input
+            class="border flex-grow"
+            type="text"
+            x="selectedComponent?.type || 'No selected element'"
+            oninput="elementChanged(this, this.value)"
+          />
+        </li>
+        <li
+          class="flex gap-2"
+          x-attr
+          @class="[typeof selectedComponent?.children !== 'string' && 'hidden']"
+        >
+          <label>Content</label>
+          <input
+            class="border flex-grow"
+            type="text"
+            x="typeof selectedComponent?.children === 'string' ? selectedComponent.children : ''"
+            oninput="contentChanged(this, this.value)"
+          />
+        </li>
+        <li class="flex gap-2">
+          <label>Class</label>
+          <input
+            class="border flex-grow"
+            type="text"
+            x="selectedComponent?.class || ''"
+            oninput="classChanged(this, this.value)"
+          />
+        </li>
+        <li _visibleIf="[]" x="JSON.stringify(selectedComponent, null, 2)"></li>
+      </ul>
+    </div>
+  </section>
+</aside>

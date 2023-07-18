@@ -1,0 +1,33 @@
+<a
+  class="underline"
+  _classList="{
+    'font-bold': [
+      { 'utility': 'get', 'parameters': ['props', 'href'] },
+      {
+        'utility': 'trim',
+        'parameters': [
+          { 'utility': 'get', 'parameters': ['context', 'pagePath'] },
+          '/''
+        ]
+      }
+    ]
+  }"
+  _href="{
+    'utility': 'validateUrl',
+    'parameters': [
+      {
+        'utility': 'get',
+        'parameters': ['props', 'href']
+      }
+    ]
+  }"
+  _children="{
+    'utility': 'render',
+    'parameters': [
+      {
+        'utility': 'get',
+        'parameters': ['props', 'children']
+      }
+    ]
+  }"
+/>
