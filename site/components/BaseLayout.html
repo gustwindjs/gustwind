@@ -1,0 +1,30 @@
+<html _lang="{ utility: 'get', parameters: ['context', 'language'] }">
+  <head>
+    <MetaFields />
+  </head>
+  <body>
+    <MainNavigation />
+    <aside
+      _visibleif="[{
+        'utility': 'get',
+        'parameters': ['props', 'showToc']
+      }]"
+      class="fixed top-16 pl-4 hidden lg:inline"
+    >
+      <TableOfContents />
+    </aside>
+    <main
+      _children="{
+        'utility': 'render',
+        'parameters': [
+          {
+            'utility': 'get',
+            'parameters': ['props', 'content']
+          }
+        ]
+      }"
+    ></main>
+    <MainFooter />
+    <Scripts />
+  </body>
+</html>
