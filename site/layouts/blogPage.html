@@ -1,0 +1,27 @@
+<BaseLayout
+  content="[
+    {
+      'type': 'div',
+      'class': 'md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl',
+      'children': [
+        {
+          'type': 'h1',
+          'children': {
+            'utility': 'get',
+            'parameters': ['context', 'document.data.title']
+          }
+        },
+        {
+          'type': 'p',
+          'children': {
+            'utility': 'processMarkdown',
+            'parameters': [{
+              'utility': 'get',
+              'parameters': ['context', 'document.content']
+            }]
+          }
+        }
+      ]
+    }
+  ]"
+/>

@@ -1,0 +1,57 @@
+<BaseLayout
+  content="[
+    {
+      'type': 'div',
+      'class': 'md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl',
+      'children': [
+        {
+          'type': 'div',
+          'children': 'You have discovered the secret button page!'
+        },
+        {
+          'type': 'div',
+          'children': {
+            'utility': 'concat',
+            'parameters': [
+              {
+                'utility': 'testUtility',
+                'parameters': ['hello']
+              },
+              ' ',
+              'world!'
+            ]
+          },
+          'attributes': {
+            'title': {
+              'utility': 'concat',
+              'parameters': [
+                {
+                  'utility': 'testUtility',
+                  'parameters': ['hello']
+                },
+                ' ',
+                'world!'
+              ]
+            }
+          }
+        },
+        {
+          'type': 'div',
+          'class': 'btn btn-blue',
+          'children': 'Test button',
+          'attributes': {
+            'onclick': 'alert('You pressed button 1')'
+          }
+        },
+        {
+          'type': 'div',
+          'class': 'btn btn-muted',
+          'children': 'Test button',
+          'attributes': {
+            'onclick': 'alert('You pressed button 2')'
+          }
+        }
+      ]
+    }
+  ]"
+/>
