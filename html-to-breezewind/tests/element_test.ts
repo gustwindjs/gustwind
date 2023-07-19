@@ -3,7 +3,7 @@ import htmlToBreezewind from "../index.ts";
 
 Deno.test("basic element", () => {
   assertEquals(
-    htmlToBreezewind("<div>foo</div>"),
+    htmlToBreezewind(`<div>foo</div>`),
     {
       type: "div",
       children: "foo",
@@ -24,7 +24,20 @@ Deno.test("element with an attribute", () => {
   );
 });
 
-// TODO: Test class
+Deno.test("element with a class", () => {
+  assertEquals(
+    htmlToBreezewind(`<div class="bar">foo</div>`),
+    {
+      type: "div",
+      children: "foo",
+      // Instead of using the class shortcut, map to an attribute directly as it is the same
+      attributes: {
+        class: "bar",
+      },
+    },
+  );
+});
+
 // TODO: Test _classList
 // TODO: Test _href
 // TODO: Test _children
