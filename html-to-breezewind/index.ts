@@ -3,7 +3,9 @@ import {
   DOMParser,
   type NamedNodeMap,
 } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import type { Component, Utility } from "../breezewind/types.ts";
+import type { ClassList, Component } from "../breezewind/types.ts";
+
+type Attributes = Component["attributes"];
 
 const parser = new DOMParser();
 
@@ -20,20 +22,45 @@ function htmlToBreezewind(html: string): Component {
   console.log(rootElement?.children?.length);
 
   if (rootElement) {
-    // .children, .attributes
-    return {
+    const attributes = namedNodeMapToObject(rootElement.attributes);
+
+    return addClassList({
       type: rootElement.tagName.toLowerCase(),
       children: rootElement.innerText,
-      attributes: namedNodeMapToObject(rootElement.attributes),
-    };
+      attributes: filterAttributes(attributes),
+    }, attributes);
   }
 
   return {};
 }
 
+function addClassList(c: Component, attributes: Attributes): Component {
+  if (attributes?._classlist) {
+    return {
+      ...c,
+      classList: stringToObject(attributes._classlist as string),
+    };
+  }
+
+  return c;
+}
+
+function stringToObject(s: string) {
+  return JSON.parse(s.replaceAll(`'`, '"'));
+}
+
+function filterAttributes(attributes: Attributes): Attributes {
+  // Avoid mutating the original structure (no side effects)
+  const ret = structuredClone(attributes);
+
+  delete ret._classlist;
+
+  return ret;
+}
+
 // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
 function namedNodeMapToObject(m: NamedNodeMap) {
-  const ret: Record<string, string | Utility | undefined> = {};
+  const ret: Attributes = {};
 
   for (let i = 0; i < m.length; i++) {
     const attr = m.item(i);

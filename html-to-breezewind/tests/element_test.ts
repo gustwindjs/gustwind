@@ -7,6 +7,7 @@ Deno.test("basic element", () => {
     {
       type: "div",
       children: "foo",
+      attributes: {},
     },
   );
 });
@@ -38,6 +39,21 @@ Deno.test("element with a class", () => {
   );
 });
 
-// TODO: Test _classList
+Deno.test("element with a class list", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div _classlist="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      classList: {
+        "font-bold": [{ "utility": "get", "parameters": ["props", "href"] }],
+      },
+      attributes: {},
+    },
+  );
+});
+
 // TODO: Test _href
 // TODO: Test _children
