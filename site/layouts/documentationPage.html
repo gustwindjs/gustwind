@@ -1,29 +1,11 @@
-<BaseLayout
-  content="[
-    {
-      'type': 'div',
-      'class': 'md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl',
-      'children': [
-        {
-          'type': 'h1',
-          'children': {
-            'utility': 'get',
-            'parameters': ['context', 'document.data.title']
-          }
-        },
-        {
-          'type': 'Markdown',
-          'bindToProps': {
-            'inputText': {
-              'utility': 'get',
-              'parameters': ['context', 'document.content']
-            }
-          },
-          'props': {
-            'type': 'div'
-          }
-        }
-      ]
-    }
-  ]"
-/>
+<BaseLayout>
+  <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
+    <h1
+      _children="{ 'utility': 'get', 'parameters': ['context', 'document.data.title'] }"
+    ></h1>
+    <Markdown
+      type="div"
+      _children="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
+    ></Markdown>
+  </div>
+</BaseLayout>
