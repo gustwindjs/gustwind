@@ -25,6 +25,21 @@ Deno.test("element with an attribute", () => {
   );
 });
 
+Deno.test("element with a transformed attribute", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a _href="{ 'utility': 'get', 'parameters': ['props', 'href'] }">foo</a>`,
+    ),
+    {
+      type: "a",
+      children: "foo",
+      attributes: {
+        href: { utility: "get", parameters: ["props", "href"] },
+      },
+    },
+  );
+});
+
 Deno.test("element with a class", () => {
   assertEquals(
     htmlToBreezewind(`<div class="bar">foo</div>`),
@@ -55,5 +70,5 @@ Deno.test("element with a class list", () => {
   );
 });
 
-// TODO: Test _href
+// TODO: Test nesting
 // TODO: Test _children

@@ -38,6 +38,7 @@ function addClassList(c: Component, attributes: Attributes): Component {
   if (attributes?._classlist) {
     return {
       ...c,
+      // TODO: Better do a type check?
       classList: stringToObject(attributes._classlist as string),
     };
   }
@@ -45,17 +46,34 @@ function addClassList(c: Component, attributes: Attributes): Component {
   return c;
 }
 
-function stringToObject(s: string) {
-  return JSON.parse(s.replaceAll(`'`, '"'));
-}
-
 function filterAttributes(attributes: Attributes): Attributes {
   // Avoid mutating the original structure (no side effects)
-  const ret = structuredClone(attributes);
+  const ret: Attributes = structuredClone(attributes);
 
-  delete ret._classlist;
+  if (!ret) {
+    return {};
+  }
+
+  // Drop anything starting with a _
+  Object.keys(ret).forEach((key: string) => {
+    if (key.startsWith("_")) {
+      // Do not transform classlist as it is handled separately as an exception
+      if (key !== "_classlist") {
+        ret[key.split("").slice(1).join("")] = stringToObject(
+          // TODO: Better do a type check?
+          ret[key] as string,
+        );
+      }
+
+      delete ret[key];
+    }
+  });
 
   return ret;
+}
+
+function stringToObject(s: string) {
+  return JSON.parse(s.replaceAll(`'`, '"'));
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
