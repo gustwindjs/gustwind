@@ -25,7 +25,7 @@ function parseElement(element: Element | undefined): Component {
   if (element) {
     const attributes = namedNodeMapToObject(element.attributes);
 
-    return addClassList({
+    return addCustomFields({
       type: element.tagName.toLowerCase(),
       children: element.children.length
         ? Array.from(element.children).map(parseElement)
@@ -37,16 +37,23 @@ function parseElement(element: Element | undefined): Component {
   return {};
 }
 
-function addClassList(c: Component, attributes: Attributes): Component {
+function addCustomFields(c: Component, attributes: Attributes): Component {
+  let ret: Component = c;
+
   if (attributes?._classlist) {
-    return {
-      ...c,
+    ret = {
+      ...ret,
       // TODO: Better do a type check?
       classList: stringToObject(attributes._classlist as string),
     };
   }
 
-  return c;
+  if (attributes?._children) {
+    // TODO: Better do a type check?
+    ret = { ...ret, children: stringToObject(attributes._children as string) };
+  }
+
+  return ret;
 }
 
 function filterAttributes(attributes: Attributes): Attributes {
@@ -60,8 +67,8 @@ function filterAttributes(attributes: Attributes): Attributes {
   // Drop anything starting with a _
   Object.keys(ret).forEach((key: string) => {
     if (key.startsWith("_")) {
-      // Do not transform classlist as it is handled separately as an exception
-      if (key !== "_classlist") {
+      // Do not transform separately handled cases
+      if (!["_children", "_classlist"].includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,

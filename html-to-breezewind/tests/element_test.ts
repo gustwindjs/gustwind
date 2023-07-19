@@ -42,6 +42,19 @@ Deno.test("element with an attribute", () => {
   );
 });
 
+Deno.test("element with a children attribute", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div _children="{ 'utility': 'get', 'parameters': ['props', 'href'] }"/>`,
+    ),
+    {
+      type: "div",
+      children: { utility: "get", parameters: ["props", "href"] },
+      attributes: {},
+    },
+  );
+});
+
 Deno.test("element with a transformed attribute", () => {
   assertEquals(
     htmlToBreezewind(
@@ -87,4 +100,4 @@ Deno.test("element with a class list", () => {
   );
 });
 
-// TODO: Test _children
+// TODO: Test _foreach
