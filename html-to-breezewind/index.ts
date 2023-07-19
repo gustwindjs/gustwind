@@ -3,7 +3,7 @@ import {
   DOMParser,
   type NamedNodeMap,
 } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
-import type { ClassList, Component } from "../breezewind/types.ts";
+import type { Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
