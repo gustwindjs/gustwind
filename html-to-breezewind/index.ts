@@ -1,6 +1,7 @@
 // Note that this comes with a startup penalty documented at https://deno.land/x/deno_dom@v0.1.38
 import {
   DOMParser,
+  type Element,
   type NamedNodeMap,
 } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 import type { Component } from "../breezewind/types.ts";
@@ -17,16 +18,18 @@ function htmlToBreezewind(html: string): Component {
     `<div id=${rootId}>${html}</div>`,
     "text/html",
   );
-  const rootElement = document?.querySelector(`#${rootId}`)?.children[0];
+  return parseElement(document?.querySelector(`#${rootId}`)?.children[0]);
+}
 
-  console.log(rootElement?.children?.length);
-
-  if (rootElement) {
-    const attributes = namedNodeMapToObject(rootElement.attributes);
+function parseElement(element: Element | undefined): Component {
+  if (element) {
+    const attributes = namedNodeMapToObject(element.attributes);
 
     return addClassList({
-      type: rootElement.tagName.toLowerCase(),
-      children: rootElement.innerText,
+      type: element.tagName.toLowerCase(),
+      children: element.children.length
+        ? Array.from(element.children).map(parseElement)
+        : element.innerText,
       attributes: filterAttributes(attributes),
     }, attributes);
   }

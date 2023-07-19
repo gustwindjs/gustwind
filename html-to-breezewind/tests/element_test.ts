@@ -12,6 +12,23 @@ Deno.test("basic element", () => {
   );
 });
 
+Deno.test("nested element", () => {
+  assertEquals(
+    htmlToBreezewind(`<div><span>foo</span></div>`),
+    {
+      type: "div",
+      children: [
+        {
+          type: "span",
+          children: "foo",
+          attributes: {},
+        },
+      ],
+      attributes: {},
+    },
+  );
+});
+
 Deno.test("element with an attribute", () => {
   assertEquals(
     htmlToBreezewind(`<div title="bar">foo</div>`),
@@ -70,5 +87,4 @@ Deno.test("element with a class list", () => {
   );
 });
 
-// TODO: Test nesting
 // TODO: Test _children
