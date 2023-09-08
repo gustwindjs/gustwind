@@ -6,11 +6,15 @@ import type { Component } from "../breezewind/types.ts";
 function h(
   type: string,
   attributes: Record<string, unknown> | null,
-  children: Component[],
+  ...children: Component[]
 ) {
   return {
     type,
-    children,
+    children: children.length === 1 && typeof children[0] === "string"
+      ? children[0]
+      : Array.isArray(children)
+      ? children
+      : [children],
     attributes: attributes === null ? {} : attributes,
   };
 }
