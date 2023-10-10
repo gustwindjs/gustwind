@@ -5,7 +5,7 @@ type Attributes = Component["attributes"];
 
 const html = htm.bind(h);
 
-function htmlToBreezewind(htmlInput: string): Component {
+function htmlToBreezewind(htmlInput: string): Component | Component[] {
   // @ts-ignore Ignore for now
   return html([htmlInput]);
 }
@@ -15,13 +15,20 @@ function h(
   attributes: Attributes, // Record<string, unknown> | null,
   ...children: Component[]
 ) {
-  return addCustomFields({
-    type,
-    children: children.length === 1 && typeof children[0] === "string"
+  const childrenToReturn =
+    children.length === 1 && typeof children[0] === "string"
       ? children[0]
       : Array.isArray(children)
       ? children
-      : [children],
+      : [children];
+
+  if (type === "Noop") {
+    return childrenToReturn;
+  }
+
+  return addCustomFields({
+    type,
+    children: childrenToReturn,
     attributes: filterAttributes(attributes === null ? {} : attributes),
   }, attributes);
 }

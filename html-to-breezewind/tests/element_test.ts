@@ -101,3 +101,4 @@ Deno.test("element with a class list", () => {
 });
 
 // TODO: Test _foreach
+// TODO: Test _foreach with Noop
