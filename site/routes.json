@@ -71,6 +71,7 @@
         },
         "slug": "data.slug"
       },
+      "scripts": [{ "name": "hello" }],
       "layout": "blogPage",
       "meta": {
         "title": {

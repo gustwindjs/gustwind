@@ -90,12 +90,13 @@ async function expandRoute(
         }
 
         // @ts-ignore route.expand exists by now for sure
-        const { meta, layout } = route.expand;
+        const { meta, layout, scripts } = route.expand;
 
         // @ts-ignore Not sure how to type this
         expandedRoutes[u] = {
           meta,
           layout,
+          scripts,
           context: {
             ...expandedRoutes[u]?.context,
             [matchBy.dataSource.name]: match,
@@ -118,7 +119,7 @@ async function expandRoute(
     ret = {
       ...route,
       routes: {
-        ...(expandedRouteRoutes).allRoutes,
+        ...expandedRouteRoutes.allRoutes,
         ...expandedRoutes,
       },
     };
