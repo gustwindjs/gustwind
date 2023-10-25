@@ -77,7 +77,7 @@ const plugin: Plugin<{
           throw new Error("Route script is missing from the scripts directory");
         }
 
-        const scripts =
+        const scripts: { name: string; srcPrefix?: string }[] =
           (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
             { name },
           ) => ({ name })).concat(
@@ -86,10 +86,10 @@ const plugin: Plugin<{
               ...rest,
             })),
           );
-        const scriptTags = scripts.map(({ name, ...rest }) => ({
+        const scriptTags = scripts.map(({ name, srcPrefix, ...rest }) => ({
           type: "module",
           ...rest,
-          src: "/" + name.replace(".ts", ".js"),
+          src: (srcPrefix || "/") + name.replace(".ts", ".js"),
         }));
 
         // globalScripts don't need processing since they are in the right format
