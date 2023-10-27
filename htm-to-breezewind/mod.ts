@@ -15,6 +15,8 @@ function h(
   attributes: Attributes, // Record<string, unknown> | null,
   ...children: Component[]
 ) {
+  // TODO: Check if children are Slots. If yes, pick up as props
+
   const childrenToReturn =
     children.length === 1 && typeof children[0] === "string"
       ? children[0]

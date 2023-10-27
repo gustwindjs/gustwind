@@ -135,5 +135,31 @@ Deno.test("element with a class list", () => {
   );
 });
 
+Deno.test("props through slots as elements", () => {
+  assertEquals(
+    htmToBreezewind(
+      `<BaseLayout>
+        <Slot name="content">
+          <div>hello</div>
+        </Slot>
+      </BaseLayout>
+    `,
+    ),
+    {
+      type: "BaseLayout",
+      attributes: {},
+      props: {
+        content: [
+          {
+            type: "div",
+            attributes: {},
+            children: "hello",
+          },
+        ],
+      },
+    },
+  );
+});
+
 // TODO: Test _foreach
 // TODO: Test _foreach with Noop

@@ -1,12 +1,16 @@
 <BaseLayout>
-  <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
-    <ul _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }">
-      <li class="inline">
-        <SiteLink
-          _children="{ 'utility': 'get', 'parameters': ['props', 'data.title'] }"
-          href="{ 'utility': 'concat', 'parameters': ['blog/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }] }"
-        />
-      </li>
-    </ul>
-  </div>
+  <slot name="content">
+    <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
+      <ul
+        _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }"
+      >
+        <li class="inline">
+          <SiteLink
+            _children="{ 'utility': 'get', 'parameters': ['props', 'data.title'] }"
+            href="{ 'utility': 'concat', 'parameters': ['blog/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }] }"
+          />
+        </li>
+      </ul>
+    </div>
+  </slot>
 </BaseLayout>

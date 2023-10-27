@@ -1,5 +1,7 @@
 <BaseLayout>
-  <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
-    <div>This is not the page you were looking for.</div>
-  </div>
+  <slot name="content">
+    <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
+      <div>This is not the page you were looking for.</div>
+    </div>
+  </slot>
 </BaseLayout>
