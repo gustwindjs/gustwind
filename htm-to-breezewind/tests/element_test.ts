@@ -163,3 +163,38 @@ Deno.test("props through slots as elements", () => {
 
 // TODO: Test _foreach
 // TODO: Test _foreach with noop. Maybe this should become <foreach>
+
+/*
+TODO: Support attribute helpers for complex expressions?
+
+<a
+  x-attr
+  x="state.value.textContent"
+  @href="state.value.parentElement?.attributes.href?.value"
+  _@class="{
+    'utility': 'concat',
+    'parameters': [
+      '[state.value.textContent === parent.closest.textContent && \'',
+      { 'utility': 'tw', 'parameters': ['underline'] },
+      '\', state.tagName === 'H3' && \'',
+      { 'utility': 'tw', 'parameters': ['ml-2'] },
+      \']'
+    ]
+  }"
+>
+  <attribute name="@class">
+    <utility name="concat">
+      <parameter
+        >[state.value.textContent === parent.closest.textContent &&
+        '<utility name="tw"><parameter>underline</parameter></utility
+        >'</parameter
+      >
+      <parameter
+        >state.tagName === 'H3' && '<utility name="tw"
+          ><parameter>ml-2</parameter></utility
+        >'</parameter
+      >
+    </utility>
+  </attribute>
+</a>
+*/

@@ -15,6 +15,15 @@ Deno.test("object to json", () => {
   );
 });
 
+Deno.test("utility to json", () => {
+  assertEquals(
+    stringToObject(
+      `{ 'utility': 'get', 'parameters': ['context', 'language'] }`,
+    ),
+    { utility: "get", parameters: ["context", "language"] },
+  );
+});
+
 Deno.test("complex object to json", () => {
   assertEquals(
     stringToObject(
