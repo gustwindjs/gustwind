@@ -5,7 +5,7 @@ type Attributes = Component["attributes"];
 
 const html = htm.bind(h);
 
-function htmlToBreezewind(htmlInput: string): Component | Component[] {
+function htmToBreezewind(htmlInput: string): Component | Component[] {
   // @ts-ignore Ignore for now
   return html([htmlInput]);
 }
@@ -62,7 +62,10 @@ function filterAttributes(attributes: Attributes): Attributes {
 
   // Drop anything starting with a _
   Object.keys(ret).forEach((key: string) => {
-    if (key.startsWith("_")) {
+    // Skip comments
+    if (key.startsWith("__")) {
+      delete ret[key];
+    } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
       if (!["_children", "_classlist"].includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
@@ -79,7 +82,12 @@ function filterAttributes(attributes: Attributes): Attributes {
 }
 
 function stringToObject(s: string) {
-  return JSON.parse(s.replaceAll(`'`, '"'));
+  try {
+    return JSON.parse(s.replaceAll(`'`, '"'));
+  } catch (error) {
+    console.error(`stringToObject - Failed to parse ${s}`);
+    console.error(error);
+  }
 }
 
-export default htmlToBreezewind;
+export { htmToBreezewind, stringToObject };

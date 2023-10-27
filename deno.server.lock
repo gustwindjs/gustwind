@@ -152,6 +152,8 @@
     "https://esm.sh/@twind/preset-autoprefix@1.0.5": "d28f8724a021ebea2a77a004f37d8ede0a94fd8d45e18ffc505824402da3786a",
     "https://esm.sh/@twind/preset-tailwind@1.1.1": "140e09cacca7cee7d5cf5ed8701781c48180004bfb6fc901158082793244cce1",
     "https://esm.sh/@twind/preset-typography@1.0.5": "827fa69e8ba158b4f8fd703937ae2da031ca6119c0be92c78674c91205f02cb9",
+    "https://esm.sh/htm@3.1.1": "2b60fdfcf11fe8c05cc190e771f7fdb6b3745b8d463ce864c758cd4da7e0ef6c",
+    "https://esm.sh/v132/htm@3.1.1/denonext/htm.mjs": "55f083f3845f9c95510d21ce5d3ba24151dc625a23191b76c5ffbf00d14ed29a",
     "https://esm.sh/v99/@twind/core@1.1.1/core.d.ts": "8b658d90445194b10b4ee8d3dab85a70e8699486ad98b86967fe67016328b52c",
     "https://esm.sh/v99/@twind/core@1.1.1/deno/core.js": "b529beb9bf61a37bc111c11822e7ff25e266287b72a3dde9f4e2804916eec3e7",
     "https://esm.sh/v99/@twind/preset-autoprefix@1.0.5/deno/preset-autoprefix.js": "da2c9b1bdbcb7e93d282136e1c0b5cae66aa16dc97fb74bb917eb33afb9c61c4",

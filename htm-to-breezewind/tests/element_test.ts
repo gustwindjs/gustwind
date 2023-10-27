@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import htmlToBreezewind from "../mod.ts";
+import { htmToBreezewind } from "../mod.ts";
 
 Deno.test("basic element", () => {
   assertEquals(
-    htmlToBreezewind(`<div>foo</div>`),
+    htmToBreezewind(`<div>foo</div>`),
     {
       type: "div",
       children: "foo",
@@ -14,7 +14,7 @@ Deno.test("basic element", () => {
 
 Deno.test("nested element", () => {
   assertEquals(
-    htmlToBreezewind(`<div><span>foo</span></div>`),
+    htmToBreezewind(`<div><span>foo</span></div>`),
     {
       type: "div",
       children: [
@@ -31,7 +31,7 @@ Deno.test("nested element", () => {
 
 Deno.test("element with an attribute", () => {
   assertEquals(
-    htmlToBreezewind(`<div title="bar">foo</div>`),
+    htmToBreezewind(`<div title="bar">foo</div>`),
     {
       type: "div",
       children: "foo",
@@ -44,7 +44,7 @@ Deno.test("element with an attribute", () => {
 
 Deno.test("element with a children attribute", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmToBreezewind(
       `<div _children="{ 'utility': 'get', 'parameters': ['props', 'href'] }"/>`,
     ),
     {
@@ -57,7 +57,7 @@ Deno.test("element with a children attribute", () => {
 
 Deno.test("element with a transformed attribute", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmToBreezewind(
       `<a _href="{ 'utility': 'get', 'parameters': ['props', 'href'] }">foo</a>`,
     ),
     {
@@ -72,7 +72,7 @@ Deno.test("element with a transformed attribute", () => {
 
 Deno.test("element with a class", () => {
   assertEquals(
-    htmlToBreezewind(`<div class="bar">foo</div>`),
+    htmToBreezewind(`<div class="bar">foo</div>`),
     {
       type: "div",
       children: "foo",
@@ -84,9 +84,22 @@ Deno.test("element with a class", () => {
   );
 });
 
+Deno.test("element with a comment", () => {
+  assertEquals(
+    htmToBreezewind(
+      `<div __reference="https://kevincox.ca/2022/05/06/rss-feed-best-practices/">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      attributes: {},
+    },
+  );
+});
+
 Deno.test("element with a class list", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmToBreezewind(
       `<div _classlist="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
     ),
     {

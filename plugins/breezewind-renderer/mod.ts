@@ -5,6 +5,7 @@ import breezewind from "../../breezewind/index.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { htmToBreezewind } from "../../htm-to-breezewind/mod.ts";
 import type { Component, Utilities } from "../../breezewind/types.ts";
 import type { Plugin, Routes } from "../../types.ts";
 
@@ -33,8 +34,22 @@ const plugin: Plugin<{
       (componentsPath: string) => Promise<Record<string, Component>>
     > = {
       htm: async (componentsPath: string) => {
-        // TODO: This should trigger htm-to-breezewind
-        return {};
+        const components = await Promise.all((await load.dir({
+          path: path.join(cwd, componentsPath),
+          extension: ".html",
+          recursive: true,
+          type: "components",
+        })).map(async (
+          { path: p },
+        ) => [
+          path.basename(p, path.extname(p)),
+          htmToBreezewind(await Deno.readTextFile(p)),
+        ]));
+
+        return Object.fromEntries<Component>(
+          // @ts-expect-error The type is wrong here. Likely htmToBreezewind needs a fix.
+          components,
+        );
       },
       json: async (componentsPath: string) => {
         return getDefinitions<Component>(
