@@ -50,14 +50,14 @@ Deno.test("component with multiple children", () => {
 
 Deno.test("component with noop", () => {
   assertEquals(
-    htmToBreezewind(`<Noop><div>foo</div></Noop>`),
+    htmToBreezewind(`<noop><div>foo</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }],
   );
 });
 
 Deno.test("component with noop and siblings", () => {
   assertEquals(
-    htmToBreezewind(`<Noop><div>foo</div><div>bar</div></Noop>`),
+    htmToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }, {
       type: "div",
       children: "bar",

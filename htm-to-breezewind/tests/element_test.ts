@@ -139,9 +139,9 @@ Deno.test("props through slots as elements", () => {
   assertEquals(
     htmToBreezewind(
       `<BaseLayout>
-        <Slot name="content">
+        <slot name="content">
           <div>hello</div>
-        </Slot>
+        </slot>
       </BaseLayout>
     `,
     ),
@@ -162,4 +162,4 @@ Deno.test("props through slots as elements", () => {
 });
 
 // TODO: Test _foreach
-// TODO: Test _foreach with Noop
+// TODO: Test _foreach with noop. Maybe this should become <foreach>

@@ -1,5 +1,5 @@
 import htm from "https://esm.sh/htm@3.1.1";
-import type { Component } from "../breezewind/types.ts";
+import type { Component, Utility } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
@@ -15,7 +15,16 @@ function h(
   attributes: Attributes, // Record<string, unknown> | null,
   ...children: Component[]
 ) {
-  // TODO: Check if children are Slots. If yes, pick up as props
+  if (
+    children.length > 0 &&
+    children.every((children) => children.type === "slot")
+  ) {
+    return {
+      type,
+      attributes: {},
+      props: convertChildrenToProps(children),
+    };
+  }
 
   const childrenToReturn =
     children.length === 1 && typeof children[0] === "string"
@@ -24,7 +33,7 @@ function h(
       ? children
       : [children];
 
-  if (type === "Noop") {
+  if (type === "noop") {
     return childrenToReturn;
   }
 
@@ -33,6 +42,30 @@ function h(
     children: childrenToReturn,
     attributes: filterAttributes(attributes === null ? {} : attributes),
   }, attributes);
+}
+
+function convertChildrenToProps(children: Component[]) {
+  const ret: [string | Utility, unknown][] = [];
+
+  children.forEach((child) => {
+    if (!child.attributes) {
+      console.error("Slot child is missing attributes");
+      console.error(child);
+
+      return;
+    }
+
+    if (!child.attributes.name) {
+      console.error("Slot child is missing name attribute");
+      console.error(child);
+
+      return;
+    }
+
+    ret.push([child.attributes.name, child.children]);
+  });
+
+  return Object.fromEntries(ret);
 }
 
 function addCustomFields(c: Component, attributes: Attributes): Component {
