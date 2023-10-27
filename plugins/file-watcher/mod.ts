@@ -29,18 +29,6 @@ const plugin: Plugin<{ pluginsPath: string }> = {
 
               return payload.path;
             }
-            case "watchPaths": {
-              payload.paths.forEach((path) =>
-                pathTypes.push({
-                  // This assumes added paths aren't absolute and have been defined
-                  // against cwd
-                  path: _path.join(cwd, path),
-                  type: payload.type,
-                })
-              );
-
-              return payload.paths;
-            }
             // TODO: Should these capture types as well?
             case "writeScript":
               return payload.scriptPath;

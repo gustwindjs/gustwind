@@ -129,8 +129,6 @@ type SendMessageEvent =
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Component }
   | { type: "getRenderer"; payload: string }
-  | { type: "getLayouts"; payload: undefined }
-  | { type: "updateLayouts"; payload: Component }
   // twind plugin
   | { type: "twindSetupReady"; payload: { path: string } }
   // websocket plugin
@@ -197,10 +195,6 @@ type BuildWorkerEvent =
   | {
     type: "loadModule";
     payload: { path: string; type: string };
-  }
-  | {
-    type: "watchPaths";
-    payload: { paths: string[]; type: string };
   }
   | {
     type: "writeFile";

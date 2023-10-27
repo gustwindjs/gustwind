@@ -10,9 +10,8 @@
   {
     "path": "./plugins/breezewind-renderer/mod.ts",
     "options": {
-      "componentsPath": "./site/components",
+      "componentPaths": ["./site/layouts", "./site/components"],
       "metaPath": "./site/meta.json",
-      "layoutsPath": "./site/layouts",
       "pageUtilitiesPath": "./site/pageUtilities.ts"
     }
   },
