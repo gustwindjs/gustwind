@@ -84,6 +84,14 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     ret = { ...ret, children: stringToObject(attributes._children as string) };
   }
 
+  if (attributes?._visibleIf) {
+    ret = {
+      ...ret,
+      // TODO: Better do a type check?
+      visibleIf: stringToObject(attributes._visibleIf as string),
+    };
+  }
+
   return ret;
 }
 
@@ -102,7 +110,7 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
-      if (!["_children", "_classlist"].includes(key)) {
+      if (!["_children", "_classlist", "_visibleIf"].includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,

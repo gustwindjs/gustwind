@@ -135,6 +135,20 @@ Deno.test("element with a class list", () => {
   );
 });
 
+Deno.test("element with a visibleIf", () => {
+  assertEquals(
+    htmToBreezewind(
+      `<div _visibleIf="[{ 'utility': 'get', 'parameters': ['props', 'showToc'] }]">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      visibleIf: [{ utility: "get", parameters: ["props", "showToc"] }],
+      attributes: {},
+    },
+  );
+});
+
 Deno.test("props through slots as elements", () => {
   assertEquals(
     htmToBreezewind(
