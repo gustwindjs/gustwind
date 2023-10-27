@@ -13,7 +13,8 @@ type PageUtilities = {
 };
 
 const plugin: Plugin<{
-  componentPaths: string[];
+  // TODO: "keyof typeof loaders" would be better but that's out of scope for now
+  componentLoaders: { loader: string; path: string }[];
   metaPath: string;
   pageUtilitiesPath: string;
 }> = {
@@ -23,10 +24,30 @@ const plugin: Plugin<{
   },
   init: async ({
     cwd,
-    options: { componentPaths, metaPath, pageUtilitiesPath },
+    options: { componentLoaders, metaPath, pageUtilitiesPath },
     load,
     mode,
   }) => {
+    const loaders: Record<
+      string,
+      (componentsPath: string) => Promise<Record<string, Component>>
+    > = {
+      htm: async (componentsPath: string) => {
+        // TODO: This should trigger htm-to-breezewind
+        return {};
+      },
+      json: async (componentsPath: string) => {
+        return getDefinitions<Component>(
+          await load.dir({
+            path: path.join(cwd, componentsPath),
+            extension: ".json",
+            recursive: true,
+            type: "components",
+          }),
+        );
+      },
+    };
+
     let [components, pageUtilities, meta] = await Promise.all([
       loadComponents(),
       loadPageUtilities(),
@@ -36,15 +57,9 @@ const plugin: Plugin<{
     async function loadComponents() {
       // Collect components from different directories
       const components = await Promise.all(
-        componentPaths.map(async (componentsPath) =>
-          getDefinitions<Component>(
-            await load.dir({
-              path: path.join(cwd, componentsPath),
-              extension: ".json",
-              recursive: true,
-              type: "components",
-            }),
-          )
+        componentLoaders.map(({ loader, path: componentsPath }) =>
+          // TODO: Throw a nice error in case loader is not found
+          loaders[loader](componentsPath)
         ),
       );
 
