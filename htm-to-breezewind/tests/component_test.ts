@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import htmlToBreezewind from "../index.ts";
+import htmlToBreezewind from "../mod.ts";
 
 Deno.test("basic component", () => {
   assertEquals(
