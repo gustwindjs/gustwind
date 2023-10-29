@@ -135,6 +135,24 @@ Deno.test("element with a class list", () => {
   );
 });
 
+Deno.test("element with a class and a class list", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div class="underline" _classList="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      attributes: {
+        class: "underline",
+      },
+      classList: {
+        "font-bold": [{ "utility": "get", "parameters": ["props", "href"] }],
+      },
+    },
+  );
+});
+
 Deno.test("element with a visibleIf", () => {
   assertEquals(
     htmlToBreezewind(
