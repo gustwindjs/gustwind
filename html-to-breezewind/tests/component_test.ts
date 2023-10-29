@@ -7,7 +7,7 @@ Deno.test("basic component", () => {
     {
       type: "Button",
       children: "foo",
-      attributes: {},
+      props: {},
     },
   );
 });
@@ -18,7 +18,7 @@ Deno.test("component with attributes", () => {
     {
       type: "Button",
       children: "foo",
-      attributes: { title: "demo" },
+      props: { title: "demo" },
     },
   );
 });
@@ -29,7 +29,7 @@ Deno.test("component with children", () => {
     {
       type: "Button",
       children: [{ type: "div", children: "foo", attributes: {} }],
-      attributes: {},
+      props: {},
     },
   );
 });
@@ -43,7 +43,7 @@ Deno.test("component with multiple children", () => {
         { type: "div", children: "foo", attributes: {} },
         { type: "div", children: "bar", attributes: {} },
       ],
-      attributes: {},
+      props: {},
     },
   );
 });
@@ -65,3 +65,5 @@ Deno.test("component with noop and siblings", () => {
     }],
   );
 });
+
+// TODO: Check bindToProps and how it should work

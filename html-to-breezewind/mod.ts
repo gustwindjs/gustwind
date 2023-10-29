@@ -21,7 +21,6 @@ function h(
   ) {
     return {
       type,
-      attributes: {},
       props: convertChildrenToProps(children),
     };
   }
@@ -37,10 +36,17 @@ function h(
     return childrenToReturn;
   }
 
+  const filteredAttributes = filterAttributes(
+    attributes === null ? {} : attributes,
+  );
+  // Components have to map their values to props.
+  // TODO: Maybe later on everything should be refactored to use attributes field.
+  const fieldName = type.toUpperCase()[0] === type[0] ? "props" : "attributes";
+
   return addCustomFields({
     type,
     children: childrenToReturn,
-    attributes: filterAttributes(attributes === null ? {} : attributes),
+    [fieldName]: filteredAttributes,
   }, attributes);
 }
 

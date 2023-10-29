@@ -161,7 +161,6 @@ Deno.test("props through slots as elements", () => {
     ),
     {
       type: "BaseLayout",
-      attributes: {},
       props: {
         content: [
           {
