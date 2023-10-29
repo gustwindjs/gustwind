@@ -2,43 +2,43 @@
   {
     "type": "Link",
     "props": {
-      "children": "Modes",
       "href": "modes"
-    }
+    },
+    "children": "Modes"
   },
   {
     "type": "Link",
     "props": {
-      "children": "Configuration",
       "href": "configuration"
-    }
+    },
+    "children": "Configuration"
   },
   {
     "type": "Link",
     "props": {
-      "children": "Routing",
       "href": "routing"
-    }
+    },
+    "children": "Routing"
   },
   {
     "type": "Link",
     "props": {
-      "children": "Concepts",
       "href": "concepts"
-    }
+    },
+    "children": "Concepts"
   },
   {
     "type": "Link",
     "props": {
-      "children": "Deployment",
       "href": "deployment"
-    }
+    },
+    "children": "Deployment"
   },
   {
     "type": "Link",
     "props": {
-      "children": "Breezewind",
       "href": "breezewind"
-    }
+    },
+    "children": "Breezewind"
   }
 ]

@@ -59,16 +59,16 @@
                 {
                   "type": "Link",
                   "props": {
-                    "children": "Blog",
                     "href": "blog"
-                  }
+                  },
+                  "children": "Blog"
                 },
                 {
                   "type": "Link",
                   "props": {
-                    "children": "GitHub",
                     "href": "https://github.com/survivejs/gustwind"
-                  }
+                  },
+                  "children": "GitHub"
                 }
               ]
             }
