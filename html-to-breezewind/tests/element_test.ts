@@ -122,7 +122,7 @@ Deno.test("element with a comment", () => {
 Deno.test("element with a class list", () => {
   assertEquals(
     htmlToBreezewind(
-      `<div _classlist="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
+      `<div _classList="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
     ),
     {
       type: "div",

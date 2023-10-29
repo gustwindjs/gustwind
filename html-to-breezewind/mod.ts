@@ -71,11 +71,11 @@ function convertChildrenToProps(children: Component[]) {
 function addCustomFields(c: Component, attributes: Attributes): Component {
   let ret: Component = c;
 
-  if (attributes?._classlist) {
+  if (attributes?._classList) {
     ret = {
       ...ret,
       // TODO: Better do a type check?
-      classList: stringToObject(attributes._classlist as string),
+      classList: stringToObject(attributes._classList as string),
     };
   }
 
@@ -110,7 +110,7 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
-      if (!["_children", "_classlist", "_visibleIf"].includes(key)) {
+      if (!["_children", "_classList", "_visibleIf"].includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,
