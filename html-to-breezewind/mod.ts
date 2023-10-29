@@ -5,7 +5,7 @@ type Attributes = Component["attributes"];
 
 const html = htm.bind(h);
 
-function htmToBreezewind(htmlInput: string): Component | Component[] {
+function htmlToBreezewind(htmlInput: string): Component | Component[] {
   // @ts-ignore Ignore for now
   return html([htmlInput]);
 }
@@ -133,4 +133,4 @@ function stringToObject(s: string) {
   }
 }
 
-export { htmToBreezewind, stringToObject };
+export { htmlToBreezewind, stringToObject };

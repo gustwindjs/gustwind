@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmToBreezewind } from "../mod.ts";
+import { htmlToBreezewind } from "../mod.ts";
 
 Deno.test("basic component", () => {
   assertEquals(
-    htmToBreezewind(`<Button>foo</Button>`),
+    htmlToBreezewind(`<Button>foo</Button>`),
     {
       type: "Button",
       children: "foo",
@@ -14,7 +14,7 @@ Deno.test("basic component", () => {
 
 Deno.test("component with attributes", () => {
   assertEquals(
-    htmToBreezewind(`<Button title="demo">foo</Button>`),
+    htmlToBreezewind(`<Button title="demo">foo</Button>`),
     {
       type: "Button",
       children: "foo",
@@ -25,7 +25,7 @@ Deno.test("component with attributes", () => {
 
 Deno.test("component with children", () => {
   assertEquals(
-    htmToBreezewind(`<Button><div>foo</div></Button>`),
+    htmlToBreezewind(`<Button><div>foo</div></Button>`),
     {
       type: "Button",
       children: [{ type: "div", children: "foo", attributes: {} }],
@@ -36,7 +36,7 @@ Deno.test("component with children", () => {
 
 Deno.test("component with multiple children", () => {
   assertEquals(
-    htmToBreezewind(`<Button><div>foo</div><div>bar</div></Button>`),
+    htmlToBreezewind(`<Button><div>foo</div><div>bar</div></Button>`),
     {
       type: "Button",
       children: [
@@ -50,14 +50,14 @@ Deno.test("component with multiple children", () => {
 
 Deno.test("component with noop", () => {
   assertEquals(
-    htmToBreezewind(`<noop><div>foo</div></noop>`),
+    htmlToBreezewind(`<noop><div>foo</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }],
   );
 });
 
 Deno.test("component with noop and siblings", () => {
   assertEquals(
-    htmToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
+    htmlToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }, {
       type: "div",
       children: "bar",
