@@ -1,4 +1,5 @@
 import htm from "https://esm.sh/htm@3.1.1";
+import { isObject } from "../utilities/functional.ts";
 import type { Component, Utility } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
@@ -41,13 +42,42 @@ function h(
   );
   // Components have to map their values to props.
   // TODO: Maybe later on everything should be refactored to use attributes field.
-  const fieldName = type.toUpperCase()[0] === type[0] ? "props" : "attributes";
+  const isComponent = type.toUpperCase()[0] === type[0];
+  const fieldName = isComponent ? "props" : "attributes";
 
-  return addCustomFields({
+  const ret = addCustomFields({
     type,
     children: childrenToReturn,
     [fieldName]: filteredAttributes,
   }, attributes);
+
+  if (isComponent) {
+    // Check possible local bindings
+    const bindToProps = getLocalBindings(attributes);
+
+    if (bindToProps) {
+      ret.bindToProps = bindToProps;
+    }
+  }
+
+  return ret;
+}
+
+function getLocalBindings(attributes: Attributes) {
+  if (isObject(attributes)) {
+    // @ts-expect-error Maybe this needs a better cast to an object
+    const boundProps = Object.entries(attributes).filter(([k, v]) =>
+      k.startsWith("#") && typeof v === "string"
+    );
+
+    if (!boundProps.length) {
+      return;
+    }
+
+    return Object.fromEntries(
+      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)]),
+    );
+  }
 }
 
 function convertChildrenToProps(children: Component[]) {
@@ -109,10 +139,10 @@ function filterAttributes(attributes: Attributes): Attributes {
     return {};
   }
 
-  // Drop anything starting with a _
+  // Drop anything starting with a _, __, or #
   Object.keys(ret).forEach((key: string) => {
-    // Skip comments
-    if (key.startsWith("__")) {
+    // Skip comments and local bindings
+    if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases

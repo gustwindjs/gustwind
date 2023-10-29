@@ -66,4 +66,22 @@ Deno.test("component with noop and siblings", () => {
   );
 });
 
-// TODO: Check bindToProps and how it should work
+Deno.test("component with local binding", () => {
+  assertEquals(
+    htmlToBreezewind(`<Markdown
+      type="div"
+      #inputText="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
+    ></Markdown>`),
+    {
+      type: "Markdown",
+      props: { type: "div" },
+      children: [],
+      bindToProps: {
+        inputText: {
+          utility: "get",
+          parameters: ["context", "document.content"],
+        },
+      },
+    },
+  );
+});
