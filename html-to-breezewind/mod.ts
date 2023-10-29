@@ -34,6 +34,18 @@ function h(
       : [children];
 
   if (type === "noop") {
+    if (attributes && attributes._type) {
+      const filteredAttributes = filterAttributes(
+        attributes === null ? {} : attributes,
+      );
+
+      return addCustomFields({
+        type: stringToObject(attributes._type as string),
+        children: childrenToReturn,
+        attributes: filteredAttributes,
+      }, attributes);
+    }
+
     return childrenToReturn;
   }
 
@@ -146,7 +158,7 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
-      if (!["_children", "_classList", "_visibleIf"].includes(key)) {
+      if (!["_children", "_classList", "_type", "_visibleIf"].includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,

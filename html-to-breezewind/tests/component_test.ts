@@ -66,6 +66,32 @@ Deno.test("component with noop and siblings", () => {
   );
 });
 
+Deno.test("component with noop and utilities", () => {
+  assertEquals(
+    htmlToBreezewind(`<noop
+      _type="{ 'utility': 'get', 'parameters': ['props', 'type'] }"
+      _class="{ 'utility': 'get', 'parameters': ['props', 'class'] }"
+      _children="{
+        'utility': 'processMarkdown',
+        'parameters': [{ 'utility': 'get', 'parameters': ['props', 'inputText'] }]
+      }"
+    ></noop>`),
+    {
+      type: { "utility": "get", "parameters": ["props", "type"] },
+      attributes: {
+        class: { "utility": "get", "parameters": ["props", "class"] },
+      },
+      children: {
+        "utility": "processMarkdown",
+        "parameters": [{
+          "utility": "get",
+          "parameters": ["props", "inputText"],
+        }],
+      },
+    },
+  );
+});
+
 Deno.test("component with local binding", () => {
   assertEquals(
     htmlToBreezewind(`<Markdown
