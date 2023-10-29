@@ -11,7 +11,7 @@
     "path": "./plugins/breezewind-renderer/mod.ts",
     "options": {
       "componentLoaders": [
-        { "loader": "json", "path": "./site/components" },
+        { "loader": "html", "path": "./site/components" },
         { "loader": "html", "path": "./site/layouts" }
       ],
       "componentPaths": ["./site/layouts", "./site/components"],

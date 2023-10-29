@@ -62,7 +62,8 @@ async function render(
         components,
         extensions,
         context,
-        props,
+        // TODO: Test this case
+        props: { children: c.children, ...props },
         utilities,
       })
     ))).join("");
@@ -88,11 +89,7 @@ async function render(
       { context, props: scopedProps },
     );
 
-    scopedProps = {
-      children: component.children,
-      ...scopedProps,
-      ...boundProps,
-    };
+    scopedProps = { ...scopedProps, ...boundProps };
   }
 
   if (foundComponent) {
@@ -106,9 +103,9 @@ async function render(
           extensions,
           context,
           props: {
-            // @ts-expect-error This is fine. There's some type mistake here.
-            children: component.children,
             ...scopedProps,
+            // @ts-ignore: This is fine
+            children: component.children,
           },
           utilities,
         })
