@@ -1,12 +1,11 @@
 import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { path } from "../../server-deps.ts";
-import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
-import type { Component, Utilities } from "../../breezewind/types.ts";
+import { initLoaders, type Loader } from "../../utilities/loaders.ts";
+import type { Utilities } from "../../breezewind/types.ts";
 import type { Plugin, Routes } from "../../types.ts";
 
 type PageUtilities = {
@@ -14,8 +13,7 @@ type PageUtilities = {
 };
 
 const plugin: Plugin<{
-  // TODO: "keyof typeof loaders" would be better but that's out of scope for now
-  componentLoaders: { loader: string; path: string }[];
+  componentLoaders: { loader: Loader; path: string }[];
   metaPath: string;
   pageUtilitiesPath: string;
 }> = {
@@ -29,40 +27,7 @@ const plugin: Plugin<{
     load,
     mode,
   }) => {
-    const loaders: Record<
-      string,
-      (componentsPath: string) => Promise<Record<string, Component>>
-    > = {
-      html: async (componentsPath: string) => {
-        const components = await Promise.all((await load.dir({
-          path: path.join(cwd, componentsPath),
-          extension: ".html",
-          recursive: true,
-          type: "components",
-        })).map(async (
-          { path: p },
-        ) => [
-          path.basename(p, path.extname(p)),
-          htmlToBreezewind(await Deno.readTextFile(p)),
-        ]));
-
-        return Object.fromEntries<Component>(
-          // @ts-expect-error The type is wrong here. Likely htmToBreezewind needs a fix.
-          components,
-        );
-      },
-      json: async (componentsPath: string) => {
-        return getDefinitions<Component>(
-          await load.dir({
-            path: path.join(cwd, componentsPath),
-            extension: ".json",
-            recursive: true,
-            type: "components",
-          }),
-        );
-      },
-    };
-
+    const loaders = initLoaders({ cwd, loadDir: load.dir });
     let [components, pageUtilities, meta] = await Promise.all([
       loadComponents(),
       loadPageUtilities(),
@@ -72,18 +37,22 @@ const plugin: Plugin<{
     async function loadComponents() {
       // Collect components from different directories
       const components = await Promise.all(
-        componentLoaders.map(({ loader, path: componentsPath }) =>
-          // TODO: Throw a nice error in case loader is not found
-          loaders[loader](componentsPath)
-        ),
+        componentLoaders.map(({ loader, path: componentsPath }) => {
+          const matchedLoader = loaders[loader];
+
+          if (!matchedLoader) {
+            throw new Error(
+              `No loader named ${loader} found amongst ${Object.keys(loaders)}`,
+            );
+          }
+
+          return matchedLoader(componentsPath);
+        }),
       );
 
       // Aggregate components together as a single collection
-      return Object.assign.apply(
-        undefined,
-        // @ts-expect-error This is fine. There's some type weirdness going on.
-        components,
-      );
+      // @ts-expect-error This is fine since we either fail or aggregate matches
+      return Object.assign.apply(undefined, components);
     }
 
     async function loadPageUtilities() {
