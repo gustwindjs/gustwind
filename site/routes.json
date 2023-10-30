@@ -3,7 +3,7 @@
     "layout": "siteIndex",
     "meta": {
       "title": "Gustwind",
-      "description": "Deno powered JSON oriented site generator"
+      "description": "Deno powered website creator"
     },
     "dataSources": [
       {
