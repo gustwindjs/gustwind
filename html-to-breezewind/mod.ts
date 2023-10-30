@@ -8,7 +8,6 @@ const CUSTOM_FIELDS = [
   "_children",
   "_classList",
   "_foreach",
-  "_type",
   "_visibleIf",
 ];
 
@@ -57,6 +56,7 @@ function h(
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
+      delete filteredAttributes?.type;
 
       return addCustomFields({
         type: stringToObject(attributes._type as string),

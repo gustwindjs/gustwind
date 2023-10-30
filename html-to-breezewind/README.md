@@ -2,7 +2,7 @@
 
 This module converts standard HTML to a Breezewind structure. To support Breezewind features, the following HTML extensions have been implemented:
 
-* `_` attribute bindings. I.e., `_class="{ 'utility': 'get', 'parameters': ['props', 'class'] }"` would derive `class` based on a prop named `class`. The same feature works for `_children` and `_type`.
+* `_` attribute bindings. I.e., `_class="{ 'utility': 'get', 'parameters': ['props', 'class'] }"` would derive `class` based on a prop named `class`. The same feature works for `_children`.
 * `_classList` shortcut allows evaluating multiple clauses per class and it maps to `classList` feature of Breezewind.
 * `#` allows evaluating logic at a specific callsite. This is useful if you want to derive the value of a prop before passing it further. The same feature works for `#children`, not only attributes.
 * `noop` - Comparable to React fragments (i.e., is able to lose itself and operate as a temporary structure for grouping)
