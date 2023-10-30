@@ -140,31 +140,29 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     return c;
   }
 
-  let ret: Component = c;
-
-  CUSTOM_FIELDS.forEach((field) => {
+  // @ts-expect-error There is some type confusion here due to string type
+  return CUSTOM_FIELDS.reduce((o, field) => {
     const matchedField = attributes[field];
 
     if (matchedField) {
       if (field === "_foreach") {
-        ret = {
-          ...omit(ret, "children"),
+        return {
+          ...omit(o, "children"),
           foreach: [
             stringToObject(matchedField as string),
-            // @ts-expect-error This is fine
-            c.children,
+            o.children,
           ],
         };
       } else {
-        ret = {
-          ...ret,
+        return {
+          ...o,
           [field.slice(1)]: stringToObject(matchedField as string),
         };
       }
     }
-  });
 
-  return ret;
+    return o;
+  }, c);
 }
 
 function filterAttributes(attributes: Attributes): Attributes {
