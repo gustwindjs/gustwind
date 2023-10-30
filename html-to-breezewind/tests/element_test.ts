@@ -192,8 +192,112 @@ Deno.test("props through slots as elements", () => {
   );
 });
 
-// TODO: Test _foreach
-// TODO: Test _foreach with noop. Maybe this should become <foreach>
+Deno.test("_foreach", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<ul
+        _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }"
+      >
+        <li class="inline">
+          <SiteLink
+            #children="{ 'utility': 'get', 'parameters': ['props', 'data.title'] }"
+            #href="{ 'utility': 'concat', 'parameters': ['blog/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }] }"
+          />
+        </li>
+      </ul>
+    `,
+    ),
+    {
+      type: "ul",
+      attributes: {},
+      foreach: [{
+        utility: "get",
+        parameters: ["context", "blogPosts"],
+      }, [{
+        type: "li",
+        attributes: {
+          class: "inline",
+        },
+        children: [
+          {
+            type: "SiteLink",
+            bindToProps: {
+              children: {
+                utility: "get",
+                parameters: ["props", "data.title"],
+              },
+              href: {
+                utility: "concat",
+                parameters: [
+                  "blog/",
+                  {
+                    "utility": "get",
+                    "parameters": ["props", "data.slug"],
+                  },
+                ],
+              },
+            },
+            children: [],
+            props: {},
+          },
+        ],
+      }]],
+    },
+  );
+});
+
+Deno.test("_foreach with noop", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<noop
+        _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }"
+      >
+        <div class="inline">
+          <SiteLink
+            #children="{ 'utility': 'get', 'parameters': ['props', 'data.title'] }"
+            #href="{ 'utility': 'concat', 'parameters': ['blog/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }] }"
+          />
+        </div>
+      </noop>
+    `,
+    ),
+    {
+      attributes: {},
+      foreach: [{
+        utility: "get",
+        parameters: ["context", "blogPosts"],
+      }, [{
+        type: "div",
+        attributes: {
+          class: "inline",
+        },
+        children: [
+          {
+            type: "SiteLink",
+            bindToProps: {
+              children: {
+                utility: "get",
+                parameters: ["props", "data.title"],
+              },
+              href: {
+                utility: "concat",
+                parameters: [
+                  "blog/",
+                  {
+                    "utility": "get",
+                    "parameters": ["props", "data.slug"],
+                  },
+                ],
+              },
+            },
+            children: [],
+            props: {},
+          },
+        ],
+      }]],
+    },
+  );
+});
 
 /*
 TODO: Support attribute helpers for complex expressions?

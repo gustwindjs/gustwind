@@ -1,5 +1,5 @@
 import htm from "https://esm.sh/htm@3.1.1";
-import { isObject } from "../utilities/functional.ts";
+import { isObject, omit } from "../utilities/functional.ts";
 import type { Component, Utility } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
@@ -34,6 +34,17 @@ function h(
       : [children];
 
   if (type === "noop") {
+    if (attributes && attributes._foreach) {
+      const filteredAttributes = filterAttributes(
+        attributes === null ? {} : attributes,
+      );
+
+      return addCustomFields({
+        children: childrenToReturn,
+        attributes: filteredAttributes,
+      }, attributes);
+    }
+
     if (attributes && attributes._type) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
@@ -117,9 +128,13 @@ function convertChildrenToProps(children: Component[]) {
 }
 
 function addCustomFields(c: Component, attributes: Attributes): Component {
+  if (!attributes) {
+    return c;
+  }
+
   let ret: Component = c;
 
-  if (attributes?._classList) {
+  if (attributes._classList) {
     ret = {
       ...ret,
       // TODO: Better do a type check?
@@ -127,12 +142,27 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     };
   }
 
-  if (attributes?._children) {
-    // TODO: Better do a type check?
-    ret = { ...ret, children: stringToObject(attributes._children as string) };
+  if (attributes._children) {
+    ret = {
+      ...ret,
+      // TODO: Better do a type check?
+      children: stringToObject(attributes._children as string),
+    };
   }
 
-  if (attributes?._visibleIf) {
+  if (attributes._foreach) {
+    ret = {
+      ...omit(ret, "children"),
+      foreach: [
+        // TODO: Better do a type check?
+        stringToObject(attributes._foreach as string),
+        // @ts-expect-error This is fine
+        c.children,
+      ],
+    };
+  }
+
+  if (attributes._visibleIf) {
     ret = {
       ...ret,
       // TODO: Better do a type check?
@@ -158,7 +188,10 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
-      if (!["_children", "_classList", "_type", "_visibleIf"].includes(key)) {
+      if (
+        !["_children", "_classList", "_foreach", "_type", "_visibleIf"]
+          .includes(key)
+      ) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,

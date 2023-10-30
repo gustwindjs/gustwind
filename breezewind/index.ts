@@ -1,4 +1,4 @@
-import { get, isObject, isUndefined } from "../utilities/functional.ts";
+import { get, isObject, isUndefined, omit } from "../utilities/functional.ts";
 import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
@@ -280,16 +280,6 @@ async function evaluateFields(
       return [k, value];
     }),
   )).filter(Boolean);
-}
-
-function omit(o: Record<string, unknown>, k: string) {
-  // TODO: Likely there is a better way to omit
-  // TODO: Push this to functional helpers
-  const ret = { ...o };
-
-  delete ret[k];
-
-  return ret;
 }
 
 export default renderWithHooks;
