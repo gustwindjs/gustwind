@@ -4,6 +4,14 @@ import type { Component, Utility } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
+const CUSTOM_FIELDS = [
+  "_children",
+  "_classList",
+  "_foreach",
+  "_type",
+  "_visibleIf",
+];
+
 const html = htm.bind(h);
 
 function htmlToBreezewind(htmlInput: string): Component | Component[] {
@@ -134,41 +142,27 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
 
   let ret: Component = c;
 
-  if (attributes._classList) {
-    ret = {
-      ...ret,
-      // TODO: Better do a type check?
-      classList: stringToObject(attributes._classList as string),
-    };
-  }
+  CUSTOM_FIELDS.forEach((field) => {
+    const matchedField = attributes[field];
 
-  if (attributes._children) {
-    ret = {
-      ...ret,
-      // TODO: Better do a type check?
-      children: stringToObject(attributes._children as string),
-    };
-  }
-
-  if (attributes._foreach) {
-    ret = {
-      ...omit(ret, "children"),
-      foreach: [
-        // TODO: Better do a type check?
-        stringToObject(attributes._foreach as string),
-        // @ts-expect-error This is fine
-        c.children,
-      ],
-    };
-  }
-
-  if (attributes._visibleIf) {
-    ret = {
-      ...ret,
-      // TODO: Better do a type check?
-      visibleIf: stringToObject(attributes._visibleIf as string),
-    };
-  }
+    if (matchedField) {
+      if (field === "_foreach") {
+        ret = {
+          ...omit(ret, "children"),
+          foreach: [
+            stringToObject(matchedField as string),
+            // @ts-expect-error This is fine
+            c.children,
+          ],
+        };
+      } else {
+        ret = {
+          ...ret,
+          [field.slice(1)]: stringToObject(matchedField as string),
+        };
+      }
+    }
+  });
 
   return ret;
 }
@@ -188,10 +182,7 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
-      if (
-        !["_children", "_classList", "_foreach", "_type", "_visibleIf"]
-          .includes(key)
-      ) {
+      if (!CUSTOM_FIELDS.includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(
           // TODO: Better do a type check?
           ret[key] as string,
