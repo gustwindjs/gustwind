@@ -6,6 +6,7 @@
     "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript": "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/json": "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript": "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/xml": "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml": "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js"
   },
   "remote": {
@@ -176,6 +177,7 @@
     "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js": "f943819f4eaf55d511a3a3dd6bb64a58b9efc15603a9f22504caac39f7a35900",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js": "3827393954434336fc2e81ea578ee602f68bdbcfdc8b28aa7aae625abe6ebd93",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js": "8a563883ecee219f7342c3e6be9aa6ae37f10637a1f04a506221053176274eed",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js": "06ee8d532e5a8df1a0830545e4e14cdf1778cbe0f7a04875ce2625c2e5f03432",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js": "1afc421087265b6d557ab129bb12c8828e5fcdbe4a3dc0534b48dc8d517d80fb"
   }
 }

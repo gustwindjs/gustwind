@@ -10,14 +10,17 @@ import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/ba
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
 import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
 import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
+import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml";
 import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml";
 
 highlight.registerLanguage("bash", highlightBash);
+highlight.registerLanguage("html", highlightXML);
 highlight.registerLanguage("javascript", highlightJS);
 highlight.registerLanguage("js", highlightJS);
 highlight.registerLanguage("json", highlightJSON);
 highlight.registerLanguage("typescript", highlightTS);
 highlight.registerLanguage("ts", highlightTS);
+highlight.registerLanguage("xml", highlightXML);
 highlight.registerLanguage("yaml", highlightYAML);
 
 marked.setOptions({
