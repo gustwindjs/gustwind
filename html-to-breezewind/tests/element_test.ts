@@ -299,6 +299,8 @@ Deno.test("_foreach with noop", () => {
   );
 });
 
+// TODO: Test #type
+
 /*
 TODO: Support attribute helpers for complex expressions?
 
