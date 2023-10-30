@@ -71,7 +71,7 @@ const plugin: Plugin<{
         return { routes: includedRoutes, tasks };
       },
       matchRoute: async (url: string) => {
-        const { allRoutes, allParameters } = await getAllRoutes(
+        const { allRoutes } = await getAllRoutes(
           routes,
           dataSources,
         );
@@ -84,13 +84,7 @@ const plugin: Plugin<{
             dataSources,
           });
 
-          return {
-            route,
-            tasks: [{
-              type: "watchPaths",
-              payload: { paths: allParameters, type: "paths" },
-            }],
-          };
+          return { route, tasks: [] };
         }
 
         return { route: undefined, tasks: [] };

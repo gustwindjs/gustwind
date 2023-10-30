@@ -1,0 +1,78 @@
+<aside
+  class="fixed top-16 left-2 max-w-sm max-h-full overflow-auto rounded filter drop-shadow"
+>
+  <header class="cursor-move">
+    <h2 class="p-4 font-bold bg-gray-800 text-white">Page editor</h2>
+  </header>
+  <section class="p-4 gap-4 flex flex-col bg-white filter bg-opacity-90">
+    <div>
+      <h2 class="font-bold">Meta</h2>
+      <DynamicList
+        class="flex flex-col gap-2"
+        props="{
+        'dataSource': 'Object.entries(editor.meta)',
+        'oninput': 'metaChanged(this, this.value)'
+      }"
+      ></DynamicList>
+    </div>
+    <div
+      _visibleIf="[]"
+      todo="The data source portion has been disabled for now"
+    >
+      <div>
+        <h2 class="font-bold">Data sources</h2>
+        <div x-each="editor.dataSources">
+          <DynamicList
+            props="{
+            'dataSource': 'state.value ? Object.entries(state.value) : []'
+          }"
+          ></DynamicList>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h2 class="font-bold mb-2">Layout</h2>
+      <div _visibleIf="[]" x="'Selection id: ' + editor.selectionId"></div>
+      <ul
+        x-each="Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
+      >
+        <li
+          class="flex flex-col gap-2"
+          x-template
+          x-attr
+          @class="[state.level > 0 && 'ml-2', editor.selectionId === (state.value.attributes && state.value.attributes['data-id']) && 'underline']"
+        >
+          <div
+            _visibleIf="[]"
+            x="'id: ' + state.value.attributes['data-id']"
+          ></div>
+          <div class="flex flex-row gap-2" x-if="state.value.type">
+            <h2 class="font-bold">Type</h2>
+            <span x="state.value.type"></span>
+          </div>
+          <div class="flex flex-row gap-2" x-if="state.value.class">
+            <h2 class="font-bold">Class</h2>
+            <span x="state.value.class"></span>
+          </div>
+          <div x-if="state.value.props">
+            <h2 class="font-bold">Props</h2>
+            <ul x-each="Object.entries(state.value.props)">
+              <li x-template>
+                <span x="state.value[0]"></span>
+                <ul
+                  x-recurse="{ parentIndex: 1, value: 'state.value[1]' }"
+                ></ul>
+              </li>
+            </ul>
+          </div>
+          <div x-if="state.value.children">
+            <h2 class="font-bold">Children</h2>
+            <div
+              x-recurse="Array.isArray(state.value.children) ? state.value.children : [{ type: state.value.children }]"
+            ></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</aside>

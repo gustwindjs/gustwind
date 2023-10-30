@@ -1,21 +1,20 @@
 import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { path } from "../../server-deps.ts";
-import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import breezewind from "../../breezewind/index.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import type { Component, Utilities } from "../../breezewind/types.ts";
-import type { Plugin, Routes, Tasks } from "../../types.ts";
+import { initLoaders, type Loader } from "../../utilities/loaders.ts";
+import type { Utilities } from "../../breezewind/types.ts";
+import type { Plugin, Routes } from "../../types.ts";
 
 type PageUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
 };
 
 const plugin: Plugin<{
-  componentsPath: string;
+  componentLoaders: { loader: Loader; path: string }[];
   metaPath: string;
-  layoutsPath: string;
   pageUtilitiesPath: string;
 }> = {
   meta: {
@@ -24,37 +23,36 @@ const plugin: Plugin<{
   },
   init: async ({
     cwd,
-    options: { componentsPath, metaPath, layoutsPath, pageUtilitiesPath },
+    options: { componentLoaders, metaPath, pageUtilitiesPath },
     load,
     mode,
   }) => {
-    let [components, layouts, pageUtilities, meta] = await Promise.all([
+    const loaders = initLoaders({ cwd, loadDir: load.dir });
+    let [components, pageUtilities, meta] = await Promise.all([
       loadComponents(),
-      loadLayouts(),
       loadPageUtilities(),
       loadMeta(),
     ]);
 
     async function loadComponents() {
-      return getDefinitions<Component>(
-        await load.dir({
-          path: path.join(cwd, componentsPath),
-          extension: ".json",
-          recursive: true,
-          type: "components",
-        }),
-      );
-    }
+      // Collect components from different directories
+      const components = await Promise.all(
+        componentLoaders.map(({ loader, path: componentsPath }) => {
+          const matchedLoader = loaders[loader];
 
-    async function loadLayouts() {
-      return getDefinitions<Component>(
-        await load.dir({
-          path: path.join(cwd, layoutsPath),
-          extension: ".json",
-          recursive: true,
-          type: "layouts",
+          if (!matchedLoader) {
+            throw new Error(
+              `No loader named ${loader} found amongst ${Object.keys(loaders)}`,
+            );
+          }
+
+          return matchedLoader(componentsPath);
         }),
       );
+
+      // Aggregate components together as a single collection
+      // @ts-expect-error This is fine since we either fail or aggregate matches
+      return Object.assign.apply(undefined, components);
     }
 
     async function loadPageUtilities() {
@@ -101,24 +99,9 @@ const plugin: Plugin<{
           },
         };
       },
-      beforeEachRender({ route }) {
-        let tasks: Tasks = [];
-
-        if (layouts[route.layout]) {
-          tasks = [{
-            type: "watchPaths",
-            payload: {
-              paths: [path.join(cwd, layoutsPath, route.layout + ".json")],
-              type: "paths",
-            },
-          }];
-        }
-
-        return tasks;
-      },
       render: ({ routes, route, context }) =>
         renderHTML({
-          component: layouts[route.layout],
+          component: components[route.layout],
           components,
           context,
           utilities: pageUtilities && pageUtilities.init({ routes }),
@@ -131,11 +114,6 @@ const plugin: Plugin<{
             switch (payload.type) {
               case "components": {
                 components = await loadComponents();
-
-                return { send: [{ type: "reloadPage" }] };
-              }
-              case "layouts": {
-                layouts = await loadLayouts();
 
                 return { send: [{ type: "reloadPage" }] };
               }
@@ -157,17 +135,10 @@ const plugin: Plugin<{
           }
           case "getComponents":
             return components;
-          case "getLayouts":
-            return layouts;
           case "getRenderer":
-            return layouts[payload];
+            return components[payload];
           case "updateComponents":
-            // @ts-expect-error This is fine.
             components = payload;
-            break;
-          case "updateLayouts":
-            // @ts-expect-error This is fine.
-            layouts = payload;
             break;
         }
       },

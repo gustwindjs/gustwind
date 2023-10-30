@@ -1,5 +1,14 @@
 {
-  "version": "2",
+  "version": "3",
+  "redirects": {
+    "https://deno.land/std/path/mod.ts": "https://deno.land/std@0.69.0/path/mod.ts",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/bash": "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript": "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/json": "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript": "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/xml": "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml": "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js"
+  },
   "remote": {
     "https://cdn.skypack.dev/-/nanoid@v4.0.0-SV3vmaOx0roSeDMY0GZY/dist=es2019,mode=imports,min/optimized/nanoid.js": "0672928b21f8391e39f8d8ce04a610ef0d31ff5afaf1e15872169e4902190329",
     "https://cdn.skypack.dev/nanoid@4.0.0?min": "6df8d1088889cfc344d4d0775106363ad79e5a1dffc27a1516eb027407203d9b",
@@ -144,6 +153,8 @@
     "https://esm.sh/@twind/preset-autoprefix@1.0.5": "d28f8724a021ebea2a77a004f37d8ede0a94fd8d45e18ffc505824402da3786a",
     "https://esm.sh/@twind/preset-tailwind@1.1.1": "140e09cacca7cee7d5cf5ed8701781c48180004bfb6fc901158082793244cce1",
     "https://esm.sh/@twind/preset-typography@1.0.5": "827fa69e8ba158b4f8fd703937ae2da031ca6119c0be92c78674c91205f02cb9",
+    "https://esm.sh/htm@3.1.1": "2b60fdfcf11fe8c05cc190e771f7fdb6b3745b8d463ce864c758cd4da7e0ef6c",
+    "https://esm.sh/v132/htm@3.1.1/denonext/htm.mjs": "55f083f3845f9c95510d21ce5d3ba24151dc625a23191b76c5ffbf00d14ed29a",
     "https://esm.sh/v99/@twind/core@1.1.1/core.d.ts": "8b658d90445194b10b4ee8d3dab85a70e8699486ad98b86967fe67016328b52c",
     "https://esm.sh/v99/@twind/core@1.1.1/deno/core.js": "b529beb9bf61a37bc111c11822e7ff25e266287b72a3dde9f4e2804916eec3e7",
     "https://esm.sh/v99/@twind/preset-autoprefix@1.0.5/deno/preset-autoprefix.js": "da2c9b1bdbcb7e93d282136e1c0b5cae66aa16dc97fb74bb917eb33afb9c61c4",
@@ -166,6 +177,7 @@
     "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js": "f943819f4eaf55d511a3a3dd6bb64a58b9efc15603a9f22504caac39f7a35900",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js": "3827393954434336fc2e81ea578ee602f68bdbcfdc8b28aa7aae625abe6ebd93",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js": "8a563883ecee219f7342c3e6be9aa6ae37f10637a1f04a506221053176274eed",
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js": "06ee8d532e5a8df1a0830545e4e14cdf1778cbe0f7a04875ce2625c2e5f03432",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js": "1afc421087265b6d557ab129bb12c8828e5fcdbe4a3dc0534b48dc8d517d80fb"
   }
 }

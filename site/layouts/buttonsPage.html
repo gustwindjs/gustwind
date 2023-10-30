@@ -1,0 +1,17 @@
+<BaseLayout>
+  <slot name="content">
+    <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
+      <div>You have discovered the secret button page!</div>
+      <div
+        _children="{ 'utility': 'concat', 'parameters': [ { 'utility': 'testUtility', 'parameters': ['hello'] }, ' ', 'world!' ]}"
+        _title="{ 'utility': 'concat', 'parameters': [{ 'utility': 'testUtility', 'parameters': ['hello'] }, ' ', 'world!']}"
+      ></div>
+      <div class="btn btn-blue" onclick="alert('You pressed button 1')">
+        Test button 1
+      </div>
+      <div class="btn btn-muted" onclick="alert('You pressed button 2')">
+        Test button 2
+      </div>
+    </div>
+  </slot>
+</BaseLayout>

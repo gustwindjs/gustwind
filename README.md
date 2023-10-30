@@ -1,8 +1,8 @@
-Gustwind is an experimental site generator built on top of JSON definitions using [Deno](https://deno.land/). The goal of the design is to allow component oriented development of large scale sites. Conceptually it's split as follows:
+Gustwind is an experimental site generator built on top of JSON or HTML definitions using [Deno](https://deno.land/). The goal of the design is to allow component oriented development of large scale sites. Conceptually it's split as follows:
 
 * **Development mode** lets you preview the site and modify page definitions to commit later
 * **Production mode** generates pure static HTML with CSS inlined to the files
-* **Components** defined with a JSON based component abstraction included allow you to extract shared markup and bind data to it
+* **Components** defined with a JSON or HTML based component abstraction included allow you to extract shared markup and bind data to it
 * **Data sources** define how your data is fetched. At page level, it can then be connected and bound to components.
 * **Route definition** binds it all together.
 
@@ -27,7 +27,7 @@ It's a good idea to use a recent version of [Deno](https://deno.land/) and I rec
 
 ## Data flow
 
-Gustwind accepts TypeScript, Markdown, JSON definitions including Twind (Tailwind) classes and emits HTML and JavaScript.
+Gustwind accepts TypeScript, Markdown, JSON or HTML definitions including Twind (Tailwind) classes and emits HTML and JavaScript.
 
 ![Gustwind data flow](./assets/gustwind-flow.svg)
 

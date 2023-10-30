@@ -12,6 +12,24 @@ Deno.test("component lookup", async () => {
   );
 });
 
+Deno.test("component should have access to children", async () => {
+  assertEquals(
+    await breeze({
+      component: { type: "Link", props: { href: "/foo" }, children: "demo" },
+      components: {
+        Link: {
+          type: "a",
+          attributes: {
+            href: { utility: "get", parameters: ["props", "href"] },
+          },
+          children: { utility: "get", parameters: ["props", "children"] },
+        },
+      },
+    }),
+    '<a href="/foo">demo</a>',
+  );
+});
+
 Deno.test("component lookup with an array", async () => {
   assertEquals(
     await breeze({

@@ -23,6 +23,8 @@ function classShortcut(tw?: (...args: string[]) => string) {
 
     if (typeof component.class === "string") {
       classes.push(component.class);
+    } else if (typeof component.attributes?.class === "string") {
+      classes.push(component.attributes.class);
     } else if (component.class?.utility && component.class.parameters) {
       classes.push(
         await applyUtility(component.class, utilities, context),

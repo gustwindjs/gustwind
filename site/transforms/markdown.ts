@@ -3,6 +3,7 @@ import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.j
 import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
+import { initLoaders } from "../../utilities/loaders.ts";
 import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
@@ -10,14 +11,17 @@ import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/ba
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
 import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
 import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
+import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml";
 import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml";
 
 highlight.registerLanguage("bash", highlightBash);
+highlight.registerLanguage("html", highlightXML);
 highlight.registerLanguage("javascript", highlightJS);
 highlight.registerLanguage("js", highlightJS);
 highlight.registerLanguage("json", highlightJSON);
 highlight.registerLanguage("typescript", highlightTS);
 highlight.registerLanguage("ts", highlightTS);
+highlight.registerLanguage("xml", highlightXML);
 highlight.registerLanguage("yaml", highlightYAML);
 
 marked.setOptions({
@@ -31,6 +35,8 @@ marked.setOptions({
     return highlight.highlight(code, { language }).value;
   },
 });
+
+const loaders = initLoaders({ cwd: Deno.cwd(), loadDir: dir });
 
 async function transformMarkdown(input: string) {
   if (typeof input !== "string") {
@@ -73,9 +79,7 @@ async function transformMarkdown(input: string) {
       if (token.type === "importComponent") {
         // TODO: This is a bad coupling, there should be a better way to get information here
         // especially if this file will be executed in the browser
-        const components = await getDefinitions<Component>(
-          await dir({ path: "./site/components", extension: ".json" }),
-        );
+        const components = await loaders.html("./site/components");
         const matchedComponent = components[token.component];
 
         if (matchedComponent) {

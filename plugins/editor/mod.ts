@@ -111,21 +111,6 @@ const plugin: Plugin = {
             Object.entries(components).map((
               [k, v],
               // @ts-expect-error This is fine.
-            ) => [k, attachIds(v)]),
-          ),
-        });
-
-        const layouts = await send(id, {
-          type: "getLayouts",
-          payload: undefined,
-        });
-        send(id, {
-          type: "updateLayouts",
-          payload: Object.fromEntries(
-            // @ts-expect-error This is fine.
-            Object.entries(layouts).map((
-              [k, v],
-              // @ts-expect-error This is fine.
             ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
           ),
         });

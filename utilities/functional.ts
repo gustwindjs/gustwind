@@ -59,4 +59,14 @@ function get<O = Record<string, unknown>>(
   return value;
 }
 
-export { get, isObject, isUndefined, last };
+function omit(o: Record<string, unknown>, k: string) {
+  // TODO: Likely there is a better way to omit
+  // TODO: Push this to functional helpers
+  const ret = { ...o };
+
+  delete ret[k];
+
+  return ret;
+}
+
+export { get, isObject, isUndefined, last, omit };
