@@ -11,11 +11,11 @@
   ></id>
   <link
     rel="alternate"
-    href="{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }"
+    _href="{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }"
   />
   <link
     rel="self"
-    href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'atom.xml'] }"
+    _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'atom.xml'] }"
   />
   <updated
     _children="{ 'utility': 'dateToISO', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.built'] }] }"
@@ -28,7 +28,7 @@
       <link
         rel="alternate"
         type="text/html"
-        href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'blog', '/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }, '/'] }"
+        _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'blog', '/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }, '/'] }"
       />
       <id
         _children="{ 'utility': 'get', 'parameters': ['props', 'data.slug'] }"
