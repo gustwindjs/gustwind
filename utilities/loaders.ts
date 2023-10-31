@@ -40,7 +40,6 @@ const initLoaders = (
         }
 
         components = await loadRemoteComponents(
-          cwd,
           componentsPath,
           selection,
           extension,
@@ -96,7 +95,6 @@ const initLoaders = (
         }
 
         components = await loadRemoteComponents(
-          cwd,
           componentsPath,
           selection,
           extension,
@@ -144,7 +142,6 @@ const initLoaders = (
 
 // TODO: Cache results to .gustwind to speed up operation
 function loadRemoteComponents(
-  cwd: string,
   componentsPath: string,
   selection: string[],
   extension: string,
