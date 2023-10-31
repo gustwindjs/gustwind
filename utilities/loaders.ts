@@ -123,7 +123,7 @@ const initLoaders = (
           return [
             componentName,
             {
-              component: getJson<Component>(await Deno.readTextFile(p)),
+              component: await getJson<Component>(p),
               utilities,
             },
           ];
