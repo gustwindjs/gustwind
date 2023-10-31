@@ -44,8 +44,11 @@ type Extension = (
 type Utilities =
   & Record<
     string,
-    // deno-lint-ignore no-explicit-any
-    (context: Context, ...args: any) => string | Promise<string> | void
+    (
+      this: { context?: Context },
+      // deno-lint-ignore no-explicit-any
+      ...args: any
+    ) => string | Promise<string> | void
   >
   & {
     _onRenderStart?: (context: Context) => void;

@@ -4,19 +4,19 @@ import type { Context } from "../breezewind/types.ts";
 import type { Routes } from "../types.ts";
 
 function init({ routes }: { routes: Routes }) {
-  function dateToISO(_: Context, date: string) {
+  function dateToISO(date: string) {
     return (new Date(date)).toISOString();
   }
 
-  async function processMarkdown(_: Context, input: string) {
+  async function processMarkdown(input: string) {
     return (await md(input)).content;
   }
 
-  function testUtility(_: Context, input: string) {
+  function testUtility(input: string) {
     return input;
   }
 
-  function trim(_: Context, str: string, char: string) {
+  function trim(str: string, char: string) {
     if (!str) {
       throw new Error("No string to trim!");
     }
@@ -33,11 +33,7 @@ function init({ routes }: { routes: Routes }) {
     );
   }
 
-  function tw(_: Context, input: string) {
-    return twind(input);
-  }
-
-  function validateUrl(_: Context, url: string) {
+  function validateUrl(url: string) {
     if (!url) {
       return;
     }
@@ -82,7 +78,7 @@ function init({ routes }: { routes: Routes }) {
     processMarkdown,
     testUtility,
     trim,
-    tw,
+    tw: twind,
     validateUrl,
   };
 }

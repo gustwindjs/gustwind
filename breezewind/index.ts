@@ -40,7 +40,7 @@ async function render(
     return component;
   }
 
-  const renderUtility = (_: Context, component: unknown) =>
+  const renderUtility = (component: unknown) =>
     isComponent(component)
       // @ts-ignore: This is correct due to runtime check
       ? render({ component, components, extensions, context, utilities })

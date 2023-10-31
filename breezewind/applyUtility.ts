@@ -52,11 +52,7 @@ async function applyUtility(
       : [],
   );
 
-  return foundUtility.apply(
-    undefined,
-    // @ts-ignore: TODO: Figure this one out
-    [context].concat(parameters),
-  );
+  return foundUtility.apply({ context }, parameters);
 }
 
 export { applyUtilities, applyUtility };

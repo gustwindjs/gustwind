@@ -3,13 +3,14 @@ import type { Context } from "./types.ts";
 
 // Note that on top of these, a render utility is injected at index.ts!
 const defaultUtilities = {
-  concat: (_: Context, ...parts: string[]) => parts.join(""),
-  get: (
-    context: Context,
+  concat: (...parts: string[]) => parts.join(""),
+  get: function getUtility(
+    this: { context?: Context },
     c: string,
     key: string,
     defaultValue?: unknown,
-  ) => {
+  ) {
+    const { context } = this;
     const ctx = get(context, c);
 
     if (!isObject(ctx)) {
@@ -19,7 +20,7 @@ const defaultUtilities = {
 
     return get(ctx, key, defaultValue);
   },
-  stringify: (_: Context, input: unknown) => JSON.stringify(input, null, 2),
+  stringify: (input: unknown) => JSON.stringify(input, null, 2),
 };
 
 export { defaultUtilities };
