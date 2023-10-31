@@ -123,7 +123,7 @@ const plugin: Plugin<{
                 return { send: [{ type: "reloadPage" }] };
               }
               case "meta": {
-                meta = await loadMeta();
+                meta = loadMeta();
 
                 return { send: [{ type: "reloadPage" }] };
               }
