@@ -14,7 +14,6 @@
         { "loader": "html", "path": "./site/components" },
         { "loader": "html", "path": "./site/layouts" }
       ],
-      "componentPaths": ["./site/layouts", "./site/components"],
       "metaPath": "./site/meta.json",
       "pageUtilitiesPath": "./site/pageUtilities.ts"
     }
