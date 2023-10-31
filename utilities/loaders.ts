@@ -40,6 +40,7 @@ const initLoaders = (
         }
 
         components = await loadRemoteComponents(
+          cwd,
           componentsPath,
           selection,
           extension,
@@ -95,6 +96,7 @@ const initLoaders = (
         }
 
         components = await loadRemoteComponents(
+          cwd,
           componentsPath,
           selection,
           extension,
@@ -142,6 +144,7 @@ const initLoaders = (
 
 // TODO: Cache results to .gustwind to speed up operation
 function loadRemoteComponents(
+  cwd: string,
   componentsPath: string,
   selection: string[],
   extension: string,
@@ -152,7 +155,7 @@ function loadRemoteComponents(
       let utilities;
 
       try {
-        await import(
+        utilities = await import(
           urlJoin(componentsPath, componentName + ".ts")
         );
       } catch (_) {
