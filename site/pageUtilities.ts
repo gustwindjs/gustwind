@@ -1,21 +1,7 @@
-import md from "./transforms/markdown.ts";
-import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import type { Context } from "../breezewind/types.ts";
 
 // init({ routes }: { routes: Routes })
 function init() {
-  function dateToISO(date: string) {
-    return (new Date(date)).toISOString();
-  }
-
-  async function processMarkdown(input: string) {
-    return (await md(input)).content;
-  }
-
-  function testUtility(input: string) {
-    return input;
-  }
-
   let renderStart: number;
 
   function _onRenderStart() {
@@ -35,14 +21,7 @@ function init() {
     }
   }
 
-  return {
-    _onRenderEnd,
-    _onRenderStart,
-    dateToISO,
-    processMarkdown,
-    testUtility,
-    tw,
-  };
+  return { _onRenderEnd, _onRenderStart };
 }
 
 export { init };
