@@ -1,10 +1,8 @@
 import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
-import { getDefinitions } from "../../gustwind-utilities/getDefinitions.ts";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import { initLoaders } from "../../utilities/loaders.ts";
-import type { Component } from "../../breezewind/types.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash";
