@@ -110,12 +110,21 @@ const initLoaders = (
           { path: p },
         ) => {
           const componentName = path.basename(p, path.extname(p));
+          let utilities;
+
+          try {
+            await Deno.lstat(p);
+
+            utilities = await loadModule(p.replace(extension, ".ts"));
+          } catch (_) {
+            // Nothing to do
+          }
 
           return [
             componentName,
             {
               component: getJson<Component>(await Deno.readTextFile(p)),
-              utilities: loadModule(p.replace(extension, ".ts")),
+              utilities,
             },
           ];
         }));
