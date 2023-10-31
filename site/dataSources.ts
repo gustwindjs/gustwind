@@ -12,8 +12,15 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-async function processMarkdown(filename: string) {
-  return markdown(await Deno.readTextFile(filename));
+async function processMarkdown(
+  filename: string,
+  { skipFirstLine }: { skipFirstLine: boolean },
+) {
+  const lines = await Deno.readTextFile(filename);
+
+  return markdown(
+    skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
+  );
 }
 
 async function parseHeadmatter(filename: string) {

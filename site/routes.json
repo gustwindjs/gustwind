@@ -8,7 +8,7 @@
     "dataSources": [
       {
         "operation": "processMarkdown",
-        "parameters": ["./README.md"],
+        "parameters": ["./README.md", { "skipFirstLine": true }],
         "name": "readme"
       }
     ],

@@ -1,4 +1,6 @@
-Gustwind is an experimental site generator built on top of JSON or HTML definitions using [Deno](https://deno.land/). The goal of the design is to allow component oriented development of large scale sites. Conceptually it's split as follows:
+# Gustwind
+
+Gustwind is a [Deno](https://deno.land/) powered website creator that allows component oriented development of large scale sites. Conceptually it's split as follows:
 
 * **Development mode** lets you preview the site and modify page definitions to commit later
 * **Production mode** generates pure static HTML with CSS inlined to the files
@@ -41,6 +43,10 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 * [sidewind.js.org](https://sidewind.js.org/) - [Source](https://github.com/survivejs/sidewind)
 * [dragjs](http://bebraw.github.io/dragjs/) - [Source](https://github.com/bebraw/dragjs)
 * [Future Frontend](https://futurefrontend.com/) - [Source](https://github.com/ReactFinland/future-frontend-site)
+
+## Availability through Deno
+
+Please use [x/gustwind](https://deno.land/x/gustwind) to access the tool through Deno Land.
 
 ## Earlier related work
 
