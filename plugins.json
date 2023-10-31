@@ -1,6 +1,6 @@
 [
   {
-    "path": "./plugins/breezewind-router/mod.ts",
+    "path": "./plugins/config-router/mod.ts",
     "options": {
       "dataSourcesPath": "./site/dataSources.ts",
       "routesPath": "./site/routes.json",
