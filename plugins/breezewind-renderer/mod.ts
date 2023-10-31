@@ -13,7 +13,7 @@ import {
 import type { PageUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
-  componentLoaders: { loader: Loader; path: string }[];
+  componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
   metaPath: string;
   pageUtilitiesPath: string;
 }> = {
@@ -42,7 +42,7 @@ const plugin: Plugin<{
     async function loadComponents(): Promise<Components> {
       // Collect components from different directories
       const components = await Promise.all(
-        componentLoaders.map(({ loader, path: componentsPath }) => {
+        componentLoaders.map(({ loader, path: componentsPath, selection }) => {
           const matchedLoader = loaders[loader];
 
           if (!matchedLoader) {
@@ -51,7 +51,7 @@ const plugin: Plugin<{
             );
           }
 
-          return matchedLoader(componentsPath);
+          return matchedLoader(componentsPath, selection);
         }),
       );
 

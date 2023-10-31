@@ -1,3 +1,4 @@
+import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../server-deps.ts";
 import { getJson } from "./fs.ts";
 import { htmlToBreezewind } from "../html-to-breezewind/mod.ts";
@@ -26,35 +27,53 @@ const initLoaders = (
   },
 ) => {
   return {
-    html: async (componentsPath: string): Promise<Components> => {
+    html: async (
+      componentsPath: string,
+      selection?: string[],
+    ): Promise<Components> => {
       const extension = ".html";
-      const components = await Promise.all((await loadDir({
-        path: path.join(cwd, componentsPath),
-        extension,
-        recursive: true,
-        type: "components",
-      })).map(async (
-        { path: p },
-      ) => {
-        const componentName = path.basename(p, path.extname(p));
-        let utilities;
+      let components = {};
 
-        try {
-          await Deno.lstat(p);
-
-          utilities = await loadModule(p.replace(extension, ".ts"));
-        } catch (_) {
-          // Nothing to do
+      if (componentsPath.startsWith("http")) {
+        if (!selection) {
+          throw new Error("Remote loader is missing a selection");
         }
 
-        return [
-          componentName,
-          {
-            component: htmlToBreezewind(await Deno.readTextFile(p)),
-            utilities,
-          },
-        ];
-      }));
+        components = await loadRemoteComponents(
+          componentsPath,
+          selection,
+          extension,
+          htmlToBreezewind,
+        );
+      } else {
+        components = await Promise.all((await loadDir({
+          path: path.join(cwd, componentsPath),
+          extension,
+          recursive: true,
+          type: "components",
+        })).map(async (
+          { path: p },
+        ) => {
+          const componentName = path.basename(p, path.extname(p));
+          let utilities;
+
+          try {
+            await Deno.lstat(p);
+
+            utilities = await loadModule(p.replace(extension, ".ts"));
+          } catch (_) {
+            // Nothing to do
+          }
+
+          return [
+            componentName,
+            {
+              component: htmlToBreezewind(await Deno.readTextFile(p)),
+              utilities,
+            },
+          ];
+        }));
+      }
 
       return Object.fromEntries<
         { component: Component; utilities?: PageUtilities }
@@ -63,26 +82,44 @@ const initLoaders = (
         components,
       );
     },
-    json: async (componentsPath: string): Promise<Components> => {
+    json: async (
+      componentsPath: string,
+      selection?: string[],
+    ): Promise<Components> => {
       const extension = ".json";
-      const components = await Promise.all((await loadDir({
-        path: path.join(cwd, componentsPath),
-        extension,
-        recursive: true,
-        type: "components",
-      })).map(async (
-        { path: p },
-      ) => {
-        const componentName = path.basename(p, path.extname(p));
+      let components = {};
 
-        return [
-          componentName,
-          {
-            component: getJson<Component>(await Deno.readTextFile(p)),
-            utilities: loadModule(p.replace(extension, ".ts")),
-          },
-        ];
-      }));
+      if (componentsPath.startsWith("http")) {
+        if (!selection) {
+          throw new Error("Remote loader is missing a selection");
+        }
+
+        components = await loadRemoteComponents(
+          componentsPath,
+          selection,
+          extension,
+          JSON.parse,
+        );
+      } else {
+        components = await Promise.all((await loadDir({
+          path: path.join(cwd, componentsPath),
+          extension,
+          recursive: true,
+          type: "components",
+        })).map(async (
+          { path: p },
+        ) => {
+          const componentName = path.basename(p, path.extname(p));
+
+          return [
+            componentName,
+            {
+              component: getJson<Component>(await Deno.readTextFile(p)),
+              utilities: loadModule(p.replace(extension, ".ts")),
+            },
+          ];
+        }));
+      }
 
       return Object.fromEntries<
         { component: Component; utilities?: PageUtilities }
@@ -93,5 +130,37 @@ const initLoaders = (
     },
   };
 };
+
+function loadRemoteComponents(
+  componentsPath: string,
+  selection: string[],
+  extension: string,
+  componentHandler: (input: string) => unknown,
+) {
+  return Promise.all(
+    selection.map(async (componentName) => {
+      let utilities;
+
+      try {
+        await import(
+          urlJoin(componentsPath, componentName + ".ts")
+        );
+      } catch (_) {
+        // Nothing to do
+      }
+
+      return [componentName, {
+        component: await fetch(
+          urlJoin(componentsPath, componentName + extension),
+        ).then(
+          (
+            res,
+          ) => res.text(),
+        ).then(componentHandler),
+        utilities,
+      }];
+    }),
+  );
+}
 
 export { type Components, initLoaders, type Loader };
