@@ -1,5 +1,5 @@
 // TODO: Too specific
-import type { Component } from "./breezewind/types.ts";
+import type { Component, Utilities } from "./breezewind/types.ts";
 
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
@@ -127,7 +127,7 @@ type SendMessageEvent =
     }[];
   }
   | { type: "getComponents"; payload: undefined }
-  | { type: "updateComponents"; payload: Component }
+  | { type: "updateComponents"; payload: Record<string, Component> }
   | { type: "getRenderer"; payload: string }
   // twind plugin
   | { type: "twindSetupReady"; payload: { path: string } }
@@ -223,6 +223,10 @@ type BuildWorkerEvent =
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
+type PageUtilities = {
+  init: ({ routes }: { routes: Routes }) => Utilities;
+};
+
 export type {
   Attributes,
   BuildWorkerEvent,
@@ -234,6 +238,7 @@ export type {
   DataSources,
   Meta,
   Mode,
+  PageUtilities,
   ParentCategory,
   Plugin,
   PluginApi,

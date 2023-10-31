@@ -106,6 +106,7 @@ const plugin: Plugin = {
         });
         send(id, {
           type: "updateComponents",
+          // @ts-expect-error This is fine.
           payload: Object.fromEntries(
             // @ts-expect-error This is fine.
             Object.entries(components).map((

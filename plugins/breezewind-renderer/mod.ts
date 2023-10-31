@@ -1,16 +1,16 @@
 import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { path } from "../../server-deps.ts";
 import breezewind from "../../breezewind/index.ts";
+import type { Component } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { initLoaders, type Loader } from "../../utilities/loaders.ts";
-import type { Utilities } from "../../breezewind/types.ts";
-import type { Plugin, Routes } from "../../types.ts";
-
-type PageUtilities = {
-  init: ({ routes }: { routes: Routes }) => Utilities;
-};
+import {
+  type Components,
+  initLoaders,
+  type Loader,
+} from "../../utilities/loaders.ts";
+import type { PageUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
   componentLoaders: { loader: Loader; path: string }[];
@@ -27,14 +27,19 @@ const plugin: Plugin<{
     load,
     mode,
   }) => {
-    const loaders = initLoaders({ cwd, loadDir: load.dir });
+    const loaders = initLoaders({
+      cwd,
+      loadDir: load.dir,
+      loadModule: (path) =>
+        load.module<PageUtilities>({ path, type: "pageUtilities" }),
+    });
     let [components, pageUtilities, meta] = await Promise.all([
       loadComponents(),
       loadPageUtilities(),
       loadMeta(),
     ]);
 
-    async function loadComponents() {
+    async function loadComponents(): Promise<Components> {
       // Collect components from different directories
       const components = await Promise.all(
         componentLoaders.map(({ loader, path: componentsPath }) => {
@@ -61,7 +66,7 @@ const plugin: Plugin<{
           path: path.join(cwd, pageUtilitiesPath),
           type: "pageUtilities",
         })
-        : undefined;
+        : { init: () => ({}) };
     }
 
     function loadMeta() {
@@ -99,13 +104,23 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ routes, route, context }) =>
-        renderHTML({
-          component: components[route.layout],
-          components,
+      render: ({ routes, route, context }) => {
+        const componentPageUtilities = getPageUtilities(components);
+        const utilities = Object.assign.apply(
+          undefined,
+          // @ts-expect-error This is ok. Likely there is a type issue elsewhere
+          componentPageUtilities.concat(pageUtilities).map((m) =>
+            m.init({ routes })
+          ),
+        );
+
+        return renderHTML({
+          component: components[route.layout].component,
+          components: getComponents(components),
           context,
-          utilities: pageUtilities && pageUtilities.init({ routes }),
-        }),
+          utilities,
+        });
+      },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
 
@@ -134,17 +149,43 @@ const plugin: Plugin<{
             return;
           }
           case "getComponents":
-            return components;
+            return getComponents(components);
           case "getRenderer":
-            return components[payload];
+            return components[payload].component;
           case "updateComponents":
-            components = payload;
+            components = updateComponents(components, payload);
             break;
         }
       },
     };
   },
 };
+
+function getComponents(
+  components: Components,
+): Record<string, Component> {
+  return Object.fromEntries(
+    Object.entries(components).map(([k, v]) => [k, v.component]),
+  );
+}
+
+function updateComponents(
+  components: Components,
+  update: Record<string, Component>,
+): Components {
+  return Object.fromEntries(
+    Object.entries(components).map((
+      [k, v],
+    ) => [k, { ...v, component: update[k] }]),
+  );
+}
+
+// https://stackoverflow.com/a/47636222/228885
+function getPageUtilities(components: Components): PageUtilities[] {
+  return Object.entries(components).map(([k, v]) => v.utilities).filter(
+    <T>(n?: T): n is T => Boolean(n),
+  );
+}
 
 function renderHTML(
   { component, components, context, utilities }: Parameters<
