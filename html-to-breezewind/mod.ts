@@ -14,6 +14,24 @@ const CUSTOM_FIELDS = [
 const html = htm.bind(h);
 
 function htmlToBreezewind(htmlInput: string): Component | Component[] {
+  if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
+    // @ts-ignore Ignore for now
+    const [type, attributes, ...children] = html([htmlInput]) as [
+      string,
+      Record<string, unknown>,
+    ];
+    const endsWithQuestion = attributes["?"];
+
+    delete attributes["?"];
+
+    // @ts-ignore Ignore for now
+    return [{
+      type,
+      attributes,
+      closingCharacter: endsWithQuestion ? "?" : "",
+    }].concat(children);
+  }
+
   // @ts-ignore Ignore for now
   return html([htmlInput]);
 }
@@ -112,7 +130,7 @@ function getLocalBindings(attributes: Attributes) {
 }
 
 function convertChildrenToProps(children: Component[]) {
-  const ret: [string | Utility, unknown][] = [];
+  const ret: [boolean | string | Utility, unknown][] = [];
 
   children.forEach((child) => {
     if (!child.attributes) {

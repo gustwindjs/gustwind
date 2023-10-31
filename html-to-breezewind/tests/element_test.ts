@@ -324,6 +324,51 @@ Deno.test("_foreach with noop", () => {
   );
 });
 
+Deno.test("doctype", () => {
+  assertEquals(
+    htmlToBreezewind("<!DOCTYPE html>"),
+    [{
+      type: "!DOCTYPE",
+      attributes: {
+        html: true,
+      },
+      closingCharacter: "",
+    }],
+  );
+});
+
+Deno.test("doctype and content", () => {
+  assertEquals(
+    htmlToBreezewind(`<!DOCTYPE html>
+    <div>hello</div>`),
+    [{
+      type: "!DOCTYPE",
+      attributes: {
+        html: true,
+      },
+      closingCharacter: "",
+    }, {
+      type: "div",
+      attributes: {},
+      children: "hello",
+    }],
+  );
+});
+
+Deno.test("xml", () => {
+  assertEquals(
+    htmlToBreezewind('<?xml version="1.0" encoding="utf-8" ?>'),
+    [{
+      type: "?xml",
+      attributes: {
+        version: "1.0",
+        encoding: "utf-8",
+      },
+      closingCharacter: "?",
+    }],
+  );
+});
+
 // TODO: Test #type
 
 /*
