@@ -106,7 +106,7 @@ const plugin: Plugin<{
       },
       render: ({ routes, route, context }) => {
         const componentPageUtilities = getPageUtilities(components);
-        const utilities = Object.assign.apply(
+        const globalUtilities = Object.assign.apply(
           undefined,
           // @ts-expect-error This is ok. Likely there is a type issue elsewhere
           componentPageUtilities.concat(pageUtilities).map((m) =>
@@ -118,7 +118,7 @@ const plugin: Plugin<{
           component: components[route.layout].component,
           components: getComponents(components),
           context,
-          utilities,
+          globalUtilities,
         });
       },
       onMessage: async ({ message }) => {
@@ -188,7 +188,7 @@ function getPageUtilities(components: Components): PageUtilities[] {
 }
 
 function renderHTML(
-  { component, components, context, utilities }: Parameters<
+  { component, components, context, globalUtilities }: Parameters<
     typeof breezewind
   >[0],
 ) {
@@ -203,7 +203,7 @@ function renderHTML(
       breezeExtensions.foreach,
     ],
     context,
-    utilities,
+    globalUtilities,
   });
 }
 

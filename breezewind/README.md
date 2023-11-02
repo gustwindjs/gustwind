@@ -29,7 +29,7 @@ breeze({
   components: {},
   context: {},
   extensions: [],
-  utilities: {},
+  globalUtilities: {},
 });
 ```
 
@@ -61,7 +61,7 @@ breeze({
   },
   context: {},
   extensions: [],
-  utilities: {},
+  globalUtilities: {},
 });
 ```
 
@@ -92,7 +92,9 @@ The following utilities are provided out of the box:
 * `concat(...<string>)` concatenates given strings into a single string.
 * `stringify(input: unknown)` applies `JSON.stringify(input, null, 2)`. Useful for debugging.
 
-To implement your own, follow this signature: `(_: Context, ...parts: string[]) => string | Promise<string>`. Technically you don't have to return a string but in that case you have to be aware of the consequences and design your utilities accordingly.
+To implement your own, follow this signature: `(...args: unknown[]) => string | Promise<string>`. Technically you don't have to return a string but in that case you have to be aware of the consequences and design your utilities accordingly.
+
+Note that Breezewind `context` is available through `this.context` at utilities should you need to access it. For example, the `get` default utility leverages to allow access to the context through the utility.
 
 To pass custom utilities to Breezewind, do the following:
 
@@ -115,8 +117,8 @@ breeze({
   components: { ... },
   context: {},
   extensions: [],
-  utilities: {
-    hello: (_, input: string) => input + ' ' + 'world!',
+  globalUtilities: {
+    hello: (input: string) => input + ' ' + 'world!',
   },
 });
 ```
@@ -147,8 +149,8 @@ breeze({
     hello: "hello",
   },
   extensions: [],
-  utilities: {
-    hello: (_, input: string) => input + ' ' + 'world!',
+  globalUtilities: {
+    hello: (input: string) => input + ' ' + 'world!',
   },
 });
 ```
@@ -195,7 +197,7 @@ breeze({
     extensions.classShortcut(tw),
     extensions.foreach,
   ],
-  utilities: {},
+  globalUtilities: {},
 });
 ```
 

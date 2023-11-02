@@ -11,7 +11,7 @@ Deno.test("pass utilities to children", async () => {
           utility: "hello",
         },
       },
-      utilities: {
+      globalUtilities: {
         hello: () => "hello",
       },
     }),
@@ -29,7 +29,7 @@ Deno.test("pass utilities to children with parameters", async () => {
           parameters: ["world"],
         },
       },
-      utilities: {
+      globalUtilities: {
         hello: (target: string) => `hello ${target}`,
       },
     }),
@@ -49,7 +49,7 @@ Deno.test("pass utilities to attributes", async () => {
         },
         "children": "test",
       },
-      utilities: {
+      globalUtilities: {
         hello: () => "hello",
       },
     }),
@@ -70,7 +70,7 @@ Deno.test("pass utilities to attributes with parameters", async () => {
         },
         "children": "test",
       },
-      utilities: {
+      globalUtilities: {
         hello: (target: string) => `hello ${target}`,
       },
     }),
@@ -91,7 +91,7 @@ Deno.test("trigger _onRenderStart", async () => {
         },
       },
       context,
-      utilities: {
+      globalUtilities: {
         _onRenderStart: (ctx) => {
           receivedContext = ctx;
         },
@@ -117,7 +117,7 @@ Deno.test("trigger _onRenderEnd", async () => {
         },
       },
       context,
-      utilities: {
+      globalUtilities: {
         _onRenderEnd: (ctx) => {
           receivedContext = ctx;
         },

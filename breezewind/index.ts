@@ -16,25 +16,26 @@ type Options = {
   extensions?: (Extension)[];
   context?: Context;
   props?: Context;
-  utilities?: Utilities;
+  globalUtilities?: Utilities;
 };
 
 async function renderWithHooks(
   options: Options,
 ): Promise<string> {
-  const { context = {}, utilities } = options;
+  const { context = {}, globalUtilities } = options;
 
-  utilities?._onRenderStart && utilities._onRenderStart(context);
+  globalUtilities?._onRenderStart && globalUtilities._onRenderStart(context);
 
   const ret = await render(options);
 
-  utilities?._onRenderEnd && utilities._onRenderEnd(context);
+  globalUtilities?._onRenderEnd && globalUtilities._onRenderEnd(context);
 
   return ret;
 }
 
 async function render(
-  { component, components, extensions, context, props, utilities }: Options,
+  { component, components, extensions, context, props, globalUtilities }:
+    Options,
 ): Promise<string> {
   if (typeof component === "string") {
     return component;
@@ -43,15 +44,15 @@ async function render(
   const renderUtility = (component: unknown) =>
     isComponent(component)
       // @ts-ignore: This is correct due to runtime check
-      ? render({ component, components, extensions, context, utilities })
+      ? render({ component, components, extensions, context, globalUtilities })
       : component;
 
   // @ts-expect-error This is fine
-  utilities = isObject(utilities)
+  globalUtilities = isObject(globalUtilities)
     ? {
       render: renderUtility,
       ...defaultUtilities,
-      ...utilities,
+      ...globalUtilities,
     }
     : { render: renderUtility, ...defaultUtilities };
 
@@ -64,7 +65,7 @@ async function render(
         context,
         // TODO: Test this case
         props: { children: c.children, ...props },
-        utilities,
+        globalUtilities,
       })
     ))).join("");
   }
@@ -85,7 +86,7 @@ async function render(
   if (component.bindToProps) {
     const boundProps = await applyUtilities(
       component.bindToProps,
-      utilities,
+      globalUtilities,
       { context, props: scopedProps },
     );
 
@@ -107,7 +108,7 @@ async function render(
             // @ts-ignore: This is fine
             children: component.children,
           },
-          utilities,
+          globalUtilities,
         })
       ),
     )).join("");
@@ -124,7 +125,7 @@ async function render(
       component = await extension(component, {
         props: scopedProps,
         context,
-      }, utilities);
+      }, globalUtilities);
     }
 
     element = component.type;
@@ -133,7 +134,7 @@ async function render(
   const attributes = await generateAttributes(
     component.attributes,
     { props: scopedProps, context },
-    utilities,
+    globalUtilities,
   );
 
   let e = element;
@@ -141,7 +142,10 @@ async function render(
   if (typeof element === "string") {
     // Do nothing
   } else if (element?.utility && element?.parameters) {
-    e = await applyUtility(element, utilities, { context, props: scopedProps });
+    e = await applyUtility(element, globalUtilities, {
+      context,
+      props: scopedProps,
+    });
   }
 
   if (component.children) {
@@ -157,7 +161,7 @@ async function render(
         // @ts-expect-error This is fine
         if (child.utility) {
           // @ts-expect-error This is fine
-          return applyUtility(child, utilities, {
+          return applyUtility(child, globalUtilities, {
             context,
             props: scopedProps,
           });
@@ -171,10 +175,10 @@ async function render(
         components,
         extensions,
         context,
-        utilities,
+        globalUtilities,
       });
-    } else if (children.utility && utilities) {
-      children = await applyUtility(children, utilities, {
+    } else if (children.utility && globalUtilities) {
+      children = await applyUtility(children, globalUtilities, {
         context,
         props: scopedProps,
       });

@@ -89,7 +89,7 @@ async function transformMarkdown(input: string) {
             components: {},
             // TODO: This doesn't feel right. Maybe there's a better way
             // to handle rendering here.
-            utilities: pageUtilities.init({ routes: {} }),
+            globalUtilities: pageUtilities.init({ routes: {} }),
           });
         } else {
           throw new Error(

@@ -114,7 +114,7 @@ Deno.test("async context evaluation", async () => {
         },
       },
       context: { test: "bar" },
-      utilities: {
+      globalUtilities: {
         demo: () => Promise.resolve("foobar"),
       },
     }),
@@ -242,7 +242,7 @@ Deno.test("async context evaluation for attributes", async () => {
         "children": "test",
       },
       context: { test: "bar" },
-      utilities: {
+      globalUtilities: {
         demo: () => Promise.resolve("foobar"),
       },
     }),
@@ -280,7 +280,7 @@ Deno.test("async context evaluation for attributes", async () => {
         children: { utility: "demo" },
       },
       context: { test: "bar" },
-      utilities: {
+      globalUtilities: {
         demo: () => Promise.resolve("foobar"),
       },
     }),
@@ -296,7 +296,7 @@ Deno.test("async context evaluation for attributes", async () => {
         children: "test",
       },
       context: { test: { test: "foo" } },
-      utilities: {
+      globalUtilities: {
         demo: () => Promise.resolve("foobar"),
       },
     }),
