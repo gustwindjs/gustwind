@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:@twind/core@1.1.1": "npm:@twind/core@1.1.1",
       "npm:pagefind@1.0.3": "npm:pagefind@1.0.3"
     },
     "npm": {
@@ -23,6 +24,16 @@
       },
       "@pagefind/windows-x64@1.0.3": {
         "integrity": "sha512-S+Yq4FyvXJm4F+iN/wRiLvEEF8Xs9lTKGtQGaRHXJslQyl65dytDDPIULXJXIadrDbnMrnTt4C2YHmEUIyUIHg==",
+        "dependencies": {}
+      },
+      "@twind/core@1.1.1": {
+        "integrity": "sha512-Yq+AwBlXGfZy+D1GkhmP3vXw+Vpnzme4kHz22XMEMxzrltmnw0UPOQvwVHvYy2JJJyxXfmPGQs5KdDeXbeOmFg==",
+        "dependencies": {
+          "csstype": "csstype@3.1.2"
+        }
+      },
+      "csstype@3.1.2": {
+        "integrity": "sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==",
         "dependencies": {}
       },
       "pagefind@1.0.3": {

@@ -1,4 +1,4 @@
-import { tw } from "https://esm.sh/@twind/core@1.1.1";
+import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
@@ -11,6 +11,7 @@ import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/js
 import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
 import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml";
 import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml";
+import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);
 highlight.registerLanguage("html", highlightXML);
@@ -33,6 +34,8 @@ marked.setOptions({
     return highlight.highlight(code, { language }).value;
   },
 });
+
+install(twindSetup);
 
 const loaders = initLoaders({ cwd: Deno.cwd(), loadDir: dir });
 
