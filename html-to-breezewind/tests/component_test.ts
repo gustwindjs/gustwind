@@ -111,3 +111,54 @@ Deno.test("component with local binding", () => {
     },
   );
 });
+
+Deno.test("component with children and local binding", () => {
+  assertEquals(
+    htmlToBreezewind(`<Markdown
+      type="div"
+      #children="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
+    ></Markdown>`),
+    {
+      type: "Markdown",
+      props: { type: "div" },
+      children: [],
+      bindToProps: {
+        children: {
+          utility: "get",
+          parameters: ["context", "document.content"],
+        },
+      },
+    },
+  );
+});
+
+Deno.test("component with a getter shortcut with a complex key", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<Link &href="context.meta.href">foo</Link>`,
+    ),
+    {
+      type: "Link",
+      children: "foo",
+      props: {
+        href: { utility: "get", parameters: ["context", "meta.href"] },
+      },
+    },
+  );
+});
+
+// TODO: Support this case
+/*
+Deno.test("component with a getter shortcut for children with a complex key", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<Link &children="context.meta.href" />`,
+    ),
+    {
+      type: "Link",
+      children: { utility: "get", parameters: ["context", "meta.href"] },
+      attributes: {},
+    },
+  );
+});
+*/
