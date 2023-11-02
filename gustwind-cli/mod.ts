@@ -198,6 +198,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 }
 
 async function copyToClipboard(input: string) {
+  // TODO: Refactor this to use Deno.Command - https://deno.land/api@v1.38.0?s=Deno.Command
   // https://gist.github.com/jsejcksn/b4b1e86e504f16239aec90df4e9b29a9
   const p = Deno.run({ cmd: ["pbcopy"], stdin: "piped" });
   await p.stdin?.write(new TextEncoder().encode(input));
