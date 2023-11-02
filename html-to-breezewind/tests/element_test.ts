@@ -55,6 +55,34 @@ Deno.test("element with a children attribute", () => {
   );
 });
 
+Deno.test("element with a getter shortcut for children", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div &children="props.href"/>`,
+    ),
+    {
+      type: "div",
+      children: { utility: "get", parameters: ["props", "href"] },
+      attributes: {},
+    },
+  );
+});
+
+Deno.test("element with a getter shortcut for attributes", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="props.href">foo</a>`,
+    ),
+    {
+      type: "a",
+      children: "foo",
+      attributes: {
+        href: { utility: "get", parameters: ["props", "href"] },
+      },
+    },
+  );
+});
+
 Deno.test("element with a children attribute 2", () => {
   assertEquals(
     htmlToBreezewind(

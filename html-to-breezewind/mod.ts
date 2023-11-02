@@ -5,6 +5,7 @@ import type { Component, Utility } from "../breezewind/types.ts";
 type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
+  "&children",
   "_children",
   "_classList",
   "_foreach",
@@ -163,7 +164,17 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     const matchedField = attributes[field];
 
     if (matchedField) {
-      if (field === "_foreach") {
+      if (field === "&children") {
+        return {
+          ...o,
+          children: {
+            utility: "get",
+            parameters:
+              // @ts-expect-error This is fine for now. It might be good to catch the case and error
+              matchedField.split("."),
+          },
+        };
+      } else if (field === "_foreach") {
         return {
           ...omit(o, "children"),
           foreach: [
@@ -191,7 +202,7 @@ function filterAttributes(attributes: Attributes): Attributes {
     return {};
   }
 
-  // Drop anything starting with a _, __, or #
+  // Drop anything starting with a _, __, &, #
   Object.keys(ret).forEach((key: string) => {
     // Skip comments and local bindings
     if (key.startsWith("__") || key.startsWith("#")) {
@@ -203,6 +214,17 @@ function filterAttributes(attributes: Attributes): Attributes {
           // TODO: Better do a type check?
           ret[key] as string,
         );
+      }
+
+      delete ret[key];
+    } else if (key.startsWith("&")) {
+      if (key !== "&children") {
+        ret[key.slice(1)] = {
+          utility: "get",
+          parameters:
+            // @ts-expect-error This is fine. Potentially this could use a check, though.
+            ret[key].split("."),
+        };
       }
 
       delete ret[key];
