@@ -4,9 +4,11 @@ import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyOnTasksRegistered,
   applyPlugins,
+  finishPlugins,
   importPlugins,
+  type LoadedPlugin,
+  preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
-import type { LoadedPlugin } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { Mode, PluginOptions } from "../types.ts";
 
@@ -24,7 +26,7 @@ async function gustwindDevServer({
   port: number;
 }) {
   let pathFs: Awaited<ReturnType<typeof evaluateTasks>> = {};
-  const { plugins, router, prepareTasks, finalTasks } = await importPlugins({
+  const { plugins, router } = await importPlugins({
     cwd,
     initialImportedPlugins,
     pluginDefinitions,
@@ -65,7 +67,9 @@ async function gustwindDevServer({
         );
       }
 
-      // TODO: Is this the right way to handle final tasks?
+      // TODO: Is this the right way to handle final tasks? Should they be handled even?
+      const prepareTasks = await preparePlugins(plugins);
+      const finalTasks = await finishPlugins(plugins);
       const fs = await evaluateTasks(prepareTasks.concat(finalTasks));
       const matchedFsItem = fs[pathname] || pathFs[pathname];
 
