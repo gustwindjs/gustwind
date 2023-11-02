@@ -84,6 +84,25 @@ function h(
       }, attributes);
     }
 
+    if (attributes && attributes["&type"]) {
+      const filteredAttributes = filterAttributes(
+        attributes === null ? {} : attributes,
+      );
+      delete filteredAttributes?.type;
+
+      // @ts-expect-error This is fine for now. It might be good to catch the case and error
+      const parts = attributes["&type"].split(".");
+
+      return addCustomFields({
+        type: {
+          utility: "get",
+          parameters: [parts[0], parts.slice(1).join("")],
+        },
+        children: childrenToReturn,
+        attributes: filteredAttributes,
+      }, attributes);
+    }
+
     return childrenToReturn;
   }
 
@@ -165,13 +184,14 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
 
     if (matchedField) {
       if (field === "&children") {
+        // @ts-expect-error This is fine for now. It might be good to catch the case and error
+        const parts = matchedField.split(".");
+
         return {
           ...o,
           children: {
             utility: "get",
-            parameters:
-              // @ts-expect-error This is fine for now. It might be good to catch the case and error
-              matchedField.split("."),
+            parameters: [parts[0], parts.slice(1).join(".")],
           },
         };
       } else if (field === "_foreach") {
@@ -219,11 +239,12 @@ function filterAttributes(attributes: Attributes): Attributes {
       delete ret[key];
     } else if (key.startsWith("&")) {
       if (key !== "&children") {
+        // @ts-expect-error This is fine. Potentially this could use a check, though.
+        const parts = ret[key].split(".");
+
         ret[key.slice(1)] = {
           utility: "get",
-          parameters:
-            // @ts-expect-error This is fine. Potentially this could use a check, though.
-            ret[key].split("."),
+          parameters: [parts[0], parts.slice(1).join(".")],
         };
       }
 

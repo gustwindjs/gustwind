@@ -1,9 +1,7 @@
 <BaseLayout>
   <slot name="content">
     <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
-      <h1
-        _children="{ 'utility': 'get', 'parameters': ['context', 'document.data.title'] }"
-      ></h1>
+      <h1 &children="context.document.data.title"></h1>
       <p
         _children="{ 'utility': 'processMarkdown', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'document.content'] }] }"
       ></p>
