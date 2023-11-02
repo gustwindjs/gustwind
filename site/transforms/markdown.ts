@@ -3,6 +3,7 @@ import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.j
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import { initLoaders } from "../../utilities/loaders.ts";
+import { getComponentUtilities } from "../../utilities/getComponentUtilities.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash";
@@ -35,9 +36,10 @@ marked.setOptions({
   },
 });
 
+// @ts-expect-error This is fine
 install(twindSetup);
 
-const loaders = initLoaders({ cwd: Deno.cwd(), loadDir: dir });
+const loaders = initLoaders({ cwd: Deno.cwd(), loadDir: dir, loadModule: (path) => import(path)});
 
 async function transformMarkdown(input: string) {
   if (typeof input !== "string") {
@@ -85,11 +87,10 @@ async function transformMarkdown(input: string) {
 
         if (matchedComponent) {
           token.html = await renderHTML({
-            component: matchedComponent,
+            component: matchedComponent.component,
             components: {},
-            // TODO: This doesn't feel right. Maybe there's a better way
-            // to handle rendering here.
-            globalUtilities: pageUtilities.init({ routes: {} }),
+            globalUtilities: pageUtilities.init(),
+            componentUtilities: getComponentUtilities(components, {}),
           });
         } else {
           throw new Error(

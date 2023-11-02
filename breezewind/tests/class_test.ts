@@ -47,6 +47,34 @@ Deno.test("classList shortcut visibility extension with evaluation", async () =>
   );
 });
 
+Deno.test("classList shortcut visibility extension with evaluation and component utility", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "Hello",
+      },
+      components: {
+        Hello: {
+          type: "span",
+          classList: {
+            "font-bold": [
+              { utility: "hello" },
+            ],
+          },
+          children: "testing",
+        },
+      },
+      extensions: [extensions.classShortcut(tw)],
+      componentUtilities: {
+        Hello: {
+          hello: () => "hello",
+        },
+      },
+    }),
+    '<span class="hello">testing</span>',
+  );
+});
+
 Deno.test("classList shortcut works with different class types", async () => {
   assertEquals(
     await breeze({

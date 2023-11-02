@@ -10,6 +10,7 @@ import {
   initLoaders,
   type Loader,
 } from "../../utilities/loaders.ts";
+import { getComponentUtilities} from '../../utilities/getComponentUtilities.ts'
 import type { PageUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
@@ -104,23 +105,14 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ routes, route, context }) => {
-        const componentPageUtilities = getPageUtilities(components);
-        const globalUtilities = Object.assign.apply(
-          undefined,
-          // @ts-expect-error This is ok. Likely there is a type issue elsewhere
-          componentPageUtilities.concat(pageUtilities).map((m) =>
-            m.init({ routes })
-          ),
-        );
-
-        return renderHTML({
+      render: ({ routes, route, context }) =>
+        renderHTML({
           component: components[route.layout].component,
           components: getComponents(components),
           context,
-          globalUtilities,
-        });
-      },
+          globalUtilities: pageUtilities.init({ routes }),
+          componentUtilities: getComponentUtilities(components, routes),
+        }),
       onMessage: async ({ message }) => {
         const { type, payload } = message;
 
@@ -177,13 +169,6 @@ function updateComponents(
     Object.entries(components).map((
       [k, v],
     ) => [k, { ...v, component: update[k] }]),
-  );
-}
-
-// https://stackoverflow.com/a/47636222/228885
-function getPageUtilities(components: Components): PageUtilities[] {
-  return Object.values(components).map((v) => v.utilities).filter(
-    <T>(n?: T): n is T => Boolean(n),
   );
 }
 

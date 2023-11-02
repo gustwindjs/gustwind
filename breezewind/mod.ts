@@ -49,10 +49,19 @@ async function render(
     return component;
   }
 
+  console.log("cu 1", componentUtilities);
+
   const renderUtility = (component: unknown) =>
     isComponent(component)
-      // @ts-ignore: This is correct due to runtime check
-      ? render({ component, components, extensions, context, globalUtilities })
+      ? render({
+        // @ts-ignore: This is correct due to runtime check
+        component,
+        components,
+        extensions,
+        context,
+        globalUtilities,
+        componentUtilities,
+      })
       : component;
 
   // @ts-expect-error This is fine
@@ -74,6 +83,7 @@ async function render(
         // TODO: Test this case
         props: { children: c.children, ...props },
         globalUtilities,
+        componentUtilities,
       })
     ))).join("");
   }
@@ -123,6 +133,7 @@ async function render(
             children: component.children,
           },
           globalUtilities: utilities,
+          componentUtilities,
         })
       ),
     )).join("");
@@ -190,8 +201,11 @@ async function render(
         extensions,
         context,
         globalUtilities,
+        componentUtilities,
       });
     } else if (children.utility && globalUtilities) {
+      console.log("cu 2", componentUtilities);
+
       children = await applyUtility(children, globalUtilities, {
         context,
         props: scopedProps,
