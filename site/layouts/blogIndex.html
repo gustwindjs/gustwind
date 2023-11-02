@@ -6,7 +6,7 @@
       >
         <li class="inline">
           <SiteLink
-            #children="{ 'utility': 'get', 'parameters': ['props', 'data.title'] }"
+            &children="props.data.title"
             #href="{ 'utility': 'concat', 'parameters': ['blog/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }] }"
           />
         </li>
