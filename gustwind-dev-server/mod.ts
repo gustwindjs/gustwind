@@ -1,5 +1,4 @@
-import { Server } from "https://deno.land/std@0.161.0/http/server.ts";
-import { lookup } from "https://deno.land/x/media_types@v3.0.3/mod.ts";
+import { contentType } from "https://deno.land/std@0.205.0/media_types/mod.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyOnTasksRegistered,
@@ -39,8 +38,8 @@ async function gustwindDevServer({
     // using a virtual fs.
     outputDirectory,
   });
-  const server = new Server({
-    handler: async ({ url }) => {
+  return () =>
+    Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(pathname);
 
@@ -80,22 +79,18 @@ async function gustwindDevServer({
       if (matchedFsItem) {
         switch (matchedFsItem.type) {
           case "file":
-            return respond(200, matchedFsItem.data, lookup(pathname));
+            return respond(200, matchedFsItem.data, contentType(pathname));
           case "path": {
             const assetPath = matchedFsItem.path;
             const asset = await Deno.readFile(assetPath);
 
-            return respond(200, asset, lookup(assetPath));
+            return respond(200, asset, contentType(assetPath));
           }
         }
       }
 
       return respond(404, "No matching route");
-    },
-  });
-  const listener = Deno.listen({ port });
-
-  return () => server.serve(listener);
+    });
 }
 
 export { gustwindDevServer };
