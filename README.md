@@ -24,7 +24,7 @@ deno install -A --unstable --no-check -f https://deno.land/x/gustwind/gustwind-c
 
 The APIs are also available as modules if you need more control.
 
-It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.16.0 or newer.
+It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.37.2 or newer.
 
 
 ## Data flow
