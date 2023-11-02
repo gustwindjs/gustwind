@@ -10,7 +10,7 @@ import {
   initLoaders,
   type Loader,
 } from "../../utilities/loaders.ts";
-import { getComponentUtilities} from '../../utilities/getComponentUtilities.ts'
+import { getComponentUtilities } from "../../utilities/getComponentUtilities.ts";
 import type { PageUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
@@ -173,9 +173,10 @@ function updateComponents(
 }
 
 function renderHTML(
-  { component, components, context, globalUtilities }: Parameters<
-    typeof breezewind
-  >[0],
+  { component, components, context, globalUtilities, componentUtilities }:
+    Parameters<
+      typeof breezewind
+    >[0],
 ) {
   return breezewind({
     component,
@@ -189,6 +190,7 @@ function renderHTML(
     ],
     context,
     globalUtilities,
+    componentUtilities,
   });
 }
 

@@ -49,8 +49,6 @@ async function render(
     return component;
   }
 
-  console.log("cu 1", componentUtilities);
-
   const renderUtility = (component: unknown) =>
     isComponent(component)
       ? render({
@@ -204,8 +202,6 @@ async function render(
         componentUtilities,
       });
     } else if (children.utility && globalUtilities) {
-      console.log("cu 2", componentUtilities);
-
       children = await applyUtility(children, globalUtilities, {
         context,
         props: scopedProps,
