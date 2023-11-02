@@ -1,7 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import breeze from "../index.ts";
+import breeze from "../mod.ts";
 import * as extensions from "../extensions.ts";
 
 // This has to run before tw can work!

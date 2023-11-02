@@ -4,7 +4,7 @@ import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";
-import breezewind from "../../../breezewind/index.ts";
+import breezewind from "../../../breezewind/mod.ts";
 import * as breezeExtensions from "../../../breezewind/extensions.ts";
 // import { getPagePath } from "../../../utilities/getPagePath.ts";
 import type { DataContext, Route } from "../../../types.ts";

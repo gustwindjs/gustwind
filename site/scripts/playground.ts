@@ -1,6 +1,6 @@
 import { install, tw } from "https://cdn.skypack.dev/@twind/core@1.1.1?min";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import breeze from "../../breezewind/index.ts";
+import breeze from "../../breezewind/mod.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 
 install({ presets: [presetTailwind()], hash: false });

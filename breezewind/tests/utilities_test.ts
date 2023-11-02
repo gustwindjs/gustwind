@@ -1,6 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-
-import breeze from "../index.ts";
+import breeze from "../mod.ts";
 
 Deno.test("pass utilities to children", async () => {
   assertEquals(

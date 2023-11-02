@@ -1,6 +1,6 @@
 import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { path } from "../../server-deps.ts";
-import breezewind from "../../breezewind/index.ts";
+import breezewind from "../../breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";

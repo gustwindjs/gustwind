@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { isComponent } from "../index.ts";
+import { isComponent } from "../mod.ts";
 
 Deno.test("object with children is a component", () => {
   assertEquals(
