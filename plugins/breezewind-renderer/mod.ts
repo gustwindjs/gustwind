@@ -182,7 +182,7 @@ function updateComponents(
 
 // https://stackoverflow.com/a/47636222/228885
 function getPageUtilities(components: Components): PageUtilities[] {
-  return Object.entries(components).map(([k, v]) => v.utilities).filter(
+  return Object.values(components).map((v) => v.utilities).filter(
     <T>(n?: T): n is T => Boolean(n),
   );
 }

@@ -1,5 +1,42 @@
 {
   "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:pagefind@1.0.3": "npm:pagefind@1.0.3"
+    },
+    "npm": {
+      "@pagefind/darwin-arm64@1.0.3": {
+        "integrity": "sha512-vsHDtvao3W4iFCxVc4S0BVhpj3E2MAoIVM7RmuQfGp1Ng22nGLRaMP6FguLO8TMabRJdvp4SVr227hL4WGKOHA==",
+        "dependencies": {}
+      },
+      "@pagefind/darwin-x64@1.0.3": {
+        "integrity": "sha512-NhEXHHYmB/hT6lx5rCcmnVTxH+uIkMAd43bzEqMwHQosqTZEIQfwihmV39H+m8yo7jFvz3zRbJNzhAh7G4PiwA==",
+        "dependencies": {}
+      },
+      "@pagefind/linux-arm64@1.0.3": {
+        "integrity": "sha512-RGsMt4AmGT8WxCSeP09arU7Za6Vf/We4TWHVSbY7vDMuwWql9Ngoib/q1cP9dIAIMdkXh9ePG/S3mGnJYsdzuQ==",
+        "dependencies": {}
+      },
+      "@pagefind/linux-x64@1.0.3": {
+        "integrity": "sha512-o+VCKaqImL42scSH1n5gUfppYSNyu3BuGTvtKKgWHmycbL+A3fkFH+ZOFbaLeN7LVTvJqJIOYbk4j2yaq9784Q==",
+        "dependencies": {}
+      },
+      "@pagefind/windows-x64@1.0.3": {
+        "integrity": "sha512-S+Yq4FyvXJm4F+iN/wRiLvEEF8Xs9lTKGtQGaRHXJslQyl65dytDDPIULXJXIadrDbnMrnTt4C2YHmEUIyUIHg==",
+        "dependencies": {}
+      },
+      "pagefind@1.0.3": {
+        "integrity": "sha512-ws7kmMxW6OuxzsOjj3YAx6TYq/54MiE3wfyBM3J5CInbZyBBvM2Z8c8IYvnMkBcb5v2EoB9DewXEekOEiDRu5g==",
+        "dependencies": {
+          "@pagefind/darwin-arm64": "@pagefind/darwin-arm64@1.0.3",
+          "@pagefind/darwin-x64": "@pagefind/darwin-x64@1.0.3",
+          "@pagefind/linux-arm64": "@pagefind/linux-arm64@1.0.3",
+          "@pagefind/linux-x64": "@pagefind/linux-x64@1.0.3",
+          "@pagefind/windows-x64": "@pagefind/windows-x64@1.0.3"
+        }
+      }
+    }
+  },
   "redirects": {
     "https://deno.land/std/path/mod.ts": "https://deno.land/std@0.69.0/path/mod.ts",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/bash": "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js",
