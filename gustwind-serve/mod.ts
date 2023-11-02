@@ -1,5 +1,5 @@
-import { Server } from "https://deno.land/std@0.161.0/http/server.ts";
-import { lookup } from "https://deno.land/x/media_types@v3.0.3/mod.ts";
+import { Server } from "https://deno.land/std@0.205.0/http/server.ts";
+import { contentType } from "https://deno.land/std@0.205.0/media_types/mod.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import { path } from "../server-deps.ts";
 
@@ -21,7 +21,7 @@ function gustwindServe({ cwd, input, port }: {
       try {
         const asset = await Deno.readFile(assetPath);
 
-        return respond(200, asset, lookup(assetPath));
+        return respond(200, asset, contentType(assetPath));
       } catch (_) {
         console.error("Failed to find", assetPath);
       }
