@@ -2,6 +2,7 @@ import type { Context } from "../breezewind/types.ts";
 
 // init({ routes }: { routes: Routes })
 function init() {
+  // TODO: Move this logic to <Performance />
   let renderStart: number;
 
   function _onRenderStart() {

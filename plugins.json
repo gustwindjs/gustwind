@@ -26,6 +26,10 @@
     }
   },
   {
+    "path": "./plugins/pagefind/mod.ts",
+    "options": {}
+  },
+  {
     "path": "./plugins/script/mod.ts",
     "options": {
       "scripts": [

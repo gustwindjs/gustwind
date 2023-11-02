@@ -20,7 +20,13 @@ export type LoadedPlugin = {
 export type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(
-  { cwd, initialImportedPlugins, pluginDefinitions, outputDirectory, mode }: {
+  {
+    cwd,
+    initialImportedPlugins,
+    pluginDefinitions,
+    outputDirectory,
+    mode,
+  }: {
     cwd: string;
     initialImportedPlugins?: LoadedPlugin[];
     pluginDefinitions: PluginOptions[];
@@ -69,12 +75,9 @@ async function importPlugins(
     }
   }
 
-  const { prepareTasks, finalTasks } = await preparePlugins({
-    plugins: loadedPluginDefinitions,
-  });
   await applyOnTasksRegistered({
     plugins: loadedPluginDefinitions,
-    tasks: initialTasks.concat(prepareTasks),
+    tasks: initialTasks,
   });
 
   // The idea is to proxy routes from all routers so you can use multiple
@@ -90,12 +93,7 @@ async function importPlugins(
     },
   };
 
-  return {
-    prepareTasks,
-    finalTasks,
-    plugins: loadedPluginDefinitions,
-    router,
-  };
+  return { plugins: loadedPluginDefinitions, router };
 }
 
 async function importPlugin(
@@ -146,16 +144,11 @@ async function importPlugin(
   };
 }
 
-async function preparePlugins(
-  { plugins }: { plugins: PluginDefinition[] },
-) {
+async function preparePlugins(plugins: PluginDefinition[]) {
   let prepareTasks: Tasks = [];
-  let finalTasks: Tasks = [];
   const messageSenders = plugins.map(({ api }) => api.sendMessages)
     .filter(Boolean);
   const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
-    .filter(Boolean);
-  const finishBuilds = plugins.map(({ api }) => api.finishBuild)
     .filter(Boolean);
   const send = getSend(plugins);
 
@@ -175,17 +168,34 @@ async function preparePlugins(
     }
   }
 
+  return prepareTasks;
+}
+
+async function finishPlugins(plugins: PluginDefinition[]) {
+  let finishTasks: Tasks = [];
+  const messageSenders = plugins.map(({ api }) => api.sendMessages)
+    .filter(Boolean);
+  const finishBuilds = plugins.map(({ api }) => api.finishBuild)
+    .filter(Boolean);
+  const send = getSend(plugins);
+
+  for await (const sendMessage of messageSenders) {
+    if (sendMessage) {
+      await sendMessage({ send });
+    }
+  }
+
   for await (const finishBuild of finishBuilds) {
     if (finishBuild) {
       const tasksToAdd = await finishBuild({ send });
 
       if (tasksToAdd) {
-        finalTasks = prepareTasks.concat(tasksToAdd);
+        finishTasks = finishTasks.concat(tasksToAdd);
       }
     }
   }
 
-  return { prepareTasks, finalTasks };
+  return finishTasks;
 }
 
 async function applyPlugins(
@@ -436,6 +446,7 @@ export {
   applyPlugins,
   applyPrepareContext,
   applyRenders,
+  finishPlugins,
   importPlugin,
   importPlugins,
   preparePlugins,

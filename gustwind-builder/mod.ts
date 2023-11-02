@@ -1,5 +1,9 @@
 import { fs, path } from "../server-deps.ts";
-import { importPlugins } from "../gustwind-utilities/plugins.ts";
+import {
+  finishPlugins,
+  importPlugins,
+  preparePlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
@@ -35,12 +39,13 @@ async function build(
   await fs.ensureDir(outputDirectory);
   await Deno.remove(outputDirectory, { recursive: true });
 
-  const { router, prepareTasks, finalTasks } = await importPlugins({
+  const { plugins, router } = await importPlugins({
     cwd,
     pluginDefinitions,
     outputDirectory,
     mode: "production",
   });
+  const prepareTasks = await preparePlugins(plugins);
   prepareTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
   const { routes, tasks: routerTasks } = await router.getAllRoutes();
@@ -66,12 +71,17 @@ async function build(
     });
   });
 
+  // Avoid triggering finish too early since some workers
+  // might finish work while new tasks are added.
+  workerPool.listenForFinish();
   let finishedAmounts = 0;
   return new Promise((resolve) => {
-    workerPool.onWorkFinished(() => {
+    workerPool.onWorkFinished(async () => {
       // The second finish means final tasks have run
       if (!finishedAmounts) {
-        finalTasks.forEach((task) => workerPool.addTaskToQueue(task));
+        const finishTasks = await finishPlugins(plugins);
+
+        finishTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
         finishedAmounts++;
 
