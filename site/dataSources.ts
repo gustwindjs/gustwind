@@ -1,5 +1,4 @@
 import { parse } from "https://deno.land/x/frontmatter@v0.1.4/mod.ts";
-import markdown from "./transforms/markdown.ts";
 import { dir } from "../utilities/fs.ts";
 
 type MarkdownWithFrontmatter = {
@@ -11,17 +10,6 @@ type MarkdownWithFrontmatter = {
   };
   content: string;
 };
-
-async function processMarkdown(
-  filename: string,
-  { skipFirstLine }: { skipFirstLine: boolean },
-) {
-  const lines = await Deno.readTextFile(filename);
-
-  return markdown(
-    skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
-  );
-}
 
 async function parseHeadmatter(filename: string) {
   return parse(await Deno.readTextFile(filename));
@@ -37,4 +25,4 @@ async function indexMarkdown(directory: string) {
   );
 }
 
-export { indexMarkdown, parseHeadmatter, processMarkdown };
+export { indexMarkdown, parseHeadmatter };

@@ -5,13 +5,6 @@
       "title": "Gustwind",
       "description": "Deno powered website creator"
     },
-    "dataSources": [
-      {
-        "operation": "processMarkdown",
-        "parameters": ["./README.md", { "skipFirstLine": true }],
-        "name": "readme"
-      }
-    ],
     "expand": {
       "matchBy": {
         "dataSource": {
