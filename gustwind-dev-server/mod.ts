@@ -18,12 +18,16 @@ async function gustwindDevServer({
   pluginDefinitions,
   mode,
   port,
+  outputDirectory,
 }: {
   cwd: string;
   plugins?: LoadedPlugin[];
   pluginDefinitions: PluginOptions[];
   mode: Mode;
   port: number;
+  // TODO: Likely outputDirectory should be refactored out since
+  // dev mode should run solely in virtual fs
+  outputDirectory: string;
 }) {
   let pathFs: Awaited<ReturnType<typeof evaluateTasks>> = {};
   const { plugins, router } = await importPlugins({
@@ -33,7 +37,7 @@ async function gustwindDevServer({
     mode,
     // Output directory doesn't matter for the server since it's
     // using a virtual fs.
-    outputDirectory: "/",
+    outputDirectory,
   });
   const server = new Server({
     handler: async ({ url }) => {
