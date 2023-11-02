@@ -120,6 +120,12 @@ breeze({
   globalUtilities: {
     hello: (input: string) => input + ' ' + 'world!',
   },
+  // Component utilities are scoped to a component or its children
+  componentUtilities: {
+    Button: {
+      demo: (input: string) => input + ' ' + 'demo!',
+    }
+  }
 });
 ```
 
