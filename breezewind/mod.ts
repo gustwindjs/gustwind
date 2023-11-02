@@ -17,6 +17,7 @@ type Options = {
   context?: Context;
   props?: Context;
   globalUtilities?: Utilities;
+  componentUtilities?: Record<string, Utilities>;
 };
 
 async function renderWithHooks(
@@ -34,8 +35,15 @@ async function renderWithHooks(
 }
 
 async function render(
-  { component, components, extensions, context, props, globalUtilities }:
-    Options,
+  {
+    component,
+    components,
+    extensions,
+    context,
+    props,
+    globalUtilities,
+    componentUtilities,
+  }: Options,
 ): Promise<string> {
   if (typeof component === "string") {
     return component;
@@ -94,6 +102,12 @@ async function render(
   }
 
   if (foundComponent) {
+    // Bind component specific utilities if they exist
+    const utilities = {
+      ...globalUtilities,
+      ...componentUtilities?.[element as string],
+    };
+
     return (await Promise.all(
       (Array.isArray(foundComponent) ? foundComponent : [foundComponent]).map((
         c,
@@ -108,7 +122,7 @@ async function render(
             // @ts-ignore: This is fine
             children: component.children,
           },
-          globalUtilities,
+          globalUtilities: utilities,
         })
       ),
     )).join("");

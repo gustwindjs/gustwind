@@ -11,6 +11,28 @@ Deno.test("component lookup", async () => {
   );
 });
 
+Deno.test("component utility lookup", async () => {
+  assertEquals(
+    await breeze({
+      component: { type: "Button" },
+      components: {
+        Button: {
+          type: "button",
+          children: {
+            utility: "hello",
+          },
+        },
+      },
+      componentUtilities: {
+        Button: {
+          hello: () => "hello",
+        },
+      },
+    }),
+    "<button>hello</button>",
+  );
+});
+
 Deno.test("component should have access to children", async () => {
   assertEquals(
     await breeze({
