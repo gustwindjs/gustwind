@@ -72,7 +72,7 @@
         "slug": "data.slug"
       },
       "scripts": [{ "name": "hello" }],
-      "layout": "blogPage",
+      "layout": "documentationPage",
       "meta": {
         "title": {
           "utility": "get",
