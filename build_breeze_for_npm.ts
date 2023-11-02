@@ -13,7 +13,7 @@ async function buildForNpm(name: string, version: string) {
   await emptyDir(outDir);
 
   await build({
-    entryPoints: [`./${name}/index.ts`, {
+    entryPoints: [`./${name}/mod.ts`, {
       name: "./extensions",
       path: `./${name}/extensions.ts`,
     }],
