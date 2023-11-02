@@ -10,7 +10,10 @@ import {
   initLoaders,
   type Loader,
 } from "../../utilities/loaders.ts";
-import { getComponentUtilities } from "../../utilities/getComponentUtilities.ts";
+import {
+  getComponentUtilities,
+  getGlobalUtilities,
+} from "../../utilities/getPageUtilities.ts";
 import type { PageUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
@@ -110,7 +113,12 @@ const plugin: Plugin<{
           component: components[route.layout].component,
           components: getComponents(components),
           context,
-          globalUtilities: pageUtilities.init({ routes }),
+          globalUtilities: getGlobalUtilities(
+            pageUtilities,
+            components,
+            routes,
+            route.layout,
+          ),
           componentUtilities: getComponentUtilities(components, routes),
         }),
       onMessage: async ({ message }) => {
