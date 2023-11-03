@@ -11,7 +11,7 @@
     _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'atom.xml'] }"
   />
   <updated &children="(dateToISO (get context meta.built))"></updated>
-  <noop _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }">
+  <noop &foreach="(get context blogPosts)">
     <entry>
       <title &children="(get props data.title)"></title>
       <link
