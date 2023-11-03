@@ -4,7 +4,7 @@
       <h1 &children="(get context document.data.title)"></h1>
       <Markdown
         type="div"
-        #children="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
+        &children="(get context document.content)"
       ></Markdown>
     </div>
   </slot>

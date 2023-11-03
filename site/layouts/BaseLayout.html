@@ -30,17 +30,7 @@
     >
       <TableOfContents />
     </aside>
-    <main
-      _children="{
-        'utility': 'render',
-        'parameters': [
-          {
-            'utility': 'get',
-            'parameters': ['props', 'content']
-          }
-        ]
-      }"
-    ></main>
+    <main &children="(render (get props content))"></main>
     <MainFooter />
     <Scripts />
   </body>

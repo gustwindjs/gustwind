@@ -12,22 +12,6 @@
       }
     ]
   }"
-  _href="{
-    'utility': 'validateUrl',
-    'parameters': [
-      {
-        'utility': 'get',
-        'parameters': ['props', 'href']
-      }
-    ]
-  }"
-  _children="{
-    'utility': 'render',
-    'parameters': [
-      {
-        'utility': 'get',
-        'parameters': ['props', 'children']
-      }
-    ]
-  }"
+  &href="(validateUrl (get props href))"
+  &children="(render (get props children))"
 />
