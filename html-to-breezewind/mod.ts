@@ -10,7 +10,6 @@ const CUSTOM_FIELDS = [
   "_children",
   "_classList",
   "&foreach",
-  "_foreach",
   "_visibleIf",
 ];
 
@@ -64,17 +63,6 @@ function h(
   if (type === "noop") {
     if (!attributes) {
       return childrenToReturn;
-    }
-
-    if (attributes._foreach) {
-      const filteredAttributes = filterAttributes(
-        attributes === null ? {} : attributes,
-      );
-
-      return addCustomFields({
-        children: childrenToReturn,
-        attributes: filteredAttributes,
-      }, attributes);
     }
 
     if (attributes._type) {
@@ -222,14 +210,6 @@ function addCustomFields(
           ...omit(o, "children"),
           foreach: [
             parseExpression(matchedField as string),
-            o.children,
-          ],
-        };
-      } else if (field === "_foreach") {
-        return {
-          ...omit(o, "children"),
-          foreach: [
-            stringToObject(matchedField as string),
             o.children,
           ],
         };
