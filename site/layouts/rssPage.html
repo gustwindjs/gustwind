@@ -17,7 +17,7 @@
       <link
         rel="alternate"
         type="text/html"
-        _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'blog', '/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }, '/'] }"
+        &href="(concat (get context meta.url) blog / (get props data.slug) /)"
       />
       <id &children="(get props data.slug)"></id>
       <published &children="(dateToISO (get props data.date))"></published>

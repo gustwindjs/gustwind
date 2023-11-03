@@ -14,6 +14,63 @@ Deno.test("element with an expression shortcut for attribute", () => {
   );
 });
 
+Deno.test("element with an expression after expression", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="(get (get props href))" />`,
+    ),
+    {
+      type: "a",
+      attributes: {
+        href: {
+          utility: "get",
+          parameters: [{ utility: "get", parameters: ["props", "href"] }],
+        },
+      },
+      children: [],
+    },
+  );
+});
+
+Deno.test("element with multiple expressions", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="(concat (get props href) (get props suffix))" />`,
+    ),
+    {
+      type: "a",
+      attributes: {
+        href: {
+          utility: "concat",
+          parameters: [{ utility: "get", parameters: ["props", "href"] }, {
+            utility: "get",
+            parameters: ["props", "suffix"],
+          }],
+        },
+      },
+      children: [],
+    },
+  );
+});
+
+Deno.test("element with a string after an expression after expression", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="(get (get props href) /)" />`,
+    ),
+    {
+      type: "a",
+      attributes: {
+        href: {
+          utility: "get",
+          parameters: [{ utility: "get", parameters: ["props", "href"] }, "/"],
+        },
+      },
+      children: [],
+    },
+  );
+});
+
 Deno.test("element with an expression and multiple parameters", () => {
   assertEquals(
     htmlToBreezewind(
@@ -148,6 +205,32 @@ Deno.test("component with a children expression", () => {
         children: {
           utility: "get",
           parameters: ["context", "document.content"],
+        },
+      },
+    },
+  );
+});
+
+Deno.test("complex expression", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a
+        &href="(concat (get context meta.url) blog / (get props data.slug) /)"
+      ></a>`,
+    ),
+    {
+      type: "a",
+      children: [],
+      attributes: {
+        href: {
+          utility: "concat",
+          parameters: [
+            { utility: "get", parameters: ["context", "meta.url"] },
+            "blog",
+            "/",
+            { utility: "get", parameters: ["props", "data.slug"] },
+            "/",
+          ],
         },
       },
     },
