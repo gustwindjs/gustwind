@@ -6,10 +6,7 @@
   <title &children="(get context meta.siteName)"></title>
   <id &children="(get context meta.url)"></id>
   <link rel="alternate" &href="(get context meta.url)" />
-  <link
-    rel="self"
-    _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'atom.xml'] }"
-  />
+  <link rel="self" &href="(concat (get context meta.url) atom.xml)" />
   <updated &children="(dateToISO (get context meta.built))"></updated>
   <noop &foreach="(get context blogPosts)">
     <entry>
