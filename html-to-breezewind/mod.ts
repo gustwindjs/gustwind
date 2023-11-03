@@ -1,6 +1,10 @@
 import htm from "https://esm.sh/htm@3.1.1";
 import { isObject, omit } from "../utilities/functional.ts";
-import type { AttributeValue, Component } from "../breezewind/types.ts";
+import type {
+  AttributeValue,
+  Component,
+  Utility,
+} from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
@@ -260,8 +264,31 @@ function filterAttributes(attributes: Attributes): Attributes {
 }
 
 function parseExpression(s: string) {
-  // TODO: Add parsing logic here
-  return s;
+  const parts = s.split(" ").filter(Boolean);
+  const ret: Utility = { utility: "", parameters: [] };
+  let i = 0;
+
+  parts.forEach((part) => {
+    let fragment = "";
+
+    part.split("").forEach((s) => {
+      if (["(", ")"].includes(s)) {
+        return;
+      }
+
+      fragment += s;
+    });
+
+    if (i === 0) {
+      ret.utility = fragment;
+
+      i++;
+    } else {
+      ret.parameters?.push(fragment);
+    }
+  });
+
+  return ret;
 }
 
 function stringToObject(s: string) {
