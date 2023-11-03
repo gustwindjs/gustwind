@@ -64,19 +64,6 @@ function h(
       return childrenToReturn;
     }
 
-    if (attributes._type) {
-      const filteredAttributes = filterAttributes(
-        attributes === null ? {} : attributes,
-      );
-      delete filteredAttributes?.type;
-
-      return addCustomFields({
-        type: stringToObject(attributes._type as string),
-        children: childrenToReturn,
-        attributes: filteredAttributes,
-      }, attributes);
-    }
-
     if (attributes["&foreach"]) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,

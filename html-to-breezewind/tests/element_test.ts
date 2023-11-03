@@ -119,31 +119,6 @@ Deno.test("element with a visibleIf", () => {
   );
 });
 
-Deno.test("element with _type", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<script
-        _type="{ 'utility': 'get', 'parameters': ['props', 'type']}"
-        _src="{ 'utility': 'get', 'parameters': ['props', 'src']}"
-      ></script>`,
-    ),
-    {
-      type: "script",
-      attributes: {
-        type: {
-          utility: "get",
-          parameters: ["props", "type"],
-        },
-        src: {
-          utility: "get",
-          parameters: ["props", "src"],
-        },
-      },
-      children: [],
-    },
-  );
-});
-
 Deno.test("props through slots as elements", () => {
   assertEquals(
     htmlToBreezewind(
