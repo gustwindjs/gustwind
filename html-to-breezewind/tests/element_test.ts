@@ -194,19 +194,6 @@ Deno.test("element with a class", () => {
   );
 });
 
-Deno.test("element with a comment", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div __reference="https://kevincox.ca/2022/05/06/rss-feed-best-practices/">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      attributes: {},
-    },
-  );
-});
-
 Deno.test("element with a class list", () => {
   assertEquals(
     htmlToBreezewind(

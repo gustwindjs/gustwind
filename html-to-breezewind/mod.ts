@@ -235,7 +235,7 @@ function filterAttributes(attributes: Attributes): Attributes {
   // Drop anything starting with a _, __, &, #, !
   Object.keys(ret).forEach((key: string) => {
     // Skip comments and local bindings
-    if (["__", "#"].includes(key)) {
+    if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("!")) {
       if (key !== "!children") {
