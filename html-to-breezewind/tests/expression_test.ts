@@ -42,10 +42,10 @@ Deno.test("element with multiple expressions", () => {
       attributes: {
         href: {
           utility: "concat",
-          parameters: [{ utility: "get", parameters: ["props", "href"] }, {
-            utility: "get",
-            parameters: ["props", "suffix"],
-          }],
+          parameters: [
+            { utility: "get", parameters: ["props", "href"] },
+            { utility: "get", parameters: ["props", "suffix"] },
+          ],
         },
       },
       children: [],

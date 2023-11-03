@@ -34,11 +34,6 @@ function parseExpression(s: string) {
     } else if (character === ")") {
       captureSegment = true;
       level--;
-
-      if (parents.length - level > 1) {
-        parents.pop();
-        parent = parents.at(-1);
-      }
     } else if (character === "'") {
       if (captureEmpty) {
         captureEmpty = false;
@@ -68,6 +63,11 @@ function parseExpression(s: string) {
         i++;
       } else if (segment.length > 0) {
         parent.parameters?.push(segment);
+      }
+
+      if (parents.length - level > 0 && parents.length > 1) {
+        parents.pop();
+        parent = parents.at(-1);
       }
 
       segment = "";
