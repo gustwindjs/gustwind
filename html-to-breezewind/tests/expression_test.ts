@@ -60,3 +60,23 @@ Deno.test("element with a nested expression shortcut for children", () => {
     },
   );
 });
+
+Deno.test("element with a complex nested expression shortcut for children", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div !children="(concat '/' (get props href) '/')" />`,
+    ),
+    {
+      type: "div",
+      children: {
+        utility: "concat",
+        parameters: [
+          "/",
+          { utility: "get", parameters: ["props", "href"] },
+          "/",
+        ],
+      },
+      attributes: {},
+    },
+  );
+});

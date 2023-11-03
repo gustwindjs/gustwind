@@ -274,11 +274,13 @@ function filterAttributes(attributes: Attributes): Attributes {
 function parseExpression(s: string) {
   const parts = s.replaceAll("'", "").split(" ").filter(Boolean);
   let ret: Utility | undefined; // = { utility: "", parameters: [] };
-  let parent: Utility;
+  const parents: Utility[] = [];
+  let parent: Utility | undefined;
   let i = 0;
 
   parts.forEach((part) => {
     let segment = "";
+    let parsedEnd = false;
 
     part.split("").forEach((s) => {
       if (s === "(") {
@@ -289,20 +291,28 @@ function parseExpression(s: string) {
 
         parent?.parameters?.push(template);
         parent = template;
+        parents.push(template);
         i = 0;
 
+        // Catch reference to the first parent
         if (!ret) {
-          ret = parent;
+          ret = parents.at(-1);
         }
 
         return;
       }
       if (s === ")") {
+        parsedEnd = true;
+
         return;
       }
 
       segment += s;
     });
+
+    if (!parent) {
+      throw new Error("Missing parent");
+    }
 
     // First segment is a utility always. The following contain the parameters.
     if (i === 0) {
@@ -311,6 +321,12 @@ function parseExpression(s: string) {
       i++;
     } else {
       parent.parameters?.push(segment);
+    }
+
+    // Go up in the stack
+    if (parsedEnd) {
+      parents.pop();
+      parent = parents.at(-1);
     }
   });
 
