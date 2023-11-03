@@ -9,6 +9,7 @@ import type {
 type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
+  "!children",
   "&children",
   "_children",
   "_classList",
@@ -187,7 +188,12 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     const matchedField = attributes[field];
 
     if (matchedField) {
-      if (field === "&children") {
+      if (field === "!children") {
+        return {
+          ...o,
+          children: parseExpression(matchedField as string),
+        };
+      } else if (field === "&children") {
         // @ts-expect-error This is fine for now. It might be good to catch the case and error
         const parts = matchedField.split(".");
 
@@ -232,7 +238,9 @@ function filterAttributes(attributes: Attributes): Attributes {
     if (["__", "#"].includes(key)) {
       delete ret[key];
     } else if (key.startsWith("!")) {
-      ret[key.slice(1)] = parseExpression(ret[key] as string);
+      if (key !== "!children") {
+        ret[key.slice(1)] = parseExpression(ret[key] as string);
+      }
 
       delete ret[key];
     } else if (key.startsWith("_")) {
