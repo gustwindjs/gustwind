@@ -2,6 +2,10 @@ function last<O>(array: O[]) {
   return array[array.length - 1];
 }
 
+function isBoolean(str?: unknown) {
+  return typeof str === "boolean";
+}
+
 function isNull(str?: unknown) {
   return str === null;
 }
@@ -69,4 +73,4 @@ function omit(o: Record<string, unknown>, k: string) {
   return ret;
 }
 
-export { get, isObject, isUndefined, last, omit };
+export { get, isBoolean, isObject, isUndefined, last, omit };

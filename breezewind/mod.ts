@@ -1,4 +1,10 @@
-import { get, isObject, isUndefined, omit } from "../utilities/functional.ts";
+import {
+  get,
+  isBoolean,
+  isObject,
+  isUndefined,
+  omit,
+} from "../utilities/functional.ts";
 import { applyUtilities, applyUtility } from "./applyUtility.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
@@ -263,7 +269,8 @@ async function generateAttributes(
 
   return (await evaluateFields(attributes, context, utilities)).map(
     // @ts-expect-error This is ok
-    ([k, v]) => v && v.toString().length > 0 ? `${k}="${v}"` : k,
+    ([k, v]) =>
+      v && !isBoolean(v) && v.toString().length > 0 ? `${k}="${v}"` : k,
   ).join(" ");
 }
 
