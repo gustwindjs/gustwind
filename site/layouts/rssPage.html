@@ -3,9 +3,9 @@
   __reference="https://kevincox.ca/2022/05/06/rss-feed-best-practices/"
   xmlns="http://www.w3.org/2005/Atom"
 >
-  <title &children="context.meta.siteName"></title>
-  <id &children="context.meta.url"></id>
-  <link rel="alternate" &href="context.meta.url" />
+  <title &children="(get context meta.siteName)"></title>
+  <id &children="(get context meta.url)"></id>
+  <link rel="alternate" &href="(get context meta.url)" />
   <link
     rel="self"
     _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'atom.xml'] }"
@@ -15,17 +15,17 @@
   ></updated>
   <noop _foreach="{ 'utility': 'get', 'parameters': ['context', 'blogPosts'] }">
     <entry>
-      <title &children="props.data.title"></title>
+      <title &children="(get props data.title)"></title>
       <link
         rel="alternate"
         type="text/html"
         _href="{ 'utility': 'concat', 'parameters': [{ 'utility': 'get', 'parameters': ['context', 'meta.url'] }, 'blog', '/', { 'utility': 'get', 'parameters': ['props', 'data.slug'] }, '/'] }"
       />
-      <id &children="props.data.slug"></id>
+      <id &children="(get props data.slug)"></id>
       <published
         _children="{ 'utility': 'dateToISO', 'parameters': [{ 'utility': 'get', 'parameters': ['props', 'data.date'] }] }"
       ></published>
-      <content type="html" &children="props.data.description"></content>
+      <content type="html" &children="(get props data.description)"></content>
     </entry>
   </noop>
 </feed>

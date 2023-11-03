@@ -285,7 +285,7 @@ function parseExpression(s: string) {
     });
 
     if (!parent) {
-      throw new Error("Missing parent");
+      throw new Error(`Missing parent at ${s}`);
     }
 
     // First segment is a utility always. The following contain the parameters.

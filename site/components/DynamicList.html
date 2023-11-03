@@ -1,4 +1,4 @@
-<ul class="flex flex-col gap-2" &x-each="props.dataSource">
+<ul class="flex flex-col gap-2" &x-each="(get props dataSource)">
   <li class="flex gap-2" x-template>
     <label x="state.value[0]"></label>
     <input
@@ -7,7 +7,7 @@
       type="text"
       x="state.value[1]"
       @data-field="state.value[0]"
-      &oninput="props.oninput"
+      &oninput="(get props oninput)"
     />
   </li>
 </ul>
