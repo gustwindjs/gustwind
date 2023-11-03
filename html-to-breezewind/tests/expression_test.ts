@@ -236,3 +236,106 @@ Deno.test("complex expression", () => {
     },
   );
 });
+
+Deno.test("&foreach", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<ul &foreach="(get context blogPosts)">
+        <li class="inline">
+          <SiteLink
+            &children="(get props data.title)"
+            &href="(concat blog / (get props data.slug))"
+          />
+        </li>
+      </ul>
+    `,
+    ),
+    {
+      type: "ul",
+      attributes: {},
+      foreach: [{
+        utility: "get",
+        parameters: ["context", "blogPosts"],
+      }, [{
+        type: "li",
+        attributes: {
+          class: "inline",
+        },
+        children: [
+          {
+            type: "SiteLink",
+            bindToProps: {
+              children: {
+                utility: "get",
+                parameters: ["props", "data.title"],
+              },
+              href: {
+                utility: "concat",
+                parameters: [
+                  "blog/",
+                  {
+                    "utility": "get",
+                    "parameters": ["props", "data.slug"],
+                  },
+                ],
+              },
+            },
+            children: [],
+            props: {},
+          },
+        ],
+      }]],
+    },
+  );
+});
+
+Deno.test("&foreach with noop", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<noop &foreach="(get context blogPosts)">
+        <div class="inline">
+          <SiteLink
+            &children="(get props data.title)"
+            &href="(concat blog / (get props data.slug))"
+          />
+        </div>
+      </noop>
+    `,
+    ),
+    {
+      attributes: {},
+      foreach: [{
+        utility: "get",
+        parameters: ["context", "blogPosts"],
+      }, [{
+        type: "div",
+        attributes: {
+          class: "inline",
+        },
+        children: [
+          {
+            type: "SiteLink",
+            bindToProps: {
+              children: {
+                utility: "get",
+                parameters: ["props", "data.title"],
+              },
+              href: {
+                utility: "concat",
+                parameters: [
+                  "blog/",
+                  {
+                    "utility": "get",
+                    "parameters": ["props", "data.slug"],
+                  },
+                ],
+              },
+            },
+            children: [],
+            props: {},
+          },
+        ],
+      }]],
+    },
+  );
+});
