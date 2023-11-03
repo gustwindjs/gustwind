@@ -93,3 +93,48 @@ Deno.test("element with a type expression for noop type", () => {
     },
   );
 });
+
+Deno.test("component with an expression", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<Link
+        &href="(get context document.content)"
+      ></Link>`,
+    ),
+    {
+      type: "Link",
+      children: [],
+      bindToProps: {
+        href: {
+          utility: "get",
+          parameters: ["context", "document.content"],
+        },
+      },
+      props: {},
+    },
+  );
+});
+
+Deno.test("component with a children expression", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<Markdown
+        type="div"
+        &children="(get context document.content)"
+      ></Markdown>`,
+    ),
+    {
+      type: "Markdown",
+      children: [],
+      props: {
+        type: "div",
+      },
+      bindToProps: {
+        children: {
+          utility: "get",
+          parameters: ["context", "document.content"],
+        },
+      },
+    },
+  );
+});

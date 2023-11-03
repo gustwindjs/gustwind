@@ -52,7 +52,7 @@ function h(
   ) {
     return {
       type,
-      props: convertChildrenToProps(children),
+      props: convertChildrenSlotsToProps(children),
     };
   }
 
@@ -108,19 +108,24 @@ function h(
     return childrenToReturn;
   }
 
-  const filteredAttributes = filterAttributes(
-    attributes === null ? {} : attributes,
-  );
   // Components have to map their values to props.
   // TODO: Maybe later on everything should be refactored to use attributes field.
   const isComponent = type.toUpperCase()[0] === type[0];
   const fieldName = isComponent ? "props" : "attributes";
+  const filteredAttributes = filterAttributes(
+    attributes === null ? {} : attributes,
+    isComponent,
+  );
 
-  const ret = addCustomFields({
-    type,
-    children: childrenToReturn,
-    [fieldName]: filteredAttributes,
-  }, attributes);
+  const ret = addCustomFields(
+    {
+      type,
+      children: childrenToReturn,
+      [fieldName]: filteredAttributes,
+    },
+    attributes,
+    isComponent,
+  );
 
   if (isComponent) {
     // Check possible local bindings
@@ -140,18 +145,27 @@ function getLocalBindings(attributes: Attributes) {
     const boundProps = Object.entries(attributes).filter(([k, v]) =>
       k.startsWith("#") && typeof v === "string"
     );
+    // @ts-expect-error Maybe this needs a better cast to an object
+    const expressionProps = Object.entries(attributes).filter(([k, v]) =>
+      k.startsWith("&") && typeof v === "string"
+    );
 
-    if (!boundProps.length) {
+    if (!boundProps.length && !expressionProps.length) {
       return;
     }
 
     return Object.fromEntries(
-      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)]),
+      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)])
+        .concat(
+          expressionProps.map((
+            [k, v],
+          ) => [k.slice(1), parseExpression(v as string)]),
+        ),
     );
   }
 }
 
-function convertChildrenToProps(children: Component[]) {
+function convertChildrenSlotsToProps(children: Component[]) {
   const ret: [AttributeValue, unknown][] = [];
 
   children.forEach((child) => {
@@ -175,7 +189,11 @@ function convertChildrenToProps(children: Component[]) {
   return Object.fromEntries(ret);
 }
 
-function addCustomFields(c: Component, attributes: Attributes): Component {
+function addCustomFields(
+  c: Component,
+  attributes: Attributes,
+  isComponent?: boolean,
+): Component {
   if (!attributes) {
     return c;
   }
@@ -188,7 +206,7 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
       if (field === "&children") {
         return {
           ...o,
-          children: parseExpression(matchedField as string),
+          children: isComponent ? [] : parseExpression(matchedField as string),
         };
       } else if (field === "_foreach") {
         return {
@@ -210,7 +228,10 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
   }, c);
 }
 
-function filterAttributes(attributes: Attributes): Attributes {
+function filterAttributes(
+  attributes: Attributes,
+  isComponent?: boolean,
+): Attributes {
   // Avoid mutating the original structure (no side effects)
   const ret: Attributes = structuredClone(attributes);
 
@@ -224,7 +245,7 @@ function filterAttributes(attributes: Attributes): Attributes {
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
-      if (key !== "&children") {
+      if (key !== "&children" && !isComponent) {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 
