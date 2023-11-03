@@ -10,7 +10,6 @@ type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
   "!children",
-  "&children",
   "_children",
   "_classList",
   "_foreach",
@@ -88,25 +87,6 @@ function h(
 
       return addCustomFields({
         type: stringToObject(attributes._type as string),
-        children: childrenToReturn,
-        attributes: filteredAttributes,
-      }, attributes);
-    }
-
-    if (attributes["&type"]) {
-      const filteredAttributes = filterAttributes(
-        attributes === null ? {} : attributes,
-      );
-      delete filteredAttributes?.type;
-
-      // @ts-expect-error This is fine for now. It might be good to catch the case and error
-      const parts = attributes["&type"].split(".");
-
-      return addCustomFields({
-        type: {
-          utility: "get",
-          parameters: [parts[0], parts.slice(1).join("")],
-        },
         children: childrenToReturn,
         attributes: filteredAttributes,
       }, attributes);
@@ -210,17 +190,6 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
           ...o,
           children: parseExpression(matchedField as string),
         };
-      } else if (field === "&children") {
-        // @ts-expect-error This is fine for now. It might be good to catch the case and error
-        const parts = matchedField.split(".");
-
-        return {
-          ...o,
-          children: {
-            utility: "get",
-            parameters: [parts[0], parts.slice(1).join(".")],
-          },
-        };
       } else if (field === "_foreach") {
         return {
           ...omit(o, "children"),
@@ -267,18 +236,6 @@ function filterAttributes(attributes: Attributes): Attributes {
           // TODO: Better do a type check?
           ret[key] as string,
         );
-      }
-
-      delete ret[key];
-    } else if (key.startsWith("&")) {
-      if (key !== "&children") {
-        // @ts-expect-error This is fine. Potentially this could use a check, though.
-        const parts = ret[key].split(".");
-
-        ret[key.slice(1)] = {
-          utility: "get",
-          parameters: [parts[0], parts.slice(1).join(".")],
-        };
       }
 
       delete ret[key];
