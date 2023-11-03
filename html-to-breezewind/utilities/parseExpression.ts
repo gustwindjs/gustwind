@@ -61,8 +61,6 @@ function parseExpression(s: string) {
         throw new Error(`Missing parent at ${s}`);
       }
 
-      console.log("capture segment", i, parent, segment);
-
       // First segment is a utility always. The following contain the parameters.
       if (i === 0) {
         parent.utility = segment;
