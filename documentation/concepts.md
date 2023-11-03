@@ -15,6 +15,9 @@ To give you a simple example of a component, consider the following example for 
 
 [<file>](site/components/SiteLink.html)
 
+**components/SiteLink.ts**
+
+[<file>](site/components/SiteLink.ts)
 
 The styling semantics are based on [Tailwind](https://tailwindcss.com/) but you can see there's also data binding going on at `classList`.
 
