@@ -80,3 +80,16 @@ Deno.test("element with a complex nested expression shortcut for children", () =
     },
   );
 });
+
+Deno.test("element with a type expression for noop type", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<noop !type="(get props type)" />`,
+    ),
+    {
+      type: { utility: "get", parameters: ["props", "type"] },
+      children: [],
+      attributes: {},
+    },
+  );
+});

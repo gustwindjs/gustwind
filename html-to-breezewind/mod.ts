@@ -65,7 +65,11 @@ function h(
       : [children];
 
   if (type === "noop") {
-    if (attributes && attributes._foreach) {
+    if (!attributes) {
+      return childrenToReturn;
+    }
+
+    if (attributes._foreach) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
@@ -76,7 +80,7 @@ function h(
       }, attributes);
     }
 
-    if (attributes && attributes._type) {
+    if (attributes._type) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
@@ -89,7 +93,7 @@ function h(
       }, attributes);
     }
 
-    if (attributes && attributes["&type"]) {
+    if (attributes["&type"]) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
@@ -103,6 +107,19 @@ function h(
           utility: "get",
           parameters: [parts[0], parts.slice(1).join("")],
         },
+        children: childrenToReturn,
+        attributes: filteredAttributes,
+      }, attributes);
+    }
+
+    if (attributes["!type"]) {
+      const filteredAttributes = filterAttributes(
+        attributes === null ? {} : attributes,
+      );
+      delete filteredAttributes?.type;
+
+      return addCustomFields({
+        type: parseExpression(attributes["!type"] as string),
         children: childrenToReturn,
         attributes: filteredAttributes,
       }, attributes);
