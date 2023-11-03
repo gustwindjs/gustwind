@@ -9,6 +9,7 @@ const CUSTOM_FIELDS = [
   "&children",
   "_children",
   "_classList",
+  "&foreach",
   "_foreach",
   "_visibleIf",
 ];
@@ -84,6 +85,17 @@ function h(
 
       return addCustomFields({
         type: stringToObject(attributes._type as string),
+        children: childrenToReturn,
+        attributes: filteredAttributes,
+      }, attributes);
+    }
+
+    if (attributes["&foreach"]) {
+      const filteredAttributes = filterAttributes(
+        attributes === null ? {} : attributes,
+      );
+
+      return addCustomFields({
         children: childrenToReturn,
         attributes: filteredAttributes,
       }, attributes);
@@ -205,6 +217,14 @@ function addCustomFields(
           ...o,
           children: isComponent ? [] : parseExpression(matchedField as string),
         };
+      } else if (field === "&foreach") {
+        return {
+          ...omit(o, "children"),
+          foreach: [
+            parseExpression(matchedField as string),
+            o.children,
+          ],
+        };
       } else if (field === "_foreach") {
         return {
           ...omit(o, "children"),
@@ -242,7 +262,7 @@ function filterAttributes(
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
-      if (key !== "&children" && !isComponent) {
+      if (key !== "&children" && key !== "&foreach" && !isComponent) {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 

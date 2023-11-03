@@ -272,7 +272,8 @@ Deno.test("&foreach", () => {
               href: {
                 utility: "concat",
                 parameters: [
-                  "blog/",
+                  "blog",
+                  "/",
                   {
                     "utility": "get",
                     "parameters": ["props", "data.slug"],
@@ -323,7 +324,8 @@ Deno.test("&foreach with noop", () => {
               href: {
                 utility: "concat",
                 parameters: [
-                  "blog/",
+                  "blog",
+                  "/",
                   {
                     "utility": "get",
                     "parameters": ["props", "data.slug"],
