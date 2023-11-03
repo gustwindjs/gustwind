@@ -6,7 +6,7 @@ type BaseComponent = {
   type?: string | Utility;
   closingCharacter?: string;
 
-  attributes?: Record<string, boolean | string | Utility | undefined>;
+  attributes?: Record<string, boolean | number | string | Utility | undefined>;
   bindToProps?: Record<string, Utility>;
   props?: Context;
 

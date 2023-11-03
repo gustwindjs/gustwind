@@ -17,6 +17,18 @@ Deno.test("attributes", async () => {
   );
 });
 
+Deno.test("number attributes", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        type: "img",
+        attributes: { width: 200, height: 200, src: "./demo.png" },
+      },
+    }),
+    '<img width="200" height="200" src="./demo.png"></img>',
+  );
+});
+
 Deno.test("gets attributes from context", async () => {
   assertEquals(
     await breeze({

@@ -263,7 +263,7 @@ async function generateAttributes(
 
   return (await evaluateFields(attributes, context, utilities)).map(
     // @ts-expect-error This is ok
-    ([k, v]) => v && (v as string).length > 0 ? `${k}="${v}"` : k,
+    ([k, v]) => v && v.toString().length > 0 ? `${k}="${v}"` : k,
   ).join(" ");
 }
 
@@ -284,6 +284,7 @@ async function evaluateFields(
 
       let value = v;
 
+      // TODO: This check feels redundant
       if (isUndefined(value)) {
         return [];
         // @ts-expect-error This is ok
@@ -301,6 +302,7 @@ async function evaluateFields(
         value = await applyUtility(value as Utility, utilities, context);
       }
 
+      // TODO: This check feels redundant
       if (isUndefined(value)) {
         return;
       }
