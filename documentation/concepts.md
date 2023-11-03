@@ -60,3 +60,8 @@ The same idea can be used to implement an RSS feed.
 **layouts/rssPage.html**
 
 [<file>](site/layouts/rssPage.html)
+
+**layouts/rssPage.ts**
+
+[<file>](site/layouts/rssPage.ts)
+
