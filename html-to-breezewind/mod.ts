@@ -7,7 +7,6 @@ type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
   "&children",
-  "_children",
   "_classList",
   "&foreach",
   "_visibleIf",

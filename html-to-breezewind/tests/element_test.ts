@@ -42,41 +42,6 @@ Deno.test("element with an attribute", () => {
   );
 });
 
-Deno.test("element with a children attribute", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div _children="{ 'utility': 'get', 'parameters': ['props', 'href'] }"/>`,
-    ),
-    {
-      type: "div",
-      children: { utility: "get", parameters: ["props", "href"] },
-      attributes: {},
-    },
-  );
-});
-
-Deno.test("element with a children attribute 2", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div
-        class="md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl"
-        _children="{ 'utility': 'get', 'parameters': ['context', 'readme.content'] }"
-      ></div>`,
-    ),
-    {
-      type: "div",
-      attributes: {
-        class:
-          "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
-      },
-      children: {
-        utility: "get",
-        parameters: ["context", "readme.content"],
-      },
-    },
-  );
-});
-
 Deno.test("element with a transformed attribute", () => {
   assertEquals(
     htmlToBreezewind(

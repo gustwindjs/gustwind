@@ -2,7 +2,7 @@
 
 This module converts standard HTML to a Breezewind structure. To support Breezewind features, the following HTML extensions have been implemented:
 
-* `_` attribute bindings. I.e., `_class="{ 'utility': 'get', 'parameters': ['props', 'class'] }"` would derive `class` based on a prop named `class`. The same feature works for `_children`.
+* `_` attribute bindings. I.e., `_class="{ 'utility': 'get', 'parameters': ['props', 'class'] }"` would derive `class` based on a prop named `class`.
 * `_classList` shortcut allows evaluating multiple clauses per class and it maps to `classList` feature of Breezewind.
 * `#` allows evaluating logic at a specific callsite. This is useful if you want to derive the value of a prop before passing it further. The same feature works for `#children`, not only attributes.
 * `&` is an expression shortcut. I.e., `&href="(get props href)"` would map to `href="{ 'utility': 'get', 'parameters': ['props', 'href'] }"`. The shortcut works also for `&children`, `&foreach`, and `&type` for `noop`.
