@@ -1,0 +1,62 @@
+import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import { htmlToBreezewind } from "../mod.ts";
+
+Deno.test("element with an expression shortcut for attribute", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a !href="(get props href)" />`,
+    ),
+    {
+      type: "div",
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
+      children: [],
+    },
+  );
+});
+
+Deno.test("element with a nested expression shortcut for attribute", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a !href="(concat '/' (get props href))" />`,
+    ),
+    {
+      type: "div",
+      attributes: {
+        href: {
+          utility: "concat",
+          parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
+        },
+      },
+      children: [],
+    },
+  );
+});
+
+Deno.test("element with an expression shortcut for children", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div !children="(get props href)" />`,
+    ),
+    {
+      type: "div",
+      children: { utility: "get", parameters: ["props", "href"] },
+      attributes: {},
+    },
+  );
+});
+
+Deno.test("element with a nested expression shortcut for children", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div !children="(concat '/' (get props href))" />`,
+    ),
+    {
+      type: "div",
+      children: {
+        utility: "concat",
+        parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
+      },
+      attributes: {},
+    },
+  );
+});
