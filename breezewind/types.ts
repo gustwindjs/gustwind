@@ -1,12 +1,15 @@
 type Context = Record<string, unknown>;
 type Components = Record<string, Component | Component[]>;
 
-// TODO: Force at least either type or children field to exist
+type AttributeValue = boolean | number | string | Utility | undefined;
+
+// TODO: Force at least either type or children field to exist by using a union.
+// The type should also work with noop.
 type BaseComponent = {
   type?: string | Utility;
   closingCharacter?: string;
 
-  attributes?: Record<string, boolean | number | string | Utility | undefined>;
+  attributes?: Record<string, AttributeValue>;
   bindToProps?: Record<string, Utility>;
   props?: Context;
 
@@ -56,6 +59,7 @@ type Utilities =
   };
 
 export type {
+  AttributeValue,
   ClassComponent,
   ClassList,
   Component,

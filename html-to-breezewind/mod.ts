@@ -1,6 +1,6 @@
 import htm from "https://esm.sh/htm@3.1.1";
 import { isObject, omit } from "../utilities/functional.ts";
-import type { Component, Utility } from "../breezewind/types.ts";
+import type { AttributeValue, Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
@@ -150,7 +150,7 @@ function getLocalBindings(attributes: Attributes) {
 }
 
 function convertChildrenToProps(children: Component[]) {
-  const ret: [boolean | string | number | Utility, unknown][] = [];
+  const ret: [AttributeValue, unknown][] = [];
 
   children.forEach((child) => {
     if (!child.attributes) {
