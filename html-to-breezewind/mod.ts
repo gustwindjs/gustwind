@@ -9,7 +9,7 @@ import type {
 type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
-  "!children",
+  "&children",
   "_children",
   "_classList",
   "_foreach",
@@ -92,14 +92,14 @@ function h(
       }, attributes);
     }
 
-    if (attributes["!type"]) {
+    if (attributes["&type"]) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
       delete filteredAttributes?.type;
 
       return addCustomFields({
-        type: parseExpression(attributes["!type"] as string),
+        type: parseExpression(attributes["&type"] as string),
         children: childrenToReturn,
         attributes: filteredAttributes,
       }, attributes);
@@ -185,7 +185,7 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
     const matchedField = attributes[field];
 
     if (matchedField) {
-      if (field === "!children") {
+      if (field === "&children") {
         return {
           ...o,
           children: parseExpression(matchedField as string),
@@ -223,8 +223,8 @@ function filterAttributes(attributes: Attributes): Attributes {
     // Skip comments and local bindings
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
-    } else if (key.startsWith("!")) {
-      if (key !== "!children") {
+    } else if (key.startsWith("&")) {
+      if (key !== "&children") {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 
