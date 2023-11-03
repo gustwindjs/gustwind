@@ -222,10 +222,14 @@ function filterAttributes(attributes: Attributes): Attributes {
     return {};
   }
 
-  // Drop anything starting with a _, __, &, #
+  // Drop anything starting with a _, __, &, #, !
   Object.keys(ret).forEach((key: string) => {
     // Skip comments and local bindings
-    if (key.startsWith("__") || key.startsWith("#")) {
+    if (["__", "#"].includes(key)) {
+      delete ret[key];
+    } else if (key.startsWith("!")) {
+      ret[key.slice(1)] = parseExpression(ret[key] as string);
+
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
@@ -253,6 +257,11 @@ function filterAttributes(attributes: Attributes): Attributes {
   });
 
   return ret;
+}
+
+function parseExpression(s: string) {
+  // TODO: Add parsing logic here
+  return s;
 }
 
 function stringToObject(s: string) {

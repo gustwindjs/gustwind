@@ -7,7 +7,7 @@ Deno.test("element with an expression shortcut for attribute", () => {
       `<a !href="(get props href)" />`,
     ),
     {
-      type: "div",
+      type: "a",
       attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
@@ -20,7 +20,7 @@ Deno.test("element with a nested expression shortcut for attribute", () => {
       `<a !href="(concat '/' (get props href))" />`,
     ),
     {
-      type: "div",
+      type: "a",
       attributes: {
         href: {
           utility: "concat",
