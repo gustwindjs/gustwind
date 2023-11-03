@@ -272,27 +272,45 @@ function filterAttributes(attributes: Attributes): Attributes {
 }
 
 function parseExpression(s: string) {
-  const parts = s.split(" ").filter(Boolean);
-  const ret: Utility = { utility: "", parameters: [] };
+  const parts = s.replaceAll("'", "").split(" ").filter(Boolean);
+  let ret: Utility | undefined; // = { utility: "", parameters: [] };
+  let parent: Utility;
   let i = 0;
 
   parts.forEach((part) => {
-    let fragment = "";
+    let segment = "";
 
     part.split("").forEach((s) => {
-      if (["(", ")"].includes(s)) {
+      if (s === "(") {
+        // Start capturing a segment now
+        // Note that the implementation avoids recursion on purpose
+        // and parent tracking is handled through references.
+        const template = { utility: "", parameters: [] };
+
+        parent?.parameters?.push(template);
+        parent = template;
+        i = 0;
+
+        if (!ret) {
+          ret = parent;
+        }
+
+        return;
+      }
+      if (s === ")") {
         return;
       }
 
-      fragment += s;
+      segment += s;
     });
 
+    // First segment is a utility always. The following contain the parameters.
     if (i === 0) {
-      ret.utility = fragment;
+      parent.utility = segment;
 
       i++;
     } else {
-      ret.parameters?.push(fragment);
+      parent.parameters?.push(segment);
     }
   });
 
