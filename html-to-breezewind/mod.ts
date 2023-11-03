@@ -1,14 +1,14 @@
 import htm from "https://esm.sh/htm@3.1.1";
 import { isObject, omit } from "../utilities/functional.ts";
+import { parseExpression } from "./utilities/parseExpression.ts";
 import type { AttributeValue, Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
   "&children",
-  "_children",
   "_classList",
-  "_foreach",
+  "&foreach",
   "_visibleIf",
 ];
 
@@ -48,7 +48,7 @@ function h(
   ) {
     return {
       type,
-      props: convertChildrenToProps(children),
+      props: convertChildrenSlotsToProps(children),
     };
   }
 
@@ -60,7 +60,11 @@ function h(
       : [children];
 
   if (type === "noop") {
-    if (attributes && attributes._foreach) {
+    if (!attributes) {
+      return childrenToReturn;
+    }
+
+    if (attributes["&foreach"]) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
@@ -71,33 +75,14 @@ function h(
       }, attributes);
     }
 
-    if (attributes && attributes._type) {
+    if (attributes["&type"]) {
       const filteredAttributes = filterAttributes(
         attributes === null ? {} : attributes,
       );
       delete filteredAttributes?.type;
 
       return addCustomFields({
-        type: stringToObject(attributes._type as string),
-        children: childrenToReturn,
-        attributes: filteredAttributes,
-      }, attributes);
-    }
-
-    if (attributes && attributes["&type"]) {
-      const filteredAttributes = filterAttributes(
-        attributes === null ? {} : attributes,
-      );
-      delete filteredAttributes?.type;
-
-      // @ts-expect-error This is fine for now. It might be good to catch the case and error
-      const parts = attributes["&type"].split(".");
-
-      return addCustomFields({
-        type: {
-          utility: "get",
-          parameters: [parts[0], parts.slice(1).join("")],
-        },
+        type: parseExpression(attributes["&type"] as string),
         children: childrenToReturn,
         attributes: filteredAttributes,
       }, attributes);
@@ -106,19 +91,24 @@ function h(
     return childrenToReturn;
   }
 
-  const filteredAttributes = filterAttributes(
-    attributes === null ? {} : attributes,
-  );
   // Components have to map their values to props.
   // TODO: Maybe later on everything should be refactored to use attributes field.
   const isComponent = type.toUpperCase()[0] === type[0];
   const fieldName = isComponent ? "props" : "attributes";
+  const filteredAttributes = filterAttributes(
+    attributes === null ? {} : attributes,
+    isComponent,
+  );
 
-  const ret = addCustomFields({
-    type,
-    children: childrenToReturn,
-    [fieldName]: filteredAttributes,
-  }, attributes);
+  const ret = addCustomFields(
+    {
+      type,
+      children: childrenToReturn,
+      [fieldName]: filteredAttributes,
+    },
+    attributes,
+    isComponent,
+  );
 
   if (isComponent) {
     // Check possible local bindings
@@ -138,18 +128,27 @@ function getLocalBindings(attributes: Attributes) {
     const boundProps = Object.entries(attributes).filter(([k, v]) =>
       k.startsWith("#") && typeof v === "string"
     );
+    // @ts-expect-error Maybe this needs a better cast to an object
+    const expressionProps = Object.entries(attributes).filter(([k, v]) =>
+      k.startsWith("&") && typeof v === "string"
+    );
 
-    if (!boundProps.length) {
+    if (!boundProps.length && !expressionProps.length) {
       return;
     }
 
     return Object.fromEntries(
-      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)]),
+      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)])
+        .concat(
+          expressionProps.map((
+            [k, v],
+          ) => [k.slice(1), parseExpression(v as string)]),
+        ),
     );
   }
 }
 
-function convertChildrenToProps(children: Component[]) {
+function convertChildrenSlotsToProps(children: Component[]) {
   const ret: [AttributeValue, unknown][] = [];
 
   children.forEach((child) => {
@@ -173,7 +172,11 @@ function convertChildrenToProps(children: Component[]) {
   return Object.fromEntries(ret);
 }
 
-function addCustomFields(c: Component, attributes: Attributes): Component {
+function addCustomFields(
+  c: Component,
+  attributes: Attributes,
+  isComponent?: boolean,
+): Component {
   if (!attributes) {
     return c;
   }
@@ -184,21 +187,15 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
 
     if (matchedField) {
       if (field === "&children") {
-        // @ts-expect-error This is fine for now. It might be good to catch the case and error
-        const parts = matchedField.split(".");
-
         return {
           ...o,
-          children: {
-            utility: "get",
-            parameters: [parts[0], parts.slice(1).join(".")],
-          },
+          children: isComponent ? [] : parseExpression(matchedField as string),
         };
-      } else if (field === "_foreach") {
+      } else if (field === "&foreach") {
         return {
           ...omit(o, "children"),
           foreach: [
-            stringToObject(matchedField as string),
+            parseExpression(matchedField as string),
             o.children,
           ],
         };
@@ -214,7 +211,10 @@ function addCustomFields(c: Component, attributes: Attributes): Component {
   }, c);
 }
 
-function filterAttributes(attributes: Attributes): Attributes {
+function filterAttributes(
+  attributes: Attributes,
+  isComponent?: boolean,
+): Attributes {
   // Avoid mutating the original structure (no side effects)
   const ret: Attributes = structuredClone(attributes);
 
@@ -222,10 +222,16 @@ function filterAttributes(attributes: Attributes): Attributes {
     return {};
   }
 
-  // Drop anything starting with a _, __, &, #
+  // Drop anything starting with a _, __, &, #, !
   Object.keys(ret).forEach((key: string) => {
     // Skip comments and local bindings
     if (key.startsWith("__") || key.startsWith("#")) {
+      delete ret[key];
+    } else if (key.startsWith("&")) {
+      if (key !== "&children" && key !== "&foreach" && !isComponent) {
+        ret[key.slice(1)] = parseExpression(ret[key] as string);
+      }
+
       delete ret[key];
     } else if (key.startsWith("_")) {
       // Do not transform separately handled cases
@@ -234,18 +240,6 @@ function filterAttributes(attributes: Attributes): Attributes {
           // TODO: Better do a type check?
           ret[key] as string,
         );
-      }
-
-      delete ret[key];
-    } else if (key.startsWith("&")) {
-      if (key !== "&children") {
-        // @ts-expect-error This is fine. Potentially this could use a check, though.
-        const parts = ret[key].split(".");
-
-        ret[key.slice(1)] = {
-          utility: "get",
-          parameters: [parts[0], parts.slice(1).join(".")],
-        };
       }
 
       delete ret[key];
