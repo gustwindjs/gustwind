@@ -274,6 +274,7 @@ function parseExpression(s: string) {
   let i = 0;
   let segment = "";
   let captureEmpty = false;
+  let level = 0;
 
   characters.forEach((character) => {
     let captureSegment = false;
@@ -288,6 +289,7 @@ function parseExpression(s: string) {
       parent = template;
       parents.push(template);
       i = 0;
+      level++;
 
       // Catch reference to the first parent
       if (!ret) {
@@ -297,6 +299,12 @@ function parseExpression(s: string) {
       return;
     } else if (character === ")") {
       captureSegment = true;
+      level--;
+
+      if (parents.length - level > 1) {
+        parents.pop();
+        parent = parents.at(-1);
+      }
     } else if (character === "'") {
       if (captureEmpty) {
         captureEmpty = false;
@@ -330,13 +338,6 @@ function parseExpression(s: string) {
 
       segment = "";
     }
-
-    // TODO: How to handle recursive calls
-    // Go up in the stack
-    /*if (reachedEnd) {
-      parents.pop();
-      parent = parents.at(-1);
-    }*/
   });
 
   return ret;
