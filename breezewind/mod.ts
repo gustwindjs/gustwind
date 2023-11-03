@@ -268,34 +268,25 @@ async function generateAttributes(
   }
 
   return (await evaluateFields(attributes, context, utilities)).map(
-    // @ts-expect-error This is ok
     ([k, v]) =>
       v && !isBoolean(v) && v.toString().length > 0 ? `${k}="${v}"` : k,
   ).join(" ");
 }
 
-async function evaluateFields(
-  props?: Context,
+function evaluateFields(
+  props: Context,
   context?: Context,
   utilities?: Utilities,
 ) {
-  if (!props) {
-    return [];
-  }
-
-  return (await Promise.all(
-    await Object.entries(props).map(async ([k, v]) => {
+  return Promise.all(
+    Object.entries(props).map(async ([k, v]) => {
       if (isUndefined(v)) {
         return [];
       }
 
       let value = v;
 
-      // TODO: This check feels redundant
-      if (isUndefined(value)) {
-        return [];
-        // @ts-expect-error This is ok
-      } else if (value.context) {
+      if (isObject(value) && get(value, "context")) {
         value = get(
           // @ts-expect-error This is ok
           get(context, value.context),
@@ -309,14 +300,9 @@ async function evaluateFields(
         value = await applyUtility(value as Utility, utilities, context);
       }
 
-      // TODO: This check feels redundant
-      if (isUndefined(value)) {
-        return;
-      }
-
       return [k, value];
     }),
-  )).filter(Boolean);
+  );
 }
 
 export default renderWithHooks;
