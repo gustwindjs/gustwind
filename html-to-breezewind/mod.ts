@@ -267,62 +267,76 @@ function filterAttributes(
 }
 
 function parseExpression(s: string) {
-  const parts = s.replaceAll("'", "").split(" ").filter(Boolean);
-  let ret: Utility | undefined; // = { utility: "", parameters: [] };
+  const characters = s.split("");
+  let ret: Utility | undefined;
   const parents: Utility[] = [];
   let parent: Utility | undefined;
   let i = 0;
+  let segment = "";
+  let captureEmpty = false;
 
-  parts.forEach((part) => {
-    let segment = "";
-    let parsedEnd = false;
+  characters.forEach((character) => {
+    let captureSegment = false;
 
-    part.split("").forEach((s) => {
-      if (s === "(") {
-        // Start capturing a segment now
-        // Note that the implementation avoids recursion on purpose
-        // and parent tracking is handled through references.
-        const template = { utility: "", parameters: [] };
+    if (character === "(") {
+      // Start capturing a segment now
+      // Note that the implementation avoids recursion on purpose
+      // and parent tracking is handled through references.
+      const template = { utility: "", parameters: [] };
 
-        parent?.parameters?.push(template);
-        parent = template;
-        parents.push(template);
-        i = 0;
+      parent?.parameters?.push(template);
+      parent = template;
+      parents.push(template);
+      i = 0;
 
-        // Catch reference to the first parent
-        if (!ret) {
-          ret = parents.at(-1);
-        }
-
-        return;
-      }
-      if (s === ")") {
-        parsedEnd = true;
-
-        return;
+      // Catch reference to the first parent
+      if (!ret) {
+        ret = parents.at(-1);
       }
 
-      segment += s;
-    });
-
-    if (!parent) {
-      throw new Error(`Missing parent at ${s}`);
-    }
-
-    // First segment is a utility always. The following contain the parameters.
-    if (i === 0) {
-      parent.utility = segment;
-
-      i++;
+      return;
+    } else if (character === ")") {
+      captureSegment = true;
+    } else if (character === "'") {
+      if (captureEmpty) {
+        captureEmpty = false;
+        captureSegment = true;
+      } else {
+        captureEmpty = true;
+      }
+    } else if (character === " ") {
+      if (captureEmpty) {
+        segment += character;
+      } else {
+        captureSegment = true;
+      }
     } else {
-      parent.parameters?.push(segment);
+      segment += character;
     }
 
+    if (captureSegment) {
+      if (!parent) {
+        throw new Error(`Missing parent at ${s}`);
+      }
+
+      // First segment is a utility always. The following contain the parameters.
+      if (i === 0) {
+        parent.utility = segment;
+
+        i++;
+      } else if (segment.length > 0) {
+        parent.parameters?.push(segment);
+      }
+
+      segment = "";
+    }
+
+    // TODO: How to handle recursive calls
     // Go up in the stack
-    if (parsedEnd) {
+    /*if (reachedEnd) {
       parents.pop();
       parent = parents.at(-1);
-    }
+    }*/
   });
 
   return ret;

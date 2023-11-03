@@ -3,8 +3,8 @@
     <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
       <div>You have discovered the secret button page!</div>
       <div
-        _children="{ 'utility': 'concat', 'parameters': [ { 'utility': 'testUtility', 'parameters': ['hello'] }, ' ', 'world!' ]}"
-        _title="{ 'utility': 'concat', 'parameters': [{ 'utility': 'testUtility', 'parameters': ['hello'] }, ' ', 'world!']}"
+        &children="(concat (testUtility hello) ' ' world!)"
+        &title="(concat (testUtility hello) ' ' world!)"
       ></div>
       <div class="btn btn-blue" onclick="alert('You pressed button 1')">
         Test button 1

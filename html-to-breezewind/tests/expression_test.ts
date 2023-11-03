@@ -14,10 +14,25 @@ Deno.test("element with an expression shortcut for attribute", () => {
   );
 });
 
+Deno.test("element with an expression and multiple parameters", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="(echo hello ' ' world!)" />`,
+    ),
+    {
+      type: "a",
+      attributes: {
+        href: { utility: "echo", parameters: ["hello", " ", "world!"] },
+      },
+      children: [],
+    },
+  );
+});
+
 Deno.test("element with a nested expression shortcut for attribute", () => {
   assertEquals(
     htmlToBreezewind(
-      `<a &href="(concat '/' (get props href))" />`,
+      `<a &href="(concat / (get props href))" />`,
     ),
     {
       type: "a",
@@ -48,7 +63,7 @@ Deno.test("element with an expression shortcut for children", () => {
 Deno.test("element with a nested expression shortcut for children", () => {
   assertEquals(
     htmlToBreezewind(
-      `<div &children="(concat '/' (get props href))" />`,
+      `<div &children="(concat / (get props href))" />`,
     ),
     {
       type: "div",
@@ -64,7 +79,7 @@ Deno.test("element with a nested expression shortcut for children", () => {
 Deno.test("element with a complex nested expression shortcut for children", () => {
   assertEquals(
     htmlToBreezewind(
-      `<div &children="(concat '/' (get props href) '/')" />`,
+      `<div &children="(concat / (get props href) /)" />`,
     ),
     {
       type: "div",
