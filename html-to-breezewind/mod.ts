@@ -150,7 +150,7 @@ function getLocalBindings(attributes: Attributes) {
 }
 
 function convertChildrenToProps(children: Component[]) {
-  const ret: [boolean | string | Utility, unknown][] = [];
+  const ret: [boolean | string | number | Utility, unknown][] = [];
 
   children.forEach((child) => {
     if (!child.attributes) {
