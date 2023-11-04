@@ -126,6 +126,10 @@ type SendMessageEvent =
       externals?: string[];
     }[];
   }
+  | {
+    type: "addScriptSources";
+    payload: { name: string; source: string }[];
+  }
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Component> }
   | { type: "getRenderer"; payload: string }
@@ -219,6 +223,14 @@ type BuildWorkerEvent =
       file: string;
       scriptPath: string;
       externals?: string[];
+    };
+  }
+  | {
+    type: "writeScriptSource";
+    payload: {
+      outputDirectory: string;
+      name: string;
+      source: string;
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";

@@ -1,38 +1,25 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import type { Mode } from "../types.ts";
 
-async function compileTypeScript(
-  path: string,
-  mode: Mode,
-  externals?: string[],
-) {
+async function transformTypeScript(source: string, mode: Mode) {
   // Reference: https://esbuild.github.io/api/
-  const result = await esbuild.build({
-    entryPoints: [path],
+  const result = await esbuild.transform(source, {
     // TODO: Add source maps for production?
     // sourcemap: mode === "production",
     minify: mode === "production",
-    bundle: true,
+    // TODO: How to force transform to bundle?
+    // bundle: true,
     format: "esm",
     target: ["esnext"],
     treeShaking: true,
-    write: false,
-    external: externals,
+    // external: externals,
   }).catch((err) => console.error(err));
 
   if (!result) {
     return "";
   }
 
-  const output = result.outputFiles;
-
-  if (output.length < 1) {
-    console.error("esbuild didn't output anything!");
-
-    return "";
-  }
-
-  return output[0].text;
+  return result.code;
 }
 
-export { compileTypeScript };
+export { transformTypeScript };

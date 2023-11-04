@@ -82,12 +82,14 @@ const plugin: Plugin<{
           components,
         );
 
-        // TODO: Trigger addScripts with the source
-        console.log("component utilities source", componentUtilitiesSource);
+        send("gustwind-script-plugin", {
+          "type": "addScriptSources",
+          payload: [{
+            name: "componentUtilities.js",
+            source: componentUtilitiesSource,
+          }],
+        });
 
-        // TODO: Add component utilities as well here.
-        // The idea is to generate source that can load component
-        // specific utilities and return them as an object.
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: [{
@@ -187,9 +189,6 @@ function generateComponentUtilitiesSource(components: Components) {
     [name, { utilitiesPath }],
   ) => utilitiesPath && [name, utilitiesPath]).filter(Boolean);
 
-  console.log("components with utilities", componentsWithUtilities);
-
-  // TODO
   return `${
     componentsWithUtilities.map(([name, path]) =>
       `import ${name} from "${
@@ -202,7 +201,7 @@ const init = (args) => {
   const componentUtilities = [
 ${
     componentsWithUtilities.map(([name]) =>
-      `    ["${name}", ${name}.init(args)];`
+      `    ["${name}", ${name}.init(args)],`
     )
       .join("\n")
   }

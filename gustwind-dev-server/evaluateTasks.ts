@@ -1,5 +1,6 @@
 import { path } from "../server-deps.ts";
 import { compileTypeScript } from "../utilities/compileTypeScript.ts";
+import { transformTypeScript } from "../utilities/transformTypeScript.ts";
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 
@@ -45,7 +46,7 @@ async function evaluateTasks(tasks: Tasks) {
       case "writeScript": {
         DEBUG &&
           console.log(
-            "evaluate tasks",
+            "evaluate scripts",
             payload.scriptPath,
           );
 
@@ -58,6 +59,25 @@ async function evaluateTasks(tasks: Tasks) {
           );
 
         ret[`/${payload.file}`] = {
+          type: "file",
+          data,
+        };
+
+        break;
+      }
+      case "writeScriptSource": {
+        DEBUG &&
+          console.log(
+            "evaluate script sources",
+            payload.name,
+          );
+
+        const data = await transformTypeScript(
+          payload.source,
+          "development",
+        );
+
+        ret[`/${payload.name}`] = {
           type: "file",
           data,
         };
