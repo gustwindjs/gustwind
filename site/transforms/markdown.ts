@@ -9,12 +9,12 @@ import {
 } from "../../utilities/getPageUtilities.ts";
 import * as pageUtilities from "../pageUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
-import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash";
-import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript";
-import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json";
-import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript";
-import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml";
-import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml";
+import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js";
+import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js";
+import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js";
+import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js";
+import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js";
+import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js";
 import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);

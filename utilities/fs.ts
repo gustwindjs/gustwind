@@ -1,10 +1,6 @@
 import { recursiveReaddir } from "https://deno.land/x/recursive_readdir@v2.0.0/mod.ts";
 import { path as _path } from "../server-deps.ts";
 
-function getJson<R>(filePath: string): Promise<R> {
-  return Deno.readTextFile(filePath).then((d) => JSON.parse(d));
-}
-
 async function dir(
   { path, extension, recursive }: {
     path: string;
@@ -42,4 +38,4 @@ async function dir(
   return ret;
 }
 
-export { dir, getJson };
+export { dir };

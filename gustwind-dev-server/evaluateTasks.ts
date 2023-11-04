@@ -45,7 +45,7 @@ async function evaluateTasks(tasks: Tasks) {
       case "writeScript": {
         DEBUG &&
           console.log(
-            "evaluate tasks",
+            "evaluate scripts",
             payload.scriptPath,
           );
 

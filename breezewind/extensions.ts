@@ -113,6 +113,11 @@ async function visibleIf(
     return component;
   }
 
+  // Empty case - &visibleIf="()"
+  if (!component.visibleIf.utility) {
+    return {};
+  }
+
   const isVisible = await applyUtility(
     component.visibleIf as Utility,
     utilities,

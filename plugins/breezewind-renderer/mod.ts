@@ -77,6 +77,30 @@ const plugin: Plugin<{
     }
 
     return {
+      sendMessages: async ({ send }) => {
+        const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
+        const componentUtilitiesSource = generateComponentUtilitiesSource(
+          components,
+        );
+        await Deno.writeTextFile(componentFilePath, componentUtilitiesSource);
+
+        send("gustwind-script-plugin", {
+          type: "addScripts",
+          payload: [{
+            isExternal: true,
+            localPath: pageUtilitiesPath,
+            remotePath: pageUtilitiesPath,
+            name: "pageUtilities.js",
+            externals: [],
+          }, {
+            isExternal: true,
+            localPath: componentFilePath,
+            remotePath: componentFilePath,
+            name: "componentUtilities.js",
+            externals: [],
+          }],
+        });
+      },
       prepareContext: async ({ url, route }) => {
         const runtimeMeta: Record<string, string> = {
           built: (new Date()).toString(),
@@ -159,6 +183,33 @@ const plugin: Plugin<{
     };
   },
 };
+
+function generateComponentUtilitiesSource(components: Components) {
+  const componentsWithUtilities = Object.entries(components).map((
+    [name, { utilitiesPath }],
+  ) => utilitiesPath && [name, utilitiesPath]).filter(Boolean);
+
+  return `${
+    componentsWithUtilities.map(([name, path]) =>
+      `import * as ${name} from "${path}";`
+    ).join("\n")
+  }
+
+const init = (args) => {
+  const componentUtilities = [
+${
+    componentsWithUtilities.map(([name]) =>
+      `    ["${name}", ${name}.init(args)],`
+    )
+      .join("\n")
+  }
+  ].filter(Boolean);
+
+  return Object.fromEntries(componentUtilities);
+}
+
+export { init };`;
+}
 
 function getComponents(
   components: Components,
