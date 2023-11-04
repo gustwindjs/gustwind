@@ -7,9 +7,9 @@ type Attributes = Component["attributes"];
 
 const CUSTOM_FIELDS = [
   "&children",
-  "_classList",
   "&foreach",
   "&visibleIf",
+  "&class[]",
 ];
 
 const html = htm.bind(h);
