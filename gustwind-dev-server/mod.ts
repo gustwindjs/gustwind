@@ -1,4 +1,5 @@
 import { contentType } from "https://deno.land/std@0.205.0/media_types/mod.ts";
+import { path } from "../server-deps.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyOnTasksRegistered,
@@ -79,12 +80,16 @@ async function gustwindDevServer({
       if (matchedFsItem) {
         switch (matchedFsItem.type) {
           case "file":
-            return respond(200, matchedFsItem.data, contentType(pathname));
+            return respond(
+              200,
+              matchedFsItem.data,
+              contentType(path.extname(pathname)),
+            );
           case "path": {
             const assetPath = matchedFsItem.path;
             const asset = await Deno.readFile(assetPath);
 
-            return respond(200, asset, contentType(assetPath));
+            return respond(200, asset, contentType(path.extname(assetPath)));
           }
         }
       }

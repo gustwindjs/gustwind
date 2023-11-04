@@ -20,7 +20,7 @@ function gustwindServe({ cwd, input, port }: {
       try {
         const asset = await Deno.readFile(assetPath);
 
-        return respond(200, asset, contentType(assetPath));
+        return respond(200, asset, contentType(path.extname(assetPath)));
       } catch (_) {
         console.error("Failed to find", assetPath);
       }
