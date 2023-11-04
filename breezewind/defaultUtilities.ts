@@ -4,6 +4,7 @@ import type { Context } from "./types.ts";
 // Note that on top of these, a render utility is injected at index.ts!
 const defaultUtilities = {
   id: (s: unknown) => s,
+  equals: (a: unknown, b: unknown) => a === b,
   pick: (predicate: boolean, s: unknown) => predicate && s,
   or: (...parts: unknown[]) => parts.some((p) => !!p),
   and: (...parts: unknown[]) => parts.every((p) => !!p),
