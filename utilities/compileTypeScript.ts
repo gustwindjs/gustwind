@@ -6,6 +6,10 @@ async function compileTypeScript(
   mode: Mode,
   externals?: string[],
 ) {
+  // TODO: Add support for pure source and leverage esbuild.transform
+  // for that case. The idea is to write code to load component
+  // specific utilities and expose them through an object.
+
   // Reference: https://esbuild.github.io/api/
   const result = await esbuild.build({
     entryPoints: [path],

@@ -78,7 +78,9 @@ const plugin: Plugin<{
 
     return {
       sendMessages: ({ send }) => {
-        // TODO: Add component utilities as well in the correct hook
+        // TODO: Add component utilities as well here.
+        // The idea is to generate source that can load component
+        // specific utilities and return them as an object.
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: [{
