@@ -16,7 +16,7 @@
       ></DynamicList>
     </div>
     <div
-      _visibleIf="[]"
+      &visibleIf="()"
       todo="The data source portion has been disabled for now"
     >
       <div>
@@ -32,7 +32,7 @@
     </div>
     <div>
       <h2 class="font-bold mb-2">Layout</h2>
-      <div _visibleIf="[]" x="'Selection id: ' + editor.selectionId"></div>
+      <div &visibleIf="()" x="'Selection id: ' + editor.selectionId"></div>
       <ul
         x-each="Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
       >
@@ -43,7 +43,7 @@
           @class="[state.level > 0 && 'ml-2', editor.selectionId === (state.value.attributes && state.value.attributes['data-id']) && 'underline']"
         >
           <div
-            _visibleIf="[]"
+            &visibleIf="()"
             x="'id: ' + state.value.attributes['data-id']"
           ></div>
           <div class="flex flex-row gap-2" x-if="state.value.type">

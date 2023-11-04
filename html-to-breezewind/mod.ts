@@ -9,7 +9,7 @@ const CUSTOM_FIELDS = [
   "&children",
   "_classList",
   "&foreach",
-  "_visibleIf",
+  "&visibleIf",
 ];
 
 const html = htm.bind(h);
@@ -181,7 +181,6 @@ function addCustomFields(
     return c;
   }
 
-  // @ts-expect-error There is some type confusion here due to string type
   return CUSTOM_FIELDS.reduce((o, field) => {
     const matchedField = attributes[field];
 
@@ -189,15 +188,22 @@ function addCustomFields(
       if (field === "&children") {
         return {
           ...o,
-          children: isComponent ? [] : parseExpression(matchedField as string),
+          [field.slice(1)]: isComponent
+            ? []
+            : parseExpression(matchedField as string),
         };
       } else if (field === "&foreach") {
         return {
           ...omit(o, "children"),
-          foreach: [
+          [field.slice(1)]: [
             parseExpression(matchedField as string),
             o.children,
           ],
+        };
+      } else if (field === "&visibleIf") {
+        return {
+          ...o,
+          [field.slice(1)]: parseExpression(matchedField as string),
         };
       } else {
         return {
@@ -228,7 +234,10 @@ function filterAttributes(
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
-      if (key !== "&children" && key !== "&foreach" && !isComponent) {
+      if (
+        key !== "&children" && key !== "&foreach" && key !== "&visibleIf" &&
+        !isComponent
+      ) {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 

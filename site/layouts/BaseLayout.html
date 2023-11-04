@@ -22,10 +22,7 @@
   <body>
     <MainNavigation />
     <aside
-      _visibleIf="[{
-        'utility': 'get',
-        'parameters': ['props', 'showToc']
-      }]"
+      &visibleIf="(get props showToc)"
       class="fixed top-16 pl-4 hidden lg:inline"
     >
       <TableOfContents />

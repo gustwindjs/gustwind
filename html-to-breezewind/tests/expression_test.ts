@@ -341,3 +341,35 @@ Deno.test("&foreach with noop", () => {
     },
   );
 });
+
+Deno.test("element with a visibleIf", () => {
+  assertEquals(
+    htmlToBreezewind(`<div &visibleIf="(get props showToc)">foo</div>`),
+    {
+      type: "div",
+      children: "foo",
+      visibleIf: { utility: "get", parameters: ["props", "showToc"] },
+      attributes: {},
+    },
+  );
+});
+
+Deno.test("element with a visibleIf and multiple checks", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div &visibleIf="(and (get props showToc) (get props isAdmin))">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      visibleIf: {
+        utility: "and",
+        parameters: [{ utility: "get", parameters: ["props", "showToc"] }, {
+          utility: "get",
+          parameters: ["props", "isAdmin"],
+        }],
+      },
+      attributes: {},
+    },
+  );
+});
