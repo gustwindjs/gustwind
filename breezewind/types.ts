@@ -57,6 +57,7 @@ type Utilities =
     _onRenderStart?: (context: Context) => void;
     _onRenderEnd?: (context: Context) => void;
   };
+type ComponentUtilities = Record<string, Utilities>;
 
 export type {
   AttributeValue,
@@ -64,6 +65,7 @@ export type {
   ClassList,
   Component,
   Components,
+  ComponentUtilities,
   Context,
   Extension,
   ForEachComponent,

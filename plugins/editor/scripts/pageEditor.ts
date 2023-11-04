@@ -8,7 +8,12 @@ import breezewind from "../../../breezewind/mod.ts";
 import * as breezeExtensions from "../../../breezewind/extensions.ts";
 // import { getPagePath } from "../../../utilities/getPagePath.ts";
 import type { DataContext, Route } from "../../../types.ts";
-import type { Component, Components } from "../../../breezewind/types.ts";
+import type {
+  Component,
+  Components,
+  ComponentUtilities,
+  Utilities,
+} from "../../../breezewind/types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
@@ -35,7 +40,11 @@ type PageState = {
   editor: EditorState;
 };
 
-async function createEditor(tw: (s: string) => string) {
+async function createEditor(
+  tw: (s: string) => string,
+  pageUtilities: Utilities,
+  componentUtilities: ComponentUtilities,
+) {
   console.log("create editor");
 
   const [components, context, layout, route]: [
@@ -56,6 +65,8 @@ async function createEditor(tw: (s: string) => string) {
     components,
     context,
     tw,
+    pageUtilities,
+    componentUtilities,
   );
   editorContainer.append(pageEditor);
 
@@ -279,6 +290,8 @@ async function createPageEditor(
   components: Components,
   context: DataContext,
   tw: (s: string) => string,
+  globalUtilities: Utilities,
+  componentUtilities: ComponentUtilities,
 ) {
   console.log("creating page editor");
 
@@ -294,6 +307,8 @@ async function createPageEditor(
       breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
     ],
+    globalUtilities,
+    componentUtilities,
   });
 
   const aside = treeElement.children[0] as HTMLElement;

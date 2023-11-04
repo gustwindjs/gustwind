@@ -10,6 +10,7 @@ import { defaultUtilities } from "./defaultUtilities.ts";
 import type {
   Component,
   Components,
+  ComponentUtilities,
   Context,
   Extension,
   Utilities,
@@ -23,7 +24,7 @@ type Options = {
   context?: Context;
   props?: Context;
   globalUtilities?: Utilities;
-  componentUtilities?: Record<string, Utilities>;
+  componentUtilities?: ComponentUtilities;
 };
 
 async function renderWithHooks(

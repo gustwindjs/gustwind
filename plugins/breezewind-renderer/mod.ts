@@ -77,6 +77,19 @@ const plugin: Plugin<{
     }
 
     return {
+      sendMessages: ({ send }) => {
+        // TODO: Add component utilities as well in the correct hook
+        send("gustwind-script-plugin", {
+          type: "addScripts",
+          payload: [{
+            isExternal: true,
+            localPath: pageUtilitiesPath,
+            remotePath: pageUtilitiesPath,
+            name: "pageUtilities.js",
+            externals: [],
+          }],
+        });
+      },
       prepareContext: async ({ url, route }) => {
         const runtimeMeta: Record<string, string> = {
           built: (new Date()).toString(),
