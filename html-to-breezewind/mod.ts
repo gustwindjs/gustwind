@@ -5,12 +5,7 @@ import type { AttributeValue, Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
-const CUSTOM_FIELDS = [
-  "&children",
-  "&foreach",
-  "&visibleIf",
-  "&class[]",
-];
+const CUSTOM_FIELDS = ["&children", "&foreach", "&visibleIf"];
 
 const html = htm.bind(h);
 
@@ -181,6 +176,9 @@ function addCustomFields(
     return c;
   }
 
+  // TODO: Handle &class[ case here
+  console.log("XXX attributes", attributes);
+
   return CUSTOM_FIELDS.reduce((o, field) => {
     const matchedField = attributes[field];
 
@@ -234,15 +232,18 @@ function filterAttributes(
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
+      // TODO: Likely this should be done at addCustomFields
       if (
         key !== "&children" && key !== "&foreach" && key !== "&visibleIf" &&
+        !key.startsWith("&class[") &&
         !isComponent
       ) {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 
       delete ret[key];
-    } else if (key.startsWith("_")) {
+    } // TODO: This logic should be dropped after & is complete
+    else if (key.startsWith("_")) {
       // Do not transform separately handled cases
       if (!CUSTOM_FIELDS.includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(

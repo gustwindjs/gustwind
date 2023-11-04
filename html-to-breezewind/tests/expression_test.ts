@@ -398,7 +398,7 @@ Deno.test("element with a class", () => {
 Deno.test("element with a class list", () => {
   assertEquals(
     htmlToBreezewind(
-      `<div &class[]="(id underline)" &class[]="(pick (get props href) font-bold)">foo</div>`,
+      `<div &class[0]="(id underline)" &class[1]="(pick (get props href) font-bold)">foo</div>`,
     ),
     {
       type: "div",
