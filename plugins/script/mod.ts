@@ -1,6 +1,6 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import { path } from "../../server-deps.ts";
-import type { BuildWorkerEvent, Plugin, Scripts } from "../../types.ts";
+import type { Plugin, Scripts } from "../../types.ts";
 
 const plugin: Plugin<{
   scripts: Scripts;
@@ -24,7 +24,6 @@ const plugin: Plugin<{
       remotePath: string;
       externals?: string[];
     }[] = [];
-    let receivedScriptSources: { name: string; source: string }[] = [];
 
     async function loadScripts(): Promise<{
       name: string;
@@ -43,9 +42,10 @@ const plugin: Plugin<{
     }
 
     return {
-      prepareBuild: async () => {
+      prepareBuild: () => {
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
-        const writeScriptTasks: BuildWorkerEvent[] = await foundScripts.concat(
+
+        return foundScripts.concat(
           receivedScripts.map(({ name, localPath, remotePath, externals }) => ({
             name,
             path: isDevelopingLocally ? localPath : remotePath,
@@ -62,15 +62,6 @@ const plugin: Plugin<{
             externals,
           },
         }));
-        const writeScriptSourcesTasks: BuildWorkerEvent[] =
-          receivedScriptSources.map((
-            { name, source },
-          ) => ({
-            type: "writeScriptSource",
-            payload: { outputDirectory, name, source },
-          }));
-
-        return writeScriptTasks.concat(writeScriptSourcesTasks);
       },
       prepareContext({ route }) {
         const routeScripts = route.scripts || [];
@@ -120,10 +111,6 @@ const plugin: Plugin<{
 
         if (type === "addScripts") {
           receivedScripts = receivedScripts.concat(payload);
-        }
-
-        if (type === "addScriptSources") {
-          receivedScriptSources = receivedScriptSources.concat(payload);
         }
       },
       finishBuild: () => {
