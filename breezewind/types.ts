@@ -30,7 +30,7 @@ type ForEachComponent = BaseComponent & {
   foreach?: [Utility, Component | Component[]];
 };
 type VisibleIfComponent = BaseComponent & {
-  visibleIf?: Utility[];
+  visibleIf?: Utility;
 };
 type Component =
   | BaseComponent

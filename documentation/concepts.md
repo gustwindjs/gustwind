@@ -56,8 +56,6 @@ Gustwind layouts are technically components:
 
 [<file>](site/layouts/siteIndex.html)
 
-For pages that are generated dynamically, i.e. blog pages, `match` is exposed.
-
 The same idea can be used to implement an RSS feed.
 
 **layouts/rssPage.html**

@@ -170,7 +170,7 @@ Currently four official extensions are supported:
 * `classShortcut((input: string) => (output: string))` provides a `class` shortcut (maps given input to a `class` attribute) and `classList` shortcut for toggling classes based on truths. Note that unlike the other extensions, this one is a factory accepting a function transforming the given class (useful with Tailwind or Twind for example).
 * `foreach` gives access to iteration allowing mapping arrays to flat structures.
 * `inject(e => ({ ...e, attributes: { ...c.attributes, "data-id": "demo" }}))` lets you inject a property to each node within a JSON tree. This is useful for injecting test ids for example.
-* `visibleIf` makes it possible to remove nodes from the tree based on an array of statements.
+* `visibleIf` makes it possible to remove nodes from the tree based on a statement.
 
 To activate extensions, do the following:
 
@@ -181,7 +181,7 @@ import extensions from "breezewind/extensions";
 
 breeze({
   component: {
-    visibleIf: [{ utility: "get", parameters: ["context", "pagePath"] }],
+    visibleIf: { utility: "get", parameters: ["context", "pagePath"] },
     type: "a",
     class: "underline",
     classList: {

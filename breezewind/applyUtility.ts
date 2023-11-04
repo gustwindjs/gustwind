@@ -18,13 +18,17 @@ async function applyUtilities(
 }
 
 async function applyUtility(
-  value: Utility,
+  value?: Utility,
   utilities?: Utilities,
   context?: Context,
   // deno-lint-ignore no-explicit-any
 ): Promise<any> {
   if (!utilities) {
     throw new Error("applyUtility - No utilities were provided");
+  }
+
+  if (!value) {
+    return;
   }
 
   if (typeof value.utility !== "string") {
