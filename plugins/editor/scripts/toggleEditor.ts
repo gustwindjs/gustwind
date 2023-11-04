@@ -48,7 +48,7 @@ function init() {
 
         return [tw, pageUtilities, componentUtilities];
       },
-    );
+    ).catch((err) => console.error(err));
 
     // This is an external!
     // TODO: Figure out how to mute Deno linter here
