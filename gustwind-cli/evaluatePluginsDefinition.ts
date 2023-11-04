@@ -1,10 +1,11 @@
 import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
-import { getJson } from "../utilities/fs.ts";
 import { isObject } from "../utilities/functional.ts";
 import type { PluginOptions } from "../types.ts";
 
 async function evaluatePluginsDefinition(pluginsPath: string) {
-  const definition = await getJson<PluginOptions[]>(pluginsPath);
+  const definition = await Deno.readTextFile(pluginsPath).then((d) =>
+    JSON.parse(d)
+  );
   const env = config();
   const fieldEvaluator = getFieldEvaluator(env);
 

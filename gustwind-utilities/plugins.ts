@@ -1,5 +1,5 @@
 import { path } from "../server-deps.ts";
-import { dir, getJson } from "../utilities/fs.ts";
+import { dir } from "../utilities/fs.ts";
 import type {
   Context,
   Mode,
@@ -126,7 +126,7 @@ async function importPlugin(
       json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
         tasks.push({ type: "loadJSON", payload });
 
-        return getJson<T>(payload.path);
+        return Deno.readTextFile(payload.path).then((d) => JSON.parse(d));
       },
       // For some reason TS doesn't infer this correctly
       module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {

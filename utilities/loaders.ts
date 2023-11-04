@@ -1,6 +1,5 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../server-deps.ts";
-import { getJson } from "./fs.ts";
 import { htmlToBreezewind } from "../html-to-breezewind/mod.ts";
 import type { Component } from "../breezewind/types.ts";
 import type { PageUtilities } from "../types.ts";
@@ -128,7 +127,7 @@ const initLoaders = (
           return [
             componentName,
             {
-              component: await getJson<Component>(p),
+              component: await Deno.readTextFile(p).then((d) => JSON.parse(d)),
               utilities,
               utilitiesPath,
             },
