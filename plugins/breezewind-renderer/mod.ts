@@ -191,7 +191,6 @@ function renderHTML(
     extensions: [
       // It's important visibleIf evaluates before the others to avoid work
       breezeExtensions.visibleIf,
-      // TODO: Allow defining these through configuration
       breezeExtensions.foreach,
     ],
     context,
