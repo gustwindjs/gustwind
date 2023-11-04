@@ -71,40 +71,6 @@ Deno.test("element with a class", () => {
   );
 });
 
-Deno.test("element with a class list", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div _classList="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      classList: {
-        "font-bold": [{ "utility": "get", "parameters": ["props", "href"] }],
-      },
-      attributes: {},
-    },
-  );
-});
-
-Deno.test("element with a class and a class list", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div class="underline" _classList="{ 'font-bold': [{ 'utility': 'get', 'parameters': ['props', 'href'] }] }">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      attributes: {
-        class: "underline",
-      },
-      classList: {
-        "font-bold": [{ "utility": "get", "parameters": ["props", "href"] }],
-      },
-    },
-  );
-});
-
 Deno.test("props through slots as elements", () => {
   assertEquals(
     htmlToBreezewind(
@@ -174,40 +140,3 @@ Deno.test("xml", () => {
     }],
   );
 });
-
-// TODO: Test #type
-
-/*
-TODO: Support attribute helpers for complex expressions?
-
-<a
-  x-attr
-  x="state.value.textContent"
-  @href="state.value.parentElement?.attributes.href?.value"
-  _@class="{
-    'utility': 'concat',
-    'parameters': [
-      '[state.value.textContent === parent.closest.textContent && \'',
-      { 'utility': 'tw', 'parameters': ['underline'] },
-      '\', state.tagName === 'H3' && \'',
-      { 'utility': 'tw', 'parameters': ['ml-2'] },
-      \']'
-    ]
-  }"
->
-  <attribute name="@class">
-    <utility name="concat">
-      <parameter
-        >[state.value.textContent === parent.closest.textContent &&
-        '<utility name="tw"><parameter>underline</parameter></utility
-        >'</parameter
-      >
-      <parameter
-        >state.tagName === 'H3' && '<utility name="tw"
-          ><parameter>ml-2</parameter></utility
-        >'</parameter
-      >
-    </utility>
-  </attribute>
-</a>
-*/

@@ -5,12 +5,7 @@ import type { AttributeValue, Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
-const CUSTOM_FIELDS = [
-  "&children",
-  "_classList",
-  "&foreach",
-  "&visibleIf",
-];
+const CUSTOM_FIELDS = ["&children", "&foreach", "&visibleIf"];
 
 const html = htm.bind(h);
 
@@ -181,7 +176,7 @@ function addCustomFields(
     return c;
   }
 
-  return CUSTOM_FIELDS.reduce((o, field) => {
+  const ret = CUSTOM_FIELDS.reduce((o, field) => {
     const matchedField = attributes[field];
 
     if (matchedField) {
@@ -215,6 +210,33 @@ function addCustomFields(
 
     return o;
   }, c);
+
+  // Class list syntax
+  const initialValue: string[] = [];
+  const parameters = Object.entries(attributes).reduce((attrs, [k, v]) => {
+    if (!k.startsWith("&class[")) {
+      return attrs;
+    }
+
+    if (attrs.length > 0) {
+      attrs.push(" ");
+    }
+
+    // @ts-expect-error This is fine
+    return attrs.concat(parseExpression(v as string));
+  }, initialValue);
+
+  if (parameters.length) {
+    return {
+      ...ret,
+      attributes: {
+        ...c.attributes,
+        class: { utility: "concat", parameters },
+      },
+    };
+  }
+
+  return ret;
 }
 
 function filterAttributes(
@@ -234,15 +256,18 @@ function filterAttributes(
     if (key.startsWith("__") || key.startsWith("#")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
+      // TODO: Likely this should be done at addCustomFields
       if (
         key !== "&children" && key !== "&foreach" && key !== "&visibleIf" &&
+        !key.startsWith("&class[") &&
         !isComponent
       ) {
         ret[key.slice(1)] = parseExpression(ret[key] as string);
       }
 
       delete ret[key];
-    } else if (key.startsWith("_")) {
+    } // TODO: This logic should be dropped after & is complete
+    else if (key.startsWith("_")) {
       // Do not transform separately handled cases
       if (!CUSTOM_FIELDS.includes(key)) {
         ret[key.split("").slice(1).join("")] = stringToObject(

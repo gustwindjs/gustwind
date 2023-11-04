@@ -1,17 +1,6 @@
 <a
   class="underline"
-  _classList="{
-    'font-bold': [
-      { 'utility': 'get', 'parameters': ['props', 'href'] },
-      {
-        'utility': 'trim',
-        'parameters': [
-          { 'utility': 'get', 'parameters': ['context', 'pagePath'] },
-          '/'
-        ]
-      }
-    ]
-  }"
+  &class="(pick (and (get props href) (trim (get context pagePath) /)) font-bold)"
   &href="(validateUrl (get props href))"
   &children="(render (get props children))"
 />

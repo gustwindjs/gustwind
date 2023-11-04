@@ -373,3 +373,52 @@ Deno.test("element with a visibleIf and multiple checks", () => {
     },
   );
 });
+
+Deno.test("element with a class", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div &class="(pick (get props href) font-bold)">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      attributes: {
+        class: {
+          utility: "pick",
+          parameters: [
+            { utility: "get", parameters: ["props", "href"] },
+            "font-bold",
+          ],
+        },
+      },
+    },
+  );
+});
+
+Deno.test("element with a class list", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<div &class[0]="(id underline)" &class[1]="(pick (get props href) font-bold)">foo</div>`,
+    ),
+    {
+      type: "div",
+      children: "foo",
+      attributes: {
+        class: {
+          utility: "concat",
+          parameters: [
+            { utility: "id", parameters: ["underline"] },
+            " ",
+            {
+              utility: "pick",
+              parameters: [
+                { utility: "get", parameters: ["props", "href"] },
+                "font-bold",
+              ],
+            },
+          ],
+        },
+      },
+    },
+  );
+});
