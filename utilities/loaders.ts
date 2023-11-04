@@ -5,10 +5,12 @@ import { htmlToBreezewind } from "../html-to-breezewind/mod.ts";
 import type { Component } from "../breezewind/types.ts";
 import type { PageUtilities } from "../types.ts";
 
-type Components = Record<
-  string,
-  { component: Component; utilities?: PageUtilities }
->;
+type Components = Record<string, ComponentsEntry>;
+type ComponentsEntry = {
+  component: Component;
+  utilities?: PageUtilities;
+  utilitiesPath: string;
+};
 
 type Loader = "html" | "json";
 
@@ -56,13 +58,15 @@ const initLoaders = (
         ) => {
           const componentName = path.basename(p, path.extname(p));
           let utilities;
+          let utilitiesPath = p.replace(extension, ".ts");
 
           try {
             await Deno.lstat(p);
 
-            utilities = await loadModule(p.replace(extension, ".ts"));
+            utilities = await loadModule(utilitiesPath);
           } catch (_) {
-            // Nothing to do
+            // No utilities were found so get rid of the path
+            utilitiesPath = "";
           }
 
           return [
@@ -70,14 +74,13 @@ const initLoaders = (
             {
               component: htmlToBreezewind(await Deno.readTextFile(p)),
               utilities,
+              utilitiesPath,
             },
           ];
         }));
       }
 
-      return Object.fromEntries<
-        { component: Component; utilities?: PageUtilities }
-      >(
+      return Object.fromEntries<ComponentsEntry>(
         // @ts-expect-error The type is wrong here. Likely htmToBreezewind needs a fix.
         components,
       );

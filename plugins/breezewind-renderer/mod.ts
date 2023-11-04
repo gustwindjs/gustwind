@@ -78,6 +78,13 @@ const plugin: Plugin<{
 
     return {
       sendMessages: ({ send }) => {
+        const componentUtilitiesSource = generateComponentUtilitiesSource(
+          components,
+        );
+
+        // TODO: Trigger addScripts with the source
+        console.log("component utilities source", componentUtilitiesSource);
+
         // TODO: Add component utilities as well here.
         // The idea is to generate source that can load component
         // specific utilities and return them as an object.
@@ -174,6 +181,36 @@ const plugin: Plugin<{
     };
   },
 };
+
+function generateComponentUtilitiesSource(components: Components) {
+  const componentsWithUtilities = Object.entries(components).map((
+    [name, { utilitiesPath }],
+  ) => utilitiesPath && [name, utilitiesPath]).filter(Boolean);
+
+  console.log("components with utilities", componentsWithUtilities);
+
+  // TODO
+  return `${
+    componentsWithUtilities.map(([name, path]) =>
+      `import ${name} from "${path}";`
+    ).join("\n")
+  }
+
+const init = (args) => {
+  const componentUtilities = [
+${
+    componentsWithUtilities.map(([name]) =>
+      `    ["${name}", ${name}.init(args)];`
+    )
+      .join("\n")
+  }
+  ].filter(Boolean);
+
+  return Object.fromEntries(componentUtilities);
+}
+
+export { init };`;
+}
 
 function getComponents(
   components: Components,
