@@ -108,6 +108,11 @@ async function visibleIf(
   context: Context,
   utilities?: Utilities,
 ): Promise<Component> {
+  // TODO: Add a test against this case
+  if (!component.visibleIf) {
+    return component;
+  }
+
   const isVisible = await applyUtility(
     component.visibleIf as Utility,
     utilities,
