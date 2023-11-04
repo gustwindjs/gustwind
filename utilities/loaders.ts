@@ -114,13 +114,15 @@ const initLoaders = (
         ) => {
           const componentName = path.basename(p, path.extname(p));
           let utilities;
+          let utilitiesPath = p.replace(extension, ".ts");
 
           try {
             await Deno.lstat(p);
 
-            utilities = await loadModule(p.replace(extension, ".ts"));
+            utilities = await loadModule(utilitiesPath);
           } catch (_) {
-            // Nothing to do
+            // No utilities were found so get rid of the path
+            utilitiesPath = "";
           }
 
           return [
@@ -128,14 +130,13 @@ const initLoaders = (
             {
               component: await getJson<Component>(p),
               utilities,
+              utilitiesPath,
             },
           ];
         }));
       }
 
-      return Object.fromEntries<
-        { component: Component; utilities?: PageUtilities }
-      >(
+      return Object.fromEntries<ComponentsEntry>(
         // @ts-expect-error The type is wrong here
         components,
       );
