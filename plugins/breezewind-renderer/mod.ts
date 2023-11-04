@@ -192,7 +192,9 @@ function generateComponentUtilitiesSource(components: Components) {
   // TODO
   return `${
     componentsWithUtilities.map(([name, path]) =>
-      `import ${name} from "${path}";`
+      `import ${name} from "${
+        path.startsWith("http") ? path : `file://${path}`
+      }";`
     ).join("\n")
   }
 
