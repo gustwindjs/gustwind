@@ -108,24 +108,17 @@ async function visibleIf(
   context: Context,
   utilities?: Utilities,
 ): Promise<Component> {
-  if (!Array.isArray(component.visibleIf)) {
-    return Promise.resolve(component);
+  const isVisible = await applyUtility(
+    component.visibleIf as Utility,
+    utilities,
+    context,
+  );
+
+  if (Array.isArray(isVisible)) {
+    return isVisible.filter(Boolean).length > 0 ? component : {};
   }
 
-  if (component.visibleIf.length === 0) {
-    return Promise.resolve({});
-  }
-
-  const trues = (await Promise.all(
-    component.visibleIf.map(async (v) => {
-      const ret = await applyUtility(v as Utility, utilities, context);
-
-      return Array.isArray(ret) ? ret.length > 0 : ret;
-    }),
-  )).filter(Boolean);
-  const isVisible = trues.length === component.visibleIf.length;
-
-  return Promise.resolve(isVisible ? component : {});
+  return isVisible ? component : {};
 }
 
 function inject(injector: (c: Component) => Promise<Component>) {

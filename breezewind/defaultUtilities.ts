@@ -3,6 +3,8 @@ import type { Context } from "./types.ts";
 
 // Note that on top of these, a render utility is injected at index.ts!
 const defaultUtilities = {
+  or: (...parts: unknown[]) => parts.some((p) => !!p),
+  and: (...parts: unknown[]) => parts.every((p) => !!p),
   concat: (...parts: string[]) => parts.join(""),
   get: function getUtility(
     this: { context?: Context },
