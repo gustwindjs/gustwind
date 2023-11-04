@@ -377,3 +377,5 @@ Deno.test("element with a class list", () => {
     },
   );
 });
+
+// TODO: Support &class[0]="underline" style syntax

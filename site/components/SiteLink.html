@@ -1,6 +1,6 @@
 <a
-  class="underline"
-  &class="(pick (and (get props href) (trim (get context pagePath) /)) font-bold)"
+  &class[0]="(id underline)"
+  &class[1]="(pick (and (get props href) (trim (get context pagePath) /)) font-bold)"
   &href="(validateUrl (get props href))"
   &children="(render (get props children))"
 />
