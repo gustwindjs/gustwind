@@ -27,6 +27,10 @@ async function applyUtility(
     throw new Error("applyUtility - No utilities were provided");
   }
 
+  if (!value) {
+    return;
+  }
+
   if (typeof value.utility !== "string") {
     return;
   }
