@@ -5,8 +5,6 @@ import type { AttributeValue, Component } from "../breezewind/types.ts";
 
 type Attributes = Component["attributes"];
 
-const CUSTOM_FIELDS = ["&children", "&foreach", "&visibleIf"];
-
 const html = htm.bind(h);
 
 function htmlToBreezewind(htmlInput: string): Component | Component[] {
@@ -167,6 +165,8 @@ function convertChildrenSlotsToProps(children: Component[]) {
   return Object.fromEntries(ret);
 }
 
+// TODO: Likely filterAttributes should be merged with this function somehow
+const CUSTOM_FIELDS = ["&children", "&foreach", "&visibleIf"];
 function addCustomFields(
   c: Component,
   attributes: Attributes,
