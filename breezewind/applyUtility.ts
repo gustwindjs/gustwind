@@ -18,7 +18,7 @@ async function applyUtilities(
 }
 
 async function applyUtility(
-  value: Utility,
+  value?: Utility,
   utilities?: Utilities,
   context?: Context,
   // deno-lint-ignore no-explicit-any
