@@ -1,4 +1,3 @@
-import { tw } from "https://esm.sh/@twind/core@1.1.1";
 import { path } from "../../server-deps.ts";
 import breezewind from "../../breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
@@ -193,7 +192,6 @@ function renderHTML(
       // It's important visibleIf evaluates before the others to avoid work
       breezeExtensions.visibleIf,
       // TODO: Allow defining these through configuration
-      breezeExtensions.classShortcut(tw),
       breezeExtensions.foreach,
     ],
     context,
