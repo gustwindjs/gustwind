@@ -133,7 +133,7 @@ function getLocalBindings(attributes: Attributes) {
     }
 
     return Object.fromEntries(
-      boundProps.map(([k, v]) => [k.slice(1), stringToObject(v as string)])
+      boundProps.map(([k, v]) => [k.slice(1), v])
         .concat(
           expressionProps.map((
             [k, v],
@@ -195,17 +195,12 @@ function addCustomFields(
             o.children,
           ],
         };
-      } else if (field === "&visibleIf") {
-        return {
-          ...o,
-          [field.slice(1)]: parseExpression(matchedField as string),
-        };
-      } else {
-        return {
-          ...o,
-          [field.slice(1)]: stringToObject(matchedField as string),
-        };
       }
+
+      return {
+        ...o,
+        [field.slice(1)]: parseExpression(matchedField as string),
+      };
     }
 
     return o;
@@ -266,30 +261,10 @@ function filterAttributes(
       }
 
       delete ret[key];
-    } // TODO: This logic should be dropped after & is complete
-    else if (key.startsWith("_")) {
-      // Do not transform separately handled cases
-      if (!CUSTOM_FIELDS.includes(key)) {
-        ret[key.split("").slice(1).join("")] = stringToObject(
-          // TODO: Better do a type check?
-          ret[key] as string,
-        );
-      }
-
-      delete ret[key];
     }
   });
 
   return ret;
 }
 
-function stringToObject(s: string) {
-  try {
-    return JSON.parse(s.replaceAll(`'`, '"'));
-  } catch (error) {
-    console.error(`stringToObject - Failed to parse ${s}`);
-    console.error(error);
-  }
-}
-
-export { htmlToBreezewind, stringToObject };
+export { htmlToBreezewind };

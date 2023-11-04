@@ -66,36 +66,41 @@ Deno.test("component with noop and siblings", () => {
   );
 });
 
-Deno.test("component with local binding", () => {
+Deno.test("component with an expression", () => {
   assertEquals(
-    htmlToBreezewind(`<Markdown
-      type="div"
-      #inputText="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
-    ></Markdown>`),
+    htmlToBreezewind(
+      `<Link
+        &href="(get context document.content)"
+      ></Link>`,
+    ),
     {
-      type: "Markdown",
-      props: { type: "div" },
+      type: "Link",
       children: [],
       bindToProps: {
-        inputText: {
+        href: {
           utility: "get",
           parameters: ["context", "document.content"],
         },
       },
+      props: {},
     },
   );
 });
 
-Deno.test("component with children and local binding", () => {
+Deno.test("component with a children expression", () => {
   assertEquals(
-    htmlToBreezewind(`<Markdown
-      type="div"
-      #children="{ 'utility': 'get', 'parameters': ['context', 'document.content'] }"
-    ></Markdown>`),
+    htmlToBreezewind(
+      `<Markdown
+        type="div"
+        &children="(get context document.content)"
+      ></Markdown>`,
+    ),
     {
       type: "Markdown",
-      props: { type: "div" },
       children: [],
+      props: {
+        type: "div",
+      },
       bindToProps: {
         children: {
           utility: "get",
