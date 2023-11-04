@@ -77,18 +77,12 @@ const plugin: Plugin<{
     }
 
     return {
-      sendMessages: ({ send }) => {
+      sendMessages: async ({ send }) => {
+        const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
         const componentUtilitiesSource = generateComponentUtilitiesSource(
           components,
         );
-
-        send("gustwind-script-plugin", {
-          "type": "addScriptSources",
-          payload: [{
-            name: "componentUtilities.js",
-            source: componentUtilitiesSource,
-          }],
-        });
+        await Deno.writeTextFile(componentFilePath, componentUtilitiesSource);
 
         send("gustwind-script-plugin", {
           type: "addScripts",
@@ -97,6 +91,12 @@ const plugin: Plugin<{
             localPath: pageUtilitiesPath,
             remotePath: pageUtilitiesPath,
             name: "pageUtilities.js",
+            externals: [],
+          }, {
+            isExternal: true,
+            localPath: componentFilePath,
+            remotePath: componentFilePath,
+            name: "componentUtilities.js",
             externals: [],
           }],
         });
@@ -191,9 +191,7 @@ function generateComponentUtilitiesSource(components: Components) {
 
   return `${
     componentsWithUtilities.map(([name, path]) =>
-      `import ${name} from "${
-        path.startsWith("http") ? path : `file://${path}`
-      }";`
+      `import * as ${name} from "${path}";`
     ).join("\n")
   }
 
