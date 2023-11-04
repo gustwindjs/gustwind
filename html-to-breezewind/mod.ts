@@ -108,6 +108,7 @@ function h(
     const bindToProps = getLocalBindings(attributes);
 
     if (bindToProps) {
+      // @ts-expect-error This is fine. Maybe the type can be refined.
       ret.bindToProps = bindToProps;
     }
   }
@@ -118,25 +119,18 @@ function h(
 function getLocalBindings(attributes: Attributes) {
   if (isObject(attributes)) {
     // @ts-expect-error Maybe this needs a better cast to an object
-    const boundProps = Object.entries(attributes).filter(([k, v]) =>
-      k.startsWith("#") && typeof v === "string"
-    );
-    // @ts-expect-error Maybe this needs a better cast to an object
     const expressionProps = Object.entries(attributes).filter(([k, v]) =>
       k.startsWith("&") && typeof v === "string"
     );
 
-    if (!boundProps.length && !expressionProps.length) {
+    if (!expressionProps.length) {
       return;
     }
 
     return Object.fromEntries(
-      boundProps.map(([k, v]) => [k.slice(1), v])
-        .concat(
-          expressionProps.map((
-            [k, v],
-          ) => [k.slice(1), parseExpression(v as string)]),
-        ),
+      expressionProps.map((
+        [k, v],
+      ) => [k.slice(1), parseExpression(v as string)]),
     );
   }
 }
@@ -245,10 +239,9 @@ function filterAttributes(
     return {};
   }
 
-  // Drop anything starting with a _, __, &, #, !
   Object.keys(ret).forEach((key: string) => {
-    // Skip comments and local bindings
-    if (key.startsWith("__") || key.startsWith("#")) {
+    // Skip comments
+    if (key.startsWith("__")) {
       delete ret[key];
     } else if (key.startsWith("&")) {
       // TODO: Likely this should be done at addCustomFields

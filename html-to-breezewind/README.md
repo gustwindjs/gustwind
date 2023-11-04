@@ -2,7 +2,6 @@
 
 This module converts standard HTML to a Breezewind structure. To support Breezewind features, the following HTML extensions have been implemented:
 
-* `#` allows evaluating logic at a specific callsite. This is useful if you want to derive the value of a prop before passing it further. The same feature works for `#children`, not only attributes.
 * `&` is an expression shortcut. I.e., `&href="(get props href)"` would map to `href="{ 'utility': 'get', 'parameters': ['props', 'href'] }"`. The shortcut works also for `&children`, `&foreach`, `$visibleIf`, `&class`, `&class[0]`, and `&type` for `noop`.
 * `noop` - Comparable to React fragments (i.e., is able to lose itself and operate as a temporary structure for grouping)
 
