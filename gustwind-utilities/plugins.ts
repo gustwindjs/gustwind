@@ -80,6 +80,8 @@ async function importPlugins(
     tasks: initialTasks,
   });
 
+  await sendMessages(loadedPluginDefinitions);
+
   // The idea is to proxy routes from all routers so you can use multiple
   // routers or route definitions to aggregate everything together.
   const router = {
@@ -144,11 +146,8 @@ async function importPlugin(
   };
 }
 
-async function preparePlugins(plugins: PluginDefinition[]) {
-  let prepareTasks: Tasks = [];
+async function sendMessages(plugins: PluginDefinition[]) {
   const messageSenders = plugins.map(({ api }) => api.sendMessages)
-    .filter(Boolean);
-  const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
     .filter(Boolean);
   const send = getSend(plugins);
 
@@ -157,6 +156,13 @@ async function preparePlugins(plugins: PluginDefinition[]) {
       await sendMessage({ send });
     }
   }
+}
+
+async function preparePlugins(plugins: PluginDefinition[]) {
+  let prepareTasks: Tasks = [];
+  const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
+    .filter(Boolean);
+  const send = getSend(plugins);
 
   for await (const prepareBuild of prepareBuilds) {
     if (prepareBuild) {
@@ -173,17 +179,9 @@ async function preparePlugins(plugins: PluginDefinition[]) {
 
 async function finishPlugins(plugins: PluginDefinition[]) {
   let finishTasks: Tasks = [];
-  const messageSenders = plugins.map(({ api }) => api.sendMessages)
-    .filter(Boolean);
   const finishBuilds = plugins.map(({ api }) => api.finishBuild)
     .filter(Boolean);
   const send = getSend(plugins);
-
-  for await (const sendMessage of messageSenders) {
-    if (sendMessage) {
-      await sendMessage({ send });
-    }
-  }
 
   for await (const finishBuild of finishBuilds) {
     if (finishBuild) {
