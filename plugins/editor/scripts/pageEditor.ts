@@ -42,7 +42,7 @@ type PageState = {
 
 async function createEditor(
   tw: (s: string) => string,
-  pageUtilities: Utilities,
+  globalUtilities: Utilities,
   componentUtilities: ComponentUtilities,
 ) {
   console.log("create editor");
@@ -65,7 +65,7 @@ async function createEditor(
     components,
     context,
     tw,
-    pageUtilities,
+    globalUtilities,
     componentUtilities,
   );
   editorContainer.append(pageEditor);

@@ -2,12 +2,12 @@ import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../server-deps.ts";
 import { htmlToBreezewind } from "../html-to-breezewind/mod.ts";
 import type { Component } from "../breezewind/types.ts";
-import type { PageUtilities } from "../types.ts";
+import type { GlobalUtilities } from "../types.ts";
 
 type Components = Record<string, ComponentsEntry>;
 type ComponentsEntry = {
   component: Component;
-  utilities?: PageUtilities;
+  utilities?: GlobalUtilities;
   utilitiesPath: string;
 };
 
@@ -24,7 +24,7 @@ const initLoaders = (
         type: string;
       },
     ) => Promise<{ name: string; path: string }[]>;
-    loadModule: (path: string) => Promise<PageUtilities>;
+    loadModule: (path: string) => Promise<GlobalUtilities>;
   },
 ) => {
   return {

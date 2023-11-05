@@ -15,7 +15,7 @@
         { "loader": "html", "path": "./site/layouts" }
       ],
       "metaPath": "./site/meta.json",
-      "pageUtilitiesPath": "./site/pageUtilities.ts"
+      "globalUtilitiesPath": "./site/globalUtilities.ts"
     }
   },
   {

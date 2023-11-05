@@ -12,13 +12,13 @@ import {
 import {
   getComponentUtilities,
   getGlobalUtilities,
-} from "../../utilities/getPageUtilities.ts";
-import type { PageUtilities, Plugin } from "../../types.ts";
+} from "../../gustwind-utilities/getUtilities.ts";
+import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
   componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
   metaPath: string;
-  pageUtilitiesPath: string;
+  globalUtilitiesPath: string;
 }> = {
   meta: {
     name: "breezewind-renderer-plugin",
@@ -26,7 +26,7 @@ const plugin: Plugin<{
   },
   init: async ({
     cwd,
-    options: { componentLoaders, metaPath, pageUtilitiesPath },
+    options: { componentLoaders, metaPath, globalUtilitiesPath },
     load,
     mode,
   }) => {
@@ -34,11 +34,11 @@ const plugin: Plugin<{
       cwd,
       loadDir: load.dir,
       loadModule: (path) =>
-        load.module<PageUtilities>({ path, type: "pageUtilities" }),
+        load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
     });
-    let [components, pageUtilities, meta] = await Promise.all([
+    let [components, globalUtilities, meta] = await Promise.all([
       loadComponents(),
-      loadPageUtilities(),
+      loadGlobalUtilities(),
       loadMeta(),
     ]);
 
@@ -63,11 +63,11 @@ const plugin: Plugin<{
       return Object.assign.apply(undefined, components);
     }
 
-    async function loadPageUtilities() {
-      return pageUtilitiesPath
-        ? await load.module<PageUtilities>({
-          path: path.join(cwd, pageUtilitiesPath),
-          type: "pageUtilities",
+    async function loadGlobalUtilities() {
+      return globalUtilitiesPath
+        ? await load.module<GlobalUtilities>({
+          path: path.join(cwd, globalUtilitiesPath),
+          type: "globalUtilities",
         })
         : { init: () => ({}) };
     }
@@ -88,9 +88,9 @@ const plugin: Plugin<{
           type: "addScripts",
           payload: [{
             isExternal: true,
-            localPath: pageUtilitiesPath,
-            remotePath: pageUtilitiesPath,
-            name: "pageUtilities.js",
+            localPath: globalUtilitiesPath,
+            remotePath: globalUtilitiesPath,
+            name: "globalUtilities.js",
             externals: [],
           }, {
             isExternal: true,
@@ -137,7 +137,7 @@ const plugin: Plugin<{
           components: getComponents(components),
           context,
           globalUtilities: getGlobalUtilities(
-            pageUtilities,
+            globalUtilities,
             components,
             routes,
             route.layout,
@@ -155,8 +155,8 @@ const plugin: Plugin<{
 
                 return { send: [{ type: "reloadPage" }] };
               }
-              case "pageUtilities": {
-                pageUtilities = await loadPageUtilities();
+              case "globalUtilities": {
+                globalUtilities = await loadGlobalUtilities();
 
                 return { send: [{ type: "reloadPage" }] };
               }

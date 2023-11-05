@@ -5,7 +5,7 @@ export default [
     externals: [
       "/pageEditor.js",
       "/twindSetup.js",
-      "/pageUtilities.js",
+      "/globalUtilities.js",
       "/componentUtilities.js",
     ],
   },
