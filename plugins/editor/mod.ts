@@ -100,6 +100,9 @@ const plugin: Plugin = {
       prepareContext: async ({ send, url }) => {
         const id = "breezewind-renderer-plugin";
 
+        // TODO: This is a bad idea since components are not necessarily
+        // isolated. Maybe a renderer should ask for patching when
+        // components are set up for a render instead.
         const components = await send(id, {
           type: "getComponents",
           payload: undefined,
