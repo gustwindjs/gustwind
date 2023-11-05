@@ -146,10 +146,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     await copyToClipboard(`http://localhost:${port}/`);
     console.log("The server address has been copied to the clipboard");
 
-    const plugins = await serve();
+    const { plugins, routes } = await serve();
 
-    Deno.addSignalListener("SIGINT", () => {
-      cleanUpPlugins(plugins);
+    Deno.addSignalListener("SIGINT", async () => {
+      await cleanUpPlugins(plugins, routes);
 
       Deno.exit();
     });

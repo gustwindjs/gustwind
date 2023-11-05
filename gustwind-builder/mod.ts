@@ -27,7 +27,6 @@ async function build(
       amountOfThreads > 1 ? "s" : ""
     }`,
   );
-  const startTime = performance.now();
   const workerPool = createWorkerPool<BuildWorkerEvent>(
     amountOfThreads,
   );
@@ -84,7 +83,7 @@ async function build(
 
         finishTasks.forEach((task) => workerPool.addTaskToQueue(task));
 
-        await cleanUpPlugins(plugins);
+        await cleanUpPlugins(plugins, routes);
 
         finishedAmounts++;
 
@@ -92,20 +91,6 @@ async function build(
       }
 
       workerPool.terminate();
-
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      const routeAmount = Object.keys(routes).length;
-
-      // TODO: This might belong to a stats plugin
-      console.log(
-        `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${
-          Math.round(
-            duration /
-              routeAmount * 1000,
-          ) / 1000
-        } ms per page.`,
-      );
 
       resolve(undefined);
     });

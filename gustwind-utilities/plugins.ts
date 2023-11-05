@@ -200,13 +200,13 @@ async function finishPlugins(plugins: PluginDefinition[]) {
   return finishTasks;
 }
 
-async function cleanUpPlugins(plugins: PluginDefinition[]) {
+async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
   const cleanUps = plugins.map(({ api }) => api.cleanUp)
     .filter(Boolean);
 
   for await (const cleanUp of cleanUps) {
     if (cleanUp) {
-      await cleanUp();
+      await cleanUp({ routes });
     }
   }
 }

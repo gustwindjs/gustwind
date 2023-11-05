@@ -51,5 +51,8 @@
   {
     "path": "./plugins/sitemap/mod.ts",
     "options": { "metaPath": "./site/meta.json" }
+  },
+  {
+    "path": "./plugins/stats/mod.ts"
   }
 ]

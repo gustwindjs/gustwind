@@ -54,7 +54,7 @@ type PluginApi = {
   // Return additional tasks to perform per build finishing
   finishBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
   // Optional cleanup for global operations that should happen only once per process
-  cleanUp?(): void;
+  cleanUp?({ routes }: { routes: Routes }): void;
   // Run setup before context is resolved or add something to it
   prepareContext?(
     { send, route, url }: { send: Send; route: Route; url: string },

@@ -94,7 +94,7 @@ async function gustwindDevServer({
       return respond(404, "No matching route");
     });
 
-    return plugins;
+    return { routes, plugins };
   };
 }
 
