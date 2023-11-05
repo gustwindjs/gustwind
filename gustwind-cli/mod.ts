@@ -3,7 +3,6 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import { path } from "../server-deps.ts";
 import * as flags from "https://deno.land/std@0.161.0/flags/mod.ts";
 import { VERSION } from "../version.ts";
@@ -147,11 +146,8 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
     await copyToClipboard(`http://localhost:${port}/`);
     console.log("The server address has been copied to the clipboard");
-    await serve();
 
-    // TODO: It might be better to trigger finishBuild for each plugin here
-    // https://esbuild.github.io/getting-started/#deno
-    esbuild.stop();
+    await serve();
 
     return;
   }
