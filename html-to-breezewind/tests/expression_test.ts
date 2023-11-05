@@ -35,13 +35,13 @@ Deno.test("element with an expression after expression", () => {
 Deno.test("element with multiple expressions", () => {
   assertEquals(
     htmlToBreezewind(
-      `<a &href="(concat (get props href) (get props suffix))" />`,
+      `<a &href="(urlJoin (get props href) (get props suffix))" />`,
     ),
     {
       type: "a",
       attributes: {
         href: {
-          utility: "concat",
+          utility: "urlJoin",
           parameters: [
             { utility: "get", parameters: ["props", "href"] },
             { utility: "get", parameters: ["props", "suffix"] },
@@ -89,13 +89,13 @@ Deno.test("element with an expression and multiple parameters", () => {
 Deno.test("element with a nested expression shortcut for attribute", () => {
   assertEquals(
     htmlToBreezewind(
-      `<a &href="(concat / (get props href))" />`,
+      `<a &href="(urlJoin / (get props href))" />`,
     ),
     {
       type: "a",
       attributes: {
         href: {
-          utility: "concat",
+          utility: "urlJoin",
           parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
         },
       },
@@ -136,12 +136,12 @@ Deno.test("element with a nested expression shortcut for children", () => {
 Deno.test("element with a complex nested expression shortcut for children", () => {
   assertEquals(
     htmlToBreezewind(
-      `<div &children="(concat / (get props href) /)" />`,
+      `<div &children="(urlJoin / (get props href) /)" />`,
     ),
     {
       type: "div",
       children: {
-        utility: "concat",
+        utility: "urlJoin",
         parameters: [
           "/",
           { utility: "get", parameters: ["props", "href"] },
@@ -170,7 +170,7 @@ Deno.test("complex expression", () => {
   assertEquals(
     htmlToBreezewind(
       `<a
-        &href="(concat (get context meta.url) / blog / (get props data.slug) /)"
+        &href="(urlJoin (get context meta.url) / blog / (get props data.slug) /)"
       ></a>`,
     ),
     {
@@ -178,7 +178,7 @@ Deno.test("complex expression", () => {
       children: [],
       attributes: {
         href: {
-          utility: "concat",
+          utility: "urlJoin",
           parameters: [
             { utility: "get", parameters: ["context", "meta.url"] },
             "/",
@@ -200,7 +200,7 @@ Deno.test("&foreach", () => {
         <li class="inline">
           <SiteLink
             &children="(get props data.title)"
-            &href="(concat blog / (get props data.slug))"
+            &href="(urlJoin blog / (get props data.slug))"
           />
         </li>
       </ul>
@@ -226,7 +226,7 @@ Deno.test("&foreach", () => {
                 parameters: ["props", "data.title"],
               },
               href: {
-                utility: "concat",
+                utility: "urlJoin",
                 parameters: [
                   "blog",
                   "/",
@@ -253,7 +253,7 @@ Deno.test("&foreach with noop", () => {
         <div class="inline">
           <SiteLink
             &children="(get props data.title)"
-            &href="(concat blog / (get props data.slug))"
+            &href="(urlJoin blog / (get props data.slug))"
           />
         </div>
       </noop>
@@ -278,7 +278,7 @@ Deno.test("&foreach with noop", () => {
                 parameters: ["props", "data.title"],
               },
               href: {
-                utility: "concat",
+                utility: "urlJoin",
                 parameters: [
                   "blog",
                   "/",

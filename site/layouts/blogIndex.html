@@ -5,7 +5,7 @@
         <li class="inline">
           <SiteLink
             &children="(get props data.title)"
-            &href="(concat blog / (get props data.slug))"
+            &href="(urlJoin blog (get props data.slug))"
           />
         </li>
       </ul>

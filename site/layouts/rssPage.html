@@ -6,7 +6,7 @@
   <title &children="(get context meta.siteName)"></title>
   <id &children="(get context meta.url)"></id>
   <link rel="alternate" &href="(get context meta.url)" />
-  <link rel="self" &href="(concat (get context meta.url) / atom.xml)" />
+  <link rel="self" &href="(urlJoin (get context meta.url) / atom.xml)" />
   <updated &children="(dateToISO (get context meta.built))"></updated>
   <noop &foreach="(get context blogPosts)">
     <entry>
@@ -14,7 +14,7 @@
       <link
         rel="alternate"
         type="text/html"
-        &href="(concat (get context meta.url) / blog / (get props data.slug) /)"
+        &href="(urlJoin (get context meta.url) / blog / (get props data.slug) /)"
       />
       <id &children="(get props data.slug)"></id>
       <published &children="(dateToISO (get props data.date))"></published>
