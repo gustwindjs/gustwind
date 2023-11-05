@@ -8,7 +8,6 @@ type Routes = Record<string, Route>;
 
 const plugin: Plugin<{
   dataSourcesPath: string;
-  include: string[];
   routesPath: string;
   emitAllRoutes: boolean;
 }> = {
@@ -20,7 +19,7 @@ const plugin: Plugin<{
     {
       cwd,
       outputDirectory,
-      options: { dataSourcesPath, include, routesPath, emitAllRoutes },
+      options: { dataSourcesPath, routesPath, emitAllRoutes },
       load,
     },
   ) => {
@@ -46,29 +45,20 @@ const plugin: Plugin<{
     return {
       getAllRoutes: async () => {
         const { allRoutes } = await getAllRoutes(routes, dataSources);
-        let includedRoutes = allRoutes;
-        let tasks: Tasks = [];
 
-        if (include) {
-          includedRoutes = Object.fromEntries(
-            Object.entries(
-              allRoutes,
-            ).filter(([url]) => include.includes(url)),
-          );
-        }
-
-        if (emitAllRoutes) {
-          tasks = [{
-            type: "writeFile",
-            payload: {
-              outputDirectory,
-              file: "routes.json",
-              data: JSON.stringify(includedRoutes),
-            },
-          }];
-        }
-
-        return { routes: includedRoutes, tasks };
+        return {
+          routes: allRoutes,
+          tasks: emitAllRoutes
+            ? [{
+              type: "writeFile",
+              payload: {
+                outputDirectory,
+                file: "routes.json",
+                data: JSON.stringify(allRoutes),
+              },
+            }]
+            : [],
+        };
       },
       matchRoute: async (url: string) => {
         const { allRoutes } = await getAllRoutes(
@@ -84,10 +74,10 @@ const plugin: Plugin<{
             dataSources,
           });
 
-          return { route, tasks: [] };
+          return { route, tasks: [], allRoutes };
         }
 
-        return { route: undefined, tasks: [] };
+        return { route: undefined, tasks: [], allRoutes };
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;

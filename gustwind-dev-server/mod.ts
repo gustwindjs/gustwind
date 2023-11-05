@@ -40,16 +40,17 @@ async function gustwindDevServer({
     outputDirectory,
   });
   return () =>
+    // TODO: Change logic so that all routes are generated before specific matches
+    // against it to avoid unnecessary effort.
     Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(pathname);
 
       if (matched && matched.route) {
-        const { routes, tasks: routerTasks } = await router.getAllRoutes();
         const { markup, tasks } = await applyPlugins({
           plugins,
           url: pathname,
-          routes,
+          routes: matched.allRoutes,
           route: matched.route,
         });
 
@@ -59,7 +60,7 @@ async function gustwindDevServer({
 
         // Capture potential assets created during evaluation as these might be
         // needed later for example in the editor.
-        pathFs = await evaluateTasks(routerTasks.concat(tasks));
+        pathFs = await evaluateTasks(tasks);
 
         // https://stackoverflow.com/questions/595616/what-is-the-correct-mime-type-to-use-for-an-rss-feed
         return respond(
