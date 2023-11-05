@@ -47,7 +47,25 @@
         "name": "readme"
       }
     ],
-    "scripts": [{ "name": "playground" }]
+    "scripts": [{ "name": "breezewindPlayground" }]
+  },
+  "templating": {
+    "layout": "readmeIndex",
+    "meta": {
+      "title": "Templating",
+      "description": "Templating in Gustwind is done using a combination of HTML and Lisp"
+    },
+    "dataSources": [
+      {
+        "operation": "processMarkdown",
+        "parameters": [
+          "./html-to-breezewind/README.md",
+          { "skipFirstLine": false }
+        ],
+        "name": "readme"
+      }
+    ],
+    "scripts": [{ "name": "templatingPlayground" }]
   },
   "blog": {
     "layout": "blogIndex",
