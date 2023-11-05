@@ -1,4 +1,7 @@
-import { parse } from "https://deno.land/x/frontmatter@v0.1.4/mod.ts";
+import {
+  extract,
+  test,
+} from "https://deno.land/std@0.205.0/front_matter/any.ts";
 import markdown from "./transforms/markdown.ts";
 import { dir } from "../utilities/fs.ts";
 
@@ -23,18 +26,26 @@ async function processMarkdown(
   );
 }
 
-async function parseHeadmatter(filename: string) {
-  return parse(await Deno.readTextFile(filename));
-}
-
 async function indexMarkdown(directory: string) {
   const files = await dir({ path: directory, extension: ".md" });
 
-  return Promise.all(
-    files.map(({ path }) =>
-      Deno.readTextFile(path).then((d) => parse(d) as MarkdownWithFrontmatter)
-    ),
-  );
+  return Promise.all(files.map(({ path }) => parseHeadmatter(path)));
+}
+
+async function parseHeadmatter(
+  path: string,
+): Promise<MarkdownWithFrontmatter> {
+  const file = await Deno.readTextFile(path);
+
+  if (test(file)) {
+    const { frontMatter: data, body: content } = extract(file);
+
+    // @ts-expect-error Chck how to type data properly.
+    // Maybe some form of runtime check would be good.
+    return { data, content };
+  }
+
+  throw new Error(`path ${path} did not contain a headmatter`);
 }
 
 export { indexMarkdown, parseHeadmatter, processMarkdown };
