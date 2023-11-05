@@ -16,39 +16,52 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-async function processMarkdown(
-  filename: string,
-  { skipFirstLine }: { skipFirstLine: boolean },
+async function indexMarkdown(
+  directory: string,
+  o?: { parseMarkdown: boolean },
 ) {
-  const lines = await Deno.readTextFile(filename);
-  // Markdown also parses toc but it's not needed for now
-  const { content } = await markdown(
-    skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
-  );
-
-  return { content };
-}
-
-async function indexMarkdown(directory: string) {
   const files = await dir({ path: directory, extension: ".md" });
 
-  return Promise.all(files.map(({ path }) => parseHeadmatter(path)));
+  return Promise.all(
+    files.map(({ path }) => parseHeadmatter(path, o?.parseMarkdown)),
+  );
 }
 
 async function parseHeadmatter(
   path: string,
+  parseMd?: boolean,
 ): Promise<MarkdownWithFrontmatter> {
   const file = await Deno.readTextFile(path);
 
   if (test(file)) {
     const { frontMatter, body: content } = extract(file);
 
-    // @ts-expect-error Chck how to type data properly.
-    // Maybe some form of runtime check would be good.
-    return { data: parse(frontMatter), content };
+    return {
+      // @ts-expect-error Chck how to type data properly.
+      // Maybe some form of runtime check would be good.
+      data: parse(frontMatter),
+      content: parseMd ? (await parseMarkdown(content)).content : content,
+    };
   }
 
   throw new Error(`path ${path} did not contain a headmatter`);
+}
+
+async function processMarkdown(
+  filename: string,
+  o?: { skipFirstLine: boolean },
+) {
+  const lines = await Deno.readTextFile(filename);
+  // Markdown also parses toc but it's not needed for now
+  const { content } = await parseMarkdown(lines, o);
+
+  return content;
+}
+
+function parseMarkdown(lines: string, o?: { skipFirstLine: boolean }) {
+  return markdown(
+    o?.skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
+  );
 }
 
 export { indexMarkdown, parseHeadmatter, processMarkdown };

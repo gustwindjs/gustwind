@@ -9,14 +9,14 @@
       {
         "operation": "processMarkdown",
         "parameters": ["./README.md", { "skipFirstLine": true }],
-        "name": "document"
+        "name": "readme"
       }
     ],
     "expand": {
       "matchBy": {
         "dataSource": {
           "operation": "indexMarkdown",
-          "parameters": ["./documentation"],
+          "parameters": ["./documentation", { "parseMarkdown": true }],
           "name": "document"
         },
         "slug": "data.slug"
