@@ -27,6 +27,7 @@ async function indexMarkdown(
   );
 }
 
+// TODO: Change this so that Markdown is parsed lazily on demand per route!
 async function parseHeadmatter(
   path: string,
   parseMd?: boolean,
