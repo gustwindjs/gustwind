@@ -21,12 +21,12 @@ async function processMarkdown(
   { skipFirstLine }: { skipFirstLine: boolean },
 ) {
   const lines = await Deno.readTextFile(filename);
+  // Markdown also parses toc but it's not needed for now
+  const { content } = await markdown(
+    skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
+  );
 
-  return {
-    content: markdown(
-      skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
-    ),
-  };
+  return { content };
 }
 
 async function indexMarkdown(directory: string) {
