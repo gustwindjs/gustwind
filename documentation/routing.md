@@ -13,3 +13,13 @@ The example below shows how the structure of this site has been defined:
 **routes.json**
 
 [<file>](site/routes.json)
+
+## Data sources
+
+Each route can be connected to data sources through functions as defined below. The data sources are then visible at layouts and can be accessed through the templating context.
+
+**dataSources.ts**
+
+[<file>](site/dataSources.ts)
+
+Data sources are asynchronous functions returning arrays of objects. Then, when bound, you can access the content. This would be a good spot to connect to a database, external API, or local data.
