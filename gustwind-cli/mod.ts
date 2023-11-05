@@ -9,7 +9,7 @@ import { VERSION } from "../version.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
 import { gustwindDevServer } from "../gustwind-dev-server/mod.ts";
 import { gustwindServe } from "../gustwind-serve/mod.ts";
-import { importPlugin } from "../gustwind-utilities/plugins.ts";
+import { cleanUpPlugins, importPlugin } from "../gustwind-utilities/plugins.ts";
 import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
 import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
@@ -146,7 +146,13 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
     await copyToClipboard(`http://localhost:${port}/`);
     console.log("The server address has been copied to the clipboard");
 
-    await serve();
+    const plugins = await serve();
+
+    Deno.addSignalListener("SIGINT", () => {
+      cleanUpPlugins(plugins);
+
+      Deno.exit();
+    });
 
     return;
   }

@@ -113,7 +113,7 @@ const plugin: Plugin<{
           receivedScripts = receivedScripts.concat(payload);
         }
       },
-      finishBuild: () => {
+      cleanUp: () => {
         // https://esbuild.github.io/getting-started/#deno
         esbuild.stop();
       },
