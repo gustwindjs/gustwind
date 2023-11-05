@@ -1,6 +1,6 @@
 <div
   class="flex gap-4"
-  x-state="{ editor: JSON.stringify({ type: 'div', class: 'bg-red-200 p-4', children: 'demo' }, null, 2) }"
+  x-state="{ editor: '<a href=&quot;/breezewind&quot;>Link goes here</a>' }"
 >
   <div class="w-1/2">
     <h2>Input</h2>
@@ -14,6 +14,6 @@
   </div>
   <div class="w-1/2">
     <h2>Output</h2>
-    <div x="compile(state.editor)"></div>
+    <div x="JSON.stringify(compile(state.editor), null, 2)"></div>
   </div>
 </div>

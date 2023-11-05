@@ -34,7 +34,7 @@ declare global {
 }
 
 if (!("Deno" in globalThis)) {
-  console.log("Hello from the playground");
+  console.log("Hello from the breezewind playground");
 
   window.compile = compile;
 }

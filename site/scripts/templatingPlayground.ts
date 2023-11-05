@@ -1,29 +1,12 @@
-import { install, tw } from "https://cdn.skypack.dev/@twind/core@1.1.1?min";
-import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import breeze from "../../breezewind/mod.ts";
-import * as breezeExtensions from "../../breezewind/extensions.ts";
+import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
 
-install({ presets: [presetTailwind()], hash: false });
-
-// TODO: How to make this wait until tw registration is done?
-async function compile(input: string) {
+function compile(input: string) {
   try {
-    const component = JSON.parse(input);
-
-    return await breeze({
-      component,
-      components: {},
-      context: {},
-      extensions: [
-        breezeExtensions.visibleIf,
-        breezeExtensions.classShortcut(tw),
-        breezeExtensions.foreach,
-      ],
-    });
+    return htmlToBreezewind(input);
   } catch (_error) {
     console.error(_error, input);
 
-    return Promise.resolve("Failed to parse JSON");
+    return Promise.resolve("Failed to convert input");
   }
 }
 
@@ -34,7 +17,7 @@ declare global {
 }
 
 if (!("Deno" in globalThis)) {
-  console.log("Hello from the playground");
+  console.log("Hello from the templating playground");
 
   window.compile = compile;
 }
