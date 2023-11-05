@@ -131,7 +131,6 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
           mode,
         }),
       ],
-      outputDirectory,
       pluginDefinitions,
       mode,
       port: Number(port),
