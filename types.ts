@@ -100,6 +100,7 @@ type PluginApi = {
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
+    allRoutes: Routes,
     url: string,
   ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
     route?: Route;

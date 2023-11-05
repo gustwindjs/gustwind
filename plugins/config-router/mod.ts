@@ -60,11 +60,7 @@ const plugin: Plugin<{
             : [],
         };
       },
-      matchRoute: async (url: string) => {
-        const { allRoutes } = await getAllRoutes(
-          routes,
-          dataSources,
-        );
+      matchRoute: async (allRoutes: Routes, url: string) => {
         const matchedRoute = matchRoute(allRoutes, url);
 
         if (matchedRoute) {
