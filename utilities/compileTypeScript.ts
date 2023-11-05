@@ -18,7 +18,7 @@ async function compileTypeScript(
     treeShaking: true,
     write: false,
     external: externals,
-  }).catch((err) => console.error(err));
+  }).catch((err: string) => console.error(err));
 
   if (!result) {
     return "";
