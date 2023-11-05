@@ -25,7 +25,6 @@ A navigation component built on top of `SiteLink` could look like this:
 
 [<file>](site/components/Navigation.html)
 
-
 ### Utilities
 
 The following example illustrates the usage of utilities:
@@ -33,18 +32,6 @@ The following example illustrates the usage of utilities:
 **layouts/blogIndex.html**
 
 [<file>](site/layouts/blogIndex.html)
-
-## Data sources
-
-In the examples above, data coming from **data sources** has been connected, or bound, to the visible structure. Data sources are defined as below:
-
-**dataSources.ts**
-
-[<file>](site/dataSources.ts)
-
-Data sources are asynchronous functions returning arrays of objects. Then, when bound, you
-can access the content. This would be a good spot to connect to a database,
-external API, or local data.
 
 ## Layouts
 
