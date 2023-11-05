@@ -8,7 +8,7 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
     string,
-    { type: "file"; data: string } | {
+    { type: "file"; data: string | Uint8Array } | {
       type: "path";
       path: string;
     }
