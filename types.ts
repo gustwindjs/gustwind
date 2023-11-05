@@ -101,9 +101,10 @@ type PluginApi = {
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     url: string,
-  ): Promise<{ route?: Route; tasks: Tasks }> | {
+  ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
     route?: Route;
     tasks: Tasks;
+    allRoutes: Routes;
   };
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
