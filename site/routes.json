@@ -35,7 +35,7 @@
     }
   },
   "breezewind": {
-    "layout": "documentationPage",
+    "layout": "readmeIndex",
     "meta": {
       "title": "Breezewind",
       "description": "Breezing fast templating"
@@ -43,8 +43,8 @@
     "dataSources": [
       {
         "operation": "processMarkdown",
-        "parameters": ["./breezewind/README.md", { "skipFirstLine": true }],
-        "name": "document"
+        "parameters": ["./breezewind/README.md", { "skipFirstLine": false }],
+        "name": "readme"
       }
     ],
     "scripts": [{ "name": "playground" }]
