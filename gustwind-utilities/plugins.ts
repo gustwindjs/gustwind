@@ -90,8 +90,12 @@ async function importPlugins(
       return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
     },
     // First match wins
-    matchRoute(url: string) {
-      return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
+    matchRoute(allRoutes: Routes, url: string) {
+      return applyMatchRoutes({
+        allRoutes,
+        plugins: loadedPluginDefinitions,
+        url,
+      });
     },
   };
 
@@ -267,13 +271,17 @@ async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
 }
 
 async function applyMatchRoutes(
-  { plugins, url }: { plugins: PluginDefinition[]; url: string },
+  { allRoutes, plugins, url }: {
+    allRoutes: Routes;
+    plugins: PluginDefinition[];
+    url: string;
+  },
 ) {
   const matchRoutes = plugins.map(({ api }) => api.matchRoute)
     .filter(Boolean);
 
   for await (const matchRoute of matchRoutes) {
-    const matchedRoute = matchRoute && matchRoute(url);
+    const matchedRoute = matchRoute && matchRoute(allRoutes, url);
 
     if (matchedRoute) {
       return matchedRoute;

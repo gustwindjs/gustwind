@@ -39,12 +39,14 @@ async function gustwindDevServer({
     // using a virtual fs.
     outputDirectory,
   });
-  return () =>
+  return async () => {
+    const { routes } = await router.getAllRoutes();
+
     // TODO: Change logic so that all routes are generated before specific matches
     // against it to avoid unnecessary effort.
-    Deno.serve({ port }, async ({ url }) => {
+    return Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
-      const matched = await router.matchRoute(pathname);
+      const matched = await router.matchRoute(routes, pathname);
 
       if (matched && matched.route) {
         const { markup, tasks } = await applyPlugins({
@@ -97,6 +99,7 @@ async function gustwindDevServer({
 
       return respond(404, "No matching route");
     });
+  };
 }
 
 export { gustwindDevServer };
