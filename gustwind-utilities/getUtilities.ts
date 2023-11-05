@@ -1,6 +1,6 @@
 import type { Utilities } from "../breezewind/types.ts";
 import type { Components } from "../utilities/loaders.ts";
-import type { PageUtilities, Routes } from "../types.ts";
+import type { GlobalUtilities, Routes } from "../types.ts";
 
 // https://stackoverflow.com/a/47636222/228885
 function getComponentUtilities(
@@ -16,12 +16,12 @@ function getComponentUtilities(
 }
 
 function getGlobalUtilities(
-  pageUtilities: PageUtilities,
+  globalUtilities: GlobalUtilities,
   components: Components,
   routes: Routes,
   layout: string,
 ) {
-  const ret = pageUtilities.init({ routes });
+  const ret = globalUtilities.init({ routes });
 
   // Expose layout-specific utilities as global utilities
   if (components[layout]) {

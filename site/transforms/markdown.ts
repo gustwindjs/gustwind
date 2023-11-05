@@ -6,8 +6,8 @@ import { initLoaders } from "../../utilities/loaders.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
-} from "../../utilities/getPageUtilities.ts";
-import * as pageUtilities from "../pageUtilities.ts";
+} from "../../gustwind-utilities/getUtilities.ts";
+import * as globalUtilities from "../globalUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js";
 import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js";
@@ -97,11 +97,11 @@ async function transformMarkdown(input: string) {
             component: matchedComponent.component,
             components: {},
             globalUtilities: getGlobalUtilities(
-              pageUtilities,
+              globalUtilities,
               components,
               {},
               "",
-            ), // pageUtilities.init(),
+            ),
             componentUtilities: getComponentUtilities(components, {}),
           });
         } else {

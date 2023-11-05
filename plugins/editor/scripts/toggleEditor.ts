@@ -17,36 +17,36 @@ function init() {
   toggleButton.style.bottom = "1em";
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = async () => {
-    const [tw, pageUtilities, componentUtilities] = await Promise.all([
+    const [tw, globalUtilities, componentUtilities] = await Promise.all([
       import("https://esm.sh/@twind/core@1.1.1"),
       // This is an external!
       // TODO: Figure out how to mute Deno linter here
       import("/twindSetup.js"),
-      import("/pageUtilities.js"),
+      import("/globalUtilities.js"),
       import("/componentUtilities.js"),
     ]).then(
       (
         [
           { install, tw },
           twindSetupModule,
-          pageUtilitiesModule,
+          globalUtilitiesModule,
           componentUtilitiesModule,
         ],
       ) => {
         const twindSetup = twindSetupModule.default;
 
         // TODO: What to pass for routes here?
-        const pageUtilities = pageUtilitiesModule.init({});
+        const globalUtilities = globalUtilitiesModule.init({});
         const componentUtilities = componentUtilitiesModule.init({});
 
         console.log("loaded custom twind setup", twindSetup);
-        console.log("loaded page utilities", pageUtilities);
+        console.log("loaded global utilities", globalUtilities);
         console.log("loaded component utilities", componentUtilities);
 
         // TODO: Figure out why enabling hash breaks markdown transform styling
         install({ ...twindSetup, hash: false });
 
-        return [tw, pageUtilities, componentUtilities];
+        return [tw, globalUtilities, componentUtilities];
       },
     ).catch((err) => console.error(err));
 
@@ -59,7 +59,7 @@ function init() {
     } else {
       loadedAlready = true;
 
-      m.createEditor(tw, pageUtilities, componentUtilities);
+      m.createEditor(tw, globalUtilities, componentUtilities);
     }
   };
 

@@ -225,7 +225,7 @@ type BuildWorkerEvent =
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
-type PageUtilities = {
+type GlobalUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
 };
 
@@ -238,9 +238,9 @@ export type {
   DataContext,
   DataSource,
   DataSources,
+  GlobalUtilities,
   Meta,
   Mode,
-  PageUtilities,
   ParentCategory,
   Plugin,
   PluginApi,
