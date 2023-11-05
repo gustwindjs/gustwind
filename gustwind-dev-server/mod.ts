@@ -38,8 +38,6 @@ async function gustwindDevServer({
   return async () => {
     const { routes } = await router.getAllRoutes();
 
-    // TODO: Change logic so that all routes are generated before specific matches
-    // against it to avoid unnecessary effort.
     return Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(routes, pathname);
@@ -70,7 +68,6 @@ async function gustwindDevServer({
         );
       }
 
-      // TODO: Is this the right way to handle final tasks? Should they be handled even?
       const prepareTasks = await preparePlugins(plugins);
       const finalTasks = await finishPlugins(plugins);
       const fs = await evaluateTasks(prepareTasks.concat(finalTasks));
