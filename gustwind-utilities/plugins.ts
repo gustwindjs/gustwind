@@ -200,6 +200,17 @@ async function finishPlugins(plugins: PluginDefinition[]) {
   return finishTasks;
 }
 
+async function cleanUpPlugins(plugins: PluginDefinition[]) {
+  const cleanUps = plugins.map(({ api }) => api.cleanUp)
+    .filter(Boolean);
+
+  for await (const cleanUp of cleanUps) {
+    if (cleanUp) {
+      await cleanUp();
+    }
+  }
+}
+
 async function applyPlugins(
   {
     plugins,
@@ -452,6 +463,7 @@ export {
   applyPlugins,
   applyPrepareContext,
   applyRenders,
+  cleanUpPlugins,
   finishPlugins,
   importPlugin,
   importPlugins,

@@ -35,10 +35,11 @@ async function gustwindDevServer({
     // using a virtual fs.
     outputDirectory: "/",
   });
+
   return async () => {
     const { routes } = await router.getAllRoutes();
 
-    return Deno.serve({ port }, async ({ url }) => {
+    await Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
       const matched = await router.matchRoute(routes, pathname);
 
@@ -92,6 +93,8 @@ async function gustwindDevServer({
 
       return respond(404, "No matching route");
     });
+
+    return plugins;
   };
 }
 

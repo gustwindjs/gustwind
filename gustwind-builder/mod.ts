@@ -1,5 +1,6 @@
 import { fs, path } from "../server-deps.ts";
 import {
+  cleanUpPlugins,
   finishPlugins,
   importPlugins,
   preparePlugins,
@@ -82,6 +83,8 @@ async function build(
         const finishTasks = await finishPlugins(plugins);
 
         finishTasks.forEach((task) => workerPool.addTaskToQueue(task));
+
+        await cleanUpPlugins(plugins);
 
         finishedAmounts++;
 
