@@ -83,8 +83,10 @@ self.onmessage = async (e) => {
     const { payload: { outputDirectory, file, data } } = e.data;
 
     try {
-      await fs.ensureDir(outputDirectory);
-      await Deno.writeFile(path.join(outputDirectory, file), data);
+      const filePath = path.join(outputDirectory, file);
+
+      await fs.ensureFile(filePath);
+      await Deno.writeFile(filePath, data);
     } catch (_) {
       // This can fail for cases like 404.html so don't write for those.
     }

@@ -23,24 +23,14 @@ const plugin: Plugin = {
 
         const { files } = await index.getFiles();
 
-        return files.map(({ path: file, content: data }) => {
-          const parts = file.split("/");
-          const out = path.join(
+        return files.map(({ path: file, content: data }) => ({
+          type: "writeFile",
+          payload: {
             outputDirectory,
-            "pagefind",
-            parts.slice(0, -1).join("/"),
-          );
-
-          return {
-            type: "writeFile",
-            payload: {
-              outputDirectory: out,
-              // There's always something in parts
-              file: parts.at(-1) as string,
-              data,
-            },
-          };
-        });
+            file: path.join("pagefind", file),
+            data,
+          },
+        }));
       },
     };
   },
