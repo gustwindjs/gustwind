@@ -170,7 +170,7 @@ Deno.test("complex expression", () => {
   assertEquals(
     htmlToBreezewind(
       `<a
-        &href="(concat (get context meta.url) blog / (get props data.slug) /)"
+        &href="(concat (get context meta.url) / blog / (get props data.slug) /)"
       ></a>`,
     ),
     {
@@ -181,6 +181,7 @@ Deno.test("complex expression", () => {
           utility: "concat",
           parameters: [
             { utility: "get", parameters: ["context", "meta.url"] },
+            "/",
             "blog",
             "/",
             { utility: "get", parameters: ["props", "data.slug"] },

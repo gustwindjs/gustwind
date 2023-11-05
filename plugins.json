@@ -47,5 +47,9 @@
   },
   {
     "path": "./plugins/editor/mod.ts"
+  },
+  {
+    "path": "./plugins/sitemap/mod.ts",
+    "options": { "metaPath": "./site/meta.json" }
   }
 ]
