@@ -203,7 +203,7 @@ type BuildWorkerEvent =
     payload: {
       outputDirectory: string;
       file: string;
-      data: string;
+      data: string | Uint8Array;
     };
   }
   | {

@@ -84,7 +84,7 @@ self.onmessage = async (e) => {
 
     try {
       await fs.ensureDir(outputDirectory);
-      await Deno.writeTextFile(path.join(outputDirectory, file), data);
+      await Deno.writeFile(path.join(outputDirectory, file), data);
     } catch (_) {
       // This can fail for cases like 404.html so don't write for those.
     }
