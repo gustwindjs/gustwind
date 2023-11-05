@@ -1,4 +1,4 @@
-import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
+import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import type { Mode } from "../types.ts";
 
 async function compileTypeScript(
