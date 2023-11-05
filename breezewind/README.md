@@ -240,7 +240,7 @@ import breeze, { type Component } from "breezewind";
 
 Use the playground below to experiment with the syntax:
 
-:Playground:
+:BreezewindPlayground:
 
 ## Publishing to npm
 
