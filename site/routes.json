@@ -9,7 +9,7 @@
       {
         "operation": "processMarkdown",
         "parameters": ["./README.md", { "skipFirstLine": true }],
-        "name": "readme"
+        "name": "document"
       }
     ],
     "expand": {
@@ -42,8 +42,8 @@
     },
     "dataSources": [
       {
-        "operation": "parseHeadmatter",
-        "parameters": ["./breezewind/README.md"],
+        "operation": "processMarkdown",
+        "parameters": ["./breezewind/README.md", { "skipFirstLine": true }],
         "name": "document"
       }
     ],

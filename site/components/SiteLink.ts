@@ -34,7 +34,11 @@ function init({ routes }: { routes: Routes }) {
       return url;
     }
 
-    throw new Error(`Failed to find matching url for "${url}"`);
+    throw new Error(
+      `Failed to find matching url for "${url}" from ${
+        Object.keys(routes).join(", ")
+      }`,
+    );
   }
 
   return { trim, validateUrl };
