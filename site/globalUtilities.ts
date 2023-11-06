@@ -1,4 +1,4 @@
-import { urlJoin } from "../utilities/urlJoin.ts";
+import { urlJoin } from "https://bundle.deno.dev/https://deno.land/x/url_join@1.0.0/mod.ts";
 
 // init({ routes }: { routes: Routes })
 function init() {
