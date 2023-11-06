@@ -1,19 +1,14 @@
 <div
-  class="flex gap-4"
+  class="flex flex-col gap-4"
   x-state="{ editor: '<a href=&quot;/breezewind&quot;>Link goes here</a>' }"
 >
-  <div class="w-1/2">
-    <h2>Input</h2>
-    <textarea
-      class="border"
-      rows="10"
-      cols="30"
-      oninput="setState({ editor: this.value })"
-      x="state.editor"
-    ></textarea>
-  </div>
-  <div class="w-1/2">
-    <h2>Output</h2>
-    <div x="JSON.stringify(compile(state.editor), null, 2)"></div>
-  </div>
+  <textarea
+    class="border"
+    rows="10"
+    cols="30"
+    oninput="setState({ editor: this.value })"
+    x="state.editor"
+  ></textarea>
+  <div x="JSON.stringify(compileHTML(state.editor), null, 2)"></div>
+  <div x="compileBreezewind(state.editor)"></div>
 </div>

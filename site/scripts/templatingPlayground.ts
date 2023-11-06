@@ -1,25 +1,32 @@
 import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
+import { compileBreezewind as compileBZ } from "./breezewindPlayground.ts";
 
-function compile(input: string) {
+function compileBreezewind(input: string) {
+  return compileBZ(compileHTML(input));
+}
+
+function compileHTML(input: string) {
   try {
     return htmlToBreezewind(input);
   } catch (_error) {
     console.error(_error, input);
 
-    return Promise.resolve("Failed to convert input");
+    return "Failed to convert input";
   }
 }
 
 declare global {
   interface Window {
-    compile: typeof compile;
+    compileBreezewind: typeof compileBreezewind;
+    compileHTML: typeof compileHTML;
   }
 }
 
 if (!("Deno" in globalThis)) {
   console.log("Hello from the templating playground");
 
-  window.compile = compile;
+  window.compileBreezewind = compileBreezewind;
+  window.compileHTML = compileHTML;
 }
 
-export { compile };
+export { compileHTML };

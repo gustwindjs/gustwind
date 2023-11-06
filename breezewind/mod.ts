@@ -308,4 +308,4 @@ function evaluateFields(
 
 export default renderWithHooks;
 export { isComponent };
-export type { Component, Context, Extension, Utilities, Utility };
+export type { Component, Context, Extension, Options, Utilities, Utility };
