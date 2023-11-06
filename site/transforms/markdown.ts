@@ -95,7 +95,7 @@ async function transformMarkdown(input: string) {
         if (matchedComponent) {
           token.html = await renderHTML({
             component: matchedComponent.component,
-            components: {},
+            components: {}, // TODO: Look up components somehow
             globalUtilities: getGlobalUtilities(
               globalUtilities,
               components,
