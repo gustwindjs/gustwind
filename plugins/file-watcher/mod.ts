@@ -19,7 +19,8 @@ const plugin: Plugin<{ pluginsPath: string }> = {
 
     return {
       // TODO: Add logic to capture paths that are added **after**
-      // onTasksRegistered has triggered.
+      // onTasksRegistered has triggered. The question is how to
+      // add files to Deno.watchFs after it has been created initially.
       onTasksRegistered({ tasks, send }) {
         const pathTypes: { path: string; type: string }[] = [];
         const paths = tasks.map(({ type, payload }) => {
