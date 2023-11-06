@@ -13,7 +13,7 @@ const plugin: Plugin = {
     ],
   },
   init: ({ cwd, outputDirectory }) => {
-    let twindSetupPath = "";
+    let styleSetupPath = "";
 
     return {
       beforeEachRender: async ({ context, url, send, route }) => {
@@ -44,7 +44,7 @@ const plugin: Plugin = {
         const { type, payload } = message;
 
         if (type === "twindSetupReady") {
-          twindSetupPath = payload.path;
+          styleSetupPath = payload.path;
         }
       },
       sendMessages: ({ send }) => {
@@ -74,9 +74,9 @@ const plugin: Plugin = {
             });
           }).concat({
             isExternal: true,
-            localPath: twindSetupPath,
-            remotePath: twindSetupPath,
-            name: "twindSetup.js",
+            localPath: styleSetupPath,
+            remotePath: styleSetupPath,
+            name: "styleSetup.js",
             externals: [],
           }),
         });

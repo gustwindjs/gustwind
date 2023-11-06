@@ -4,7 +4,7 @@ export default [
     name: "toggleEditor",
     externals: [
       "/pageEditor.js",
-      "/twindSetup.js",
+      "/styleSetup.js",
       "/globalUtilities.js",
       "/componentUtilities.js",
     ],

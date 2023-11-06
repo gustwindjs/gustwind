@@ -21,30 +21,30 @@ function init() {
       import("https://esm.sh/@twind/core@1.1.1"),
       // This is an external!
       // TODO: Figure out how to mute Deno linter here
-      import("/twindSetup.js"),
+      import("/styleSetup.js"),
       import("/globalUtilities.js"),
       import("/componentUtilities.js"),
     ]).then(
       (
         [
           { install, tw },
-          twindSetupModule,
+          styleSetupModule,
           globalUtilitiesModule,
           componentUtilitiesModule,
         ],
       ) => {
-        const twindSetup = twindSetupModule.default;
+        const styleSetup = styleSetupModule.default;
 
         // TODO: What to pass for routes here?
         const globalUtilities = globalUtilitiesModule.init({});
         const componentUtilities = componentUtilitiesModule.init({});
 
-        console.log("loaded custom twind setup", twindSetup);
+        console.log("loaded custom twind setup", styleSetup);
         console.log("loaded global utilities", globalUtilities);
         console.log("loaded component utilities", componentUtilities);
 
         // TODO: Figure out why enabling hash breaks markdown transform styling
-        install({ ...twindSetup, hash: false });
+        install({ ...styleSetup, hash: false });
 
         return [tw, globalUtilities, componentUtilities];
       },
