@@ -1,15 +1,10 @@
-<div
-  class="flex flex-col gap-4"
-  x-state="{ editor: '<a href=&quot;/breezewind&quot;>Link goes here</a>' }"
->
-  <CodeEditor example="<a>Link goes here</a>"></CodeEditor>
-  <textarea
-    class="border"
-    rows="10"
-    cols="30"
-    oninput="setState({ editor: this.value })"
-    x="state.editor"
-  ></textarea>
-  <div x="JSON.stringify(compileHTML(state.editor), null, 2)"></div>
-  <div x="compileBreezewind(state.editor)"></div>
+<div class="flex flex-col gap-4">
+  <CodeEditor example='<a &href="(concat / breezewind)">Link goes here</a>'>
+    <div
+      class="p-4 bg-gray-200 rounded-b-lg"
+      x="JSON.stringify(compileHTML(state.code), null, 2)"
+      &children="(get props example)"
+    ></div>
+    <div x="compileBreezewind(state.code)"></div>
+  </CodeEditor>
 </div>
