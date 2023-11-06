@@ -1,4 +1,4 @@
-import * as async from "https://deno.land/std@0.161.0/async/mod.ts";
+import * as async from "https://deno.land/std@0.205.0/async/mod.ts";
 
 async function watch({
   paths,
