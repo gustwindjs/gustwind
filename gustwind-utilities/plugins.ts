@@ -141,6 +141,14 @@ async function importPlugin(
           `file://${payload.path}?cache=${new Date().getTime()}`
         ) as T;
       },
+      textFile(path: string) {
+        tasks.push({
+          type: "readTextFile",
+          payload: { path, type: "" },
+        });
+
+        return Deno.readTextFile(path);
+      },
     },
   });
 

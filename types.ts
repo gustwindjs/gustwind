@@ -9,6 +9,9 @@ type Category = { id: string; title: string; url: string };
 type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
 
+type DataSourcesModule = {
+  init({ load }: { load: LoadApi }): DataSources;
+};
 type DataSource = { operation: string; name: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
@@ -30,19 +33,22 @@ type Plugin<O = Record<string, unknown>> = {
 
 type PluginParameters<O = Record<string, unknown>> = {
   cwd: string;
-  load: {
-    dir({ path, extension, recursive, type }: {
-      path: string;
-      type: string;
-      extension?: string;
-      recursive?: boolean;
-    }): Promise<{ name: string; path: string }[]>;
-    json<T>({ path, type }: { path: string; type: string }): Promise<T>;
-    module<T>({ path, type }: { path: string; type: string }): Promise<T>;
-  };
+  load: LoadApi;
   mode: Mode;
   outputDirectory: string;
   options: O;
+};
+
+type LoadApi = {
+  dir({ path, extension, recursive, type }: {
+    path: string;
+    type: string;
+    extension?: string;
+    recursive?: boolean;
+  }): Promise<{ name: string; path: string }[]>;
+  json<T>({ path, type }: { path: string; type: string }): Promise<T>;
+  module<T>({ path, type }: { path: string; type: string }): Promise<T>;
+  textFile(path: string): Promise<string>;
 };
 
 type PluginApi = {
@@ -202,6 +208,10 @@ type BuildWorkerEvent =
     payload: { path: string; type: string };
   }
   | {
+    type: "readTextFile";
+    payload: { path: string; type: string };
+  }
+  | {
     type: "writeFile";
     payload: {
       outputDirectory: string;
@@ -241,7 +251,9 @@ export type {
   DataContext,
   DataSource,
   DataSources,
+  DataSourcesModule,
   GlobalUtilities,
+  LoadApi,
   Meta,
   Mode,
   ParentCategory,

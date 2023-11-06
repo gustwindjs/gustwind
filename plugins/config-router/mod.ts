@@ -2,7 +2,12 @@ import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
-import type { DataSources, Plugin, Route } from "../../types.ts";
+import type {
+  DataSources,
+  DataSourcesModule,
+  Plugin,
+  Route,
+} from "../../types.ts";
 
 type Routes = Record<string, Route>;
 
@@ -35,10 +40,10 @@ const plugin: Plugin<{
 
     async function loadDataSources() {
       return dataSourcesPath
-        ? await load.module<DataSources>({
+        ? (await load.module<DataSourcesModule>({
           path: path.join(cwd, dataSourcesPath),
           type: "dataSources",
-        })
+        })).init({ load })
         : {};
     }
 

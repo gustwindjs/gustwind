@@ -8,7 +8,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
   meta: {
     name: "file-watcher-plugin",
   },
-  init: async ({ cwd, mode, load, options: { pluginsPath } }) => {
+  init: async ({ mode, load, options: { pluginsPath } }) => {
     if (mode !== "development") {
       return {};
     }
@@ -18,10 +18,13 @@ const plugin: Plugin<{ pluginsPath: string }> = {
     await load.json({ path: pluginsPath, type: "plugins" });
 
     return {
+      // TODO: Add logic to capture paths that are added **after**
+      // onTasksRegistered has triggered.
       onTasksRegistered({ tasks, send }) {
         const pathTypes: { path: string; type: string }[] = [];
         const paths = tasks.map(({ type, payload }) => {
           switch (type) {
+            case "readTextFile":
             case "listDirectory":
             case "loadJSON":
             case "loadModule": {
@@ -42,6 +45,8 @@ const plugin: Plugin<{ pluginsPath: string }> = {
         watch({
           paths,
           onChange: (path, event) => {
+            console.log("triggered change", path, event);
+
             const match = pathTypes.find(({ path: p }) =>
               path.startsWith(p) || path.endsWith(p)
             );
