@@ -88,11 +88,16 @@ const concatenatedAttribute = {
 
 The following utilities are provided out of the box:
 
+* `id(s: unknown)` returns the given parameter.
+* `equals(a: unknown, b: unknown)` performs a strict (`===`) comparison and return a boolean based on the result.
+* `pick(predicate: boolean, s: unknown)` returns `s` if `predicate` evaluates as `true`.
+* `or(...parts: unknown[])` returns `true` in case any of the parts evaluates as `true`.
+* `and(...parts: unknown[])` returns `true` in case all of the parts evaluate as `true`.
 * `get(<context>, <selector>, <defaultValue>)` tries to get with `selector` from `context`. If this process fails, `defaultValue` is returned instead.
 * `concat(...<string>)` concatenates given strings into a single string.
 * `stringify(input: unknown)` applies `JSON.stringify(input, null, 2)`. Useful for debugging.
 
-To implement your own, follow this signature: `(...args: unknown[]) => string | Promise<string>`. Technically you don't have to return a string but in that case you have to be aware of the consequences and design your utilities accordingly.
+To implement your own, follow this signature: `(...args: unknown[]) => unknown | Promise<unknown>`.
 
 Note that Breezewind `context` is available through `this.context` at utilities should you need to access it. For example, the `get` default utility leverages to allow access to the context through the utility.
 
