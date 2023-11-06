@@ -3,6 +3,7 @@ import breezewind from "../../breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
+import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import {
   type Components,
@@ -131,10 +132,24 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ routes, route, context }) =>
-        renderHTML({
+      render: async ({ routes, route, context, url, send }) => {
+        let componentsLookup = getComponents(components);
+        const editorExists = await send("gustwind-editor-plugin", {
+          type: "ping",
+          payload: undefined,
+        });
+
+        if (editorExists) {
+          // TODO: Consider caching this (html + xml separately) to speed things up
+          componentsLookup = attachIdsToComponents(
+            url,
+            componentsLookup,
+          );
+        }
+
+        return renderHTML({
           component: components[route.layout].component,
-          components: getComponents(components),
+          components: componentsLookup,
           context,
           globalUtilities: getGlobalUtilities(
             globalUtilities,
@@ -143,7 +158,8 @@ const plugin: Plugin<{
             route.layout,
           ),
           componentUtilities: getComponentUtilities(components, routes),
-        }),
+        });
+      },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
 
@@ -175,9 +191,6 @@ const plugin: Plugin<{
             return getComponents(components);
           case "getRenderer":
             return components[payload].component;
-          case "updateComponents":
-            components = updateComponents(components, payload);
-            break;
         }
       },
     };
@@ -219,14 +232,14 @@ function getComponents(
   );
 }
 
-function updateComponents(
-  components: Components,
-  update: Record<string, Component>,
-): Components {
+function attachIdsToComponents(
+  url: string,
+  components: Record<string, Component>,
+): Record<string, Component> {
   return Object.fromEntries(
     Object.entries(components).map((
       [k, v],
-    ) => [k, { ...v, component: update[k] }]),
+    ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
   );
 }
 

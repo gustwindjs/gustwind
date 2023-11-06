@@ -1,5 +1,4 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { attachIds } from "../../utilities/attachIds.ts";
 import { path } from "../../server-deps.ts";
 import scriptsToCompile from "./scriptsToCompile.ts";
 import type { Plugin } from "../../types.ts";
@@ -96,28 +95,6 @@ const plugin: Plugin = {
             data: JSON.stringify(components),
           },
         }];
-      },
-      prepareContext: async ({ send, url }) => {
-        const id = "breezewind-renderer-plugin";
-
-        // TODO: This is a bad idea since components are not necessarily
-        // isolated. Maybe a renderer should ask for patching when
-        // components are set up for a render instead.
-        const components = await send(id, {
-          type: "getComponents",
-          payload: undefined,
-        });
-        send(id, {
-          type: "updateComponents",
-          // @ts-expect-error This is fine.
-          payload: Object.fromEntries(
-            // @ts-expect-error This is fine.
-            Object.entries(components).map((
-              [k, v],
-              // @ts-expect-error This is fine.
-            ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
-          ),
-        });
       },
     };
   },

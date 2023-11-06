@@ -439,6 +439,11 @@ function getSend(plugins: PluginDefinition[]): Send {
         pluginName === name
       );
 
+      // Handle ping as a special case
+      if (message.type === "ping") {
+        return !!foundPlugin;
+      }
+
       if (foundPlugin) {
         if (foundPlugin.api.onMessage) {
           return foundPlugin.api.onMessage({ message });
