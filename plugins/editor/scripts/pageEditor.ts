@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.3?min";
+import { draggable } from "https://cdn.skypack.dev/dragjs@v0.13.4?min";
 import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
