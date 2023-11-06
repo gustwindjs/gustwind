@@ -13,7 +13,7 @@ function parseExpression(s: string) {
   characters.forEach((character) => {
     let captureSegment = false;
 
-    if (character === "(") {
+    if (character === "(" && !captureEmpty) {
       // Start capturing a segment now
       // Note that the implementation avoids recursion on purpose
       // and parent tracking is handled through references.
@@ -31,7 +31,7 @@ function parseExpression(s: string) {
       }
 
       return;
-    } else if (character === ")") {
+    } else if (character === ")" && !captureEmpty) {
       captureSegment = true;
       level--;
     } else if (character === "'") {

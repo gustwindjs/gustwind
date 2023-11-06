@@ -14,6 +14,21 @@ Deno.test("element with an expression shortcut for attribute", () => {
   );
 });
 
+Deno.test("element with braces inside strings", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<a &href="(concat foo '(' bar ')' )" />`,
+    ),
+    {
+      type: "a",
+      attributes: {
+        href: { utility: "concat", parameters: ["foo", "(", "bar", ")"] },
+      },
+      children: [],
+    },
+  );
+});
+
 Deno.test("element with an expression after expression", () => {
   assertEquals(
     htmlToBreezewind(
