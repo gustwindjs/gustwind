@@ -2,7 +2,8 @@ import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
-import { initLoaders } from "../../utilities/loaders.ts";
+import type { Component } from "../../breezewind/types.ts";
+import { type Components, initLoaders } from "../../utilities/loaders.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
@@ -95,7 +96,7 @@ async function transformMarkdown(input: string) {
         if (matchedComponent) {
           token.html = await renderHTML({
             component: matchedComponent.component,
-            components: {}, // TODO: Look up components somehow
+            components: getComponents(components),
             globalUtilities: getGlobalUtilities(
               globalUtilities,
               components,
@@ -204,6 +205,15 @@ async function transformMarkdown(input: string) {
   });
 
   return { content: await marked(input), tableOfContents };
+}
+
+// TODO: Same as for breezewind-renderer -> push to utilities
+function getComponents(
+  components: Components,
+): Record<string, Component> {
+  return Object.fromEntries(
+    Object.entries(components).map(([k, v]) => [k, v.component]),
+  );
 }
 
 export default transformMarkdown;
