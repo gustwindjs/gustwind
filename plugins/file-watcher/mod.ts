@@ -46,8 +46,6 @@ const plugin: Plugin<{ pluginsPath: string }> = {
         watch({
           paths,
           onChange: (path, event) => {
-            console.log("triggered change", path, event);
-
             const match = pathTypes.find(({ path: p }) =>
               path.startsWith(p) || path.endsWith(p)
             );
