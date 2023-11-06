@@ -2,7 +2,7 @@ import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
-import type { DataSources, Plugin, Route, Tasks } from "../../types.ts";
+import type { DataSources, Plugin, Route } from "../../types.ts";
 
 type Routes = Record<string, Route>;
 
