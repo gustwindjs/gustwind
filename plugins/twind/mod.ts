@@ -24,7 +24,7 @@ const plugin: Plugin<{
     return {
       sendMessages: ({ send }) => {
         send("*", {
-          type: "twindSetupReady",
+          type: "styleSetupReady",
           payload: { path: twindSetupPath },
         });
       },

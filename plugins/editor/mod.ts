@@ -43,7 +43,7 @@ const plugin: Plugin = {
       onMessage: ({ message }) => {
         const { type, payload } = message;
 
-        if (type === "twindSetupReady") {
+        if (type === "styleSetupReady") {
           styleSetupPath = payload.path;
         }
       },

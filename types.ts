@@ -140,8 +140,8 @@ type SendMessageEvent =
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Component> }
   | { type: "getRenderer"; payload: string }
-  // twind plugin
-  | { type: "twindSetupReady"; payload: { path: string } }
+  // styling
+  | { type: "styleSetupReady"; payload: { path: string } }
   // websocket plugin
   | { type: "reloadPage"; payload: undefined }
   | {
