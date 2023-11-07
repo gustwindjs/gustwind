@@ -7,20 +7,14 @@
     <li x-template>
       <a
         x-attr
-        x="state.value.textContent"
-        @href="state.value.parentElement?.attributes.href?.value"
-        __todo="fix class, port this to use an expression. See Sidewind documentation for exact code."
-        __@class="{
-          'utility': 'concat',
-          'parameters': [
-            '[state.value.textContent === parent.closest.textContent && \'',
-            { 'utility': 'tw', 'parameters': ['underline'] },
-            '\',
-            state.tagName === 'H3' && \'',
-            { 'utility': 'tw', 'parameters': ['ml-2'] },
-            \']'
-          ]
-        }"
+        x="state.value.firstChild.textContent"
+        @href="state.value.querySelector('a')?.attributes.href?.value"
+        &@class="(concat
+          '[state.value.textContent === parent.closest.textContent && &quot;'
+          (tw underline)
+          '&quot;, state.tagName === &quot;H3&quot; && &quot;'
+          (tw ml-2)
+          '&quot;]')"
       ></a>
     </li>
   </ul>

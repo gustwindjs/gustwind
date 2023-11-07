@@ -1,7 +1,8 @@
 import type { Utility } from "../../breezewind/types.ts";
 
 function parseExpression(s: string) {
-  const characters = s.split("");
+  // TODO: Test \n case
+  const characters = s.replaceAll("\n", "").split("");
   let ret: Utility | undefined;
   const parents: Utility[] = [];
   let parent: Utility | undefined;
