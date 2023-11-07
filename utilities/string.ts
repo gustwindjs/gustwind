@@ -1,16 +1,13 @@
-function trim(str: string, char: string) {
-  if (!str) {
-    throw new Error("No string to trim!");
-  }
-
-  // Exception for /
-  if (str === char) {
-    return str;
-  }
-
-  // Adapted from https://www.sitepoint.com/trimming-strings-in-javascript/
-  return str.replace(new RegExp("^[" + char + "]+"), "").replace(
-    new RegExp("[" + char + "]+$"),
+// https://stackoverflow.com/a/32516190/228885
+function trim(s: string, c: string) {
+  if (c === "]") c = "\\]";
+  if (c === "^") c = "\\^";
+  if (c === "\\") c = "\\\\";
+  return s.replace(
+    new RegExp(
+      "^[" + c + "]+|[" + c + "]+$",
+      "g",
+    ),
     "",
   );
 }
