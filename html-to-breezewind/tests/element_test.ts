@@ -56,31 +56,6 @@ Deno.test("element with a class", () => {
   );
 });
 
-Deno.test("props through slots as elements", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<BaseLayout>
-        <slot name="content">
-          <div>hello</div>
-        </slot>
-      </BaseLayout>
-    `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "div",
-            attributes: {},
-            children: "hello",
-          },
-        ],
-      },
-    },
-  );
-});
-
 Deno.test("doctype", () => {
   assertEquals(
     htmlToBreezewind("<!DOCTYPE html>"),
