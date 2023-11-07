@@ -95,6 +95,7 @@ The following utilities are provided out of the box:
 * `and(...parts: unknown[])` returns `true` in case all of the parts evaluate as `true`.
 * `get(<context>, <selector>, <defaultValue>)` tries to get with `selector` from `context`. If this process fails, `defaultValue` is returned instead.
 * `concat(...<string>)` concatenates given strings into a single string.
+* `trim(s: string, c: string)` trims character `c` from both ends of string `s`.
 * `stringify(input: unknown)` applies `JSON.stringify(input, null, 2)`. Useful for debugging.
 
 To implement your own, follow this signature: `(...args: unknown[]) => unknown | Promise<unknown>`.

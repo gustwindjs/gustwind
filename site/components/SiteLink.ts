@@ -1,23 +1,6 @@
 import type { Routes } from "../../types.ts";
 
 function init({ routes }: { routes: Routes }) {
-  function trim(str: string, char: string) {
-    if (!str) {
-      throw new Error("No string to trim!");
-    }
-
-    // Exception for /
-    if (str === char) {
-      return str;
-    }
-
-    // Adapted from https://www.sitepoint.com/trimming-strings-in-javascript/
-    return str.replace(new RegExp("^[" + char + "]+"), "").replace(
-      new RegExp("[" + char + "]+$"),
-      "",
-    );
-  }
-
   function validateUrl(url: string) {
     if (!url) {
       return;
@@ -41,7 +24,7 @@ function init({ routes }: { routes: Routes }) {
     );
   }
 
-  return { trim, validateUrl };
+  return { validateUrl };
 }
 
 export { init };
