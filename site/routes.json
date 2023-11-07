@@ -38,7 +38,8 @@
     "layout": "readmeIndex",
     "meta": {
       "title": "Breezewind",
-      "description": "Breezing fast templating"
+      "description": "Breezing fast templating",
+      "readmePath": "breezewind/README.md"
     },
     "dataSources": [
       {
@@ -53,7 +54,8 @@
     "layout": "readmeIndex",
     "meta": {
       "title": "Templating",
-      "description": "Templating in Gustwind is done using a combination of HTML and Lisp"
+      "description": "Templating in Gustwind is done using a combination of HTML and Lisp",
+      "readmePath": "html-to-breezewind/README.md"
     },
     "dataSources": [
       {
