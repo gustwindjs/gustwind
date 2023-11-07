@@ -35,16 +35,6 @@ function h(
   attributes: Attributes, // Record<string, unknown> | null,
   ...children: Component[]
 ) {
-  if (
-    children.length > 0 &&
-    children.every((children) => children.type === "slot")
-  ) {
-    return {
-      type,
-      props: convertChildrenSlotsToProps(children),
-    };
-  }
-
   const childrenToReturn =
     children.length === 1 && typeof children[0] === "string"
       ? children[0]
@@ -111,6 +101,16 @@ function h(
       // @ts-expect-error This is fine. Maybe the type can be refined.
       ret.bindToProps = bindToProps;
     }
+  }
+
+  if (
+    children.length > 0 &&
+    children.every((children) => children.type === "slot")
+  ) {
+    return {
+      ...omit(ret, "children"),
+      props: { ...ret.props, ...convertChildrenSlotsToProps(children) },
+    };
   }
 
   return ret;
