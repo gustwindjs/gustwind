@@ -22,11 +22,9 @@
   <body>
     <MainNavigation />
     <aside
-      &visibleIf="(get props showToc)"
       class="fixed top-16 pl-4 hidden lg:inline"
-    >
-      <TableOfContents />
-    </aside>
+      &children="(render (get props aside))"
+    ></aside>
     <main &children="(render (get props content))"></main>
     <MainFooter />
     <Scripts />
