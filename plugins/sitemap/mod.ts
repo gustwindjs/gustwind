@@ -31,7 +31,7 @@ const plugin: Plugin<{ metaPath: string }> = {
         const sitemapXML = sitemapToXML(sitemap);
 
         return [{
-          type: "writeFile",
+          type: "writeTextFile",
           payload: {
             outputDirectory,
             file: "sitemap.xml",

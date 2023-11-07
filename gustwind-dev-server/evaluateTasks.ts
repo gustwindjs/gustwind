@@ -16,6 +16,7 @@ async function evaluateTasks(tasks: Tasks) {
 
   await Promise.all(tasks.map(async ({ type, payload }) => {
     switch (type) {
+      case "writeTextFile":
       case "writeFile":
         ret[`/${payload.file}`] = {
           type: "file",

@@ -220,6 +220,14 @@ type BuildWorkerEvent =
     };
   }
   | {
+    type: "writeTextFile";
+    payload: {
+      outputDirectory: string;
+      file: string;
+      data: string | Uint8Array;
+    };
+  }
+  | {
     type: "writeFiles";
     payload: {
       inputDirectory: string;

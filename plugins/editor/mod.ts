@@ -31,7 +31,7 @@ const plugin: Plugin = {
         return url.endsWith(".xml")
           ? []
           : ["context", "layout", "route"].map((name) => ({
-            type: "writeFile",
+            type: "writeTextFile",
             payload: {
               outputDirectory: outputDir,
               file: `${name}.json`,
@@ -88,7 +88,7 @@ const plugin: Plugin = {
         });
 
         return [{
-          type: "writeFile",
+          type: "writeTextFile",
           payload: {
             outputDirectory,
             file: "components.json",

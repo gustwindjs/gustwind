@@ -82,13 +82,31 @@ self.onmessage = async (e) => {
   if (type === "writeFile") {
     const { payload: { outputDirectory, file, data } } = e.data;
 
-    try {
-      const filePath = path.join(outputDirectory, file);
+    // Avoid 404.html etc.
+    if (!outputDirectory.endsWith(".html")) {
+      try {
+        const filePath = path.join(outputDirectory, file);
 
-      await fs.ensureFile(filePath);
-      await Deno.writeFile(filePath, data);
-    } catch (_) {
-      // This can fail for cases like 404.html so don't write for those.
+        await fs.ensureFile(filePath);
+        await Deno.writeFile(filePath, data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+  if (type === "writeTextFile") {
+    const { payload: { outputDirectory, file, data } } = e.data;
+
+    // Avoid 404.html etc.
+    if (!outputDirectory.endsWith(".html")) {
+      try {
+        const filePath = path.join(outputDirectory, file);
+
+        await fs.ensureFile(filePath);
+        await Deno.writeTextFile(filePath, data);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
   if (type === "writeFiles") {

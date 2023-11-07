@@ -55,7 +55,7 @@ const plugin: Plugin<{
           routes: allRoutes,
           tasks: emitAllRoutes
             ? [{
-              type: "writeFile",
+              type: "writeTextFile",
               payload: {
                 outputDirectory,
                 file: "routes.json",

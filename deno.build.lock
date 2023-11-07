@@ -47,6 +47,7 @@
     "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml": "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js"
   },
   "remote": {
+    "https://bundle.deno.dev/https://deno.land/x/url_join@1.0.0/mod.ts": "a1eb7b5984fccc94bab744ede34b9cad4e9c70ff96e5c681e519c507c7d8dd2d",
     "https://cdn.skypack.dev/-/nanoid@v4.0.0-SV3vmaOx0roSeDMY0GZY/dist=es2019,mode=imports,min/optimized/nanoid.js": "0672928b21f8391e39f8d8ce04a610ef0d31ff5afaf1e15872169e4902190329",
     "https://cdn.skypack.dev/-/nanoid@v5.0.2-eGHVIwCh9rwRCSCapNiP/dist=es2019,mode=imports,min/optimized/nanoid.js": "0672928b21f8391e39f8d8ce04a610ef0d31ff5afaf1e15872169e4902190329",
     "https://cdn.skypack.dev/nanoid@4.0.0?min": "6df8d1088889cfc344d4d0775106363ad79e5a1dffc27a1516eb027407203d9b",
