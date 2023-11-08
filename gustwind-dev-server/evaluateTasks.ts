@@ -14,6 +14,8 @@ async function evaluateTasks(tasks: Tasks) {
     }
   > = {};
 
+  DEBUG && console.log("evaluate tasks", tasks);
+
   await Promise.all(tasks.map(async ({ type, payload }) => {
     switch (type) {
       case "writeTextFile":
