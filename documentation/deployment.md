@@ -12,9 +12,9 @@ The general approach is to first set up a build script to install Deno and run G
 ```bash
 #!/usr/bin/env bash
 
-curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.22.0
+curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.38.0
 /opt/buildhome/.deno/bin/deno task decompress:cache
-/opt/buildhome/.deno/bin/deno run -A --unstable --no-check https://deno.land/x/gustwind@v0.25.0/gustwind-cli/mod.ts -b -t cpuHalf -o ./build
+/opt/buildhome/.deno/bin/deno run -A --unstable --no-check https://deno.land/x/gustwind@v0.25.0/gustwind-cli/mod.ts -b -t cpuMax -o ./build
 ```
 
 Also make the file executable with `chmod +x` and point your CI environment to use the file when building. Usually there's a field for that in their user interface somewhere.
@@ -23,7 +23,7 @@ The benefit of using a simple script like this is that it lets you control versi
 
 ## Netlify
 
-To configure Netlify, set up a file as follows.
+To configure Netlify, set up a file as follows:
 
 **netlify.toml**
 
@@ -33,6 +33,10 @@ To configure Netlify, set up a file as follows.
   publish = "build"
   command = "./build.sh"
 ```
+
+Alternatively you can leverage Deno tasks instead of `build.sh`.
+
+Note that Netlify environment has Deno available alredy although there are no guarantees on version so it may not be the latest.
 
 ## Vercel
 
