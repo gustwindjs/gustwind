@@ -77,6 +77,14 @@ const plugin: Plugin = {
             externals: [],
           }),
         });
+        send("gustwind-script-plugin", {
+          type: "addGlobalScripts",
+          payload: [{
+            type: "text/javascript",
+            src:
+              "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js",
+          }],
+        });
       },
       prepareBuild: async ({ send }) => {
         const components = await send("breezewind-renderer-plugin", {

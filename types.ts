@@ -125,17 +125,6 @@ type Send = (
 
 // TODO: Compose this from plugin types
 type SendMessageEvent =
-  // editor plugin
-  | {
-    type: "addScripts";
-    payload: {
-      isExternal?: boolean;
-      localPath: string;
-      remotePath: string;
-      name: string;
-      externals?: string[];
-    }[];
-  }
   | { type: "ping"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Component> }
@@ -153,6 +142,24 @@ type SendMessageEvent =
       name: string;
       type: string;
     };
+  }
+  // editor plugin
+  | {
+    type: "addGlobalScripts";
+    payload: {
+      type: string;
+      src: string;
+    }[];
+  }
+  | {
+    type: "addScripts";
+    payload: {
+      isExternal?: boolean;
+      localPath: string;
+      remotePath: string;
+      name: string;
+      externals?: string[];
+    }[];
   };
 
 // This type is specific to breezewind-router so it probably doesn't belong here

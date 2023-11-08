@@ -24,6 +24,7 @@ const plugin: Plugin<{
       remotePath: string;
       externals?: string[];
     }[] = [];
+    let receivedGlobalScripts: { type: string; src: string }[] = [];
 
     async function loadScripts(): Promise<{
       name: string;
@@ -92,8 +93,15 @@ const plugin: Plugin<{
           src: (srcPrefix || "/") + name.replace(".ts", ".js"),
         }));
 
-        // globalScripts don't need processing since they are in the right format
-        return { context: { scripts: globalScripts.concat(scriptTags) } };
+        // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
+        // Global scripts don't need processing since they are in the right format already
+        return {
+          context: {
+            scripts: globalScripts.concat(receivedGlobalScripts).concat(
+              scriptTags,
+            ),
+          },
+        };
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
@@ -107,6 +115,10 @@ const plugin: Plugin<{
             // that avoids a full page reload.
             return { send: [{ type: "reloadPage" }] };
           }
+        }
+
+        if (type === "addGlobalScripts") {
+          receivedGlobalScripts = receivedGlobalScripts.concat(payload);
         }
 
         if (type === "addScripts") {
