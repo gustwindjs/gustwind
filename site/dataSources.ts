@@ -3,7 +3,7 @@ import {
   test,
 } from "https://deno.land/std@0.205.0/front_matter/yaml.ts";
 import { parse } from "https://deno.land/std@0.205.0/yaml/parse.ts";
-import markdown from "./transforms/markdown.ts";
+import getMarkdown from "./transforms/markdown.ts";
 import type { LoadApi } from "../types.ts";
 
 type MarkdownWithFrontmatter = {
@@ -17,6 +17,8 @@ type MarkdownWithFrontmatter = {
 };
 
 function init({ load }: { load: LoadApi }) {
+  const markdown = getMarkdown(load);
+
   async function indexMarkdown(
     directory: string,
     o?: { parseMarkdown: boolean },

@@ -49,6 +49,7 @@ type LoadApi = {
   json<T>({ path, type }: { path: string; type: string }): Promise<T>;
   module<T>({ path, type }: { path: string; type: string }): Promise<T>;
   textFile(path: string): Promise<string>;
+  textFileSync(path: string): string;
 };
 
 type PluginApi = {

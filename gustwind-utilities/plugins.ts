@@ -149,6 +149,14 @@ async function importPlugin(
 
         return Deno.readTextFile(path);
       },
+      textFileSync(path: string) {
+        tasks.push({
+          type: "readTextFile",
+          payload: { path, type: "" },
+        });
+
+        return Deno.readTextFileSync(path);
+      },
     },
   });
 

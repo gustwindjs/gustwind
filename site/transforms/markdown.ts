@@ -3,6 +3,7 @@ import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import type { Component } from "../../breezewind/types.ts";
+import type { LoadApi } from "../../types.ts";
 import { type Components, initLoaders } from "../../utilities/loaders.ts";
 import {
   getComponentUtilities,
@@ -49,162 +50,165 @@ const loaders = initLoaders({
   loadModule: (path) => import(path),
 });
 
-async function transformMarkdown(input: string) {
-  if (typeof input !== "string") {
-    console.error("input", input);
-    throw new Error("transformMarkdown - passed wrong type of input");
-  }
+function getTransformMarkdown(load: LoadApi) {
+  return async function transformMarkdown(input: string) {
+    if (typeof input !== "string") {
+      console.error("input", input);
+      throw new Error("transformMarkdown - passed wrong type of input");
+    }
 
-  // https://github.com/markedjs/marked/issues/545
-  const tableOfContents: { slug: string; level: number; text: string }[] = [];
+    // https://github.com/markedjs/marked/issues/545
+    const tableOfContents: { slug: string; level: number; text: string }[] = [];
 
-  marked.use({
-    async: true,
-    extensions: [{
-      name: "importComponent",
-      level: "block",
-      // Avoid consuming too much
-      start(src: string) {
-        return src.indexOf("\n:");
-      },
-      tokenizer(src: string) {
-        const rule = /^\:([A-Za-z]+)\:/;
-        const match = rule.exec(src);
+    marked.use({
+      async: true,
+      extensions: [{
+        name: "importComponent",
+        level: "block",
+        // Avoid consuming too much
+        start(src: string) {
+          return src.indexOf("\n:");
+        },
+        tokenizer(src: string) {
+          const rule = /^\:([A-Za-z]+)\:/;
+          const match = rule.exec(src);
 
-        if (match) {
-          return {
-            type: "importComponent",
-            raw: match[0],
-            component: match[1],
-            html: "", // will be replaced in walkTokens
-          };
-        }
-      },
-      // @ts-ignore How to type this?
-      renderer(token) {
-        return token.html;
-      },
-    }],
-    // @ts-ignore How to type this?
-    async walkTokens(token) {
-      if (token.type === "importComponent") {
-        const components = await loaders.html("./site/components");
-        const matchedComponent = components[token.component];
-
-        if (matchedComponent) {
-          token.html = await renderHTML({
-            component: matchedComponent.component,
-            components: getComponents(components),
-            globalUtilities: getGlobalUtilities(
-              globalUtilities,
-              components,
-              {},
-              "",
-            ),
-            componentUtilities: getComponentUtilities(components, {}),
-          });
-        } else {
-          throw new Error(
-            `Failed to find a matching component for ${token.component}`,
-          );
-        }
-      }
-    },
-  });
-
-  // https://marked.js.org/using_pro#renderer
-  // https://github.com/markedjs/marked/blob/master/src/Renderer.js
-  marked.use({
-    renderer: {
-      code(code: string, infostring: string): string {
-        const lang = ((infostring || "").match(/\S*/) || [])[0];
+          if (match) {
+            return {
+              type: "importComponent",
+              raw: match[0],
+              component: match[1],
+              html: "", // will be replaced in walkTokens
+            };
+          }
+        },
         // @ts-ignore How to type this?
-        if (this.options.highlight) {
-          // @ts-ignore How to type this?
-          const out = this.options.highlight(code, lang);
+        renderer(token) {
+          return token.html;
+        },
+      }],
+      // @ts-ignore How to type this?
+      async walkTokens(token) {
+        if (token.type === "importComponent") {
+          const components = await loaders.html("./site/components");
+          const matchedComponent = components[token.component];
 
-          if (out != null && out !== code) {
-            code = out;
+          if (matchedComponent) {
+            token.html = await renderHTML({
+              component: matchedComponent.component,
+              components: getComponents(components),
+              globalUtilities: getGlobalUtilities(
+                globalUtilities,
+                components,
+                {},
+                "",
+              ),
+              componentUtilities: getComponentUtilities(components, {}),
+            });
+          } else {
+            throw new Error(
+              `Failed to find a matching component for ${token.component}`,
+            );
           }
         }
+      },
+    });
 
-        code = code.replace(/\n$/, "") + "\n";
+    // https://marked.js.org/using_pro#renderer
+    // https://github.com/markedjs/marked/blob/master/src/Renderer.js
+    marked.use({
+      renderer: {
+        code(code: string, infostring: string): string {
+          const lang = ((infostring || "").match(/\S*/) || [])[0];
+          // @ts-ignore How to type this?
+          if (this.options.highlight) {
+            // @ts-ignore How to type this?
+            const out = this.options.highlight(code, lang);
 
-        if (!lang) {
-          return "<pre><code>" +
+            if (out != null && out !== code) {
+              code = out;
+            }
+          }
+
+          code = code.replace(/\n$/, "") + "\n";
+
+          if (!lang) {
+            return "<pre><code>" +
+              code +
+              "</code></pre>\n";
+          }
+
+          return '<pre class="' +
+            tw("overflow-auto -mx-4 md:mx-0") +
+            '"><code class="' +
+            // @ts-ignore How to type this?
+            this.options.langPrefix +
+            lang +
+            '">' +
             code +
             "</code></pre>\n";
-        }
+        },
+        heading(
+          text: string,
+          level: number,
+          raw: string,
+        ) {
+          const slug = slugify(raw);
 
-        return '<pre class="' +
-          tw("overflow-auto -mx-4 md:mx-0") +
-          '"><code class="' +
-          // @ts-ignore How to type this?
-          this.options.langPrefix +
-          lang +
-          '">' +
-          code +
-          "</code></pre>\n";
+          tableOfContents.push({ slug, level, text });
+
+          return "<h" +
+            level +
+            ' id="' +
+            slug +
+            '">' +
+            text +
+            '<a class="' +
+            tw("ml-2 no-underline text-sm align-middle mask-text") +
+            '" href="#' +
+            slug +
+            '">🔗</a>\n' +
+            "</h" +
+            level +
+            ">\n";
+        },
+        link(href: string, title: string, text: string) {
+          if (href === null) {
+            return text;
+          }
+
+          if (text === "<file>") {
+            // TODO: Show a nice error in case href is not found in the fs
+            const fileContents = load.textFileSync(href);
+
+            return this.code(fileContents, href.split(".")[1]);
+          }
+
+          let out = '<a class="' + tw("underline") + '" href="' + href + '"';
+          if (title) {
+            out += ' title="' + title + '"';
+          }
+          out += ">" + text + "</a>";
+          return out;
+        },
+        list(body: string, ordered: string, start: number) {
+          const type = ordered ? "ol" : "ul",
+            startatt = (ordered && start !== 1)
+              ? (' start="' + start + '"')
+              : "",
+            klass = ordered
+              ? "list-decimal list-inside"
+              : "list-disc list-inside";
+          return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
+            body +
+            "</" +
+            type + ">\n";
+        },
       },
-      heading(
-        text: string,
-        level: number,
-        raw: string,
-      ) {
-        const slug = slugify(raw);
+    });
 
-        tableOfContents.push({ slug, level, text });
-
-        return "<h" +
-          level +
-          ' id="' +
-          slug +
-          '">' +
-          text +
-          '<a class="' +
-          tw("ml-2 no-underline text-sm align-middle mask-text") +
-          '" href="#' +
-          slug +
-          '">🔗</a>\n' +
-          "</h" +
-          level +
-          ">\n";
-      },
-      link(href: string, title: string, text: string) {
-        if (href === null) {
-          return text;
-        }
-
-        if (text === "<file>") {
-          // TODO: This won't be caught by the file watcher and instead
-          // this should go through the load api
-          //
-          // TODO: Show a nice error in case href is not found in the fs
-          return this.code(Deno.readTextFileSync(href), href.split(".")[1]);
-        }
-
-        let out = '<a class="' + tw("underline") + '" href="' + href + '"';
-        if (title) {
-          out += ' title="' + title + '"';
-        }
-        out += ">" + text + "</a>";
-        return out;
-      },
-      list(body: string, ordered: string, start: number) {
-        const type = ordered ? "ol" : "ul",
-          startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
-          klass = ordered
-            ? "list-decimal list-inside"
-            : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
-          body +
-          "</" +
-          type + ">\n";
-      },
-    },
-  });
-
-  return { content: await marked(input), tableOfContents };
+    return { content: await marked(input), tableOfContents };
+  };
 }
 
 // TODO: Same as for breezewind-renderer -> push to utilities
@@ -223,4 +227,4 @@ function slugify(idBase: string) {
     .replace(/[^\w]+/g, "-");
 }
 
-export default transformMarkdown;
+export default getTransformMarkdown;
