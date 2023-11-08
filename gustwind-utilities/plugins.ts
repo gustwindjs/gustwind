@@ -126,13 +126,11 @@ async function importPlugin(
 
         return dir({ path, extension, recursive });
       },
-      // For some reason TS doesn't infer this correctly
-      json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
+      json(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
         tasks.push({ type: "loadJSON", payload });
 
         return Deno.readTextFile(payload.path).then((d) => JSON.parse(d));
       },
-      // For some reason TS doesn't infer this correctly
       module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
         tasks.push({ type: "loadModule", payload });
 
