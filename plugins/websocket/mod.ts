@@ -2,6 +2,7 @@ import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../../server-deps.ts";
 import { getWebsocketServer } from "../../utilities/getWebSocketServer.ts";
 import scriptsToCompile from "./scriptsToCompile.ts";
+import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
@@ -26,27 +27,23 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
       sendMessages: ({ send }) => {
         send("gustwind-script-plugin", {
           type: "addScripts",
-          payload: scriptsToCompile.map(({ name }) => {
-            // TODO: Find some simplification for this
-            return ({
-              localPath: path.join(
-                cwd,
-                "plugins",
-                "websocket",
-                "scripts",
-                `${name}.ts`,
-              ),
-              // TODO: It would be good to take gustwind version into account
-              remotePath: urlJoin(
-                "https://deno.land/x/gustwind",
-                "plugins",
-                "websocket",
-                "compiled-scripts",
-                `${name}.ts`,
-              ),
-              name: `${name}.js`,
-            });
-          }),
+          payload: scriptsToCompile.map(({ name }) => ({
+            localPath: path.join(
+              cwd,
+              "plugins",
+              "websocket",
+              "scripts",
+              `${name}.ts`,
+            ),
+            remotePath: urlJoin(
+              `https://deno.land/x/gustwind@v${VERSION}`,
+              "plugins",
+              "websocket",
+              "compiled-scripts",
+              `${name}.ts`,
+            ),
+            name: `${name}.js`,
+          })),
         });
       },
       onMessage({ message: { type } }) {
