@@ -1,4 +1,4 @@
-import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
+import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
 
 // The component/browser version should not use the regular transform
 // as that relies on filesystem related functionality which cannot

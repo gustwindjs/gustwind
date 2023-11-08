@@ -1,5 +1,5 @@
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
-import { marked } from "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js";
+import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import type { Component } from "../../breezewind/types.ts";
@@ -152,9 +152,8 @@ async function transformMarkdown(input: string) {
         text: string,
         level: number,
         raw: string,
-        slugger: { slug: (s: string) => string },
       ) {
-        const slug = slugger.slug(raw);
+        const slug = slugify(raw);
 
         tableOfContents.push({ slug, level, text });
 
@@ -217,6 +216,13 @@ function getComponents(
   return Object.fromEntries(
     Object.entries(components).map(([k, v]) => [k, v.component]),
   );
+}
+
+function slugify(idBase: string) {
+  return idBase
+    .toLowerCase()
+    .replace(/`/g, "")
+    .replace(/[^\w]+/g, "-");
 }
 
 export default transformMarkdown;
