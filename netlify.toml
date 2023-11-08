@@ -1,4 +1,4 @@
 [build]
   base    = ""
   publish = "build"
-  command = "curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.37.2 && /opt/buildhome/.deno/bin/deno task netlify:build"
+  command = "deno task netlify:build"
