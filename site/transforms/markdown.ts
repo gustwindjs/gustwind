@@ -122,6 +122,12 @@ function getTransformMarkdown(load: LoadApi) {
           const lang = ((infostring || "").match(/\S*/) || [])[0];
           // @ts-ignore How to type this?
           if (this.options.highlight) {
+            // TODO: Inject highlight.js now through `load.style`
+            // This should replace BaseLayout bits that currently exist.
+            // Furthermore, injection should be unique.
+            // Likely style should be exposed as markdown parameter so it
+            // is easy to change.
+
             // @ts-ignore How to type this?
             const out = this.options.highlight(code, lang);
 
