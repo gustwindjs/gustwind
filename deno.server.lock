@@ -1257,11 +1257,18 @@
     "https://raw.githubusercontent.com/jshttp/mime-db/v1.52.0/db.json": "85c8e1ba609079947c8df83c092900ab0226e1d7b60e5e7105fb7dd701833263",
     "https://unpkg.com/@bebraw/marked@4.0.19/lib/marked.esm.js": "1364960b0b0021563475415eceb05106b6d934f35dde0a87bb6276bcbf80c3eb",
     "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js": "3d0e47d13c5d9890826e6ff75648ad01f778708c3d88d0b51d7cec3cbd450d79",
+    "https://unpkg.com/@highlightjs/cdn-assets@11.9.0/es/core.min.js": "9977f355c10aee299435c55e6c495c22e2de75c3972216e56a9a0938fcc635d8",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js": "be7fbc864def78c082183f74c706caba43c2e2f522e8827681324b2a69fc20fd",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js": "f943819f4eaf55d511a3a3dd6bb64a58b9efc15603a9f22504caac39f7a35900",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js": "3827393954434336fc2e81ea578ee602f68bdbcfdc8b28aa7aae625abe6ebd93",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js": "8a563883ecee219f7342c3e6be9aa6ae37f10637a1f04a506221053176274eed",
     "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js": "06ee8d532e5a8df1a0830545e4e14cdf1778cbe0f7a04875ce2625c2e5f03432",
-    "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js": "1afc421087265b6d557ab129bb12c8828e5fcdbe4a3dc0534b48dc8d517d80fb"
+    "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js": "1afc421087265b6d557ab129bb12c8828e5fcdbe4a3dc0534b48dc8d517d80fb",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/bash.js": "b4b6d8c9da1946cf50627e9ad8caa691e10f7ed24754d17201ef998ff73ae7ea",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/javascript.js": "1d3289d5c11b2295ad4dfc428baef31d6874fda5dc3b4cc7c132f38627849427",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/json.js": "956764a89028c8d53b34b0c0b9a41d501f2e4aa934ee5d06c6270586974d78c1",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/typescript.js": "e48124e6cdcc41f620f8c940df08df786f57646b5054d5b7465ccf3884719ed9",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/xml.js": "6c04e48590d177f27f1a8274b4963b676eb49b6dcb005d68279ce80be086ebdc",
+    "https://unpkg.com/highlight.js@11.9.0/es/languages/yaml.js": "33f98af180938f1b517792d9b47cd177aaa3b81ee50f2ef2e9eb566ae93b6fbf"
   }
 }

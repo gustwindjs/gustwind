@@ -9,13 +9,13 @@ import {
   getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
 import * as globalUtilities from "../globalUtilities.ts";
-import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/es/core.min.js";
-import highlightBash from "https://unpkg.com/highlight.js@11.3.1/es/languages/bash.js";
-import highlightJS from "https://unpkg.com/highlight.js@11.3.1/es/languages/javascript.js";
-import highlightJSON from "https://unpkg.com/highlight.js@11.3.1/es/languages/json.js";
-import highlightTS from "https://unpkg.com/highlight.js@11.3.1/es/languages/typescript.js";
-import highlightXML from "https://unpkg.com/highlight.js@11.3.1/es/languages/xml.js";
-import highlightYAML from "https://unpkg.com/highlight.js@11.3.1/es/languages/yaml.js";
+import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
+import highlightBash from "https://unpkg.com/highlight.js@11.9.0/es/languages/bash.js";
+import highlightJS from "https://unpkg.com/highlight.js@11.9.0/es/languages/javascript.js";
+import highlightJSON from "https://unpkg.com/highlight.js@11.9.0/es/languages/json.js";
+import highlightTS from "https://unpkg.com/highlight.js@11.9.0/es/languages/typescript.js";
+import highlightXML from "https://unpkg.com/highlight.js@11.9.0/es/languages/xml.js";
+import highlightYAML from "https://unpkg.com/highlight.js@11.9.0/es/languages/yaml.js";
 import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);
