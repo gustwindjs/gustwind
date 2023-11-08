@@ -88,8 +88,6 @@ async function transformMarkdown(input: string) {
     // @ts-ignore How to type this?
     async walkTokens(token) {
       if (token.type === "importComponent") {
-        // TODO: This is a bad coupling, there should be a better way to get information here
-        // especially if this file will be executed in the browser
         const components = await loaders.html("./site/components");
         const matchedComponent = components[token.component];
 
