@@ -1,6 +1,7 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { path } from "../../server-deps.ts";
 import scriptsToCompile from "./scriptsToCompile.ts";
+import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin = {
@@ -50,29 +51,25 @@ const plugin: Plugin = {
       sendMessages: ({ send }) => {
         send("gustwind-script-plugin", {
           type: "addScripts",
-          payload: scriptsToCompile.map(({ isExternal, name, externals }) => {
-            // TODO: Find some simplification for this
-            return ({
-              isExternal,
-              localPath: path.join(
-                cwd,
-                "plugins",
-                "editor",
-                "scripts",
-                `${name}.ts`,
-              ),
-              // TODO: It would be good to take gustwind version into account
-              remotePath: urlJoin(
-                "https://deno.land/x/gustwind",
-                "plugins",
-                "editor",
-                "compiled-scripts",
-                `${name}.ts`,
-              ),
-              name: `${name}.js`,
-              externals,
-            });
-          }).concat({
+          payload: scriptsToCompile.map(({ isExternal, name, externals }) => ({
+            isExternal,
+            localPath: path.join(
+              cwd,
+              "plugins",
+              "editor",
+              "scripts",
+              `${name}.ts`,
+            ),
+            remotePath: urlJoin(
+              `https://deno.land/x/gustwind@v${VERSION}`,
+              "plugins",
+              "editor",
+              "compiled-scripts",
+              `${name}.ts`,
+            ),
+            name: `${name}.js`,
+            externals,
+          })).concat({
             isExternal: true,
             localPath: styleSetupPath,
             remotePath: styleSetupPath,
