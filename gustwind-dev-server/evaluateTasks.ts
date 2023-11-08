@@ -50,6 +50,14 @@ async function evaluateTasks(tasks: Tasks) {
             payload.scriptPath,
           );
 
+        if (!payload.scriptPath) {
+          throw new Error(
+            `writeScript is missing scriptPath - ${
+              JSON.stringify(payload, null, 2)
+            }`,
+          );
+        }
+
         const data = payload.scriptPath.startsWith("http")
           ? await fetch(payload.scriptPath).then((res) => res.text())
           : await compileTypeScript(
