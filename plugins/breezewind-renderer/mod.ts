@@ -31,6 +31,12 @@ const plugin: Plugin<{
     load,
     mode,
   }) => {
+    if (!globalUtilitiesPath) {
+      throw new Error(
+        "breezewind-renderer-plugin - globalUtilitiesPath was not provided",
+      );
+    }
+
     const loaders = initLoaders({
       cwd,
       loadDir: load.dir,
