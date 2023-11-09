@@ -19,7 +19,7 @@ That `(get props data.title)` expression should be read as `get('props', 'data.t
 
 The latter binding illustrates how expressions can be nested and `(concat blog / (get props data.slug))` can be read as `concat('blog', '/' , get('props', 'data.slug'))`.
 
-## Loops
+## Looping
 
 To allow looping over data, there is a specific `&foreach` syntax as shown below:
 
@@ -57,7 +57,7 @@ Given there are times when you might want to remove a part of the DOM structure 
 
 When `showToc` evaluates as `false`, `aside` element is removed completely from the structure.
 
-## Class list helper
+## Class lists
 
 To allow construction of complex classes, there is a `&class[]` helper that works as below:
 
@@ -114,6 +114,19 @@ There is a commenting syntax that allows documenting and gets removed through pr
 ## Components
 
 Within components, `props` field is available within the context. [Check Breezewind](/breezewind) to understand this functionality better. On a high level it is comparable to how React and other libraries work so that components can encapsulate specific functionality and may be reused across projects easily.
+
+## Slots
+
+To make it convenient to construct complex components that accept structures from the consumer, there is support for slots as below:
+
+```html
+<BaseLayout>
+  <slot name="content">Main content goes here</slot>
+  <slot name="aside"><TableOfContents /></slot>
+</BaseLayout>
+```
+
+Internally slots map to `props`. The main benefit is that they allow expression of complex element structures without having to go through an attribute.
 
 ## Playground
 
