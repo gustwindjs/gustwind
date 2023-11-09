@@ -71,6 +71,14 @@ function h(
       }, attributes);
     }
 
+    if (attributes["&children"]) {
+      return {
+        children: parseExpression(attributes["&children"] as string),
+        // Passing attributes does not make sense in this case since the element is a noop
+        attributes: {},
+      };
+    }
+
     return childrenToReturn;
   }
 

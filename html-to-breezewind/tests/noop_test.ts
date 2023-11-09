@@ -83,3 +83,16 @@ Deno.test("component with noop and siblings", () => {
     }],
   );
 });
+
+Deno.test("noop with children", () => {
+  assertEquals(
+    htmlToBreezewind(`<noop &children="(render (get props content))" />`),
+    {
+      children: {
+        utility: "render",
+        parameters: [{ utility: "get", parameters: ["props", "content"] }],
+      },
+      attributes: {},
+    },
+  );
+});
