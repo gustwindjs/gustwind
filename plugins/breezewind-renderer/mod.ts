@@ -80,7 +80,7 @@ const plugin: Plugin<{
     }
 
     function loadMeta() {
-      return metaPath ? load.json({ path: metaPath, type: "meta" }) : {};
+      return metaPath ? load.json({ path: path.join(cwd, metaPath), type: "meta" }) : {};
     }
 
     return {
