@@ -168,6 +168,23 @@ Deno.test("allow rendering with props in a component", async () => {
   );
 });
 
+Deno.test("allow rendering without a type", async () => {
+  assertEquals(
+    await breeze({
+      component: {
+        children: {
+          utility: "render",
+          parameters: [{ utility: "get", parameters: ["props", "content"] }],
+        },
+      },
+      props: {
+        content: "demo",
+      },
+    }),
+    "demo",
+  );
+});
+
 Deno.test("allow rendering with props containing an array in a component", async () => {
   assertEquals(
     await breeze({
