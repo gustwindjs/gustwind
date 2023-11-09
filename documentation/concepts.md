@@ -15,9 +15,9 @@ To give you a simple example of a component, consider the following example for 
 
 [<file>](site/components/SiteLink.html)
 
-**components/SiteLink.ts**
+**components/SiteLink.server.ts**
 
-[<file>](site/components/SiteLink.ts)
+[<file>](site/components/SiteLink.server.ts)
 
 A navigation component built on top of `SiteLink` could look like this:
 
@@ -47,7 +47,7 @@ The same idea can be used to implement an RSS feed.
 
 [<file>](site/layouts/rssPage.html)
 
-**layouts/rssPage.ts**
+**layouts/rssPage.server.ts**
 
-[<file>](site/layouts/rssPage.ts)
+[<file>](site/layouts/rssPage.server.ts)
 

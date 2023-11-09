@@ -57,7 +57,7 @@ const initLoaders = (
         ) => {
           const componentName = path.basename(p, path.extname(p));
           let utilities;
-          let utilitiesPath = p.replace(extension, ".ts");
+          let utilitiesPath = p.replace(extension, ".server.ts");
 
           try {
             await Deno.lstat(p);
@@ -113,7 +113,7 @@ const initLoaders = (
         ) => {
           const componentName = path.basename(p, path.extname(p));
           let utilities;
-          let utilitiesPath = p.replace(extension, ".ts");
+          let utilitiesPath = p.replace(extension, ".server.ts");
 
           try {
             await Deno.lstat(p);
@@ -156,7 +156,7 @@ function loadRemoteComponents(
 
       try {
         utilities = await import(
-          urlJoin(componentsPath, componentName + ".ts")
+          urlJoin(componentsPath, componentName + ".server.ts")
         );
       } catch (_) {
         // Nothing to do

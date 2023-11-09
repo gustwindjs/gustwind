@@ -118,8 +118,7 @@ function getTransformMarkdown(load: LoadApi) {
     // https://github.com/markedjs/marked/blob/master/src/Renderer.js
     marked.use({
       renderer: {
-        code(code: string, infostring: string): string {
-          const lang = ((infostring || "").match(/\S*/) || [])[0];
+        code(code: string, lang: string): string {
           // @ts-ignore How to type this?
           if (this.options.highlight) {
             // TODO: Inject highlight.js now through `load.style`
@@ -187,7 +186,7 @@ function getTransformMarkdown(load: LoadApi) {
             // TODO: Show a nice error in case href is not found in the fs
             const fileContents = load.textFileSync(href);
 
-            return this.code(fileContents, href.split(".")[1]);
+            return this.code(fileContents, href.split(".").at(-1) as string);
           }
 
           let out = '<a class="' + tw("underline") + '" href="' + href + '"';
