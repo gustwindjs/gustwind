@@ -35,13 +35,16 @@ function init({ load }: { load: LoadApi }) {
 
   async function processMarkdown(
     filename: string,
-    o?: { skipFirstLine: boolean },
+    o?: { parseHeadmatter: boolean; skipFirstLine: boolean },
   ) {
-    const lines = await load.textFile(filename);
-    // Markdown also parses toc but it's not needed for now
-    const { content } = await parseMarkdown(lines, o);
+    if (o?.parseHeadmatter) {
+      const headmatter = await parseHeadmatter(filename);
 
-    return content;
+      return { ...headmatter, ...(await parseMarkdown(headmatter.content)) };
+    }
+
+    // Markdown also parses toc but it's not needed for now
+    return parseMarkdown(await load.textFile(filename), o);
   }
 
   async function parseHeadmatter(

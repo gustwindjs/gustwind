@@ -22,7 +22,7 @@
           "operation": "processMarkdown",
           "firstParameter": "path",
           "parameters": [
-            { "skipFirstLine": true }
+            { "parseHeadmatter": true }
           ],
           "name": "document"
         }],
@@ -99,7 +99,7 @@
           "operation": "processMarkdown",
           "firstParameter": "path",
           "parameters": [
-            { "skipFirstLine": true }
+            { "parseHeadmatter": true }
           ],
           "name": "document"
         }],
