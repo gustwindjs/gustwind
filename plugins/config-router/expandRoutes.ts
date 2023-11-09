@@ -76,10 +76,7 @@ async function expandRoute(
       dataSourceIndexer.parameters,
     );
 
-    console.log("index results", indexResults);
-
     // Construct individual routes based on the results of indexing
-    // TODO: Connect first parameters of matchByDataSources
     const { slug, dataSources: matchByDataSources } = matchBy;
     if (Array.isArray(indexResults)) {
       await Promise.all(indexResults.map(async (match) => {
@@ -93,10 +90,13 @@ async function expandRoute(
           );
         }
 
-        console.log("url", url, "match", match);
-
         const { context, capturedParameters } = await getDataSourceContext(
-          matchByDataSources,
+          matchByDataSources.map((dataSource) => ({
+            ...dataSource,
+            parameters: [get(match, dataSource.firstParameter)].concat(
+              dataSource.parameters,
+            ),
+          })),
           dataSources,
         );
 
@@ -104,12 +104,9 @@ async function expandRoute(
           allParameters = allParameters.concat(capturedParameters);
         }
 
-        // const { meta, layout, scripts } = route.expand;
+        // @ts-ignore route.expand exists by now for sure
+        const { meta, layout, scripts } = route.expand;
 
-        console.log("found u", url, context, capturedParameters, allParameters);
-
-        // How to connect processor here
-        /*
         expandedRoutes[url] = {
           meta,
           layout,
@@ -117,36 +114,7 @@ async function expandRoute(
           context,
           url,
         };
-        */
       }));
-      /*
-      indexResults.forEach((match) => {
-        const u = get(match, matchBy.slug) as string;
-
-        if (!u) {
-          throw new Error(
-            `Route ${matchBy.slug} is missing from ${
-              JSON.stringify(match, null, 2)
-            } with slug ${matchBy.slug} within ${url} route`,
-          );
-        }
-
-        // @ts-ignore route.expand exists by now for sure
-        const { meta, layout, scripts } = route.expand;
-
-        // @ts-ignore Not sure how to type this
-        expandedRoutes[u] = {
-          meta,
-          layout,
-          scripts,
-          context: {
-            ...expandedRoutes[u]?.context,
-            [matchBy.dataSource.name]: match,
-          },
-          url: u,
-        };
-      });
-      */
     } else {
       console.warn("data source results are not an array");
     }

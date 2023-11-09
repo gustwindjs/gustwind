@@ -20,7 +20,10 @@
         },
         "dataSources": [{
           "operation": "processMarkdown",
-          "parameters": ["content", { "skipFirstLine": true }],
+          "firstParameter": "path",
+          "parameters": [
+            { "skipFirstLine": true }
+          ],
           "name": "document"
         }],
         "slug": "data.slug"
@@ -94,7 +97,10 @@
         },
         "dataSources": [{
           "operation": "processMarkdown",
-          "parameters": ["content", "./blogPosts"],
+          "firstParameter": "path",
+          "parameters": [
+            { "skipFirstLine": true }
+          ],
           "name": "document"
         }],
         "slug": "data.slug"
@@ -140,7 +146,7 @@
     "dataSources": [
       {
         "operation": "indexMarkdown",
-        "parameters": ["./blogPosts"],
+        "parameters": ["./blogPosts", { "parseHeadmatter": true }],
         "name": "blogPosts"
       }
     ]

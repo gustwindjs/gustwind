@@ -28,7 +28,20 @@ function init({ load }: { load: LoadApi }) {
       type: "",
     });
 
-    return Promise.all(files.map(({ path }) => parseHeadmatter(path)));
+    return Promise.all(
+      files.map(async ({ path }) => ({ ...await parseHeadmatter(path), path })),
+    );
+  }
+
+  async function processMarkdown(
+    filename: string,
+    o?: { skipFirstLine: boolean },
+  ) {
+    const lines = await load.textFile(filename);
+    // Markdown also parses toc but it's not needed for now
+    const { content } = await parseMarkdown(lines, o);
+
+    return content;
   }
 
   async function parseHeadmatter(
@@ -50,24 +63,13 @@ function init({ load }: { load: LoadApi }) {
     throw new Error(`path ${path} did not contain a headmatter`);
   }
 
-  async function processMarkdown(
-    filename: string,
-    o?: { skipFirstLine: boolean },
-  ) {
-    const lines = await load.textFile(filename);
-    // Markdown also parses toc but it's not needed for now
-    const { content } = await parseMarkdown(lines, o);
-
-    return content;
-  }
-
   function parseMarkdown(lines: string, o?: { skipFirstLine: boolean }) {
     return markdown(
       o?.skipFirstLine ? lines.split("\n").slice(1).join("\n") : lines,
     );
   }
 
-  return { indexMarkdown, parseHeadmatter, processMarkdown };
+  return { indexMarkdown, processMarkdown };
 }
 
 export { init };

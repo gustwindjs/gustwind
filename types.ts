@@ -178,7 +178,11 @@ type Route = {
   routes?: Routes;
   dataSources?: DataSource[];
   expand?: {
-    matchBy?: { indexer: DataSource; dataSources: DataSource[]; slug: string };
+    matchBy?: {
+      indexer: DataSource;
+      dataSources: (DataSource & { firstParameter: string })[];
+      slug: string;
+    };
   };
 };
 type Scripts = Script[];
