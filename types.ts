@@ -26,6 +26,7 @@ type Context = Record<string, unknown>;
 type Plugin<O = Record<string, unknown>> = {
   meta: {
     name: string;
+    description: string;
     dependsOn?: string[];
   };
   init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;

@@ -7,6 +7,8 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 const plugin: Plugin<{ pluginsPath: string }> = {
   meta: {
     name: "file-watcher-plugin",
+    description:
+      "${name} implements file watcher exposing a `fileChanged` trigger for other plugins to use.",
   },
   init: async ({ mode, load, options: { pluginsPath } }) => {
     if (mode !== "development") {

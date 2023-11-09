@@ -9,6 +9,7 @@ import type { Plugin } from "../../types.ts";
 const plugin: Plugin<{ metaPath: string }> = {
   meta: {
     name: "gustwind-sitemap-plugin",
+    description: "${name} writes a sitemap.xml file based on project output.",
   },
   init: async (
     { cwd, options: { metaPath }, outputDirectory, load },

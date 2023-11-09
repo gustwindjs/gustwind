@@ -9,6 +9,8 @@ const plugin: Plugin<{
 }> = {
   meta: {
     name: "gustwind-script-plugin",
+    description:
+      "${name} implements client-side scripting and exposes hooks for adding scripts to write to the site.",
   },
   init: async ({
     cwd,

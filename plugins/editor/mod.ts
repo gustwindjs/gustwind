@@ -7,6 +7,7 @@ import type { Plugin } from "../../types.ts";
 const plugin: Plugin = {
   meta: {
     name: "gustwind-editor-plugin",
+    description: "${name} implements a live editor.",
     dependsOn: [
       "breezewind-renderer-plugin",
       "gustwind-twind-plugin",

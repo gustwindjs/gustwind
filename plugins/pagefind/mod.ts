@@ -5,6 +5,8 @@ import type { Plugin } from "../../types.ts";
 const plugin: Plugin = {
   meta: {
     name: "gustwind-pagefind-plugin",
+    description:
+      "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
   init(
     { cwd, outputDirectory },

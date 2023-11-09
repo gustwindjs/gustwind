@@ -16,6 +16,8 @@ const plugin: Plugin<{
 }> = {
   meta: {
     name: "gustwind-uno-plugin",
+    description:
+      "${name} implements Uno styling integration to the site giving access to Uno semantics.",
     dependsOn: ["gustwind-script-plugin"],
   },
   init: ({ cwd, options }) => {

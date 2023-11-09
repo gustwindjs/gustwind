@@ -7,6 +7,8 @@ const plugin: Plugin<{
 }> = {
   meta: {
     name: "gustwind-twind-plugin",
+    description:
+      "${name} implements Twind styling integration to the site giving access to Tailwind semantics.",
     dependsOn: ["gustwind-script-plugin"],
   },
   init: ({ cwd, options }) => {

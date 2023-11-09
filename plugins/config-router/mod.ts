@@ -17,7 +17,8 @@ const plugin: Plugin<{
   emitAllRoutes: boolean;
 }> = {
   meta: {
-    name: "breezewind-renderer-plugin",
+    name: "config-router-plugin",
+    description: "${name} implements a configuration based router.",
     dependsOn: [],
   },
   init: async (

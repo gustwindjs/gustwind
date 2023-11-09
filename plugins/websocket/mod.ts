@@ -8,6 +8,8 @@ import type { Plugin } from "../../types.ts";
 const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
   meta: {
     name: "websocket-plugin",
+    description:
+      "${name} implements a websocket based refresh for the browser that triggers when a file is changed in the project.",
   },
   init: ({ cwd, mode, options: { wss } }) => {
     if (mode !== "development") {

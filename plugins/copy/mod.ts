@@ -8,6 +8,8 @@ const plugin: Plugin<{
 }> = {
   meta: {
     name: "gustwind-copy-plugin",
+    description:
+      "${name} allows copying files from a given directory within the build output. This is useful for bringing for example image assets to a website.",
   },
   init(
     { cwd, options: { inputPath, outputPath }, outputDirectory },

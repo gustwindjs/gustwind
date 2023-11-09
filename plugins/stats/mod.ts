@@ -3,6 +3,7 @@ import type { Plugin } from "../../types.ts";
 const plugin: Plugin = {
   meta: {
     name: "gustwind-stats-plugin",
+    description: "${name} shows basic statistics related to the project build.",
   },
   init({ mode }) {
     if (mode === "development") {
