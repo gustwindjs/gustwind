@@ -65,7 +65,7 @@ To allow construction of complex classes, there is a `&class[]` helper that work
 <a
   &class[0]="(id underline)"
   &class[1]="(pick
-    (equals (get props href) (trim (get context pagePath) /))
+    (equals (get props href) (trim (get context url) /))
     font-bold
   )"
   &href="(validateUrl (get props href))"

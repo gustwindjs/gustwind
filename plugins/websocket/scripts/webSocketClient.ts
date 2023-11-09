@@ -1,10 +1,10 @@
 /// <reference lib="dom" />
 /// <reference path="../../editor/scripts/pageEditor.ts" />
-import { getPagePath } from "../../../utilities/getPagePath.ts";
+import { getUrl } from "../../../utilities/getUrl.ts";
 
-function createWebSocket(pagePath?: string) {
-  if (!pagePath) {
-    console.error("WebSocket", "page path is missing!");
+function createWebSocket(url?: string) {
+  if (!url) {
+    console.error("WebSocket", "url is missing!");
 
     return;
   }
@@ -35,13 +35,14 @@ function createWebSocket(pagePath?: string) {
       document.head.innerHTML = payload.headMarkup;
       document.body.innerHTML = payload.bodyMarkup;
 
+      // TODO: Resolve and pass tw here
       window.createEditor && window.createEditor();
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
 
       socket.send(JSON.stringify({
         type: "reload",
-        payload: { path: pagePath },
+        payload: { path: url },
       }));
     } else if (type === "reloadPage") {
       console.log("Websocket", "reloading page");
@@ -68,6 +69,7 @@ function createWebSocket(pagePath?: string) {
 
         document.body.appendChild(script);
 
+        // TODO: Resolve and pass tw here
         window.createEditor && window.createEditor();
       }
     } else {
@@ -79,7 +81,7 @@ function createWebSocket(pagePath?: string) {
 }
 
 if (!("Deno" in globalThis)) {
-  const developmentSocket = createWebSocket(getPagePath());
+  const developmentSocket = createWebSocket(getUrl());
 
   window.developmentSocket = developmentSocket;
 }

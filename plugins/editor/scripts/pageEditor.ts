@@ -6,7 +6,7 @@ import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";
 import breezewind from "../../../breezewind/mod.ts";
 import * as breezeExtensions from "../../../breezewind/extensions.ts";
-// import { getPagePath } from "../../../utilities/getPagePath.ts";
+// import { getUrl } from "../../../utilities/getUrl.ts";
 import type { DataContext, Route } from "../../../types.ts";
 import type {
   Component,
@@ -276,7 +276,7 @@ function updateFileSystem(state: Layout) {
   });
 
   const payload = {
-    path: getPagePath(),
+    path: getUrl(),
     data: { ...state, body: nextBody },
   };
 

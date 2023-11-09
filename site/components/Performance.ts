@@ -11,11 +11,11 @@ function init() {
   }
 
   function _onRenderEnd(context: Context) {
-    if (context.pagePath) {
+    if (context.url) {
       const renderEnd = performance.now();
 
       console.log(
-        `Rendered ${context.pagePath} in ${renderEnd - renderStart} ms.`,
+        `Rendered ${context.url} in ${renderEnd - renderStart} ms.`,
       );
     }
   }

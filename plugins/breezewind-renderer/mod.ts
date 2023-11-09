@@ -115,9 +115,8 @@ const plugin: Plugin<{
           built: (new Date()).toString(),
         };
 
-        // TODO: Rename pagePath as url across the project?
         if (mode === "development") {
-          runtimeMeta.pagePath = url;
+          runtimeMeta.url = url;
         }
 
         const context = {
@@ -130,7 +129,7 @@ const plugin: Plugin<{
         return {
           context: {
             ...context,
-            pagePath: url,
+            url,
             meta: await applyUtilities(
               context,
               // @ts-expect-error This is ok

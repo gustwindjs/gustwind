@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-function getPagePath() {
+function getUrl() {
   const pathElement = document.querySelector('meta[name="pagepath"]');
 
   if (!pathElement) {
@@ -20,4 +20,4 @@ function getPagePath() {
   return pagePath;
 }
 
-export { getPagePath };
+export { getUrl };
