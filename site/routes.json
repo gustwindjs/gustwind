@@ -18,11 +18,11 @@
           "operation": "indexMarkdown",
           "parameters": ["./documentation"]
         },
-        "processor": {
+        "dataSources": [{
           "operation": "processMarkdown",
-          "parameters": [{ "skipFirstLine": true }],
+          "parameters": ["content", { "skipFirstLine": true }],
           "name": "document"
-        },
+        }],
         "slug": "data.slug"
       },
       "layout": "documentationPage",
@@ -92,11 +92,11 @@
           "operation": "indexMarkdown",
           "parameters": ["./blogPosts"]
         },
-        "processor": {
+        "dataSources": [{
           "operation": "processMarkdown",
-          "parameters": ["./blogPosts"],
+          "parameters": ["content", "./blogPosts"],
           "name": "document"
-        },
+        }],
         "slug": "data.slug"
       },
       "scripts": [{ "name": "hello" }],

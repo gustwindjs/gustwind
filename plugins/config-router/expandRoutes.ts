@@ -78,20 +78,48 @@ async function expandRoute(
 
     console.log("index results", indexResults);
 
-    // TODO: Should allParameters be adjusted now?
-    /*
-    const dataSourceParameters = matchBy.dataSource.parameters as string[];
-    const dataSourceResults = await indexer.apply(
-      undefined,
-      // @ts-expect-error This is fine.
-      dataSourceParameters,
-    );
-    allParameters = allParameters.concat(dataSourceParameters);
-      */
-
-    // TODO: Create routes based on what was indexed.
-    // Individual routes should be loaded lazily on demand somehow.
+    // Construct individual routes based on the results of indexing
+    // TODO: Connect first parameters of matchByDataSources
+    const { slug, dataSources: matchByDataSources } = matchBy;
     if (Array.isArray(indexResults)) {
+      await Promise.all(indexResults.map(async (match) => {
+        const url = get(match, slug) as string;
+
+        if (!url) {
+          throw new Error(
+            `Route ${matchBy.slug} is missing from ${
+              JSON.stringify(match, null, 2)
+            } with slug ${matchBy.slug} within ${url} route`,
+          );
+        }
+
+        console.log("url", url, "match", match);
+
+        const { context, capturedParameters } = await getDataSourceContext(
+          matchByDataSources,
+          dataSources,
+        );
+
+        if (capturedParameters) {
+          allParameters = allParameters.concat(capturedParameters);
+        }
+
+        // const { meta, layout, scripts } = route.expand;
+
+        console.log("found u", url, context, capturedParameters, allParameters);
+
+        // How to connect processor here
+        /*
+        expandedRoutes[url] = {
+          meta,
+          layout,
+          scripts,
+          context,
+          url,
+        };
+        */
+      }));
+      /*
       indexResults.forEach((match) => {
         const u = get(match, matchBy.slug) as string;
 
@@ -118,6 +146,7 @@ async function expandRoute(
           url: u,
         };
       });
+      */
     } else {
       console.warn("data source results are not an array");
     }
