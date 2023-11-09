@@ -18,7 +18,7 @@ const plugin: Plugin<{ metaPath: string }> = {
     }
 
     const meta = await load.json<{ url: string }>({
-      path: metaPath,
+      path: path.join(cwd, metaPath),
       type: "meta",
     });
 

@@ -41,6 +41,8 @@ const plugin: Plugin<{ pluginsPath: string }> = {
           }
         }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!
 
+        console.log("w", paths);
+
         DEBUG && console.log("watching paths", paths);
 
         watch({
