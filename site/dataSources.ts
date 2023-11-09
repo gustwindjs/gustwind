@@ -21,7 +21,6 @@ function init({ load }: { load: LoadApi }) {
 
   async function indexMarkdown(
     directory: string,
-    o?: { parseMarkdown: boolean },
   ) {
     const files = await load.dir({
       path: directory,
@@ -29,15 +28,11 @@ function init({ load }: { load: LoadApi }) {
       type: "",
     });
 
-    return Promise.all(
-      files.map(({ path }) => parseHeadmatter(path, o?.parseMarkdown)),
-    );
+    return Promise.all(files.map(({ path }) => parseHeadmatter(path)));
   }
 
-  // TODO: Change this so that Markdown is parsed lazily on demand per route!
   async function parseHeadmatter(
     path: string,
-    parseMd?: boolean,
   ): Promise<MarkdownWithFrontmatter> {
     const file = await load.textFile(path);
 
@@ -48,7 +43,7 @@ function init({ load }: { load: LoadApi }) {
         // @ts-expect-error Chck how to type data properly.
         // Maybe some form of runtime check would be good.
         data: parse(frontMatter),
-        content: parseMd ? (await parseMarkdown(content)).content : content,
+        content,
       };
     }
 
