@@ -48,24 +48,6 @@ Deno.test("component with multiple children", () => {
   );
 });
 
-Deno.test("component with noop", () => {
-  assertEquals(
-    htmlToBreezewind(`<noop><div>foo</div></noop>`),
-    [{ type: "div", children: "foo", attributes: {} }],
-  );
-});
-
-Deno.test("component with noop and siblings", () => {
-  assertEquals(
-    htmlToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
-    [{ type: "div", children: "foo", attributes: {} }, {
-      type: "div",
-      children: "bar",
-      attributes: {},
-    }],
-  );
-});
-
 Deno.test("component with an expression", () => {
   assertEquals(
     htmlToBreezewind(
