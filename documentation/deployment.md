@@ -31,12 +31,12 @@ To configure Netlify, set up a file as follows:
 [build]
   base    = ""
   publish = "build"
-  command = "./build.sh"
+  command = "curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.37.2 && /opt/buildhome/.deno/bin/deno task netlify:build"
 ```
 
-Alternatively you can leverage Deno tasks instead of `build.sh`.
+The related Deno task would install and run Gustwind. Alternatively you can leverage `build.sh` as above.
 
-Note that Netlify environment has Deno available alredy although there are no guarantees on version so it may not be the latest.
+Note that Netlify environment has Deno available already but in that case you don't have control over the version so it's recommended to install the version of Deno you prefer to use.
 
 ## Vercel
 
