@@ -14,9 +14,13 @@
     ],
     "expand": {
       "matchBy": {
-        "dataSource": {
+        "indexer": {
           "operation": "indexMarkdown",
-          "parameters": ["./documentation", { "parseMarkdown": true }],
+          "parameters": ["./documentation"]
+        },
+        "processor": {
+          "operation": "processMarkdown",
+          "parameters": [{ "skipFirstLine": true }],
           "name": "document"
         },
         "slug": "data.slug"
@@ -84,8 +88,12 @@
     ],
     "expand": {
       "matchBy": {
-        "dataSource": {
+        "indexer": {
           "operation": "indexMarkdown",
+          "parameters": ["./blogPosts"]
+        },
+        "processor": {
+          "operation": "processMarkdown",
           "parameters": ["./blogPosts"],
           "name": "document"
         },

@@ -12,7 +12,7 @@ type ParentCategory = { title: string; children: Category[] };
 type DataSourcesModule = {
   init({ load }: { load: LoadApi }): DataSources;
 };
-type DataSource = { operation: string; name: string; parameters?: unknown[] };
+type DataSource = { operation: string; name?: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
 type PluginOptions = { path: string; options: Record<string, unknown> };
@@ -178,7 +178,7 @@ type Route = {
   routes?: Routes;
   dataSources?: DataSource[];
   expand?: {
-    matchBy?: { dataSource: DataSource; slug: string };
+    matchBy?: { indexer: DataSource; processor: DataSource; slug: string };
   };
 };
 type Scripts = Script[];
