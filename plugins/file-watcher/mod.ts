@@ -14,7 +14,6 @@ const plugin: Plugin<{ pluginsPath: string }> = {
     }
 
     // Connect plugins.json path with the file watcher
-    // TODO: How to restart compilation on change in this case?
     await load.json({ path: pluginsPath, type: "plugins" });
 
     return {
@@ -40,8 +39,6 @@ const plugin: Plugin<{ pluginsPath: string }> = {
               return payload.inputDirectory;
           }
         }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!
-
-        console.log("w", paths);
 
         DEBUG && console.log("watching paths", paths);
 

@@ -80,7 +80,9 @@ const plugin: Plugin<{
     }
 
     function loadMeta() {
-      return metaPath ? load.json({ path: path.join(cwd, metaPath), type: "meta" }) : {};
+      return metaPath
+        ? load.json({ path: path.join(cwd, metaPath), type: "meta" })
+        : {};
     }
 
     return {
@@ -191,7 +193,9 @@ const plugin: Plugin<{
                 return { send: [{ type: "reloadPage" }] };
               }
             }
-            return;
+
+            // Reload anyway
+            return { send: [{ type: "reloadPage" }] };
           }
           case "getComponents":
             return getComponents(components);
