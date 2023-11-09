@@ -63,9 +63,12 @@ function get<O = Record<string, unknown>>(
   return value;
 }
 
-function omit(o: Record<string, unknown>, k: string) {
-  // TODO: Likely there is a better way to omit
-  // TODO: Push this to functional helpers
+function omit<V = unknown>(o: Record<string, V> | undefined, k: string) {
+  if (!o) {
+    return {};
+  }
+
+  // TODO: Likely there is a better way to omit but this will do for now
   const ret = { ...o };
 
   delete ret[k];

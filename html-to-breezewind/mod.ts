@@ -16,12 +16,10 @@ function htmlToBreezewind(htmlInput: string): Component | Component[] {
     ];
     const endsWithQuestion = attributes["?"];
 
-    delete attributes["?"];
-
     // @ts-ignore Ignore for now
     return [{
       type,
-      attributes,
+      attributes: omit(attributes, "?"),
       closingCharacter: endsWithQuestion ? "?" : "",
     }].concat(children);
   }
@@ -59,10 +57,12 @@ function h(
     }
 
     if (attributes["&type"]) {
-      const filteredAttributes = filterAttributes(
-        attributes === null ? {} : attributes,
+      const filteredAttributes = omit<AttributeValue>(
+        filterAttributes(
+          attributes === null ? {} : attributes,
+        ),
+        "type",
       );
-      delete filteredAttributes?.type;
 
       return addCustomFields({
         type: parseExpression(attributes["&type"] as string),
