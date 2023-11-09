@@ -58,27 +58,41 @@ async function expandRoute(
       throw new Error("Tried to matchBy a path that is not matchable");
     }
 
-    const dataSource = dataSources[matchBy.dataSource.operation];
+    const indexer = dataSources[matchBy.indexer.operation];
 
-    if (!dataSource) {
-      throw new Error("Missing data source");
+    if (!indexer) {
+      throw new Error("Missing indexer");
     }
 
-    if (typeof dataSource !== "function") {
+    if (typeof indexer !== "function") {
       throw new Error("Data source is not a function");
     }
 
     const expandedRoutes: Record<string, Route> = {};
+    const dataSourceIndexer = matchBy.indexer;
+    const indexResults = await indexer.apply(
+      undefined,
+      // @ts-expect-error This is fine.
+      dataSourceIndexer.parameters,
+    );
+
+    console.log("index results", indexResults);
+
+    // TODO: Should allParameters be adjusted now?
+    /*
     const dataSourceParameters = matchBy.dataSource.parameters as string[];
-    const dataSourceResults = await dataSource.apply(
+    const dataSourceResults = await indexer.apply(
       undefined,
       // @ts-expect-error This is fine.
       dataSourceParameters,
     );
     allParameters = allParameters.concat(dataSourceParameters);
+      */
 
-    if (Array.isArray(dataSourceResults)) {
-      dataSourceResults.forEach((match) => {
+    // TODO: Create routes based on what was indexed.
+    // Individual routes should be loaded lazily on demand somehow.
+    if (Array.isArray(indexResults)) {
+      indexResults.forEach((match) => {
         const u = get(match, matchBy.slug) as string;
 
         if (!u) {
