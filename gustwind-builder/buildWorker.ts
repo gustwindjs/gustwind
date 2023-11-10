@@ -72,7 +72,7 @@ self.onmessage = async (e) => {
       );
 
     await fs.ensureDir(outputDirectory);
-    Deno.writeTextFile(
+    await Deno.writeTextFile(
       path.join(outputDirectory, file),
       scriptPath.startsWith("http")
         ? await fetch(scriptPath).then((res) => res.text())
