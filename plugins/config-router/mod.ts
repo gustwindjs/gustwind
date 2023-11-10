@@ -63,8 +63,6 @@ const plugin: Plugin<{
           loadDataSources,
         ]);
 
-        console.log(routes, dataSources);
-
         // @ts-expect-error Ok
         const { allRoutes } = await getAllRoutes(routes, dataSources);
 
