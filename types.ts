@@ -263,6 +263,8 @@ type GlobalUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
 };
 
+type DataSourcesApi = { load: LoadApi };
+
 export type {
   Attributes,
   BuildWorkerEvent,
@@ -272,6 +274,7 @@ export type {
   DataContext,
   DataSource,
   DataSources,
+  DataSourcesApi,
   DataSourcesModule,
   GlobalUtilities,
   LoadApi,

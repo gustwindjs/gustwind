@@ -21,7 +21,7 @@ const plugin: Plugin<{
     description: "${name} implements a configuration based router.",
     dependsOn: [],
   },
-  init: async (
+  init: (
     {
       cwd,
       outputDirectory,
@@ -29,17 +29,25 @@ const plugin: Plugin<{
       load,
     },
   ) => {
-    let routes = await loadRoutes();
-    let dataSources = await loadDataSources();
+    let routes: Routes;
+    let dataSources: DataSources;
 
-    function loadRoutes() {
+    function loadRoutes(forceWrite?: boolean) {
+      if (!forceWrite && routes) {
+        return routes;
+      }
+
       return load.json<Routes>({
         path: path.join(cwd, routesPath),
         type: "routes",
       });
     }
 
-    async function loadDataSources() {
+    async function loadDataSources(forceWrite?: boolean) {
+      if (!forceWrite && dataSources) {
+        return dataSources;
+      }
+
       return dataSourcesPath
         ? (await load.module<DataSourcesModule>({
           path: path.join(cwd, dataSourcesPath),
@@ -50,6 +58,14 @@ const plugin: Plugin<{
 
     return {
       getAllRoutes: async () => {
+        const [routes, dataSources] = await Promise.all([
+          loadRoutes,
+          loadDataSources,
+        ]);
+
+        console.log(routes, dataSources);
+
+        // @ts-expect-error Ok
         const { allRoutes } = await getAllRoutes(routes, dataSources);
 
         return {
@@ -70,6 +86,8 @@ const plugin: Plugin<{
         const matchedRoute = matchRoute(allRoutes, url);
 
         if (matchedRoute) {
+          dataSources = await loadDataSources();
+
           const [_, route] = await expandRoute({
             url,
             route: matchedRoute,
@@ -87,12 +105,12 @@ const plugin: Plugin<{
         if (type === "fileChanged") {
           switch (payload.type) {
             case "routes": {
-              routes = await loadRoutes();
+              routes = await loadRoutes(true);
 
               return { send: [{ type: "reloadPage" }] };
             }
             case "dataSources": {
-              dataSources = await loadDataSources();
+              dataSources = await loadDataSources(true);
 
               return { send: [{ type: "reloadPage" }] };
             }
