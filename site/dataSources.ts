@@ -4,7 +4,7 @@ import {
 } from "https://deno.land/std@0.205.0/front_matter/yaml.ts";
 import { parse } from "https://deno.land/std@0.205.0/yaml/parse.ts";
 import getMarkdown from "./transforms/markdown.ts";
-import type { DataSourcesApi } from "../types.ts";
+import type { LoadApi } from "../types.ts";
 
 type MarkdownWithFrontmatter = {
   data: {
@@ -16,7 +16,7 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-function init({ load }: DataSourcesApi) {
+function init({ load }: { load: LoadApi }) {
   const markdown = getMarkdown(load);
 
   async function indexMarkdown(
