@@ -10,11 +10,11 @@
         x="state.value.firstChild.textContent"
         @href="state.value.querySelector('a')?.attributes.href?.value"
         &@class="(concat
-          '[state.value.textContent === parent.closest.textContent && &quot;'
+          '[state.value.textContent === parent.closest.textContent && `'
           (tw underline)
-          '&quot;, state.tagName === &quot;H3&quot; && &quot;'
+          '`, state.tagName === `H3` && `'
           (tw ml-2)
-          '&quot;]')"
+          '`]')"
       ></a>
     </li>
   </ul>
