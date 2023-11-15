@@ -1,10 +1,10 @@
 /// <reference lib="dom" />
 
 function getUrl() {
-  const pathElement = document.querySelector('meta[name="pagepath"]');
+  const pathElement = document.querySelector('meta[name="url"]');
 
   if (!pathElement) {
-    console.error("path element was not found!");
+    console.error("url meta field was not found!");
 
     return;
   }
@@ -12,7 +12,7 @@ function getUrl() {
   const pagePath = pathElement.getAttribute("content");
 
   if (!pagePath) {
-    console.log("pagePath was not found in path element");
+    console.log("valid path was not found in url element");
 
     return;
   }
