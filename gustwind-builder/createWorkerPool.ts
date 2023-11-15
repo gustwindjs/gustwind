@@ -15,9 +15,8 @@ function createWorkerPool<E>(amount: number) {
       DEBUG &&
         console.log(
           "worker pool - next task to process",
-          task,
-          workers,
-          waitingTasks,
+          // @ts-expect-error Ok
+          task?.type,
         );
 
       workerWrapper.status = "processing";
