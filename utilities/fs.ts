@@ -1,4 +1,4 @@
-import { recursiveReaddir } from "https://deno.land/x/recursive_readdir@v2.0.0/mod.ts";
+import { walk } from "https://deno.land/std@0.206.0/fs/walk.ts";
 import { path as _path } from "../server-deps.ts";
 
 async function dir(
@@ -12,30 +12,24 @@ async function dir(
     throw new Error("dir - missing path");
   }
 
-  if (recursive) {
-    const files = (await recursiveReaddir(path)).map((p) => ({
-      path: p,
-      name: _path.relative(path, p),
-    }));
+  const files: { path: string; name: string }[] = [];
 
-    return extension
-      ? files.filter(({ path }) => path.endsWith(extension))
-      : files;
-  }
-
-  const ret = [];
-
-  for await (const { name } of Deno.readDir(path)) {
-    if (extension) {
-      if (_path.extname(name) === extension) {
-        ret.push({ path: _path.join(path, name), name });
-      }
-    } else {
-      ret.push({ path: _path.join(path, name), name });
+  for await (
+    const entry of walk(path, {
+      exts: extension ? [extension] : undefined,
+      includeDirs: false,
+      maxDepth: recursive ? Infinity : 1,
+    })
+  ) {
+    if (entry.isFile) {
+      files.push({
+        path: entry.path,
+        name: _path.relative(path, entry.path),
+      });
     }
   }
 
-  return ret;
+  return files;
 }
 
 export { dir };
