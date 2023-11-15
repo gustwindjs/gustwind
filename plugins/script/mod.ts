@@ -1,12 +1,13 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import { path } from "../../server-deps.ts";
 import type { Plugin, Scripts } from "../../types.ts";
+import type { ScriptWorkerEvent } from "./types.ts";
 
 const plugin: Plugin<{
   scripts: Scripts;
   // TODO: Model scripts output path here
   scriptsPath: string[];
-}> = {
+}, ScriptWorkerEvent> = {
   meta: {
     name: "gustwind-script-plugin",
     description:

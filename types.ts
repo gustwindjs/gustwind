@@ -23,13 +23,22 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-type Plugin<O = Record<string, unknown>> = {
+interface WorkerEvent {
+  type: string;
+  payload: unknown;
+}
+
+type Plugin<
+  O = Record<string, unknown>,
+  // TODO: How to get rid of undefined while making this optional?
+  E extends WorkerEvent,
+> = {
   meta: {
     name: string;
     description: string;
     dependsOn?: string[];
   };
-  init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;
+  init(args: PluginParameters<O>): Promise<PluginApi<E>> | PluginApi<E>;
 };
 
 type PluginParameters<O = Record<string, unknown>> = {
@@ -53,14 +62,20 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi = {
+type PluginApi<E> = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
-  sendMessages?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
+  sendMessages?(
+    { send }: { send: Send },
+  ): Promise<Tasks<E> | void> | Tasks<E> | void;
   // Return additional tasks to perform per build preparation
-  prepareBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
+  prepareBuild?(
+    { send }: { send: Send },
+  ): Promise<Tasks<E> | void> | Tasks<E> | void;
   // Return additional tasks to perform per build finishing
-  finishBuild?({ send }: { send: Send }): Promise<Tasks | void> | Tasks | void;
+  finishBuild?(
+    { send }: { send: Send },
+  ): Promise<Tasks<E> | void> | Tasks<E> | void;
   // Optional cleanup for global operations that should happen only once per process
   cleanUp?({ routes }: { routes: Routes }): void;
   // Run setup before context is resolved or add something to it
@@ -81,9 +96,9 @@ type PluginApi = {
     },
   ):
     | Promise<
-      Tasks | void
+      Tasks<E> | void
     >
-    | Tasks
+    | Tasks<E>
     | void;
   render?({ routes, route, context, send, url }: {
     routes: Routes;
@@ -107,17 +122,17 @@ type PluginApi = {
     | { send: SendMessageEvent[] }
     | Promise<void | unknown | { send: SendMessageEvent[] }>;
   getAllRoutes?():
-    | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
-    | { routes: Record<string, Route>; tasks: Tasks };
+    | Promise<{ routes: Record<string, Route>; tasks: Tasks<E> }>
+    | { routes: Record<string, Route>; tasks: Tasks<E> };
   matchRoute?(
     allRoutes: Routes,
     url: string,
-  ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
+  ): Promise<{ route?: Route; tasks: Tasks<E>; allRoutes: Routes }> | {
     route?: Route;
-    tasks: Tasks;
+    tasks: Tasks<E>;
     allRoutes: Routes;
   };
-  onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
+  onTasksRegistered?({ send, tasks }: { tasks: Tasks<E>; send: Send }): void;
 };
 
 type Send = (
@@ -189,7 +204,7 @@ type Route = {
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
-type Tasks = BuildWorkerEvent[];
+type Tasks<E> = (BuildWorkerEvent | E)[];
 type BuildWorkerEvent =
   | {
     type: "init";
@@ -246,15 +261,6 @@ type BuildWorkerEvent =
       inputDirectory: string;
       outputDirectory: string;
       outputPath: string;
-    };
-  }
-  | {
-    type: "writeScript";
-    payload: {
-      outputDirectory: string;
-      file: string;
-      scriptPath: string;
-      externals?: string[];
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";

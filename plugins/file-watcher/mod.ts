@@ -35,8 +35,9 @@ const plugin: Plugin<{ pluginsPath: string }> = {
               return payload.path;
             }
             // TODO: Should these capture types as well?
-            case "writeScript":
-              return payload.scriptPath;
+            // TODO: How to handle this?
+            // case "writeScript":
+            //  return payload.scriptPath;
             case "copyFiles":
               return payload.inputDirectory;
           }
