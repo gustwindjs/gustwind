@@ -241,7 +241,7 @@ type BuildWorkerEvent =
     };
   }
   | {
-    type: "writeFiles";
+    type: "copyFiles";
     payload: {
       inputDirectory: string;
       outputDirectory: string;

@@ -37,7 +37,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
             // TODO: Should these capture types as well?
             case "writeScript":
               return payload.scriptPath;
-            case "writeFiles":
+            case "copyFiles":
               return payload.inputDirectory;
           }
         }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!

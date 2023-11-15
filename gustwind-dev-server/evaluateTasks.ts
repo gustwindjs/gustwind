@@ -25,7 +25,7 @@ async function evaluateTasks(tasks: Tasks) {
           data: payload.data,
         };
         break;
-      case "writeFiles": {
+      case "copyFiles": {
         const outputBasename = path.basename(payload.outputPath);
         const files = await dir({
           path: payload.inputDirectory,

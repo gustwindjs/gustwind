@@ -109,7 +109,7 @@ self.onmessage = async (e) => {
       }
     }
   }
-  if (type === "writeFiles") {
+  if (type === "copyFiles") {
     const { payload: { inputDirectory, outputDirectory, outputPath } } = e.data;
 
     await fs.copy(inputDirectory, path.join(outputDirectory, outputPath), {

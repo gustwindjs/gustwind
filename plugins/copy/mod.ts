@@ -18,7 +18,7 @@ const plugin: Plugin<{
 
     return {
       finishBuild: () => [{
-        type: "writeFiles",
+        type: "copyFiles",
         payload: {
           inputDirectory,
           outputDirectory,
