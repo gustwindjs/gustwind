@@ -47,6 +47,10 @@
     "options": { "metaPath": "./site/meta.json" }
   },
   {
+    "path": "./plugins/og/mod.ts",
+    "options": { "layout": "og" }
+  },
+  {
     "path": "./plugins/stats/mod.ts"
   }
 ]
