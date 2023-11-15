@@ -8,6 +8,8 @@ import {
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 async function build(
   { cwd, outputDirectory, threads, pluginDefinitions }: {
     cwd: string;
@@ -77,7 +79,7 @@ async function build(
   let finishedAmounts = 0;
   return new Promise((resolve) => {
     workerPool.onWorkFinished(async () => {
-      console.log("finished", finishedAmounts);
+      DEBUG && console.log("finished", finishedAmounts);
 
       // The second finish means final tasks have run
       if (!finishedAmounts) {
