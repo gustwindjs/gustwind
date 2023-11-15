@@ -10,7 +10,7 @@ If you understand how Lisp works, then you understand how Gustwind templating wo
 <div>
   <SiteLink
     &children="(get props data.title)"
-    &href="(urlJoin blog / (get props data.slug))"
+    &href="(urlJoin blog (get props data.slug))"
   />
 </div>
 ```
@@ -28,7 +28,7 @@ To allow looping over data, there is a specific `&foreach` syntax as shown below
   <li class="inline">
     <SiteLink
       &children="(get props data.title)"
-      &href="(urlJoin blog / (get props data.slug))"
+      &href="(urlJoin blog (get props data.slug))"
     />
   </li>
 </ul>

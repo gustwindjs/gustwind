@@ -202,7 +202,7 @@ Deno.test("&foreach", () => {
         <li class="inline">
           <SiteLink
             &children="(get props data.title)"
-            &href="(urlJoin blog / (get props data.slug))"
+            &href="(urlJoin blog (get props data.slug))"
           />
         </li>
       </ul>
@@ -231,7 +231,6 @@ Deno.test("&foreach", () => {
                 utility: "urlJoin",
                 parameters: [
                   "blog",
-                  "/",
                   {
                     "utility": "get",
                     "parameters": ["props", "data.slug"],
