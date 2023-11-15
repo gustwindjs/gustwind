@@ -77,6 +77,8 @@ async function build(
   let finishedAmounts = 0;
   return new Promise((resolve) => {
     workerPool.onWorkFinished(async () => {
+      console.log("finished", finishedAmounts);
+
       // The second finish means final tasks have run
       if (!finishedAmounts) {
         const finishTasks = await finishPlugins(plugins);
