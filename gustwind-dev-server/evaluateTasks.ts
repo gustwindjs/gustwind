@@ -45,6 +45,8 @@ async function evaluateTasks(tasks: Tasks) {
         });
         break;
       }
+
+      // TODO: Likely this is a wrong spot now -> push to script plugin
       case "writeScript": {
         DEBUG &&
           console.log(

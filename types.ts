@@ -25,13 +25,12 @@ type Context = Record<string, unknown>;
 
 interface WorkerEvent {
   type: string;
-  payload: unknown;
+  payload: Record<string, unknown>;
 }
 
 type Plugin<
   O = Record<string, unknown>,
-  // TODO: How to get rid of undefined while making this optional?
-  E extends WorkerEvent,
+  E extends WorkerEvent = { type: ""; payload: {} },
 > = {
   meta: {
     name: string;
@@ -204,6 +203,7 @@ type Route = {
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
+// TODO: How to make E optional
 type Tasks<E> = (BuildWorkerEvent | E)[];
 type BuildWorkerEvent =
   | {
@@ -294,4 +294,5 @@ export type {
   Scripts,
   Send,
   Tasks,
+  WorkerEvent,
 };
