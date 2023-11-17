@@ -1,7 +1,19 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
-import { path } from "../../server-deps.ts";
+import { fs, path } from "../../server-deps.ts";
+import { compileTypeScript } from "../../utilities/compileTypeScript.ts";
 import type { Plugin, Scripts } from "../../types.ts";
-import type { ScriptWorkerEvent } from "./types.ts";
+
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
+type ScriptWorkerEvent = {
+  type: "writeScript";
+  payload: {
+    outputDirectory: string;
+    file: string;
+    scriptPath: string;
+    externals?: string[];
+  };
+};
 
 const plugin: Plugin<{
   scripts: Scripts;
@@ -16,6 +28,7 @@ const plugin: Plugin<{
   init: async ({
     cwd,
     load,
+    mode,
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
   }) => {
@@ -132,8 +145,35 @@ const plugin: Plugin<{
         // https://esbuild.github.io/getting-started/#deno
         esbuild.stop();
       },
-      // TODO: Push handleEvent with a good interface here
-      // The point is that since there's access to load API, file ops can go through it
+      // TODO: Define this interface at types.ts
+      handleEvent: async ({ message }) => {
+        const { type, payload } = message;
+
+        if (type === "writeScript") {
+          const { scriptPath } = payload;
+
+          DEBUG &&
+            console.log(
+              "worker - writing script",
+              scriptPath,
+              path.join(outputDirectory, payload.file),
+            );
+
+          // TODO: Expose write API to plugins to replace most of this.
+          // That should be specialized depending on prod/dev
+          await fs.ensureDir(outputDirectory);
+          await Deno.writeTextFile(
+            path.join(outputDirectory, payload.file),
+            scriptPath.startsWith("http")
+              ? await fetch(scriptPath).then((res) => res.text())
+              : await compileTypeScript(
+                scriptPath,
+                mode,
+                payload.externals,
+              ),
+          );
+        }
+      },
     };
   },
 };
