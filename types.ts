@@ -61,7 +61,7 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi<E> = {
+type PluginApi<E = DummyTask> = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?(
@@ -132,6 +132,7 @@ type PluginApi<E> = {
     allRoutes: Routes;
   };
   onTasksRegistered?({ send, tasks }: { tasks: Tasks<E>; send: Send }): void;
+  handleEvent?({ message }: { message: SendMessageEvent | E }): void;
 };
 
 type Send = (
@@ -203,8 +204,7 @@ type Route = {
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
-type Tasks<E = { type: ""; payload: Record<string, unknown> }> =
-  (BuildWorkerEvent | E)[];
+type Tasks<E = DummyTask> = (BuildWorkerEvent | E)[];
 type BuildWorkerEvent =
   | {
     type: "init";
@@ -264,6 +264,7 @@ type BuildWorkerEvent =
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";
+type DummyTask = { type: ""; payload: Record<string, unknown> };
 
 type GlobalUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
