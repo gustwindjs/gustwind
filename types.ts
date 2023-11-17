@@ -28,10 +28,7 @@ interface WorkerEvent {
   payload: Record<string, unknown>;
 }
 
-type Plugin<
-  O = Record<string, unknown>,
-  E extends WorkerEvent = { type: ""; payload: {} },
-> = {
+type Plugin<O = Record<string, unknown>> = {
   meta: {
     name: string;
     description: string;
