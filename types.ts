@@ -132,7 +132,9 @@ type PluginApi<E = DummyTask> = {
     allRoutes: Routes;
   };
   onTasksRegistered?({ send, tasks }: { tasks: Tasks<E>; send: Send }): void;
-  handleEvent?({ message }: { message: SendMessageEvent | E }): void;
+  handleEvent?(
+    { message }: { message: SendMessageEvent | E },
+  ): Promise<Tasks<E> | void> | Tasks<E> | void;
 };
 
 type Send = (
