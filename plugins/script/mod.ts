@@ -1,5 +1,5 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
-import { fs, path } from "../../server-deps.ts";
+import { path } from "../../server-deps.ts";
 import { compileTypeScript } from "../../utilities/compileTypeScript.ts";
 import type { Plugin, Scripts } from "../../types.ts";
 
@@ -145,7 +145,6 @@ const plugin: Plugin<{
         // https://esbuild.github.io/getting-started/#deno
         esbuild.stop();
       },
-      // TODO: Define this interface at types.ts
       handleEvent: async ({ message }) => {
         const { type, payload } = message;
 
@@ -159,19 +158,22 @@ const plugin: Plugin<{
               path.join(outputDirectory, payload.file),
             );
 
-          // TODO: Expose write API to plugins to replace most of this.
-          // That should be specialized depending on prod/dev
-          await fs.ensureDir(outputDirectory);
-          await Deno.writeTextFile(
-            path.join(outputDirectory, payload.file),
-            scriptPath.startsWith("http")
-              ? await fetch(scriptPath).then((res) => res.text())
-              : await compileTypeScript(
-                scriptPath,
-                mode,
-                payload.externals,
-              ),
-          );
+          const data = scriptPath.startsWith("http")
+            ? await fetch(scriptPath).then((res) => res.text())
+            : await compileTypeScript(
+              scriptPath,
+              mode,
+              payload.externals,
+            );
+
+          return [{
+            type: "writeTextFile",
+            payload: {
+              outputDirectory,
+              file: payload.file,
+              data,
+            },
+          }];
         }
       },
     };
