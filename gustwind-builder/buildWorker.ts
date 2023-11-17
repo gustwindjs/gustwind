@@ -11,7 +11,6 @@ let plugins: PluginDefinition[];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-// TODO: Connect this to plugin handlers
 self.onmessage = async (e) => {
   const { type }: BuildWorkerEvent = e.data;
 
