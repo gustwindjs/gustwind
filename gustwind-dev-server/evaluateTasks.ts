@@ -1,10 +1,10 @@
 import { path } from "../server-deps.ts";
-import { compileTypeScript } from "../utilities/compileTypeScript.ts";
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
+// TODO: Connect this to plugin handlers
 async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
     string,
@@ -46,7 +46,8 @@ async function evaluateTasks(tasks: Tasks) {
         break;
       }
 
-      // TODO: Likely this is a wrong spot now -> push to script plugin
+        // TODO: Likely this is a wrong spot now -> push to script plugin
+        /*
       case "writeScript": {
         DEBUG &&
           console.log(
@@ -77,6 +78,7 @@ async function evaluateTasks(tasks: Tasks) {
 
         break;
       }
+      */
     }
   }));
 
