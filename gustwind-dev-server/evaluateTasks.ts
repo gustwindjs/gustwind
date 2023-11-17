@@ -4,7 +4,6 @@ import type { Tasks } from "../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-// TODO: Connect this to plugin handlers
 async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
     string,
@@ -45,40 +44,6 @@ async function evaluateTasks(tasks: Tasks) {
         });
         break;
       }
-
-        // TODO: Likely this is a wrong spot now -> push to script plugin
-        /*
-      case "writeScript": {
-        DEBUG &&
-          console.log(
-            "evaluate scripts",
-            payload.scriptPath,
-          );
-
-        if (!payload.scriptPath) {
-          throw new Error(
-            `writeScript is missing scriptPath - ${
-              JSON.stringify(payload, null, 2)
-            }`,
-          );
-        }
-
-        const data = payload.scriptPath.startsWith("http")
-          ? await fetch(payload.scriptPath).then((res) => res.text())
-          : await compileTypeScript(
-            payload.scriptPath,
-            "development",
-            payload.externals,
-          );
-
-        ret[`/${payload.file}`] = {
-          type: "file",
-          data,
-        };
-
-        break;
-      }
-      */
     }
   }));
 
