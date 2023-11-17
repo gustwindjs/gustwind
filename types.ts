@@ -203,8 +203,8 @@ type Route = {
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
-// TODO: How to make E optional
-type Tasks<E> = (BuildWorkerEvent | E)[];
+type Tasks<E = { type: ""; payload: Record<string, unknown> }> =
+  (BuildWorkerEvent | E)[];
 type BuildWorkerEvent =
   | {
     type: "init";
