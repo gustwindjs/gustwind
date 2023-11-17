@@ -50,15 +50,17 @@ const plugin: Plugin<{
 
           console.log("sharp data", data);
 
-          return {
+          return [{
             type: "writeFile",
             payload: {
               outputDirectory,
               file: path.join(route.url, "og.png"),
-              data,
+              data, // TODO: Get Uint8Array here from sharp
             },
-          };
+          }];
         }
+
+        return [];
       },
     };
   },
