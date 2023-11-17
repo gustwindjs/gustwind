@@ -37,7 +37,7 @@ type Plugin<
     description: string;
     dependsOn?: string[];
   };
-  init(args: PluginParameters<O>): Promise<PluginApi<E>> | PluginApi<E>;
+  init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;
 };
 
 type PluginParameters<O = Record<string, unknown>> = {
@@ -61,20 +61,20 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi<E = DummyTask> = {
+type PluginApi = {
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?(
     { send }: { send: Send },
-  ): Promise<Tasks<E> | void> | Tasks<E> | void;
+  ): Promise<Tasks | void> | Tasks | void;
   // Return additional tasks to perform per build preparation
   prepareBuild?(
     { send }: { send: Send },
-  ): Promise<Tasks<E> | void> | Tasks<E> | void;
+  ): Promise<Tasks | void> | Tasks | void;
   // Return additional tasks to perform per build finishing
   finishBuild?(
     { send }: { send: Send },
-  ): Promise<Tasks<E> | void> | Tasks<E> | void;
+  ): Promise<Tasks | void> | Tasks | void;
   // Optional cleanup for global operations that should happen only once per process
   cleanUp?({ routes }: { routes: Routes }): void;
   // Run setup before context is resolved or add something to it
@@ -95,9 +95,9 @@ type PluginApi<E = DummyTask> = {
     },
   ):
     | Promise<
-      Tasks<E> | void
+      Tasks | void
     >
-    | Tasks<E>
+    | Tasks
     | void;
   render?({ routes, route, context, send, url }: {
     routes: Routes;
@@ -121,20 +121,17 @@ type PluginApi<E = DummyTask> = {
     | { send: SendMessageEvent[] }
     | Promise<void | unknown | { send: SendMessageEvent[] }>;
   getAllRoutes?():
-    | Promise<{ routes: Record<string, Route>; tasks: Tasks<E> }>
-    | { routes: Record<string, Route>; tasks: Tasks<E> };
+    | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
+    | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     allRoutes: Routes,
     url: string,
-  ): Promise<{ route?: Route; tasks: Tasks<E>; allRoutes: Routes }> | {
+  ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
     route?: Route;
-    tasks: Tasks<E>;
+    tasks: Tasks;
     allRoutes: Routes;
   };
-  onTasksRegistered?({ send, tasks }: { tasks: Tasks<E>; send: Send }): void;
-  handleEvent?(
-    { message }: { message: SendMessageEvent | E },
-  ): Promise<Tasks<E> | void> | Tasks<E> | void;
+  onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 
 type Send = (
@@ -206,7 +203,7 @@ type Route = {
 type Scripts = Script[];
 type Script = { type: string; src: string };
 
-type Tasks<E = DummyTask> = (BuildWorkerEvent | E)[];
+type Tasks = (BuildWorkerEvent)[];
 type BuildWorkerEvent =
   | {
     type: "init";
@@ -266,7 +263,6 @@ type BuildWorkerEvent =
     };
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";
-type DummyTask = { type: ""; payload: Record<string, unknown> };
 
 type GlobalUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;

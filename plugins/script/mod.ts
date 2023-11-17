@@ -1,25 +1,15 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import { path } from "../../server-deps.ts";
 import { compileTypeScript } from "../../utilities/compileTypeScript.ts";
-import type { Plugin, Scripts } from "../../types.ts";
+import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
-
-type ScriptWorkerEvent = {
-  type: "writeScript";
-  payload: {
-    outputDirectory: string;
-    file: string;
-    scriptPath: string;
-    externals?: string[];
-  };
-};
 
 const plugin: Plugin<{
   scripts: Scripts;
   // TODO: Model scripts output path here
   scriptsPath: string[];
-}, ScriptWorkerEvent> = {
+}> = {
   meta: {
     name: "gustwind-script-plugin",
     description:
@@ -62,23 +52,27 @@ const plugin: Plugin<{
       prepareBuild: () => {
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
 
-        return foundScripts.concat(
-          receivedScripts.map(({ name, localPath, remotePath, externals }) => ({
-            name,
-            path: isDevelopingLocally ? localPath : remotePath,
-            externals,
-          })),
-        ).map((
-          { name, path: scriptPath, externals },
-        ) => ({
-          type: "writeScript",
-          payload: {
-            outputDirectory,
-            file: name.replace(".ts", ".js"),
-            scriptPath,
-            externals,
-          },
-        }));
+        return Promise.all(
+          foundScripts.concat(
+            receivedScripts.map((
+              { name, localPath, remotePath, externals },
+            ) => ({
+              name,
+              path: isDevelopingLocally ? localPath : remotePath,
+              externals,
+            })),
+          ).map((
+            { name, path: scriptPath, externals },
+          ) =>
+            writeScript({
+              file: name.replace(".ts", ".js"),
+              scriptPath,
+              externals,
+              mode,
+              outputDirectory,
+            })
+          ),
+        );
       },
       prepareContext({ route }) {
         const routeScripts = route.scripts || [];
@@ -145,39 +139,42 @@ const plugin: Plugin<{
         // https://esbuild.github.io/getting-started/#deno
         esbuild.stop();
       },
-      handleEvent: async ({ message }) => {
-        const { type, payload } = message;
-
-        if (type === "writeScript") {
-          const { scriptPath } = payload;
-
-          DEBUG &&
-            console.log(
-              "worker - writing script",
-              scriptPath,
-              path.join(outputDirectory, payload.file),
-            );
-
-          const data = scriptPath.startsWith("http")
-            ? await fetch(scriptPath).then((res) => res.text())
-            : await compileTypeScript(
-              scriptPath,
-              mode,
-              payload.externals,
-            );
-
-          return [{
-            type: "writeTextFile",
-            payload: {
-              outputDirectory,
-              file: payload.file,
-              data,
-            },
-          }];
-        }
-      },
     };
   },
 };
+
+async function writeScript(
+  { file, scriptPath, externals, mode, outputDirectory }: {
+    file: string;
+    scriptPath: string;
+    externals?: string[];
+    mode: Mode;
+    outputDirectory: string;
+  },
+): Promise<BuildWorkerEvent> {
+  DEBUG &&
+    console.log(
+      "worker - writing script",
+      scriptPath,
+      path.join(outputDirectory, file),
+    );
+
+  const data = scriptPath.startsWith("http")
+    ? await fetch(scriptPath).then((res) => res.text())
+    : await compileTypeScript(
+      scriptPath,
+      mode,
+      externals,
+    );
+
+  return {
+    type: "writeTextFile",
+    payload: {
+      outputDirectory,
+      file,
+      data,
+    },
+  };
+}
 
 export { plugin };
