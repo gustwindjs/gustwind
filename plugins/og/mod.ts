@@ -8,7 +8,6 @@ import type { Plugin } from "../../types.ts";
 const encoder = new TextEncoder();
 
 const plugin: Plugin<{
-  // TODO: Consider supporting an array of directories
   layout: string;
   metaPath: string;
 }> = {
