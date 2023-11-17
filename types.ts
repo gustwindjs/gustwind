@@ -23,11 +23,6 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-interface WorkerEvent {
-  type: string;
-  payload: Record<string, unknown>;
-}
-
 type Plugin<O = Record<string, unknown>> = {
   meta: {
     name: string;
@@ -290,5 +285,4 @@ export type {
   Scripts,
   Send,
   Tasks,
-  WorkerEvent,
 };
