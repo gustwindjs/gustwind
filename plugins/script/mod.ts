@@ -132,6 +132,8 @@ const plugin: Plugin<{
         // https://esbuild.github.io/getting-started/#deno
         esbuild.stop();
       },
+      // TODO: Push handleEvent with a good interface here
+      // The point is that since there's access to load API, file ops can go through it
     };
   },
 };
