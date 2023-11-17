@@ -1,10 +1,11 @@
 // Note that this depends on --allow-ffi
 import sharp from "npm:sharp@0.33.0-alpha.11";
-import { Buffer } from "https://deno.land/std@0.207.0/io/buffer.ts";
 import { path } from "../../server-deps.ts";
 import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
 import breezewind from "../../breezewind/mod.ts";
 import type { Plugin } from "../../types.ts";
+
+const encoder = new TextEncoder();
 
 const plugin: Plugin<{
   // TODO: Consider supporting an array of directories
@@ -20,8 +21,6 @@ const plugin: Plugin<{
   ) => {
     // TODO: Should this use breezewind-renderer instead?
     const ogLayout = htmlToBreezewind(await load.textFile(layout));
-
-    console.log("using layout", ogLayout);
 
     // TODO: Extract meta handling to a plugin?
     const meta = await loadMeta();
@@ -42,11 +41,7 @@ const plugin: Plugin<{
             context: { meta },
           });
 
-          // TODO: Figure out how to replace the Buffer bit in current Deno
-          // TODO: Figure out how to get a buffer out of sharp
-          const data = await sharp(new Buffer(new TextEncoder().encode(svg)))
-            .png();
-          // .toFile(outputPath);
+          const data = await sharp(encoder.encode(svg)).png().toBuffer();
 
           console.log("sharp data", data);
 
