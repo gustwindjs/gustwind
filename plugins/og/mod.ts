@@ -43,8 +43,6 @@ const plugin: Plugin<{
 
           const data = await sharp(encoder.encode(svg)).png().toBuffer();
 
-          console.log("sharp data", data);
-
           return [{
             type: "writeFile",
             payload: {
