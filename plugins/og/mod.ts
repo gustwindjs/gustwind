@@ -33,12 +33,16 @@ const plugin: Plugin<{
     return {
       beforeEachRender: async ({ url, route }) => {
         if (!url.endsWith(".html") && !url.endsWith(".xml")) {
+          // TODO: Figure out what's wrong with this SVG
+          /*
           const svg = await breezewind({
             component: ogLayout,
             // TODO: Should this load custom components as well?
             components: {},
             context: { meta },
           });
+          */
+          const svg = `<svg viewBox="0 0 480 150"></svg>`;
 
           const data = await sharp(encoder.encode(svg)).png().toBuffer();
 
