@@ -6,7 +6,9 @@ import type { ScriptWorkerEvent } from "./types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-self.onmessage = async (e) => {
+// TODO: Likely this should get mode
+// TODO: Should this get a BuildWorkerEvent as that's more specific?
+async function handleEvent(e: MessageEvent<any>) {
   const { type }: ScriptWorkerEvent = e.data;
 
   if (type === "writeScript") {
@@ -21,6 +23,7 @@ self.onmessage = async (e) => {
       );
 
     await fs.ensureDir(outputDirectory);
+    // TODO: Inject file writer as that needs to be different in prod/dev
     await Deno.writeTextFile(
       path.join(outputDirectory, file),
       scriptPath.startsWith("http")
@@ -28,6 +31,6 @@ self.onmessage = async (e) => {
         : await compileTypeScript(scriptPath, "production", externals),
     );
   }
+}
 
-  self.postMessage({ type: "finished" });
-};
+export { handleEvent };
