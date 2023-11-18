@@ -19,7 +19,6 @@ const plugin: Plugin<{
   init: async (
     { options: { layout, metaPath }, cwd, load, outputDirectory },
   ) => {
-    // TODO: Should this use breezewind-renderer instead?
     const ogLayout = htmlToBreezewind(await load.textFile(layout));
 
     // TODO: Extract meta loading to a plugin?
