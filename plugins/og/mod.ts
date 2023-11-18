@@ -26,7 +26,10 @@ const plugin: Plugin<{
 
     function loadMeta() {
       return metaPath
-        ? load.json({ path: path.join(cwd, metaPath), type: "meta" })
+        ? load.json<Record<string, unknown>>({
+          path: path.join(cwd, metaPath),
+          type: "meta",
+        })
         : Promise.resolve({});
     }
 
@@ -39,8 +42,8 @@ const plugin: Plugin<{
             component: ogLayout,
             // TODO: Should this load custom components as well?
             components: {},
-            // TODO: Allow passing a context as a plugin parameter
-            context: { meta, title: "title", subtitle: "subtitle" },
+            // TODO: Allow passing a context as a plugin parameter?
+            context: { meta: { ...meta, ...route.meta } },
           });
 
           const data = await sharp(encoder.encode(svg)).png().toBuffer();
