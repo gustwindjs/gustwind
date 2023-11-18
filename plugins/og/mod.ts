@@ -14,6 +14,7 @@ const plugin: Plugin<{
   meta: {
     name: "gustwind-og-plugin",
     description: "${name} allows generating OpenGraph images for a website.",
+    dependsOn: ["breezewind-renderer-plugin"],
   },
   init: async (
     { options: { layout, metaPath }, cwd, load, outputDirectory },
@@ -34,14 +35,19 @@ const plugin: Plugin<{
     }
 
     return {
-      beforeEachRender: async ({ url, route }) => {
+      beforeEachRender: async ({ url, route, send }) => {
         if (!url.endsWith(".html") && !url.endsWith(".xml")) {
+          const components = await send("breezewind-renderer-plugin", {
+            type: "getComponents",
+            payload: undefined,
+          });
+
           // TODO: Add a strict mode to breezewind to disallow empty fields
           // as that helps catching svg issues
           const svg = await breezewind({
             component: ogLayout,
-            // TODO: Should this load custom components as well?
-            components: {},
+            // @ts-expect-error It would be better to type this somehow but this will do
+            components,
             // TODO: Allow passing a context as a plugin parameter?
             context: { meta: { ...meta, ...route.meta } },
           });
@@ -53,7 +59,7 @@ const plugin: Plugin<{
             payload: {
               outputDirectory,
               file: path.join(route.url, "og.png"),
-              data, // TODO: Get Uint8Array here from sharp
+              data,
             },
           }];
         }
