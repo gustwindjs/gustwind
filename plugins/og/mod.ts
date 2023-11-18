@@ -21,28 +21,27 @@ const plugin: Plugin<{
     // TODO: Should this use breezewind-renderer instead?
     const ogLayout = htmlToBreezewind(await load.textFile(layout));
 
-    // TODO: Extract meta handling to a plugin?
+    // TODO: Extract meta loading to a plugin?
     const meta = await loadMeta();
 
     function loadMeta() {
       return metaPath
         ? load.json({ path: path.join(cwd, metaPath), type: "meta" })
-        : {};
+        : Promise.resolve({});
     }
 
     return {
       beforeEachRender: async ({ url, route }) => {
         if (!url.endsWith(".html") && !url.endsWith(".xml")) {
-          // TODO: Figure out what's wrong with this SVG
-          /*
+          // TODO: Add a strict mode to breezewind to disallow empty fields
+          // as that helps catching svg issues
           const svg = await breezewind({
             component: ogLayout,
             // TODO: Should this load custom components as well?
             components: {},
-            context: { meta },
+            // TODO: Allow passing a context as a plugin parameter
+            context: { meta, title: "title", subtitle: "subtitle" },
           });
-          */
-          const svg = `<svg viewBox="0 0 480 150"></svg>`;
 
           const data = await sharp(encoder.encode(svg)).png().toBuffer();
 

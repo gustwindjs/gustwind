@@ -8,7 +8,7 @@
 >
   <linearGradient id="backgroundGradient" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0%" stop-color="black"></stop>
-    <stop offset="100%" &stop-color="(get context colors.primary)"></stop>
+    <stop offset="100%" &stop-color="(get context meta.colors.primary)"></stop>
   </linearGradient>
   <rect
     class="bg-black py-8 bg-gradient-to-br from-black to-primary"
@@ -20,17 +20,17 @@
     text-anchor="start"
     font-family="Eau"
     font-size="140"
-    &fill="(get context colors.tertiary)"
+    &fill="(get context meta.colors.tertiary)"
   >
-    <tspan x="80" y="200" &children="(get context meta.title)"></tspan>
+    <tspan x="80" y="200" &children="(get context title)"></tspan>
   </text>
   <text
     text-anchor="start"
     font-family="Eau"
     font-size="80"
-    &fill="(get context colors.tertiary)"
+    &fill="(get context meta.colors.tertiary)"
   >
-    <tspan x="80" y="340" &children="(get context meta.subtitle)"></tspan>
+    <tspan x="80" y="340" &children="(get context subtitle)"></tspan>
   </text>
   <text
     text-anchor="start"

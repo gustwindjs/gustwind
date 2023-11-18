@@ -1,5 +1,10 @@
 {
   "language": "en",
   "siteName": "Gustwind",
-  "url": "https://gustwind.js.org"
+  "url": "https://gustwind.js.org",
+  "colors": {
+    "primary": "#3a2fa6",
+    "secondary": "#84ebec",
+    "tertiary": "#d239f6"
+  }
 }
