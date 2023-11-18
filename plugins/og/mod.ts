@@ -47,7 +47,6 @@ const plugin: Plugin<{
             component: ogLayout,
             // @ts-expect-error It would be better to type this somehow but this will do
             components,
-            // TODO: Allow passing a context as a plugin parameter?
             context: { meta: { ...meta, ...route.meta } },
           });
 
