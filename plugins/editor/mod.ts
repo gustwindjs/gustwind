@@ -4,7 +4,7 @@ import scriptsToCompile from "./scriptsToCompile.ts";
 import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin = {
+const plugin: Plugin<undefined, { styleSetupPath: string }> = {
   meta: {
     name: "gustwind-editor-plugin",
     description: "${name} implements a live editor.",
@@ -14,9 +14,7 @@ const plugin: Plugin = {
       "gustwind-script-plugin",
     ],
   },
-  init: ({ cwd, outputDirectory }) => {
-    let styleSetupPath = "";
-
+  init({ cwd, outputDirectory }) {
     return {
       beforeEachRender: async ({ context, url, send, route }) => {
         const outputDir = path.join(outputDirectory, url);
@@ -46,10 +44,12 @@ const plugin: Plugin = {
         const { type, payload } = message;
 
         if (type === "styleSetupReady") {
-          styleSetupPath = payload.path;
+          return { pluginContext: { styleSetupPath: payload.path } };
         }
       },
-      sendMessages: ({ send }) => {
+      sendMessages: ({ send, pluginContext }) => {
+        const { styleSetupPath } = pluginContext;
+
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: scriptsToCompile.map(({ isExternal, name, externals }) => ({

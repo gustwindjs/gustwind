@@ -1,6 +1,6 @@
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin = {
+const plugin: Plugin<undefined, { startTime: number }> = {
   meta: {
     name: "gustwind-stats-plugin",
     description: "${name} shows basic statistics related to the project build.",
@@ -10,13 +10,16 @@ const plugin: Plugin = {
       return {};
     }
 
-    const startTime = performance.now();
-
     return {
-      cleanUp: ({ routes }) => {
+      initPluginContext() {
+        return {
+          startTime: performance.now(),
+        };
+      },
+      cleanUp: ({ routes, pluginContext }) => {
         const routeAmount = Object.keys(routes).length;
         const endTime = performance.now();
-        const duration = endTime - startTime;
+        const duration = endTime - pluginContext.startTime;
 
         console.log(
           `Generated ${routeAmount} pages in ${duration}ms.\nAverage: ${

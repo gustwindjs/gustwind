@@ -15,22 +15,92 @@ const plugin: Plugin<{
   dataSourcesPath: string;
   routesPath: string;
   emitAllRoutes: boolean;
-}> = {
+}, { routes: Routes; dataSources: DataSources }> = {
   meta: {
     name: "config-router-plugin",
     description: "${name} implements a configuration based router.",
     dependsOn: [],
   },
-  init: async (
+  init(
     {
       cwd,
       outputDirectory,
       options: { dataSourcesPath, routesPath, emitAllRoutes },
       load,
     },
-  ) => {
-    let routes = await loadRoutes();
-    let dataSources = await loadDataSources();
+  ) {
+    return {
+      initPluginContext: async () => {
+        const [routes, dataSources] = await Promise.all([
+          loadRoutes(),
+          loadDataSources(),
+        ]);
+
+        return { routes, dataSources };
+      },
+      getAllRoutes: async (pluginContext) => {
+        const { allRoutes } = await getAllRoutes(
+          pluginContext.routes,
+          pluginContext.dataSources,
+        );
+
+        return {
+          routes: allRoutes,
+          tasks: emitAllRoutes
+            ? [{
+              type: "writeTextFile",
+              payload: {
+                outputDirectory,
+                file: "routes.json",
+                data: JSON.stringify(allRoutes),
+              },
+            }]
+            : [],
+        };
+      },
+      matchRoute: async (allRoutes: Routes, url: string, pluginContext) => {
+        const matchedRoute = matchRoute(allRoutes, url);
+
+        if (matchedRoute) {
+          const [_, route] = await expandRoute({
+            url,
+            route: matchedRoute,
+            dataSources: pluginContext.dataSources,
+          });
+
+          return { route, tasks: [], allRoutes };
+        }
+
+        return { route: undefined, tasks: [], allRoutes };
+      },
+      onMessage: async ({ message }) => {
+        const { type, payload } = message;
+
+        if (type === "fileChanged") {
+          switch (payload.type) {
+            case "routes": {
+              const routes = await loadRoutes();
+
+              return {
+                send: [{ type: "reloadPage" }],
+                pluginContext: { routes },
+              };
+            }
+            case "dataSources": {
+              const dataSources = await loadDataSources();
+
+              return {
+                send: [{ type: "reloadPage" }],
+                pluginContext: { dataSources },
+              };
+            }
+            case "paths": {
+              return { send: [{ type: "reloadPage" }] };
+            }
+          }
+        }
+      },
+    };
 
     function loadRoutes() {
       return load.json<Routes>({
@@ -47,62 +117,6 @@ const plugin: Plugin<{
         })).init({ load })
         : {};
     }
-
-    return {
-      getAllRoutes: async () => {
-        const { allRoutes } = await getAllRoutes(routes, dataSources);
-
-        return {
-          routes: allRoutes,
-          tasks: emitAllRoutes
-            ? [{
-              type: "writeTextFile",
-              payload: {
-                outputDirectory,
-                file: "routes.json",
-                data: JSON.stringify(allRoutes),
-              },
-            }]
-            : [],
-        };
-      },
-      matchRoute: async (allRoutes: Routes, url: string) => {
-        const matchedRoute = matchRoute(allRoutes, url);
-
-        if (matchedRoute) {
-          const [_, route] = await expandRoute({
-            url,
-            route: matchedRoute,
-            dataSources,
-          });
-
-          return { route, tasks: [], allRoutes };
-        }
-
-        return { route: undefined, tasks: [], allRoutes };
-      },
-      onMessage: async ({ message }) => {
-        const { type, payload } = message;
-
-        if (type === "fileChanged") {
-          switch (payload.type) {
-            case "routes": {
-              routes = await loadRoutes();
-
-              return { send: [{ type: "reloadPage" }] };
-            }
-            case "dataSources": {
-              dataSources = await loadDataSources();
-
-              return { send: [{ type: "reloadPage" }] };
-            }
-            case "paths": {
-              return { send: [{ type: "reloadPage" }] };
-            }
-          }
-        }
-      },
-    };
   },
 };
 

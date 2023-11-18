@@ -14,13 +14,11 @@ const plugin: Plugin<{
   init(
     { cwd, options: { inputPath, outputPath }, outputDirectory },
   ) {
-    const inputDirectory = path.join(cwd, inputPath);
-
     return {
       finishBuild: () => [{
         type: "copyFiles",
         payload: {
-          inputDirectory,
+          inputDirectory: path.join(cwd, inputPath),
           outputDirectory,
           outputPath,
         },
