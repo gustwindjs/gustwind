@@ -134,6 +134,7 @@ type Send = (
 // TODO: Compose this from plugin types
 type SendMessageEvent =
   | { type: "ping"; payload: undefined }
+  | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Component> }
   | { type: "getRenderer"; payload: string }

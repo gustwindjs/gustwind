@@ -8,13 +8,18 @@
     }
   },
   {
+    "path": "./plugins/meta/mod.ts",
+    "options": {
+      "inputPath": "./site/meta.json"
+    }
+  },
+  {
     "path": "./plugins/breezewind-renderer/mod.ts",
     "options": {
       "componentLoaders": [
         { "loader": "html", "path": "./site/components" },
         { "loader": "html", "path": "./site/layouts" }
       ],
-      "metaPath": "./site/meta.json",
       "globalUtilitiesPath": "./site/globalUtilities.ts"
     }
   },
@@ -43,14 +48,12 @@
     "path": "./plugins/editor/mod.ts"
   },
   {
-    "path": "./plugins/sitemap/mod.ts",
-    "options": { "metaPath": "./site/meta.json" }
+    "path": "./plugins/sitemap/mod.ts"
   },
   {
     "path": "./plugins/og/mod.ts",
     "options": {
-      "layout": "./site/layouts/og.html",
-      "metaPath": "./site/meta.json"
+      "layout": "./site/layouts/og.html"
     }
   },
   {

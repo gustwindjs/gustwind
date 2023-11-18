@@ -9,33 +9,24 @@ const encoder = new TextEncoder();
 
 const plugin: Plugin<{
   layout: string;
-  metaPath: string;
 }> = {
   meta: {
     name: "gustwind-og-plugin",
     description: "${name} allows generating OpenGraph images for a website.",
-    dependsOn: ["breezewind-renderer-plugin"],
+    dependsOn: ["breezewind-renderer-plugin", "gustwind-meta-plugin"],
   },
   init: async (
-    { options: { layout, metaPath }, cwd, load, outputDirectory },
+    { options: { layout }, load, outputDirectory },
   ) => {
     const ogLayout = htmlToBreezewind(await load.textFile(layout));
-
-    // TODO: Extract meta loading to a plugin?
-    const meta = await loadMeta();
-
-    function loadMeta() {
-      return metaPath
-        ? load.json<Record<string, unknown>>({
-          path: path.join(cwd, metaPath),
-          type: "meta",
-        })
-        : Promise.resolve({});
-    }
 
     return {
       beforeEachRender: async ({ url, route, send }) => {
         if (!url.endsWith(".html") && !url.endsWith(".xml")) {
+          const meta = await send("gustwind-meta-plugin", {
+            type: "getMeta",
+            payload: undefined,
+          });
           const components = await send("breezewind-renderer-plugin", {
             type: "getComponents",
             payload: undefined,
@@ -47,7 +38,13 @@ const plugin: Plugin<{
             component: ogLayout,
             // @ts-expect-error It would be better to type this somehow but this will do
             components,
-            context: { meta: { ...meta, ...route.meta } },
+            context: {
+              meta: {
+                // @ts-expect-error Figure out how to type this
+                ...meta,
+                ...route.meta,
+              },
+            },
           });
 
           const data = await sharp(encoder.encode(svg)).png().toBuffer();

@@ -18,18 +18,17 @@ import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
   componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
-  metaPath: string;
   globalUtilitiesPath: string;
 }> = {
   meta: {
     name: "breezewind-renderer-plugin",
     description:
       "${name} implements Breezewind based templating (JSON) and provides a HTML/Lisp based wrapper for bare JSON.",
-    dependsOn: ["gustwind-twind-plugin"],
+    dependsOn: ["gustwind-twind-plugin", "gustwind-meta-plugin"],
   },
   init: async ({
     cwd,
-    options: { componentLoaders, metaPath, globalUtilitiesPath },
+    options: { componentLoaders, globalUtilitiesPath },
     load,
     mode,
   }) => {
@@ -45,10 +44,9 @@ const plugin: Plugin<{
       loadModule: (path) =>
         load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
     });
-    let [components, globalUtilities, meta] = await Promise.all([
+    let [components, globalUtilities] = await Promise.all([
       loadComponents(),
       loadGlobalUtilities(),
-      loadMeta(),
     ]);
 
     async function loadComponents(): Promise<Components> {
@@ -81,12 +79,6 @@ const plugin: Plugin<{
         : { init: () => ({}) };
     }
 
-    function loadMeta() {
-      return metaPath
-        ? load.json({ path: path.join(cwd, metaPath), type: "meta" })
-        : {};
-    }
-
     return {
       sendMessages: async ({ send }) => {
         const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
@@ -112,7 +104,11 @@ const plugin: Plugin<{
           }],
         });
       },
-      prepareContext: async ({ url, route }) => {
+      prepareContext: async ({ url, route, send }) => {
+        const meta = await send("gustwind-meta-plugin", {
+          type: "getMeta",
+          payload: undefined,
+        });
         const runtimeMeta: Record<string, string> = {
           built: (new Date()).toString(),
         };
@@ -123,6 +119,7 @@ const plugin: Plugin<{
 
         const context = {
           ...runtimeMeta,
+          // @ts-expect-error Figure out how to type this
           ...meta,
           ...route.meta,
           ...route.context,
@@ -182,11 +179,6 @@ const plugin: Plugin<{
               }
               case "globalUtilities": {
                 globalUtilities = await loadGlobalUtilities();
-
-                return { send: [{ type: "reloadPage" }] };
-              }
-              case "meta": {
-                meta = loadMeta();
 
                 return { send: [{ type: "reloadPage" }] };
               }

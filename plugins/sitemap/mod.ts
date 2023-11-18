@@ -6,26 +6,24 @@ import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
 // Note that this works only in production mode for now!
-const plugin: Plugin<{ metaPath: string }> = {
+const plugin: Plugin = {
   meta: {
     name: "gustwind-sitemap-plugin",
     description: "${name} writes a sitemap.xml file based on project output.",
+    dependsOn: ["gustwind-meta-plugin"],
   },
-  init: async (
-    { cwd, options: { metaPath }, outputDirectory, load },
-  ) => {
-    if (!metaPath) {
-      throw new Error("Missing metaPath");
-    }
-
-    const meta = await load.json<{ url: string }>({
-      path: path.join(cwd, metaPath),
-      type: "meta",
-    });
-
+  init(
+    { cwd, outputDirectory },
+  ) {
     return {
-      finishBuild: async () => {
+      finishBuild: async ({ send }) => {
+        const meta = await send("gustwind-meta-plugin", {
+          type: "getMeta",
+          payload: undefined,
+        });
+
         const sitemap = await generateSitemap(
+          // @ts-expect-error How to type this?
           meta.url,
           path.join(cwd, outputDirectory),
         );
