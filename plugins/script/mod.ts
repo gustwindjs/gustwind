@@ -9,47 +9,37 @@ const plugin: Plugin<{
   scripts: Scripts;
   // TODO: Model scripts output path here
   scriptsPath: string[];
+}, {
+  foundScripts: { name: string; path: string; externals?: string[] }[];
+  receivedScripts: {
+    isExternal?: boolean;
+    name: string;
+    localPath: string;
+    remotePath: string;
+    externals?: string[];
+  }[];
+  receivedGlobalScripts: { type: string; src: string }[];
 }> = {
   meta: {
     name: "gustwind-script-plugin",
     description:
       "${name} implements client-side scripting and exposes hooks for adding scripts to write to the site.",
   },
-  init: async ({
+  init({
     cwd,
     load,
     mode,
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
-  }) => {
-    let foundScripts = await loadScripts();
-    let receivedScripts: {
-      isExternal?: boolean;
-      name: string;
-      localPath: string;
-      remotePath: string;
-      externals?: string[];
-    }[] = [];
-    let receivedGlobalScripts: { type: string; src: string }[] = [];
-
-    async function loadScripts(): Promise<{
-      name: string;
-      path: string;
-      externals?: string[];
-    }[]> {
-      return (await Promise.all(
-        scriptsPath.map((p) =>
-          load.dir({
-            path: path.join(cwd, p),
-            extension: ".ts",
-            type: "foundScripts",
-          })
-        ),
-      )).flat();
-    }
-
+  }) {
     return {
-      prepareBuild: () => {
+      initPluginContext: async () => {
+        const foundScripts = await loadScripts();
+
+        return { foundScripts, receivedScripts: [], receivedGlobalScripts: [] };
+      },
+      prepareBuild: ({ pluginContext }) => {
+        const { foundScripts, receivedScripts } = pluginContext;
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
 
         return Promise.all(
@@ -74,7 +64,9 @@ const plugin: Plugin<{
           ),
         );
       },
-      prepareContext({ route }) {
+      prepareContext({ route, pluginContext }) {
+        const { foundScripts, receivedScripts, receivedGlobalScripts } =
+          pluginContext;
         const routeScripts = route.scripts || [];
         const routeScriptNames = routeScripts.map(({ name }) => name);
         const foundScriptNames = foundScripts.map(({ name }) => name);
@@ -113,26 +105,39 @@ const plugin: Plugin<{
           },
         };
       },
-      onMessage: async ({ message }) => {
+      onMessage: async ({ message, pluginContext }) => {
         const { type, payload } = message;
 
         if (type === "fileChanged") {
           if (payload.type === "foundScripts") {
-            foundScripts = await loadScripts();
+            const foundScripts = await loadScripts();
 
             // TODO: Make this more refined by sending a replaceScript event
             // and the script that changed so that it can be replaced as
             // that avoids a full page reload.
-            return { send: [{ type: "reloadPage" }] };
+            return {
+              send: [{ type: "reloadPage" }],
+              pluginContext: { foundScripts },
+            };
           }
         }
 
         if (type === "addGlobalScripts") {
-          receivedGlobalScripts = receivedGlobalScripts.concat(payload);
+          return {
+            pluginContext: {
+              receivedGlobalScripts: pluginContext.receivedGlobalScripts.concat(
+                payload,
+              ),
+            },
+          };
         }
 
         if (type === "addScripts") {
-          receivedScripts = receivedScripts.concat(payload);
+          return {
+            pluginContext: {
+              receivedScripts: pluginContext.receivedScripts.concat(payload),
+            },
+          };
         }
       },
       cleanUp: () => {
@@ -140,6 +145,22 @@ const plugin: Plugin<{
         esbuild.stop();
       },
     };
+
+    async function loadScripts(): Promise<{
+      name: string;
+      path: string;
+      externals?: string[];
+    }[]> {
+      return (await Promise.all(
+        scriptsPath.map((p) =>
+          load.dir({
+            path: path.join(cwd, p),
+            extension: ".ts",
+            type: "foundScripts",
+          })
+        ),
+      )).flat();
+    }
   },
 };
 

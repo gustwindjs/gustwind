@@ -19,6 +19,10 @@ import type { GlobalUtilities, Plugin } from "../../types.ts";
 const plugin: Plugin<{
   componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
   globalUtilitiesPath: string;
+}, {
+  loaders: ReturnType<typeof initLoaders>;
+  components: Components;
+  globalUtilities: GlobalUtilities;
 }> = {
   meta: {
     name: "breezewind-renderer-plugin",
@@ -26,64 +30,38 @@ const plugin: Plugin<{
       "${name} implements Breezewind based templating (JSON) and provides a HTML/Lisp based wrapper for bare JSON.",
     dependsOn: ["gustwind-twind-plugin", "gustwind-meta-plugin"],
   },
-  init: async ({
+  init({
     cwd,
     options: { componentLoaders, globalUtilitiesPath },
     load,
     mode,
-  }) => {
+  }) {
+    // TODO: Push these style checks to the plugin system core
     if (!globalUtilitiesPath) {
       throw new Error(
         "breezewind-renderer-plugin - globalUtilitiesPath was not provided",
       );
     }
 
-    const loaders = initLoaders({
-      cwd,
-      loadDir: load.dir,
-      loadModule: (path) =>
-        load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
-    });
-    let [components, globalUtilities] = await Promise.all([
-      loadComponents(),
-      loadGlobalUtilities(),
-    ]);
-
-    async function loadComponents(): Promise<Components> {
-      // Collect components from different directories
-      const components = await Promise.all(
-        componentLoaders.map(({ loader, path: componentsPath, selection }) => {
-          const matchedLoader = loaders[loader];
-
-          if (!matchedLoader) {
-            throw new Error(
-              `No loader named ${loader} found amongst ${Object.keys(loaders)}`,
-            );
-          }
-
-          return matchedLoader(componentsPath, selection);
-        }),
-      );
-
-      // Aggregate components together as a single collection
-      // @ts-expect-error This is fine since we either fail or aggregate matches
-      return Object.assign.apply(undefined, components);
-    }
-
-    async function loadGlobalUtilities() {
-      return globalUtilitiesPath
-        ? await load.module<GlobalUtilities>({
-          path: path.join(cwd, globalUtilitiesPath),
-          type: "globalUtilities",
-        })
-        : { init: () => ({}) };
-    }
-
     return {
-      sendMessages: async ({ send }) => {
+      initPluginContext: async () => {
+        const loaders = initLoaders({
+          cwd,
+          loadDir: load.dir,
+          loadModule: (path) =>
+            load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
+        });
+        const [components, globalUtilities] = await Promise.all([
+          loadComponents(loaders),
+          loadGlobalUtilities(),
+        ]);
+
+        return { loaders, components, globalUtilities };
+      },
+      sendMessages: async ({ send, pluginContext }) => {
         const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
         const componentUtilitiesSource = generateComponentUtilitiesSource(
-          components,
+          pluginContext.components,
         );
         await Deno.writeTextFile(componentFilePath, componentUtilitiesSource);
 
@@ -138,7 +116,8 @@ const plugin: Plugin<{
           },
         };
       },
-      render: async ({ routes, route, context, url, send }) => {
+      render: async ({ routes, route, context, url, send, pluginContext }) => {
+        const { components, globalUtilities } = pluginContext;
         let componentsLookup = getComponents(components);
         const editorExists = await send("gustwind-editor-plugin", {
           type: "ping",
@@ -166,21 +145,27 @@ const plugin: Plugin<{
           componentUtilities: getComponentUtilities(components, routes),
         });
       },
-      onMessage: async ({ message }) => {
+      onMessage: async ({ message, pluginContext }) => {
         const { type, payload } = message;
 
         switch (type) {
           case "fileChanged": {
             switch (payload.type) {
               case "components": {
-                components = await loadComponents();
+                const components = await loadComponents(pluginContext.loaders);
 
-                return { send: [{ type: "reloadPage" }] };
+                return {
+                  send: [{ type: "reloadPage" }],
+                  pluginContext: { components },
+                };
               }
               case "globalUtilities": {
-                globalUtilities = await loadGlobalUtilities();
+                const globalUtilities = await loadGlobalUtilities();
 
-                return { send: [{ type: "reloadPage" }] };
+                return {
+                  send: [{ type: "reloadPage" }],
+                  pluginContext: { globalUtilities },
+                };
               }
               case "paths": {
                 return { send: [{ type: "reloadPage" }] };
@@ -191,12 +176,44 @@ const plugin: Plugin<{
             return { send: [{ type: "reloadPage" }] };
           }
           case "getComponents":
-            return getComponents(components);
+            return getComponents(pluginContext.components);
           case "getRenderer":
-            return components[payload].component;
+            return pluginContext.components[payload].component;
         }
       },
     };
+
+    async function loadComponents(
+      loaders: ReturnType<typeof initLoaders>,
+    ): Promise<Components> {
+      // Collect components from different directories
+      const components = await Promise.all(
+        componentLoaders.map(({ loader, path: componentsPath, selection }) => {
+          const matchedLoader = loaders[loader];
+
+          if (!matchedLoader) {
+            throw new Error(
+              `No loader named ${loader} found amongst ${Object.keys(loaders)}`,
+            );
+          }
+
+          return matchedLoader(componentsPath, selection);
+        }),
+      );
+
+      // Aggregate components together as a single collection
+      // @ts-expect-error This is fine since we either fail or aggregate matches
+      return Object.assign.apply(undefined, components);
+    }
+
+    async function loadGlobalUtilities() {
+      return globalUtilitiesPath
+        ? await load.module<GlobalUtilities>({
+          path: path.join(cwd, globalUtilitiesPath),
+          type: "globalUtilities",
+        })
+        : { init: () => ({}) };
+    }
   },
 };
 

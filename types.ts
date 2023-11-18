@@ -23,13 +23,13 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-type Plugin<O = Record<string, unknown>> = {
+type Plugin<O = Record<string, unknown>, C = Record<string, unknown>> = {
   meta: {
     name: string;
     description: string;
     dependsOn?: string[];
   };
-  init(args: PluginParameters<O>): Promise<PluginApi> | PluginApi;
+  init(args: PluginParameters<O>): Promise<PluginApi<C>> | PluginApi<C>;
 };
 
 type PluginParameters<O = Record<string, unknown>> = {
@@ -53,25 +53,33 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi = {
+type PluginApi<C> = {
+  initPluginContext?(): C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?(
-    { send }: { send: Send },
+    { send, pluginContext }: { send: Send; pluginContext: C },
   ): Promise<Tasks | void> | Tasks | void;
   // Return additional tasks to perform per build preparation
   prepareBuild?(
-    { send }: { send: Send },
+    { send, pluginContext }: { send: Send; pluginContext: C },
   ): Promise<Tasks | void> | Tasks | void;
   // Return additional tasks to perform per build finishing
   finishBuild?(
-    { send }: { send: Send },
+    { send, pluginContext }: { send: Send; pluginContext: C },
   ): Promise<Tasks | void> | Tasks | void;
   // Optional cleanup for global operations that should happen only once per process
-  cleanUp?({ routes }: { routes: Routes }): void;
+  cleanUp?(
+    { routes, pluginContext }: { routes: Routes; pluginContext: C },
+  ): void;
   // Run setup before context is resolved or add something to it
   prepareContext?(
-    { send, route, url }: { send: Send; route: Route; url: string },
+    { send, route, url, pluginContext }: {
+      send: Send;
+      route: Route;
+      url: string;
+      pluginContext: C;
+    },
   ):
     | Promise<{ context: Record<string, unknown> } | void>
     | {
@@ -79,11 +87,12 @@ type PluginApi = {
     }
     | void;
   beforeEachRender?(
-    { context, send, route, url }: {
+    { context, send, route, url, pluginContext }: {
       context: Context;
       send: Send;
       route: Route;
       url: string;
+      pluginContext: C;
     },
   ):
     | Promise<
@@ -91,33 +100,38 @@ type PluginApi = {
     >
     | Tasks
     | void;
-  render?({ routes, route, context, send, url }: {
+  render?({ routes, route, context, send, url, pluginContext }: {
     routes: Routes;
     route: Route;
     context: Context;
     send: Send;
     url: string;
+    pluginContext: C;
   }): Promise<string> | string;
-  afterEachRender?({ markup, context, route, send, url }: {
+  afterEachRender?({ markup, context, route, send, url, pluginContext }: {
     markup: string;
     context: Context;
     route: Route;
     send: Send;
     url: string;
+    pluginContext: C;
   }): Promise<{ markup: string }> | { markup: string };
   onMessage?(
-    { message }: { message: SendMessageEvent },
+    { message, pluginContext }: { message: SendMessageEvent; pluginContext: C },
   ):
     | void
     | unknown
-    | { send: SendMessageEvent[] }
-    | Promise<void | unknown | { send: SendMessageEvent[] }>;
-  getAllRoutes?():
+    | { send?: SendMessageEvent[]; pluginContext?: C }
+    | Promise<
+      void | unknown | { send?: SendMessageEvent[]; pluginContext?: C }
+    >;
+  getAllRoutes?(pluginContext: C):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     allRoutes: Routes,
     url: string,
+    pluginContext: C,
   ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
     route?: Route;
     tasks: Tasks;
