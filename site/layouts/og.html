@@ -10,19 +10,14 @@
     <stop offset="0%" stop-color="black"></stop>
     <stop offset="100%" &stop-color="(get context meta.colors.primary)"></stop>
   </linearGradient>
-  <rect
-    class="bg-black py-8 bg-gradient-to-br from-black to-primary"
-    width="100%"
-    height="100%"
-    fill="url(#backgroundGradient)"
-  ></rect>
+  <rect width="100%" height="100%" fill="url(#backgroundGradient)"></rect>
   <text
     text-anchor="start"
     font-family="Eau"
     font-size="140"
     &fill="(get context meta.colors.tertiary)"
   >
-    <tspan x="80" y="200" &children="(get context meta.title)"></tspan>
+    <tspan x="80" y="200" &children="(get context meta.siteName)"></tspan>
   </text>
   <text
     text-anchor="start"
@@ -30,7 +25,7 @@
     font-size="80"
     &fill="(get context meta.colors.tertiary)"
   >
-    <tspan x="80" y="340" &children="(get context subtitle)"></tspan>
+    <tspan x="80" y="340" &children="(get context meta.title)"></tspan>
   </text>
   <text
     text-anchor="start"
@@ -39,24 +34,6 @@
     font-weight="200"
     fill="white"
   >
-    <tspan x="80" y="440">The future of frontend reimagined</tspan>
-  </text>
-  <text
-    text-anchor="start"
-    font-family="ui-sans-serif, system-ui"
-    font-size="40"
-    font-weight="200"
-    fill="white"
-  >
-    <tspan x="80" y="520">13.6-14.6.2024</tspan>
-  </text>
-  <text
-    text-anchor="start"
-    font-family="ui-sans-serif, system-ui"
-    font-size="40"
-    font-weight="200"
-    fill="white"
-  >
-    <tspan x="420" y="520">Paasitorni, Helsinki, Finland</tspan>
+    <tspan x="80" y="440" &children="(get context meta.slogan)"></tspan>
   </text>
 </svg>

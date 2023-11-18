@@ -5,6 +5,7 @@
   "colors": {
     "primary": "#3a2fa6",
     "secondary": "#84ebec",
-    "tertiary": "#d239f6"
-  }
+    "tertiary": "#ffffff"
+  },
+  "slogan": "Deno powered website creator"
 }
