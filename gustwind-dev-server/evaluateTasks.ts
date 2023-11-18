@@ -19,7 +19,7 @@ async function evaluateTasks(tasks: Tasks) {
     switch (type) {
       case "writeTextFile":
       case "writeFile":
-        ret[`/${payload.file}`] = {
+        ret[payload.file] = {
           type: "file",
           data: payload.data,
         };

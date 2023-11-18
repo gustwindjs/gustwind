@@ -33,7 +33,7 @@ async function gustwindDevServer({
     mode,
     // Output directory doesn't matter for the server since it's
     // using a virtual fs.
-    outputDirectory: "/",
+    outputDirectory: "",
   });
 
   return async () => {
