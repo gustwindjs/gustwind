@@ -53,7 +53,7 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi<C> = {
+type PluginApi<C = Record<string, unknown>> = {
   initPluginContext?(): C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
