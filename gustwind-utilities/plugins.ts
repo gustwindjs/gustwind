@@ -17,8 +17,10 @@ export type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi };
   tasks: Tasks;
 };
-export type PluginDefinition = LoadedPlugin["plugin"];
+export type PluginDefinition = LoadedPlugin["plugin"] & { context: Context };
 
+// TODO: Set up initial context for plugins at a good spot + pick up context updates
+// from onMessage
 async function importPlugins(
   {
     cwd,
@@ -165,26 +167,32 @@ async function importPlugin(
 }
 
 async function sendMessages(plugins: PluginDefinition[]) {
-  const messageSenders = plugins.map(({ api }) => api.sendMessages)
+  const messageSenders = plugins.map((
+    { api, context },
+  ) => [api.sendMessages, context])
     .filter(Boolean);
   const send = getSend(plugins);
 
-  for await (const sendMessage of messageSenders) {
-    if (sendMessage) {
-      await sendMessage({ send });
+  for await (const [sendMessagesFn, pluginContext] of messageSenders) {
+    if (sendMessagesFn) {
+      // @ts-expect-error It's not clear how to type context
+      await sendMessagesFn({ send, pluginContext });
     }
   }
 }
 
 async function preparePlugins(plugins: PluginDefinition[]) {
   let prepareTasks: Tasks = [];
-  const prepareBuilds = plugins.map(({ api }) => api.prepareBuild)
+  const prepareBuilds = plugins.map((
+    { api, context },
+  ) => [api.prepareBuild, context])
     .filter(Boolean);
   const send = getSend(plugins);
 
-  for await (const prepareBuild of prepareBuilds) {
+  for await (const [prepareBuild, pluginContext] of prepareBuilds) {
     if (prepareBuild) {
-      const tasksToAdd = await prepareBuild({ send });
+      // @ts-expect-error It's not clear how to type context
+      const tasksToAdd = await prepareBuild({ send, pluginContext });
 
       if (tasksToAdd) {
         prepareTasks = prepareTasks.concat(tasksToAdd);
@@ -197,13 +205,16 @@ async function preparePlugins(plugins: PluginDefinition[]) {
 
 async function finishPlugins(plugins: PluginDefinition[]) {
   let finishTasks: Tasks = [];
-  const finishBuilds = plugins.map(({ api }) => api.finishBuild)
+  const finishBuilds = plugins.map((
+    { api, context },
+  ) => [api.finishBuild, context])
     .filter(Boolean);
   const send = getSend(plugins);
 
-  for await (const finishBuild of finishBuilds) {
+  for await (const [finishBuild, pluginContext] of finishBuilds) {
     if (finishBuild) {
-      const tasksToAdd = await finishBuild({ send });
+      // @ts-expect-error It's not clear how to type context
+      const tasksToAdd = await finishBuild({ send, pluginContext });
 
       if (tasksToAdd) {
         finishTasks = finishTasks.concat(tasksToAdd);
@@ -215,12 +226,13 @@ async function finishPlugins(plugins: PluginDefinition[]) {
 }
 
 async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
-  const cleanUps = plugins.map(({ api }) => api.cleanUp)
+  const cleanUps = plugins.map(({ api, context }) => [api.cleanUp, context])
     .filter(Boolean);
 
-  for await (const cleanUp of cleanUps) {
+  for await (const [cleanUp, pluginContext] of cleanUps) {
     if (cleanUp) {
-      await cleanUp({ routes });
+      // @ts-expect-error It's not clear how to type context
+      await cleanUp({ routes, pluginContext });
     }
   }
 }
@@ -278,14 +290,17 @@ async function applyPlugins(
 }
 
 async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
-  const getAllRoutes = plugins.map(({ api }) => api.getAllRoutes)
+  const getAllRoutes = plugins.map((
+    { api, context },
+  ) => [api.getAllRoutes, context])
     .filter(Boolean);
   let allRoutes: Record<string, Route> = {};
   let allTasks: Tasks = [];
 
-  for await (const routeGetter of getAllRoutes) {
+  for await (const [routeGetter, pluginContext] of getAllRoutes) {
     if (routeGetter) {
-      const { routes, tasks } = await routeGetter();
+      // @ts-expect-error It's not clear how to type context
+      const { routes, tasks } = await routeGetter({ pluginContext });
 
       allRoutes = { ...allRoutes, ...routes };
       allTasks = allTasks.concat(tasks);
@@ -302,11 +317,15 @@ async function applyMatchRoutes(
     url: string;
   },
 ) {
-  const matchRoutes = plugins.map(({ api }) => api.matchRoute)
+  const matchRoutes = plugins.map((
+    { api, context },
+  ) => [api.matchRoute, context])
     .filter(Boolean);
 
-  for await (const matchRoute of matchRoutes) {
-    const matchedRoute = matchRoute && matchRoute(allRoutes, url);
+  for await (const [matchRoute, pluginContext] of matchRoutes) {
+    const matchedRoute = matchRoute &&
+      // @ts-expect-error It's not clear how to type context
+      matchRoute(allRoutes, url, pluginContext);
 
     if (matchedRoute) {
       return matchedRoute;
@@ -325,12 +344,15 @@ async function applyPrepareContext(
   },
 ) {
   let context = {};
-  const prepareContexts = plugins.map(({ api }) => api.prepareContext)
+  const prepareContexts = plugins.map((
+    { api, context },
+  ) => [api.prepareContext, context])
     .filter(Boolean);
 
   for await (const prepareContext of prepareContexts) {
     if (prepareContext) {
-      const ret = await prepareContext({ send, route, url });
+      // @ts-expect-error It's not clear how to type context
+      const ret = await prepareContext({ send, route, url, pluginContext });
 
       if (ret?.context) {
         context = { ...context, ...ret.context };
@@ -439,7 +461,9 @@ function getSend(plugins: PluginDefinition[]): Send {
   return async (pluginName, message) => {
     if (pluginName === "*") {
       const sends = (await Promise.all(
-        plugins.map(({ api }) => api.onMessage && api.onMessage({ message })),
+        plugins.map(({ api, context: pluginContext }) =>
+          api.onMessage && api.onMessage({ message, pluginContext })
+        ),
       )).filter(Boolean)
         // @ts-expect-error TS inference fails here
         .map(({ send }) => send).flat();
@@ -460,7 +484,10 @@ function getSend(plugins: PluginDefinition[]): Send {
 
       if (foundPlugin) {
         if (foundPlugin.api.onMessage) {
-          return foundPlugin.api.onMessage({ message });
+          return foundPlugin.api.onMessage({
+            message,
+            pluginContext: foundPlugin.context,
+          });
         } else {
           throw new Error(
             `Plugin ${pluginName} does not have an onMessage handler`,
