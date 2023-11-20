@@ -23,7 +23,7 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
-type Plugin<O = Record<string, unknown>, C = Record<string, unknown>> = {
+type Plugin<O = Record<string, unknown>, C = Context> = {
   meta: {
     name: string;
     description: string;
@@ -53,7 +53,7 @@ type LoadApi = {
   textFileSync(path: string): string;
 };
 
-type PluginApi<C = Record<string, unknown>> = {
+type PluginApi<C = Context> = {
   initPluginContext?(): C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
