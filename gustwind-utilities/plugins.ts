@@ -462,7 +462,7 @@ async function applyAfterEachRenders(
 function getSend(plugins: PluginDefinition[]): Send {
   return async (pluginName, message) => {
     if (pluginName === "*") {
-      const sends = (await Promise.all(
+      const messageResults = (await Promise.all(
         plugins.map(async (plugin) => {
           const { api, context: pluginContext } = plugin;
 
@@ -475,13 +475,21 @@ function getSend(plugins: PluginDefinition[]): Send {
               ...payload?.pluginContext,
             };
 
-            // @ts-expect-error TS inference fails here
-            return payload?.send;
+            if (payload) {
+              return payload;
+            }
           }
         }),
-      )).filter(Boolean).flat();
+      )).filter(Boolean);
 
-      const ret = await Promise.all(
+      // @ts-expect-error Make typing more strict here
+      const sends = messageResults.map((s) => s.send).filter(Boolean);
+      // @ts-expect-error Make typing more strict here
+      const results = messageResults.map((s) => s.result).filter(Boolean);
+
+      // TODO: What to do with sends triggered by messages? Maybe it would be
+      // better to drop support for this and handle it otherwise?
+      await Promise.all(
         sends.map((message) =>
           Promise.all(plugins.map(async (plugin) => {
             const { api } = plugin;
@@ -495,17 +503,12 @@ function getSend(plugins: PluginDefinition[]): Send {
                 // @ts-expect-error Maybe onMessage type has to become more strict
                 ...payload?.pluginContext,
               };
-
-              // @ts-expect-error Maybe onMessage type has to become more strict
-              return payload.result;
             }
           }))
         ),
       );
 
-      console.log("ret", ret);
-
-      return ret;
+      return results;
     } else {
       const foundPlugin = plugins.find(({ meta: { name } }) =>
         pluginName === name
