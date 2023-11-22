@@ -50,8 +50,6 @@ const plugin: Plugin = {
         // only one styling system is used at a time
         const styleSetupPath = styleSetupPaths[0];
 
-        console.log("received style setup path", styleSetupPath);
-
         if (!styleSetupPath) {
           throw new Error(
             "gustwind-editor-plugin - Could not find styleSetupPath!",
