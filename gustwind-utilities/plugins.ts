@@ -351,7 +351,7 @@ async function applyPrepareContext(
   ) => [api.prepareContext, context])
     .filter(Boolean);
 
-  for await (const prepareContext of prepareContexts) {
+  for await (const [prepareContext, pluginContext] of prepareContexts) {
     if (prepareContext) {
       // @ts-expect-error It's not clear how to type context
       const ret = await prepareContext({ send, route, url, pluginContext });
