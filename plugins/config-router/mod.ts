@@ -38,7 +38,7 @@ const plugin: Plugin<{
 
         return { routes, dataSources };
       },
-      getAllRoutes: async (pluginContext) => {
+      getAllRoutes: async ({ pluginContext }) => {
         const { allRoutes } = await getAllRoutes(
           pluginContext.routes,
           pluginContext.dataSources,
