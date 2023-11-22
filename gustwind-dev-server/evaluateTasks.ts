@@ -19,10 +19,11 @@ async function evaluateTasks(tasks: Tasks) {
     switch (type) {
       case "writeTextFile":
       case "writeFile":
-        ret[payload.file] = {
-          type: "file",
-          data: payload.data,
-        };
+        ret[payload.file.startsWith("/") ? payload.file : `/${payload.file}`] =
+          {
+            type: "file",
+            data: payload.data,
+          };
         break;
       case "copyFiles": {
         const outputBasename = path.basename(payload.outputPath);
