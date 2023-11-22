@@ -14,10 +14,10 @@ import type {
 } from "../types.ts";
 
 export type LoadedPlugin = {
-  plugin: { meta: Plugin["meta"]; api: PluginApi };
+  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
   tasks: Tasks;
 };
-export type PluginDefinition = LoadedPlugin["plugin"] & { context: Context };
+export type PluginDefinition = LoadedPlugin["plugin"];
 
 // TODO: Set up initial context for plugins at a good spot + pick up context updates
 // from onMessage
@@ -161,7 +161,7 @@ async function importPlugin(
   });
 
   return {
-    plugin: { meta: pluginModule.meta, api },
+    plugin: { meta: pluginModule.meta, api, context: {} },
     tasks,
   };
 }
