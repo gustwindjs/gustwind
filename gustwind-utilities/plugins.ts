@@ -463,19 +463,43 @@ function getSend(plugins: PluginDefinition[]): Send {
   return async (pluginName, message) => {
     if (pluginName === "*") {
       const sends = (await Promise.all(
-        plugins.map(({ api, context: pluginContext }) =>
-          api.onMessage && api.onMessage({ message, pluginContext })
-        ),
-      ))
-        // @ts-expect-error TS inference fails here
-        .filter((o) => o?.send)
-        // @ts-expect-error TS inference fails here
-        .map(({ send }) => send).flat();
+        plugins.map(async (plugin) => {
+          const { api, context: pluginContext } = plugin;
 
-      // TODO: Catch context changes
-      sends.map((message) =>
-        // @ts-expect-error TS inference fails here
-        plugins.map(({ api }) => api.onMessage && api.onMessage({ message }))
+          if (api.onMessage) {
+            const payload = await api.onMessage({ message, pluginContext });
+
+            plugin.context = {
+              ...pluginContext,
+              // @ts-expect-error Maybe onMessage type has to become more strict
+              ...payload?.pluginContext,
+            };
+
+            // @ts-expect-error TS inference fails here
+            return payload?.send;
+          }
+        }),
+      )).filter(Boolean).flat();
+
+      await Promise.all(
+        sends.map((message) =>
+          Promise.all(plugins.map(async (plugin) => {
+            const { api } = plugin;
+
+            if (api.onMessage) {
+              // @ts-expect-error TS inference fails here
+              const payload = await api.onMessage({ message });
+
+              console.log("message", message, "payload", payload);
+
+              plugin.context = {
+                ...plugin.context,
+                // @ts-expect-error Maybe onMessage type has to become more strict
+                ...payload?.pluginContext,
+              };
+            }
+          }))
+        ),
       );
     } else {
       const foundPlugin = plugins.find(({ meta: { name } }) =>
