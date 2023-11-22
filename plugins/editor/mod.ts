@@ -50,6 +50,10 @@ const plugin: Plugin<undefined, { styleSetupPath: string }> = {
       sendMessages: ({ send, pluginContext }) => {
         const { styleSetupPath } = pluginContext;
 
+        if (!styleSetupPath) {
+          throw new Error("gustwind-editor-plugin - missing styleSetupPath!");
+        }
+
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: scriptsToCompile.map(({ isExternal, name, externals }) => ({

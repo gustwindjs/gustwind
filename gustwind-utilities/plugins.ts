@@ -19,7 +19,6 @@ export type LoadedPlugin = {
 };
 export type PluginDefinition = LoadedPlugin["plugin"];
 
-// TODO: Pick up context updates from onMessage
 async function importPlugins(
   {
     cwd,
@@ -467,10 +466,13 @@ function getSend(plugins: PluginDefinition[]): Send {
         plugins.map(({ api, context: pluginContext }) =>
           api.onMessage && api.onMessage({ message, pluginContext })
         ),
-      )).filter(Boolean)
+      ))
+        // @ts-expect-error TS inference fails here
+        .filter((o) => o?.send)
         // @ts-expect-error TS inference fails here
         .map(({ send }) => send).flat();
 
+      // TODO: Catch context changes
       sends.map((message) =>
         // @ts-expect-error TS inference fails here
         plugins.map(({ api }) => api.onMessage && api.onMessage({ message }))
@@ -487,10 +489,18 @@ function getSend(plugins: PluginDefinition[]): Send {
 
       if (foundPlugin) {
         if (foundPlugin.api.onMessage) {
-          return foundPlugin.api.onMessage({
+          const payload = await foundPlugin.api.onMessage({
             message,
             pluginContext: foundPlugin.context,
           });
+
+          foundPlugin.context = {
+            ...foundPlugin.context,
+            // @ts-expect-error Maybe onMessage type has to become more strict
+            ...payload?.pluginContext,
+          };
+
+          return payload;
         } else {
           throw new Error(
             `Plugin ${pluginName} does not have an onMessage handler`,
