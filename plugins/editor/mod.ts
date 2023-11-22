@@ -4,7 +4,7 @@ import scriptsToCompile from "./scriptsToCompile.ts";
 import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin<undefined, { styleSetupPath: string }> = {
+const plugin: Plugin = {
   meta: {
     name: "gustwind-editor-plugin",
     description: "${name} implements a live editor.",
@@ -40,18 +40,22 @@ const plugin: Plugin<undefined, { styleSetupPath: string }> = {
             },
           }));
       },
-      onMessage: ({ message }) => {
-        const { type, payload } = message;
+      sendMessages: async ({ send }) => {
+        // @ts-expect-error Figure out how to model return type for the message
+        const styleSetupPaths: string[] = await send("*", {
+          type: "getStyleSetupPath",
+          payload: undefined,
+        });
+        // Pick only the first out of possible many since the assumption is that
+        // only one styling system is used at a time
+        const styleSetupPath = styleSetupPaths[0];
 
-        if (type === "styleSetupReady") {
-          return { pluginContext: { styleSetupPath: payload.path } };
-        }
-      },
-      sendMessages: ({ send, pluginContext }) => {
-        const { styleSetupPath } = pluginContext;
+        console.log("received style setup path", styleSetupPath);
 
         if (!styleSetupPath) {
-          throw new Error("gustwind-editor-plugin - missing styleSetupPath!");
+          throw new Error(
+            "gustwind-editor-plugin - Could not find styleSetupPath!",
+          );
         }
 
         send("gustwind-script-plugin", {

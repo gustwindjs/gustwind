@@ -481,7 +481,7 @@ function getSend(plugins: PluginDefinition[]): Send {
         }),
       )).filter(Boolean).flat();
 
-      await Promise.all(
+      const ret = await Promise.all(
         sends.map((message) =>
           Promise.all(plugins.map(async (plugin) => {
             const { api } = plugin;
@@ -490,17 +490,22 @@ function getSend(plugins: PluginDefinition[]): Send {
               // @ts-expect-error TS inference fails here
               const payload = await api.onMessage({ message });
 
-              console.log("message", message, "payload", payload);
-
               plugin.context = {
                 ...plugin.context,
                 // @ts-expect-error Maybe onMessage type has to become more strict
                 ...payload?.pluginContext,
               };
+
+              // @ts-expect-error Maybe onMessage type has to become more strict
+              return payload.result;
             }
           }))
         ),
       );
+
+      console.log("ret", ret);
+
+      return ret;
     } else {
       const foundPlugin = plugins.find(({ meta: { name } }) =>
         pluginName === name
@@ -524,7 +529,8 @@ function getSend(plugins: PluginDefinition[]): Send {
             ...payload?.pluginContext,
           };
 
-          return payload;
+          // @ts-expect-error Maybe onMessage type has to become more strict
+          return payload?.result;
         } else {
           throw new Error(
             `Plugin ${pluginName} does not have an onMessage handler`,

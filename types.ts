@@ -146,14 +146,14 @@ type Send = (
 ) => Promise<unknown> | unknown;
 
 // TODO: Compose this from plugin types
+// TODO: Model an accurate return type for each event (fixes plugins.ts a lot)
 type SendMessageEvent =
   | { type: "ping"; payload: undefined }
+  | { type: "getStyleSetupPath"; payload: undefined }
   | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Component> }
   | { type: "getRenderer"; payload: string }
-  // styling
-  | { type: "styleSetupReady"; payload: { path: string } }
   // websocket plugin
   | { type: "reloadPage"; payload: undefined }
   | {
