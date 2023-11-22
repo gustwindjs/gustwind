@@ -176,9 +176,9 @@ const plugin: Plugin<{
             return { send: [{ type: "reloadPage" }] };
           }
           case "getComponents":
-            return getComponents(pluginContext.components);
+            return { result: getComponents(pluginContext.components) };
           case "getRenderer":
-            return pluginContext.components[payload].component;
+            return { result: pluginContext.components[payload].component };
         }
       },
     };

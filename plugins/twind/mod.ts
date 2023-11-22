@@ -24,12 +24,6 @@ const plugin: Plugin<{
     }
 
     return {
-      sendMessages: ({ send }) => {
-        send("*", {
-          type: "styleSetupReady",
-          payload: { path: twindSetupPath },
-        });
-      },
       prepareBuild: prepareStylesheet,
       prepareContext: prepareStylesheet,
       afterEachRender({ markup, url }) {
@@ -61,6 +55,13 @@ const plugin: Plugin<{
             `<style data-twind>${css}</style></head>`,
           ),
         };
+      },
+      onMessage: ({ message }) => {
+        const { type } = message;
+
+        if (type === "getStyleSetupPath") {
+          return { result: twindSetupPath };
+        }
       },
     };
   },

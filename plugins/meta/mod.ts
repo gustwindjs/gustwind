@@ -37,7 +37,7 @@ const plugin: Plugin<{
             break;
           }
           case "getMeta":
-            return pluginContext.meta;
+            return { result: pluginContext.meta };
         }
       },
     };

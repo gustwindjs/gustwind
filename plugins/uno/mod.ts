@@ -33,12 +33,6 @@ const plugin: Plugin<{
     }
 
     return {
-      sendMessages: ({ send }) => {
-        send("*", {
-          type: "styleSetupReady",
-          payload: { path: unoSetupPath },
-        });
-      },
       prepareBuild: prepareStylesheet,
       prepareContext: prepareStylesheet,
       afterEachRender: async ({ markup, url }) => {
@@ -54,6 +48,13 @@ const plugin: Plugin<{
             `<style>${css}</style></head>`,
           ),
         };
+      },
+      onMessage: ({ message }) => {
+        const { type } = message;
+
+        if (type === "getStyleSetupPath") {
+          return { result: unoSetupPath };
+        }
       },
     };
   },
