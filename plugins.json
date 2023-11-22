@@ -31,8 +31,7 @@
     }
   },
   {
-    "path": "./plugins/pagefind/mod.ts",
-    "options": {}
+    "path": "./plugins/pagefind/mod.ts"
   },
   {
     "path": "./plugins/script/mod.ts",
@@ -55,6 +54,9 @@
     "options": {
       "layout": "./site/layouts/og.html"
     }
+  },
+  {
+    "path": "./plugins/jampack/mod.ts"
   },
   {
     "path": "./plugins/stats/mod.ts"
