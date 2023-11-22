@@ -401,16 +401,17 @@ async function applyRenders(
     url: string;
   },
 ) {
-  const renders = plugins.map(({ api }) => api.render)
-    .filter(Boolean);
+  const renders = plugins.map(({ api, context }) => [api.render, context]);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
   // TODO: Does it even make sense to have multiple renderers in the system?
-  for await (const render of renders) {
-    markup =
-      // @ts-expect-error We know render should be defined by now
-      await render({ context, route, routes, send, url });
+  for await (const [render, pluginContext] of renders) {
+    if (render) {
+      markup =
+        // @ts-expect-error We know render should be defined by now
+        await render({ context, route, routes, send, url, pluginContext });
+    }
   }
 
   return markup;
