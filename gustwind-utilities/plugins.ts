@@ -19,8 +19,7 @@ export type LoadedPlugin = {
 };
 export type PluginDefinition = LoadedPlugin["plugin"];
 
-// TODO: Set up initial context for plugins at a good spot + pick up context updates
-// from onMessage
+// TODO: Pick up context updates from onMessage
 async function importPlugins(
   {
     cwd,
@@ -161,7 +160,11 @@ async function importPlugin(
   });
 
   return {
-    plugin: { meta: pluginModule.meta, api, context: {} },
+    plugin: {
+      meta: pluginModule.meta,
+      api,
+      context: api.initPluginContext ? await api.initPluginContext() : {},
+    },
     tasks,
   };
 }
