@@ -82,7 +82,7 @@ const plugin: Plugin<{
               const routes = await loadRoutes();
 
               return {
-                send: [{ type: "reloadPage" }],
+                send: [{ type: "reloadPage", payload: undefined }],
                 pluginContext: { routes },
               };
             }
@@ -90,12 +90,12 @@ const plugin: Plugin<{
               const dataSources = await loadDataSources();
 
               return {
-                send: [{ type: "reloadPage" }],
+                send: [{ type: "reloadPage", payload: undefined }],
                 pluginContext: { dataSources },
               };
             }
             case "paths": {
-              return { send: [{ type: "reloadPage" }] };
+              return { send: [{ type: "reloadPage", payload: undefined }] };
             }
           }
         }
