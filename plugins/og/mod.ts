@@ -1,5 +1,5 @@
 // Note that this depends on --allow-ffi
-import sharp from "npm:sharp@0.33.0-alpha.11";
+import sharp from "npm:sharp@0.33.0-rc.2";
 import { path } from "../../server-deps.ts";
 import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
 import breezewind from "../../breezewind/mod.ts";
