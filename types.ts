@@ -125,7 +125,7 @@ type PluginApi<C = Context> = {
     | Promise<
       void | unknown | { send?: SendMessageEvent[]; pluginContext?: C }
     >;
-  getAllRoutes?(pluginContext: C):
+  getAllRoutes?({ pluginContext }: { pluginContext: C }):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
