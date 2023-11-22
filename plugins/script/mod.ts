@@ -116,7 +116,7 @@ const plugin: Plugin<{
             // and the script that changed so that it can be replaced as
             // that avoids a full page reload.
             return {
-              send: [{ type: "reloadPage" }],
+              send: [{ type: "reloadPage", payload: undefined }],
               pluginContext: { foundScripts },
             };
           }

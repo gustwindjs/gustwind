@@ -18,17 +18,17 @@ const plugin: Plugin<{
 
         return { meta };
       },
-      onMessage: ({ message, pluginContext }) => {
+      onMessage: async ({ message, pluginContext }) => {
         const { type, payload } = message;
 
         switch (type) {
           case "fileChanged": {
             switch (payload.type) {
               case "meta": {
-                const meta = loadMeta();
+                const meta = await loadMeta();
 
                 return {
-                  send: [{ type: "reloadPage" }],
+                  send: [{ type: "reloadPage", payload: undefined }],
                   pluginContext: { meta },
                 };
               }

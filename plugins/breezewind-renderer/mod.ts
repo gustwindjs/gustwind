@@ -155,7 +155,7 @@ const plugin: Plugin<{
                 const components = await loadComponents(pluginContext.loaders);
 
                 return {
-                  send: [{ type: "reloadPage" }],
+                  send: [{ type: "reloadPage", payload: undefined }],
                   pluginContext: { components },
                 };
               }
@@ -163,17 +163,17 @@ const plugin: Plugin<{
                 const globalUtilities = await loadGlobalUtilities();
 
                 return {
-                  send: [{ type: "reloadPage" }],
+                  send: [{ type: "reloadPage", payload: undefined }],
                   pluginContext: { globalUtilities },
                 };
               }
               case "paths": {
-                return { send: [{ type: "reloadPage" }] };
+                return { send: [{ type: "reloadPage", payload: undefined }] };
               }
             }
 
             // Reload anyway
-            return { send: [{ type: "reloadPage" }] };
+            return { send: [{ type: "reloadPage", payload: undefined }] };
           }
           case "getComponents":
             return { result: getComponents(pluginContext.components) };

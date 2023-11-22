@@ -120,10 +120,17 @@ type PluginApi<C = Context> = {
     { message, pluginContext }: { message: SendMessageEvent; pluginContext: C },
   ):
     | void
-    | unknown
-    | { send?: SendMessageEvent[]; pluginContext?: C }
+    | {
+      send?: SendMessageEvent[];
+      pluginContext?: Partial<C>;
+      result?: unknown;
+    }
     | Promise<
-      void | unknown | { send?: SendMessageEvent[]; pluginContext?: C }
+      void | {
+        send?: SendMessageEvent[];
+        pluginContext?: Partial<C>;
+        result?: unknown;
+      }
     >;
   getAllRoutes?({ pluginContext }: { pluginContext: C }):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>

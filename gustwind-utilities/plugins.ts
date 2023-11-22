@@ -472,7 +472,6 @@ function getSend(plugins: PluginDefinition[]): Send {
 
             plugin.context = {
               ...pluginContext,
-              // @ts-expect-error Maybe onMessage type has to become more strict
               ...payload?.pluginContext,
             };
 
@@ -501,7 +500,6 @@ function getSend(plugins: PluginDefinition[]): Send {
 
               plugin.context = {
                 ...plugin.context,
-                // @ts-expect-error Maybe onMessage type has to become more strict
                 ...payload?.pluginContext,
               };
             }
@@ -529,11 +527,9 @@ function getSend(plugins: PluginDefinition[]): Send {
 
           foundPlugin.context = {
             ...foundPlugin.context,
-            // @ts-expect-error Maybe onMessage type has to become more strict
             ...payload?.pluginContext,
           };
 
-          // @ts-expect-error Maybe onMessage type has to become more strict
           return payload?.result;
         } else {
           throw new Error(
