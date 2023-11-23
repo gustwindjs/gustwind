@@ -1,8 +1,8 @@
 import {
   extract,
   test,
-} from "https://deno.land/std@0.205.0/front_matter/yaml.ts";
-import { parse } from "https://deno.land/std@0.205.0/yaml/parse.ts";
+} from "https://deno.land/std@0.207.0/front_matter/yaml.ts";
+import { parse } from "https://deno.land/std@0.207.0/yaml/parse.ts";
 import getMarkdown from "./transforms/markdown.ts";
 import type { LoadApi } from "../types.ts";
 
