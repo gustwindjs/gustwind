@@ -4,13 +4,6 @@ import { presetWind } from "https://esm.sh/@unocss/preset-wind@0.57.2";
 import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
-/*
-
-const uno = createGenerator({ presets: [presetUno()] })
-const generated = await uno.generate(classes);
-generated.css
-*/
-
 const plugin: Plugin<{
   setupPath: string;
 }> = {
