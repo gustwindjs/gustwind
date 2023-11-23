@@ -27,6 +27,7 @@ highlight.registerLanguage("json", highlightJSON);
 highlight.registerLanguage("typescript", highlightTS);
 highlight.registerLanguage("ts", highlightTS);
 highlight.registerLanguage("xml", highlightXML);
+highlight.registerLanguage("toml", highlightYAML);
 highlight.registerLanguage("yaml", highlightYAML);
 
 marked.setOptions({
