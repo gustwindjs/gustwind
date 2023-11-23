@@ -12,20 +12,7 @@ Please see the documentation to learn more about the concepts.
 
 ## Getting started
 
-There's [a simple GitHub template](https://github.com/gustwindjs/gustwind-template) that has basic features set up. It renders the project readme as `index.html` and you should expand/change the project to your liking.
-
-## Usage
-
-The easiest way to consume the project is to use the CLI:
-
-```bash
-deno install -A --unstable --no-check -f https://deno.land/x/gustwind/gustwind-cli/mod.ts
-```
-
-The APIs are also available as modules if you need more control.
-
-It's a good idea to use a recent version of [Deno](https://deno.land/) and I recommend using 1.37.2 or newer.
-
+There is [a simple GitHub template](https://github.com/gustwindjs/gustwind-template) that has basic features set up. It renders the project readme as `index.html` and you should expand/change the project to your liking.
 
 ## Data flow
 
@@ -33,7 +20,7 @@ Gustwind accepts TypeScript, Markdown, JSON or HTML definitions including Twind 
 
 ![Gustwind data flow](./assets/gustwind-flow.svg)
 
-It's possible to customize the input formats and it can load data from asynchronous sources, say GraphQL APIs, so it can be used with headless content APIs.
+It's possible to customize the input formats and it can load data from asynchronous sources, say GraphQL APIs, so Gustwind can be used with headless content APIs.
 
 ## Example sites
 
@@ -43,10 +30,6 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 * [sidewind.js.org](https://sidewind.js.org/) - [Source](https://github.com/survivejs/sidewind)
 * [dragjs](http://bebraw.github.io/dragjs/) - [Source](https://github.com/bebraw/dragjs)
 * [Future Frontend](https://futurefrontend.com/) - [Source](https://github.com/ReactFinland/future-frontend-site)
-
-## Availability through Deno
-
-Please use [x/gustwind](https://deno.land/x/gustwind) to access the tool through Deno Land.
 
 ## Earlier related work
 
@@ -59,11 +42,11 @@ Use `deno task` to see available tasks and to run them.
 
 To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./gustwind-cli/mod.ts`. A symlink would likely work as well.
 
-## Publishing to deno.land
+### Publishing to deno.land
 
 Publishing to deno.land goes through the [publish](https://deno.land/x/publish) utility.
 
-## Publishing to npm
+### Publishing to npm
 
 1. `deno task build:gustwind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd gustwind/npm`
