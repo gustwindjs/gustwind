@@ -1,4 +1,4 @@
-// http://localhost:8888/.netlify/functions/generate
+// http://localhost:8888/.netlify/functions/og
 import { Buffer } from "buffer";
 import { promises as fs } from "fs";
 import htm from "htm";
