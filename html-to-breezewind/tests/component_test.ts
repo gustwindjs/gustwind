@@ -73,7 +73,7 @@ Deno.test("component with a children expression", () => {
   assertEquals(
     htmlToBreezewind(
       `<Markdown
-        type="as"
+        type="div"
         &children="(get context document.content)"
       ></Markdown>`,
     ),
@@ -81,7 +81,7 @@ Deno.test("component with a children expression", () => {
       type: "Markdown",
       children: [],
       props: {
-        as: "div",
+        type: "div",
       },
       bindToProps: {
         children: {
