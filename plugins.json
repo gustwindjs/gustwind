@@ -51,12 +51,6 @@
     "path": "./plugins/sitemap/mod.ts"
   },
   {
-    "path": "./plugins/og/mod.ts",
-    "options": {
-      "layout": "./site/layouts/og.html"
-    }
-  },
-  {
     "path": "./plugins/stats/mod.ts"
   }
 ]

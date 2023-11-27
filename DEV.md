@@ -8,7 +8,7 @@ To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwi
 
 Make sure you have a recent version of Node installed (18 or higher) and then run `npm install netlify-cli -g`. After that the development environment is available through `deno task start:netlify`. Note that it depends on a static build so run `deno task build` first to generate one.
 
-There's [a good overview of Netlify edge functions](https://docs.netlify.com/edge-functions/overview/). Also [the tutorial on how to generate OG images on the fly is handy](https://www.netlify.com/blog/dynamically-generate-open-graph-image-variants/).
+There's [a good overview of Netlify edge functions](https://docs.netlify.com/edge-functions/overview/) and [Netlify serverless functions](https://docs.netlify.com/functions/overview/). Also [the tutorial on how to generate OG images on the fly is handy](https://www.netlify.com/blog/dynamically-generate-open-graph-image-variants/).
 
 ## Publishing to deno.land
 

@@ -1,0 +1,15 @@
+{
+  "name": "gustwind",
+  "version": "0.0.0",
+  "description": "Gustwind is a [Deno](https://deno.land/) powered website creator that allows component oriented development of large scale sites. Conceptually it's split as follows:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Juho Vepsäläinen",
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.33.0-rc.2"
+  }
+}
