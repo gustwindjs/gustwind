@@ -1,5 +1,5 @@
 [functions]
-  included_files = ["node_modules/sharp/**/*", "netlify/functions/layouts/**", "site/meta.json"]
+  included_files = ["node_modules/sharp/**/*", "node_modules/@img/sharp-linux-x64/**/*", "netlify/functions/layouts/**", "site/meta.json"]
 
 [build]
   base    = ""
