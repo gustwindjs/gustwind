@@ -6,11 +6,12 @@ function init({ routes }: { routes: Routes }) {
       return;
     }
 
-    // Drop possible anchor
-    url = url.split("#")[0];
+    const [urlRoot, anchor] = url.split("#");
 
-    if (routes[url]) {
-      return url === "/" ? "/" : `/${url}/`;
+    if (Object.keys(routes).includes(urlRoot)) {
+      return urlRoot === "/"
+        ? url
+        : `/${urlRoot}${anchor ? "#" + anchor : "/"}`;
     }
 
     // TODO: This would be a good spot to check the url doesn't 404
