@@ -5,6 +5,7 @@
     "watch:test": "deno test --watch",
     "serve": "deno run --lock=deno.server.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -s -p 3000 -i ./build",
     "start": "deno run --lock=deno.server.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
+    "start:netlify": "netlify dev",
     "update:start:lock": "deno run --lock=deno.server.lock --lock-write --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
     "watch:start": "deno run --lock=deno.server.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d -p 3000",
     "build": "deno run --lock=deno.build.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",

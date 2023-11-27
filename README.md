@@ -35,19 +35,3 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 
 * [Tailspin](https://github.com/survivejs/tailspin) was an experimental site generator built with partially the same technology. In this project, the ideas have been largely re-implemented and taken further. In some ways Tailspin went further, though, as it implemented component level introspection (types) and editors while allowing JSX syntax.
 * [Antwar](https://antwar.js.org/) was a React based static site generator. The experiences with Antwar over years have been put to good use in this project.
-
-## Development
-
-Use `deno task` to see available tasks and to run them.
-
-To test the cli locally, use `deno install --no-check -A -f --unstable -n gustwind ./gustwind-cli/mod.ts`. A symlink would likely work as well.
-
-### Publishing to deno.land
-
-Publishing to deno.land goes through the [publish](https://deno.land/x/publish) utility.
-
-### Publishing to npm
-
-1. `deno task build:gustwind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example
-2. `cd gustwind/npm`
-3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)
