@@ -7,21 +7,16 @@ import sharp from "sharp";
 import breezewind from "../../breezewind/mod.ts";
 
 const convert = getConverter(htm);
-const layout = __dirname + "/layouts/og.html";
+
+// These paths have to be included at netlify.toml
+const metaPath = __dirname + "/../../site/meta.json";
+const layoutPath = __dirname + "/layouts/og.html";
 
 const handler = async () => {
-  const layoutJson = await fs.readFile(layout, "utf8");
-  const ogLayout = convert(layoutJson);
+  const meta = JSON.parse(await fs.readFile(metaPath, "utf8"));
+  const layoutHtml = await fs.readFile(layoutPath, "utf8");
+  const ogLayout = convert(layoutHtml);
 
-  // TODO: Pull this from site/meta.json
-  const meta = {
-    "siteName": "Gustwind",
-    "colors": {
-      "primary": "#3a2fa6",
-      "secondary": "#84ebec",
-      "tertiary": "#ffffff",
-    },
-  };
   // TODO: Get route specific info from query
   const route = { meta: {} };
 
