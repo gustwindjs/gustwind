@@ -1,5 +1,5 @@
 [functions]
-  included_files = ["netlify/functions/layouts/**"]
+  included_files = ["netlify/functions/layouts/**", "site/meta.json"]
 
 [build]
   base    = ""
