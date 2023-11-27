@@ -1,16 +1,15 @@
 import { promises as fs } from "fs";
-// import fs from "fs";
+import htm from "htm";
+import { getConverter } from "../../html-to-breezewind/convert.ts";
 import sharp from "sharp";
-// import { htmlToBreezewind } from "../../html-to-breezewind/mod.ts";
 // import breezewind from "../../breezewind/mod.ts";
 
+const convert = getConverter(htm);
 const layout = __dirname + "/layouts/og.html";
 
 const handler = async () => {
   const layoutJson = await fs.readFile(layout, "utf8");
-
-  // TODO: Allow injecting htm to this
-  // const ogLayout = htmlToBreezewind(layoutJson);
+  const ogLayout = convert(layoutJson);
 
   // console.log(ogLayout);
 
