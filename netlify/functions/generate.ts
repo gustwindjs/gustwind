@@ -42,6 +42,7 @@ const handler = async () => {
     statusCode: 200,
     headers: {
       "Content-Type": "image/png",
+      // 24h cache
       "Cache-Control": "s-maxage=86400",
     },
     body: (await sharp(Buffer.from(svg)).png().toBuffer()).toString("base64"),
