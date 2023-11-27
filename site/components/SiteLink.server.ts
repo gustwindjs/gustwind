@@ -6,6 +6,9 @@ function init({ routes }: { routes: Routes }) {
       return;
     }
 
+    // Drop possible anchor
+    url = url.split("#")[0];
+
     if (routes[url]) {
       return url === "/" ? "/" : `/${url}/`;
     }
