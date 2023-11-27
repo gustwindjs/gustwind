@@ -4,12 +4,22 @@
   name="viewport"
   content="width=device-width, initial-scale=1.0"
 />
-<meta name="og:site_name" &content="(get context meta.siteName)" />
-<meta name="twitter:site" &content="(get context meta.siteName)" />
-<meta name="og:title" &content="(get context meta.title)" />
-<meta name="twitter.title" &content="(get context meta.title)" />
-<meta name="description" &content="(get context meta.description)" />
-<meta name="og:description" &content="(get context meta.description)" />
-<meta name="twitter:description" &content="(get context meta.description)" />
-<meta name="built" &content="(get context meta.built)" />
+<meta
+  property="og:image"
+  &content="(concat
+  /.netlify/functions/og?title=
+  (get context meta.title)
+)"
+/>
+<meta property="og:site_name" &content="(get context meta.siteName)" />
+<meta property="twitter:site" &content="(get context meta.siteName)" />
+<meta property="og:title" &content="(get context meta.title)" />
+<meta property="twitter.title" &content="(get context meta.title)" />
+<meta property="description" &content="(get context meta.description)" />
+<meta property="og:description" &content="(get context meta.description)" />
+<meta
+  property="twitter:description"
+  &content="(get context meta.description)"
+/>
+<meta property="built" &content="(get context meta.built)" />
 <title &children="(get context meta.title)"></title>
