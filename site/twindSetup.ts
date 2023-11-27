@@ -21,4 +21,5 @@ export default {
       colors: meta.colors,
     },
   },
+  hash: false,
 };
