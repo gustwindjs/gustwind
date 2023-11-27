@@ -17,6 +17,13 @@
         rel="stylesheet"
         hrf="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js@11.9.0/src/styles/github-dark.min.css"
     /></noscript>
+    <meta
+      property="og:image"
+      &content="(concat
+        /.netlify/functions/og?title=
+        (get context meta.title)
+      )"
+    />
     <MetaFields />
   </head>
   <body>
