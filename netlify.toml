@@ -1,3 +1,6 @@
+[functions]
+  included_files = ["netlify/functions/layouts/**"]
+
 [build]
   base    = ""
   publish = "build"
