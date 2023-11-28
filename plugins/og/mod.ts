@@ -53,7 +53,7 @@ const plugin: Plugin<{
             type: "writeFile",
             payload: {
               outputDirectory,
-              file: path.join(route.url, "og.png"),
+              file: path.join(url, "og.png"),
               data,
             },
           }];
