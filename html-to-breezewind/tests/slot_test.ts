@@ -100,8 +100,10 @@ Deno.test("children binding within slots", () => {
           {
             type: "span",
             attributes: {},
-            // TODO: This should go to bindToProps instead
-            children: { utility: "get", parameters: ["props", "day"] },
+            bindToProps: {
+              children: { utility: "get", parameters: ["props", "day"] },
+            },
+            children: { utility: "get", parameters: ["props", "children"] },
           },
         ],
       },
@@ -125,11 +127,16 @@ Deno.test("attribute binding within slots", () => {
         content: [
           {
             type: "div",
-            // TODO: This should go to bindToProps instead
+            bindToProps: {
+              title: {
+                utility: "get",
+                parameters: ["props", "day"],
+              },
+            },
             attributes: {
               title: {
-                parameters: ["props", "day"],
                 utility: "get",
+                parameters: ["props", "title"],
               },
             },
             children: [],
