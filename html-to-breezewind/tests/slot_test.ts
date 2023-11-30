@@ -83,4 +83,59 @@ Deno.test("props through slots as elements including bound props", () => {
   );
 });
 
-// TODO: Test a mixed case (bound props + slots)
+Deno.test("children binding within slots", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<BaseLayout>
+        <slot name="content">
+          <span &children="(get props day)"></span>
+        </slot>
+      </BaseLayout>
+    `,
+    ),
+    {
+      type: "BaseLayout",
+      props: {
+        content: [
+          {
+            type: "span",
+            attributes: {},
+            // TODO: This should go to bindToProps instead
+            children: { utility: "get", parameters: ["props", "day"] },
+          },
+        ],
+      },
+    },
+  );
+});
+
+Deno.test("attribute binding within slots", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<BaseLayout>
+        <slot name="content">
+          <div &title="(get props day)"></div>
+        </slot>
+      </BaseLayout>
+    `,
+    ),
+    {
+      type: "BaseLayout",
+      props: {
+        content: [
+          {
+            type: "div",
+            // TODO: This should go to bindToProps instead
+            attributes: {
+              title: {
+                parameters: ["props", "day"],
+                utility: "get",
+              },
+            },
+            children: [],
+          },
+        ],
+      },
+    },
+  );
+});
