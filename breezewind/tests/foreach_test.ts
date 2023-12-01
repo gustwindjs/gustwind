@@ -109,12 +109,12 @@ Deno.test("foreach extension with attributes", async () => {
       extensions: [extensions.foreach],
       context: {
         scripts: [{
-          "type": "text/javascript",
+          "type": "module",
           "src": "sidewind.js",
         }],
       },
     }),
-    '<script type="text/javascript" src="sidewind.js"></script>',
+    '<script type="module" src="sidewind.js"></script>',
   );
 });
 
@@ -133,7 +133,7 @@ Deno.test("foreach extension with multiple scripts", async () => {
       extensions: [extensions.foreach],
       context: {
         scripts: [{
-          "type": "text/javascript",
+          "type": "module",
           "src": "sidewind.js",
         }, {
           "type": "module",
@@ -141,7 +141,7 @@ Deno.test("foreach extension with multiple scripts", async () => {
         }],
       },
     }),
-    '<script type="text/javascript" src="sidewind.js"></script><script type="module" src="gustwind.js"></script>',
+    '<script type="module" src="sidewind.js"></script><script type="module" src="gustwind.js"></script>',
   );
 });
 
@@ -173,11 +173,11 @@ Deno.test("foreach extension with attributes and nesting", async () => {
       extensions: [extensions.foreach],
       context: {
         scripts: [{
-          "type": "text/javascript",
+          "type": "module",
           "src": "sidewind.js",
         }],
       },
     }),
-    '<html><body><script type="text/javascript" src="sidewind.js"></script></body></html>',
+    '<html><body><script type="module" src="sidewind.js"></script></body></html>',
   );
 });

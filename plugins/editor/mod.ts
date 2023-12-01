@@ -87,7 +87,7 @@ const plugin: Plugin = {
         send("gustwind-script-plugin", {
           type: "addGlobalScripts",
           payload: [{
-            type: "text/javascript",
+            type: "",
             src:
               "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js",
           }],
