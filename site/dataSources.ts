@@ -56,9 +56,8 @@ function init({ load }: { load: LoadApi }) {
       const { frontMatter, body: content } = extract(file);
 
       return {
-        // @ts-expect-error Chck how to type data properly.
-        // Maybe some form of runtime check would be good.
-        data: parse(frontMatter),
+        // TODO: It would be better to handle this with Zod or some other runtime checker
+        data: parse(frontMatter) as MarkdownWithFrontmatter["data"],
         content,
       };
     }
