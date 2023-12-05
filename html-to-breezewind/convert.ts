@@ -64,16 +64,11 @@ function h(
         ),
         "type",
       );
-      const attributeBindings = Object.fromEntries(
-        Object.keys(filteredBoundProps).map(
-          (k) => [k, { utility: "get", parameters: ["props", k] }],
-        ),
-      );
 
       return addCustomFields({
         type: parseExpression(attributes["&type"] as string),
         children: childrenToReturn,
-        attributes: attributeBindings,
+        attributes: getAttributeBindings(filteredBoundProps),
         // @ts-expect-error This is fine
         bindToProps: filteredBoundProps,
       }, attributes);
@@ -130,6 +125,18 @@ function h(
   }
 
   return ret;
+}
+
+function getAttributeBindings(attributes: Attributes) {
+  if (!attributes) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.keys(attributes).map(
+      (k) => [k, { utility: "get", parameters: ["props", k] }],
+    ),
+  );
 }
 
 function getLocalBindings(attributes: Attributes) {
