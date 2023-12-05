@@ -181,6 +181,7 @@ Deno.test("attribute binding to children within slots", () => {
                   utility: "get",
                   parameters: ["props", "children"],
                 },
+                props: {},
               },
             ],
           },

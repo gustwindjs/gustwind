@@ -88,8 +88,7 @@ function h(
   // Components have to map their values to props.
   // TODO: Maybe later on everything should be refactored to use attributes field.
   const isComponent = type.toUpperCase()[0] === type[0];
-  const fieldName = isComponent ? "props" : "attributes";
-  const filteredAttributes = filterAttributes(
+  const filteredProps = filterAttributes(
     attributes === null ? {} : attributes,
     isComponent,
   );
@@ -98,11 +97,32 @@ function h(
     {
       type,
       children: childrenToReturn,
-      [fieldName]: filteredAttributes,
     },
     attributes,
     isComponent,
   );
+
+  if (isComponent) {
+    ret.props = filteredProps;
+  } else {
+    if (
+      isObject(filteredProps) &&
+      // @ts-expect-error This is ok
+      Object.keys(filteredProps).length
+    ) {
+      // @ts-expect-error This is ok
+      const propsWithGetters = Object.entries(filteredProps).filter(([k, v]) =>
+        isObject(v) && [k, v]
+      );
+
+      if (propsWithGetters.length) {
+        // @ts-expect-error This is ok
+        ret.bindToProps = Object.fromEntries(propsWithGetters);
+      }
+    }
+
+    ret.attributes = getAttributeBindings(filteredProps);
+  }
 
   if (isComponent) {
     // Check possible local bindings
@@ -133,8 +153,10 @@ function getAttributeBindings(attributes: Attributes) {
   }
 
   return Object.fromEntries(
-    Object.keys(attributes).map(
-      (k) => [k, { utility: "get", parameters: ["props", k] }],
+    Object.entries(attributes).map(
+      (
+        [k, v],
+      ) => [k, isObject(v) ? { utility: "get", parameters: ["props", k] } : v],
     ),
   );
 }
@@ -176,7 +198,14 @@ function convertChildrenSlotsToProps(children: Component[]) {
       return;
     }
 
-    ret.push([child.attributes.name, child.children]);
+    if (child.bindToProps?.name) {
+      ret.push([
+        child.bindToProps.name,
+        child.children,
+      ]);
+    } else {
+      ret.push([child.attributes.name, child.children]);
+    }
   });
 
   return Object.fromEntries(ret);
