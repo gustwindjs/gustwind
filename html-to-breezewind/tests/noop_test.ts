@@ -127,7 +127,6 @@ Deno.test("nested noops", () => {
         class: { utility: "get", parameters: ["props", "class"] },
       },
       attributes: {
-        // TODO: Redirection to avoid double call
         id: { utility: "get", parameters: ["props", "id"] },
         class: { utility: "get", parameters: ["props", "class"] },
       },
