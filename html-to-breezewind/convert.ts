@@ -115,6 +115,7 @@ function h(
         isObject(v) && [k, v]
       );
 
+      // TODO: This needs some check for children as well
       if (propsWithGetters.length) {
         // @ts-expect-error This is ok
         ret.bindToProps = Object.fromEntries(propsWithGetters);
