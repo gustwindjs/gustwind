@@ -58,19 +58,24 @@ function h(
     }
 
     if (attributes["&type"]) {
-      const filteredAttributes = omit<AttributeValue>(
+      const filteredBoundProps = omit<AttributeValue>(
         filterAttributes(
           attributes === null ? {} : attributes,
         ),
         "type",
       );
+      const attributeBindings = Object.fromEntries(
+        Object.keys(filteredBoundProps).map(
+          (k) => [k, { utility: "get", parameters: ["props", k] }],
+        ),
+      );
 
       return addCustomFields({
         type: parseExpression(attributes["&type"] as string),
         children: childrenToReturn,
-        attributes: filteredAttributes,
+        attributes: attributeBindings,
         // @ts-expect-error This is fine
-        bindToProps: filteredAttributes,
+        bindToProps: filteredBoundProps,
       }, attributes);
     }
 
