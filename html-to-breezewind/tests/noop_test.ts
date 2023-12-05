@@ -10,6 +10,7 @@ Deno.test("element with a type expression for noop type", () => {
       type: { utility: "get", parameters: ["props", "type"] },
       children: [],
       attributes: {},
+      bindToProps: {},
     },
   );
 });
@@ -119,6 +120,13 @@ Deno.test("nested noops", () => {
         parameters: ["h", { utility: "get", parameters: ["props", "level"] }],
       },
       attributes: {
+        id: {
+          utility: "getUniqueAnchorId",
+          parameters: [{ utility: "get", parameters: ["props", "children"] }],
+        },
+        class: { utility: "get", parameters: ["props", "class"] },
+      },
+      bindToProps: {
         id: {
           utility: "getUniqueAnchorId",
           parameters: [{ utility: "get", parameters: ["props", "children"] }],

@@ -69,6 +69,8 @@ function h(
         type: parseExpression(attributes["&type"] as string),
         children: childrenToReturn,
         attributes: filteredAttributes,
+        // @ts-expect-error This is fine
+        bindToProps: filteredAttributes,
       }, attributes);
     }
 
