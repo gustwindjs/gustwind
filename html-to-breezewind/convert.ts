@@ -118,7 +118,6 @@ function h(
     children.length > 0 &&
     children.every((children) => children.type === "slot")
   ) {
-    // TODO: Construct bindToProps now
     return {
       ...omit(ret, "children"),
       props: { ...ret.props, ...convertChildrenSlotsToProps(children) },

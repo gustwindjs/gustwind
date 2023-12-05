@@ -119,18 +119,16 @@ Deno.test("nested noops", () => {
         utility: "concat",
         parameters: ["h", { utility: "get", parameters: ["props", "level"] }],
       },
-      attributes: {
+      bindToProps: {
         id: {
           utility: "getUniqueAnchorId",
           parameters: [{ utility: "get", parameters: ["props", "children"] }],
         },
         class: { utility: "get", parameters: ["props", "class"] },
       },
-      bindToProps: {
-        id: {
-          utility: "getUniqueAnchorId",
-          parameters: [{ utility: "get", parameters: ["props", "children"] }],
-        },
+      attributes: {
+        // TODO: Redirection to avoid double call
+        id: { utility: "get", parameters: ["props", "id"] },
         class: { utility: "get", parameters: ["props", "class"] },
       },
       children: [{

@@ -146,3 +146,46 @@ Deno.test("attribute binding within slots", () => {
     },
   );
 });
+
+Deno.test("attribute binding to children within slots", () => {
+  assertEquals(
+    htmlToBreezewind(
+      `<BaseLayout>
+        <slot name="content">
+          <div class="flex flex-col gap-8">
+            <Workshops &children="(get context workshops)" />
+          </div>
+        </slot>
+      </BaseLayout>
+    `,
+    ),
+    {
+      type: "BaseLayout",
+      props: {
+        content: [
+          {
+            type: "div",
+            attributes: {
+              class: "flex flex-col gap-8",
+            },
+            children: [
+              {
+                type: "Workshops",
+                bindToProps: {
+                  children: {
+                    utility: "get",
+                    parameters: ["context", "workshops"],
+                  },
+                },
+                children: {
+                  utility: "get",
+                  parameters: ["props", "children"],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  );
+});
