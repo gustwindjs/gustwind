@@ -105,9 +105,10 @@ async function render(
     // @ts-expect-error This is fine
     : components?.[element];
   let scopedProps = { ...props, ...component.props };
+  let boundProps = {};
 
   if (component.bindToProps) {
-    const boundProps = await applyUtilities(
+    boundProps = await applyUtilities(
       component.bindToProps,
       globalUtilities,
       { context, props: scopedProps },
@@ -133,9 +134,12 @@ async function render(
           extensions,
           context,
           props: {
+            // These come from the parent
+            ...scopedProps,
             // @ts-ignore: This is fine
             children: component.children,
-            ...scopedProps,
+            // These come from the component itself
+            ...boundProps,
           },
           globalUtilities: utilities,
           componentUtilities,
