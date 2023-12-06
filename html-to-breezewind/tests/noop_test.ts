@@ -142,13 +142,16 @@ Deno.test("nested noops", () => {
           utility: "invert",
           parameters: [{ utility: "get", parameters: ["props", "hideAnchor"] }],
         },
-        attributes: {
-          class:
-            "ml-2 no-underline text-sm align-middle mask-text-gray hover:mask-text-black",
+        bindToProps: {
           href: {
             utility: "concat",
             parameters: ["#", { utility: "get", parameters: ["props", "id"] }],
           },
+        },
+        attributes: {
+          class:
+            "ml-2 no-underline text-sm align-middle mask-text-gray hover:mask-text-black",
+          href: { utility: "get", parameters: ["props", "href"] },
         },
         children: "🔗",
       }],
