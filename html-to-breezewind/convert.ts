@@ -139,7 +139,10 @@ function h(
       ret.children = { utility: "get", parameters: ["props", "children"] };
     }
 
-    ret.attributes = getAttributeBindings(filteredProps);
+    ret.attributes = {
+      ...ret.attributes,
+      ...getAttributeBindings(filteredProps),
+    };
   }
 
   if (
