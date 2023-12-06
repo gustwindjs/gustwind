@@ -263,31 +263,6 @@ function addCustomFields(
     return o;
   }, c);
 
-  // Class list syntax
-  const initialValue: string[] = [];
-  const parameters = Object.entries(attributes).reduce((attrs, [k, v]) => {
-    if (!k.startsWith("&class[")) {
-      return attrs;
-    }
-
-    if (attrs.length > 0) {
-      attrs.push(" ");
-    }
-
-    // @ts-expect-error This is fine
-    return attrs.concat(parseExpression(v as string));
-  }, initialValue);
-
-  if (parameters.length) {
-    return {
-      ...ret,
-      attributes: {
-        ...c.attributes,
-        class: { utility: "concat", parameters },
-      },
-    };
-  }
-
   return ret;
 }
 

@@ -57,24 +57,6 @@ Given there are times when you might want to remove a part of the DOM structure 
 
 When `showToc` evaluates as `false`, `aside` element is removed completely from the structure.
 
-## Class lists
-
-To allow construction of complex classes, there is a `&class[]` helper that works as below:
-
-```html
-<a
-  &class[0]="(id underline)"
-  &class[1]="(pick
-    (equals (get props href) (trim (get context url) /))
-    font-bold
-  )"
-  &href="(validateUrl (get props href))"
-  &children="(render (get props children))"
-/>
-```
-
-Due to technical restrictions, you have to pass indices to the class array. Underneath the evaluated classes are compiled as a single `class` attribute.
-
 ## Noop
 
 Given there are times when you might want to perform an operation but not generate markup directly, there's a `noop` helper. Technically this is comparable to React fragments and it works as below:

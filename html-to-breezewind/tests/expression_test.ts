@@ -317,33 +317,3 @@ Deno.test("element with a class", () => {
     },
   );
 });
-
-Deno.test("element with a class list", () => {
-  assertEquals(
-    htmlToBreezewind(
-      `<div &class[0]="(id underline)" &class[1]="(pick (get props href) font-bold)">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      attributes: {
-        class: {
-          utility: "concat",
-          parameters: [
-            { utility: "id", parameters: ["underline"] },
-            " ",
-            {
-              utility: "pick",
-              parameters: [
-                { utility: "get", parameters: ["props", "href"] },
-                "font-bold",
-              ],
-            },
-          ],
-        },
-      },
-    },
-  );
-});
-
-// TODO: Support &class[0]="underline" style syntax
