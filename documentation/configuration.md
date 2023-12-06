@@ -1,7 +1,7 @@
 ---
 slug: 'configuration'
 title: 'Configuration'
-description: ''
+description: 'Each Gustwind project needs minimal plugin configuration'
 ---
 Each project built with Gustwind needs minimal plugin configuration.
 

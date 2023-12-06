@@ -1,7 +1,7 @@
 ---
 slug: 'deployment'
 title: 'Deployment'
-description: ''
+description: 'Gustwind can be deployed to any static host'
 ---
 Gustwind sites can be deployed to any static host. The most difficult part is building the site and you can either push this problem to a CI provider or build at the host itself. In either case you have to take care to install Deno as it's not often available given it's still a relatively new technology.
 
