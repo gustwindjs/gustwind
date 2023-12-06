@@ -104,6 +104,14 @@ function h(
 
   if (isComponent) {
     ret.props = filteredProps;
+
+    // Check possible local bindings
+    const bindToProps = getLocalBindings(attributes);
+
+    if (bindToProps) {
+      // @ts-expect-error This is fine. Maybe the type can be refined.
+      ret.bindToProps = bindToProps;
+    }
   } else {
     if (
       isObject(filteredProps) &&
@@ -123,16 +131,6 @@ function h(
     }
 
     ret.attributes = getAttributeBindings(filteredProps);
-  }
-
-  if (isComponent) {
-    // Check possible local bindings
-    const bindToProps = getLocalBindings(attributes);
-
-    if (bindToProps) {
-      // @ts-expect-error This is fine. Maybe the type can be refined.
-      ret.bindToProps = bindToProps;
-    }
   }
 
   if (
