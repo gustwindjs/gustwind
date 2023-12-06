@@ -133,9 +133,9 @@ async function render(
           extensions,
           context,
           props: {
-            ...scopedProps,
             // @ts-ignore: This is fine
             children: component.children,
+            ...scopedProps,
           },
           globalUtilities: utilities,
           componentUtilities,

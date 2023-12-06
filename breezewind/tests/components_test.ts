@@ -94,3 +94,42 @@ Deno.test("component lookup with a complex structure", async () => {
     '<head><link rel="icon" href="bar"></link></head>',
   );
 });
+
+Deno.test("component with bound children", async () => {
+  assertEquals(
+    await breeze({
+      component: [
+        {
+          "type": "Markdown",
+          "children": [],
+          "props": {
+            "type": "div",
+          },
+          "bindToProps": {
+            "children": {
+              "utility": "get",
+              "parameters": ["context", "document.content"],
+            },
+          },
+        },
+      ],
+      components: {
+        Markdown: [
+          {
+            "type": { "utility": "get", "parameters": ["props", "type"] },
+            "children": {
+              "utility": "get",
+              "parameters": ["props", "children"],
+            },
+          },
+        ],
+      },
+      context: {
+        document: {
+          content: "foobar",
+        },
+      },
+    }),
+    "<div>foobar</div>",
+  );
+});
