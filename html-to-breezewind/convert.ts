@@ -123,11 +123,20 @@ function h(
         isObject(v) && [k, v]
       );
 
-      // TODO: This needs some check for children as well
       if (propsWithGetters.length) {
         // @ts-expect-error This is ok
         ret.bindToProps = Object.fromEntries(propsWithGetters);
       }
+    }
+
+    if (isObject(ret.children)) {
+      if (!ret.bindToProps) {
+        ret.bindToProps = {};
+      }
+
+      // @ts-expect-error This is ok
+      ret.bindToProps.children = ret.children;
+      ret.children = { utility: "get", parameters: ["props", "children"] };
     }
 
     ret.attributes = getAttributeBindings(filteredProps);
