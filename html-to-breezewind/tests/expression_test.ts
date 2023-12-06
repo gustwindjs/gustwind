@@ -8,6 +8,7 @@ Deno.test("element with an expression shortcut for attribute", () => {
     ),
     {
       type: "a",
+      bindToProps: { href: { utility: "get", parameters: ["props", "href"] } },
       attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
@@ -21,9 +22,10 @@ Deno.test("element with braces inside strings", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: { utility: "concat", parameters: ["foo", "(", "bar", ")"] },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -36,12 +38,13 @@ Deno.test("element with an expression after expression", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: {
           utility: "get",
           parameters: [{ utility: "get", parameters: ["props", "href"] }],
         },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -54,7 +57,7 @@ Deno.test("element with multiple expressions", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: {
           utility: "urlJoin",
           parameters: [
@@ -63,6 +66,7 @@ Deno.test("element with multiple expressions", () => {
           ],
         },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -75,12 +79,13 @@ Deno.test("element with a string after an expression after expression", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: {
           utility: "get",
           parameters: [{ utility: "get", parameters: ["props", "href"] }, "/"],
         },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -93,9 +98,10 @@ Deno.test("element with an expression and multiple parameters", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: { utility: "echo", parameters: ["hello", " ", "world!"] },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -108,12 +114,13 @@ Deno.test("element with a nested expression shortcut for attribute", () => {
     ),
     {
       type: "a",
-      attributes: {
+      bindToProps: {
         href: {
           utility: "urlJoin",
           parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
         },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
       children: [],
     },
   );
@@ -126,7 +133,10 @@ Deno.test("element with an expression shortcut for children", () => {
     ),
     {
       type: "div",
-      children: { utility: "get", parameters: ["props", "href"] },
+      bindToProps: {
+        children: { utility: "get", parameters: ["props", "href"] },
+      },
+      children: { utility: "get", parameters: ["props", "children"] },
       attributes: {},
     },
   );
@@ -139,10 +149,13 @@ Deno.test("element with a nested expression shortcut for children", () => {
     ),
     {
       type: "div",
-      children: {
-        utility: "concat",
-        parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
+      bindToProps: {
+        children: {
+          utility: "concat",
+          parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
+        },
       },
+      children: { utility: "get", parameters: ["props", "children"] },
       attributes: {},
     },
   );
@@ -155,14 +168,17 @@ Deno.test("element with a complex nested expression shortcut for children", () =
     ),
     {
       type: "div",
-      children: {
-        utility: "urlJoin",
-        parameters: [
-          "/",
-          { utility: "get", parameters: ["props", "href"] },
-          "/",
-        ],
+      bindToProps: {
+        children: {
+          utility: "urlJoin",
+          parameters: [
+            "/",
+            { utility: "get", parameters: ["props", "href"] },
+            "/",
+          ],
+        },
       },
+      children: { utility: "get", parameters: ["props", "children"] },
       attributes: {},
     },
   );
@@ -178,7 +194,7 @@ Deno.test("complex expression", () => {
     {
       type: "a",
       children: [],
-      attributes: {
+      bindToProps: {
         href: {
           utility: "urlJoin",
           parameters: [
@@ -191,6 +207,7 @@ Deno.test("complex expression", () => {
           ],
         },
       },
+      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
     },
   );
 });
@@ -287,7 +304,7 @@ Deno.test("element with a class", () => {
     {
       type: "div",
       children: "foo",
-      attributes: {
+      bindToProps: {
         class: {
           utility: "pick",
           parameters: [
@@ -296,6 +313,7 @@ Deno.test("element with a class", () => {
           ],
         },
       },
+      attributes: { class: { utility: "get", parameters: ["props", "class"] } },
     },
   );
 });
