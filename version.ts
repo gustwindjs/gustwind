@@ -1,6 +1,6 @@
 import { compilePlugins } from "./compilePluginScripts.ts";
 
-export const VERSION = "0.58.1";
+export const VERSION = "0.58.2";
 
 export async function prepublish(_version: string) {
   // TODO: Run breezewind tests here
