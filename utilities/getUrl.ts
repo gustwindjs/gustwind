@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 
 function getUrl() {
-  const pathElement = document.querySelector('meta[property="url"]');
+  const pathElement = document.querySelector('meta[property="og:url"]');
 
   if (!pathElement) {
     console.error("url meta field was not found!");
