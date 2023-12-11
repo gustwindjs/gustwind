@@ -5,8 +5,12 @@
 />
 <meta name="description" &content="(get context meta.description)" />
 <meta property="built" &content="(get context meta.built)" />
+<meta property="url" &content="(get context url)" />
 
-<meta property="og:url" &content="(get context url)" />
+<meta
+  property="og:url"
+  &content="(urlJoin (get context meta.url) (trim (get context url) /))"
+/>
 <meta property="og:type" content="website" />
 <meta property="og:site_name" &content="(get context meta.siteName)" />
 <meta property="og:title" &content="(get context meta.title)" />
