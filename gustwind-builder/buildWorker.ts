@@ -47,7 +47,10 @@ self.onmessage = async (e) => {
       payload: tasks,
     });
 
-    if (url.endsWith(".xml") || url.endsWith(".html")) {
+    // TODO: Replace this with a more generic fix somehow
+    if (
+      url.endsWith(".json") || url.endsWith(".xml") || url.endsWith(".html")
+    ) {
       await Deno.writeTextFile(dir, markup);
     } else {
       await fs.ensureDir(dir);
