@@ -35,4 +35,9 @@ async function compileTypeScript(
   return output[0].text;
 }
 
-export { compileTypeScript };
+function stopEsbuild() {
+  // https://esbuild.github.io/getting-started/#deno
+  esbuild.stop();
+}
+
+export { compileTypeScript, stopEsbuild };

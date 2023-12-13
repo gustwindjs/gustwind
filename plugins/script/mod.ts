@@ -1,6 +1,8 @@
-import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import { path } from "../../server-deps.ts";
-import { compileTypeScript } from "../../utilities/compileTypeScript.ts";
+import {
+  compileTypeScript,
+  stopEsbuild,
+} from "../../utilities/compileTypeScript.ts";
 import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -140,10 +142,7 @@ const plugin: Plugin<{
           };
         }
       },
-      cleanUp: () => {
-        // https://esbuild.github.io/getting-started/#deno
-        esbuild.stop();
-      },
+      cleanUp: stopEsbuild,
     };
 
     async function loadScripts(): Promise<{
