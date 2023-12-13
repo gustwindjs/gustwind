@@ -16,6 +16,8 @@ import {
 } from "../../gustwind-utilities/getUtilities.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 const plugin: Plugin<{
   componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
   globalUtilitiesPath: string;
@@ -150,6 +152,8 @@ const plugin: Plugin<{
 
         switch (type) {
           case "fileChanged": {
+            DEBUG && console.log("breezewind-renderer - file changed", payload);
+
             switch (payload.type) {
               case "components": {
                 const components = await loadComponents(pluginContext.loaders);
