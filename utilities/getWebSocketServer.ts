@@ -31,6 +31,7 @@ const getWebsocketServer = (port = 8080) => {
       } else if (type === "reload") {
         ws.send(JSON.stringify({ type: "log", payload: `received ${type}` }));
 
+        // TODO: Use Deno.Command instead
         Deno.run({ cmd: ["touch", path] });
       }
     });

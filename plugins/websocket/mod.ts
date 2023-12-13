@@ -5,6 +5,8 @@ import scriptsToCompile from "./scriptsToCompile.ts";
 import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
   meta: {
     name: "websocket-plugin",
@@ -17,6 +19,13 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
     }
 
     function sendMessage(message: { type: string; payload: unknown }) {
+      DEBUG &&
+        console.log(
+          "websocket-plugin - sending to wss plugins",
+          wss.clients,
+          message,
+        );
+
       wss.clients.forEach((socket) => {
         // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
         if (socket.state === 1) {
@@ -50,6 +59,8 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
       },
       onMessage({ message: { type } }) {
         if (type === "reloadPage") {
+          DEBUG && console.log("websocket-plugin - reload page");
+
           sendMessage({ type: "reloadPage", payload: {} });
         }
 

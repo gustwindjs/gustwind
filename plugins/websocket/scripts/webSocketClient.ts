@@ -35,7 +35,7 @@ function createWebSocket(url?: string) {
       document.head.innerHTML = payload.headMarkup;
       document.body.innerHTML = payload.bodyMarkup;
 
-      // TODO: Resolve and pass tw here
+      // @ts-expect-error TODO: Resolve and pass tw here
       window.createEditor && window.createEditor();
     } else if (type === "reload") {
       console.log("Websocket", "reloading");
@@ -69,7 +69,7 @@ function createWebSocket(url?: string) {
 
         document.body.appendChild(script);
 
-        // TODO: Resolve and pass tw here
+        // @ts-expect-error TODO: Resolve and pass tw here
         window.createEditor && window.createEditor();
       }
     } else {
