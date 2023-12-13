@@ -50,6 +50,8 @@ const plugin: Plugin<{ pluginsPath: string }> = {
             const extension = _path.extname(path);
             const name = _path.basename(path, extension);
 
+            DEBUG && console.log("file changed", match);
+
             // When watching a directory, how to know a file belongs to one with a type
             // I.e., how to know the event came from watching a directory.
             // Likely that needs some path.resolve type of logic
