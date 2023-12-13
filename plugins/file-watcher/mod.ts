@@ -24,7 +24,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
       // add files to Deno.watchFs after it has been created initially.
       onTasksRegistered({ tasks, send }) {
         const pathTypes: { path: string; type: string }[] = [];
-        const paths = tasks.map(({ type, payload }) => {
+        const paths = tasks.flatMap(({ type, payload }) => {
           switch (type) {
             case "readTextFile":
             case "listDirectory":
@@ -37,7 +37,7 @@ const plugin: Plugin<{ pluginsPath: string }> = {
             case "copyFiles":
               return payload.inputDirectory;
           }
-        }).filter(Boolean).flat() as string[]; // TS doesn't infer this case!
+        }).filter(Boolean) as string[]; // TS doesn't infer this case!
 
         DEBUG && console.log("watching paths", paths);
 
