@@ -94,7 +94,7 @@ const plugin: Plugin<{
         const scriptTags = scripts.map(({ name, srcPrefix, ...rest }) => ({
           type: "module",
           ...rest,
-          src: (srcPrefix || "/") + name.replace(".ts", ".js"),
+          src: (srcPrefix || "./") + name.replace(".ts", ".js"),
         }));
 
         // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
