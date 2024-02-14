@@ -124,7 +124,8 @@
     "meta": {
       "title": "Component viewer",
       "description": "View system components on this page"
-    }
+    },
+    "scripts": [{ "name": "componentPlayground" }]
   },
   "atom.xml": {
     "layout": "rssPage",

@@ -1,9 +1,13 @@
 <BaseLayout
-  &x-state="(concat '{
+  x-state="{
     selectedComponent: (new window.URL(document.location)).hash.slice(1),
-    components: atob(`' (btoa (get context components))
-    '`) }'
-  )"
+    components: {}
+  }"
+  x-promise="{
+    state: {
+      components: fetch('/components.json').then(res => res.json())
+    }
+  }"
 >
   <slot name="aside">
     <ComponentSelector &components="(get context components)" />

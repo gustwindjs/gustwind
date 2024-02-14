@@ -28,7 +28,7 @@
   </head>
   <body>
     <MainNavigation />
-    <div &x-state="(get props x-state)">
+    <div &x-promise="(get props x-promise)" &x-state="(get props x-state)">
       <aside
         class="fixed top-16 pl-4 hidden lg:inline"
         &children="(render (get props aside))"
