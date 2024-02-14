@@ -1,0 +1,12 @@
+<BaseLayout
+  &x-state="(concat '{ selectedComponent: null, components: atob(`' (btoa (get context components)) '`) }' })"
+>
+  <slot name="aside">
+    <ComponentSelector &components="(get context components)" />
+  </slot>
+  <slot name="content">
+    <div class="md:mx-auto px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl">
+      <ComponentViewer />
+    </div>
+  </slot>
+</BaseLayout>

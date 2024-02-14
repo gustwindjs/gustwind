@@ -119,6 +119,13 @@
       }
     }
   },
+  "component-viewer": {
+    "layout": "componentViewerPage",
+    "meta": {
+      "title": "Component viewer",
+      "description": "View system components on this page"
+    }
+  },
   "atom.xml": {
     "layout": "rssPage",
     "meta": {

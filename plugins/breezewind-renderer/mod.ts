@@ -5,6 +5,7 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { isObject } from "../../utilities/functional.ts";
 import {
   type Components,
   initLoaders,
@@ -284,7 +285,16 @@ function renderHTML(
       breezeExtensions.visibleIf,
       breezeExtensions.foreach,
     ],
-    context,
+    context: {
+      ...context,
+      components: isObject(components)
+        // @ts-expect-error This is fine
+        ? Object.entries(components).map(([name, component]) => ({
+          name,
+          component,
+        }))
+        : {},
+    },
     globalUtilities,
     componentUtilities,
   });
