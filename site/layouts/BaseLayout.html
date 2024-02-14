@@ -26,13 +26,15 @@
     />
     <MetaFields />
   </head>
-  <body &x-state="(get props x-state)">
+  <body>
     <MainNavigation />
-    <aside
-      class="fixed top-16 pl-4 hidden lg:inline"
-      &children="(render (get props aside))"
-    ></aside>
-    <main &children="(render (get props content))"></main>
+    <div &x-state="(get props x-state)">
+      <aside
+        class="fixed top-16 pl-4 hidden lg:inline"
+        &children="(render (get props aside))"
+      ></aside>
+      <main &children="(render (get props content))"></main>
+    </div>
     <MainFooter />
     <Scripts />
   </body>

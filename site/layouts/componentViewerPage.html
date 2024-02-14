@@ -1,5 +1,9 @@
 <BaseLayout
-  &x-state="(concat '{ selectedComponent: null, components: atob(`' (btoa (get context components)) '`) }' })"
+  &x-state="(concat '{
+    selectedComponent: (new window.URL(document.location)).hash.slice(1),
+    components: atob(`' (btoa (get context components))
+    '`) }'
+  )"
 >
   <slot name="aside">
     <ComponentSelector &components="(get context components)" />
