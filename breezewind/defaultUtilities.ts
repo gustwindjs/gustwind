@@ -6,7 +6,9 @@ import type { Context } from "./types.ts";
 const defaultUtilities = {
   id: (s: unknown) => s,
   equals: (a: unknown, b: unknown) => a === b,
-  pick: (predicate: boolean, s: unknown) => predicate && s,
+  pick: function pick(predicate: boolean, s: unknown) {
+    return predicate ? s : "";
+  },
   or: (...parts: unknown[]) => parts.some((p) => !!p),
   and: (...parts: unknown[]) => parts.every((p) => !!p),
   concat: (...parts: string[]) => parts.join(""),
