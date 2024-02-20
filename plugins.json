@@ -1,56 +1,61 @@
-[
-  {
-    "path": "./plugins/config-router/mod.ts",
-    "options": {
-      "dataSourcesPath": "./site/dataSources.ts",
-      "routesPath": "./site/routes.json",
-      "emitAllRoutes": true
+{
+  "env": {
+    "DEMO": "this value is available for plugin paths through ${DEMO} syntax"
+  },
+  "plugins": [
+    {
+      "path": "./plugins/config-router/mod.ts",
+      "options": {
+        "dataSourcesPath": "./site/dataSources.ts",
+        "routesPath": "./site/routes.json",
+        "emitAllRoutes": true
+      }
+    },
+    {
+      "path": "./plugins/meta/mod.ts",
+      "options": {
+        "inputPath": "./site/meta.json"
+      }
+    },
+    {
+      "path": "./plugins/breezewind-renderer/mod.ts",
+      "options": {
+        "componentLoaders": [
+          { "loader": "html", "path": "./site/components" },
+          { "loader": "html", "path": "./site/layouts" }
+        ],
+        "globalUtilitiesPath": "./site/globalUtilities.ts"
+      }
+    },
+    {
+      "path": "./plugins/copy/mod.ts",
+      "options": {
+        "inputPath": "./assets",
+        "outputPath": "./assets"
+      }
+    },
+    {
+      "path": "./plugins/pagefind/mod.ts",
+      "options": {}
+    },
+    {
+      "path": "./plugins/script/mod.ts",
+      "options": {
+        "scriptsPath": ["./site/scripts"]
+      }
+    },
+    {
+      "path": "./plugins/twind/mod.ts",
+      "options": { "setupPath": "./site/twindSetup.ts" }
+    },
+    {
+      "path": "./plugins/editor/mod.ts"
+    },
+    {
+      "path": "./plugins/sitemap/mod.ts"
+    },
+    {
+      "path": "./plugins/stats/mod.ts"
     }
-  },
-  {
-    "path": "./plugins/meta/mod.ts",
-    "options": {
-      "inputPath": "./site/meta.json"
-    }
-  },
-  {
-    "path": "./plugins/breezewind-renderer/mod.ts",
-    "options": {
-      "componentLoaders": [
-        { "loader": "html", "path": "./site/components" },
-        { "loader": "html", "path": "./site/layouts" }
-      ],
-      "globalUtilitiesPath": "./site/globalUtilities.ts"
-    }
-  },
-  {
-    "path": "./plugins/copy/mod.ts",
-    "options": {
-      "inputPath": "./assets",
-      "outputPath": "./assets"
-    }
-  },
-  {
-    "path": "./plugins/pagefind/mod.ts",
-    "options": {}
-  },
-  {
-    "path": "./plugins/script/mod.ts",
-    "options": {
-      "scriptsPath": ["./site/scripts"]
-    }
-  },
-  {
-    "path": "./plugins/twind/mod.ts",
-    "options": { "setupPath": "./site/twindSetup.ts" }
-  },
-  {
-    "path": "./plugins/editor/mod.ts"
-  },
-  {
-    "path": "./plugins/sitemap/mod.ts"
-  },
-  {
-    "path": "./plugins/stats/mod.ts"
-  }
-]
+  ]
+}

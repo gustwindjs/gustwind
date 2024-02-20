@@ -1,15 +1,12 @@
-import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { isObject } from "../utilities/functional.ts";
 import type { PluginOptions } from "../types.ts";
 
 async function evaluatePluginsDefinition(pluginsPath: string) {
-  const definition = await Deno.readTextFile(pluginsPath).then((d) =>
+  const { env, plugins } = await Deno.readTextFile(pluginsPath).then((d) =>
     JSON.parse(d)
   );
-  const env = config();
   const fieldEvaluator = getFieldEvaluator(env);
-
-  const ret = fieldEvaluator(definition);
+  const ret = fieldEvaluator(plugins);
 
   // TODO: Drop as and type field evaluator more accurately
   return ret as PluginOptions[];
