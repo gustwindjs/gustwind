@@ -209,7 +209,7 @@ type Route = {
   expand?: {
     matchBy?: {
       indexer: DataSource;
-      dataSources: (DataSource & { firstParameter: string })[];
+      dataSources: DataSource[];
       slug: string;
     };
   };

@@ -95,7 +95,7 @@ async function expandRoute(
         const { context, capturedParameters } = await getDataSourceContext(
           matchByDataSources.map((dataSource) => ({
             ...dataSource,
-            parameters: [get(match, dataSource.firstParameter)].concat(
+            parameters: [match].concat(
               dataSource.parameters,
             ),
           })),
