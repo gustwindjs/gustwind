@@ -1,10 +1,19 @@
-# Templating
+# HTMLisp
 
-In Gustwind, templating is handled as a combination of standard HTML and several non-standard extensions that have been described in detail below. Technically the syntax is converted to [Breezewind](/breezewind) syntax underneath and the syntax exists to make authoring Gustwind sites faster and easier as most of the time you can copy and paste existing HTML to your project.
+HTMLisp is a light extension of HTML meant for templating. In other words, HTMLisp accepts a context, allows binding it, and supports basic features, such as iteration. All the features have been implemented using as HTML attribute extensions meaning HTML-oriented tooling works well with HTMLisp out of the box. HTMLisp is the default option for templating in Gustwind although technically you could bring your own solution.
+
+I've listed the main features below:
+
+* Support for data binding from global context or props
+* Named components - these allow reuse of markup and building your own abstractions that compile to HTML
+* Iteration - to allow expanding arrays into more complex markup, such as a list, iteration is supported
+* Visibility control - hiding entire portions of markup is possible
+* Noop fragments - for some cases it makes sense to execute logic without emitting an element directly (i.e., iterating without emitting a parent element)
+* `eval` free - to support execution in environments without support for JavaScript `eval` the solution does not rely on `eval`
 
 ## Expressions
 
-If you understand how Lisp works, then you understand how Gustwind templating works. To give a concrete example, consider the component example below:
+If you understand how Lisp evaluation works, then you understand how Gustwind templating works. To give a concrete example, consider the component example below:
 
 ```html
 <div>
@@ -19,9 +28,9 @@ That `(get props data.title)` expression should be read as `get('props', 'data.t
 
 The latter binding illustrates how expressions can be nested and `(concat blog / (get props data.slug))` can be read as `concat('blog', '/' , get('props', 'data.slug'))`.
 
-## Looping
+## Iteration
 
-To allow looping over data, there is a specific `&foreach` syntax as shown below:
+To allow iteration over data, there is a specific `&foreach` syntax as shown below:
 
 ```html
 <ul &foreach="(get context blogPosts)">

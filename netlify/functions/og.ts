@@ -2,7 +2,7 @@
 import { Buffer } from "buffer";
 import { promises as fs } from "fs";
 import htm from "htm";
-import { getConverter } from "../../html-to-breezewind/convert.ts";
+import { getConverter } from "../../htmlisp/convert.ts";
 import sharp from "sharp";
 import type { Handler, HandlerEvent } from "@netlify/functions";
 import breezewind from "../../breezewind/mod.ts";

@@ -40,37 +40,18 @@
       }
     }
   },
-  "breezewind": {
-    "layout": "readmeIndex",
-    "meta": {
-      "title": "Breezewind",
-      "description": "Breezing fast templating",
-      "readmePath": "breezewind/README.md"
-    },
-    "dataSources": [
-      {
-        "operation": "processMarkdown",
-        "parameters": [
-          { "path": "./breezewind/README.md" },
-          { "skipFirstLine": false }
-        ],
-        "name": "readme"
-      }
-    ],
-    "scripts": [{ "name": "breezewindPlayground" }]
-  },
   "templating": {
     "layout": "readmeIndex",
     "meta": {
-      "title": "Templating",
-      "description": "Templating in Gustwind is done using a combination of HTML and Lisp",
-      "readmePath": "html-to-breezewind/README.md"
+      "title": "HTMLisp",
+      "description": "Templating in Gustwind by default is done using a combination of HTML and Lisp",
+      "readmePath": "htmlisp/README.md"
     },
     "dataSources": [
       {
         "operation": "processMarkdown",
         "parameters": [
-          { "path": "./html-to-breezewind/README.md" },
+          { "path": "./htmlisp/README.md" },
           { "skipFirstLine": false }
         ],
         "name": "readme"
