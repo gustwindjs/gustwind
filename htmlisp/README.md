@@ -125,6 +125,8 @@ Use the playground below to experiment with the syntax and see how it converts t
 
 :TemplatingPlayground:
 
+> Note that this playground works only on [Gustwind website](https://gustwind.js.org/templating/).
+
 ## License
 
 MIT.
