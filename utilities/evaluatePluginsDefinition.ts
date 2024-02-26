@@ -1,4 +1,4 @@
-import { isObject } from "../utilities/functional.ts";
+import { isObject } from "./functional.ts";
 import type { PluginOptions } from "../types.ts";
 
 async function evaluatePluginsDefinition(pluginsPath: string) {

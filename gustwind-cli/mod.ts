@@ -13,7 +13,7 @@ import { cleanUpPlugins, importPlugin } from "../gustwind-utilities/plugins.ts";
 import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
 import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
-import { evaluatePluginsDefinition } from "./evaluatePluginsDefinition.ts";
+import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
 
 function usage() {
   console.log(`
