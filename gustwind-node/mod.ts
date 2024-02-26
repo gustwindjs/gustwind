@@ -1,13 +1,12 @@
-import { path } from "../server-deps.ts";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
+import type { PluginsDefinition } from "../types.ts";
 
-async function build(pluginsLookupPath: string, url: string) {
-  const cwd = Deno.cwd();
-  const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-  const pluginDefinitions = await evaluatePluginsDefinition(pluginsPath);
+async function build(pluginsDefinition: PluginsDefinition, url: string) {
+  const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
   const { plugins, router } = await importPlugins({
-    cwd,
+    // TODO: Drop dependency on cwd somehow
+    cwd: Deno.cwd(),
     pluginDefinitions,
     outputDirectory: "",
     mode: "production",

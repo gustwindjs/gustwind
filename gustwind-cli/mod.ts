@@ -106,7 +106,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
   if (develop) {
     const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-    const pluginDefinitions = await evaluatePluginsDefinition(pluginsPath);
+    const pluginsDefinition = await Deno.readTextFile(pluginsPath).then((d) =>
+      JSON.parse(d)
+    );
+    const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
     const mode = "development";
     const startTime = performance.now();
 
@@ -187,7 +190,10 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
 
   if (build) {
     const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-    const pluginDefinitions = await evaluatePluginsDefinition(pluginsPath);
+    const pluginsDefinition = await Deno.readTextFile(pluginsPath).then((d) =>
+      JSON.parse(d)
+    );
+    const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
     await buildProject({ cwd, outputDirectory, pluginDefinitions, threads });
 
     return 0;
