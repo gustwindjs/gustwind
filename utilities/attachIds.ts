@@ -1,4 +1,4 @@
-import { nanoid } from "../server-deps.ts";
+import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
 import { isObject } from "./functional.ts";
 import type { Component } from "../breezewind/types.ts";
 

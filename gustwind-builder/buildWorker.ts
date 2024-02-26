@@ -1,7 +1,8 @@
 /// <reference no-default-lib="true" />
 /// <reference lib="deno.worker" />
+import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import { fs, nanoid, path } from "../server-deps.ts";
+import { fs, path } from "../server-deps.ts";
 import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
 import type { BuildWorkerEvent } from "../types.ts";
 
