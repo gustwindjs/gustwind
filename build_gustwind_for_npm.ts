@@ -8,13 +8,14 @@ async function buildForNpm(name: string, version: string) {
     return;
   }
 
-  const outDir = `./${name}/npm`;
+  const entryDir = "./gustwind-node";
+  const outDir = `./${entryDir}/npm`;
 
   await emptyDir(outDir);
 
   await build({
-    entryPoints: [`./gustwind-cli/mod.ts`],
-    scriptModule: false, // ESM only (allows top level awaits)
+    entryPoints: [path.join(entryDir, "mod.ts")],
+    // scriptModule: false, // ESM only (allows top level awaits)
     outDir,
     shims: {
       deno: true,
@@ -23,7 +24,7 @@ async function buildForNpm(name: string, version: string) {
     package: {
       name,
       version,
-      description: "JSON oriented site generator",
+      description: "Flexible site generator",
       license: "MIT",
       repository: {
         type: "git",
@@ -32,14 +33,18 @@ async function buildForNpm(name: string, version: string) {
       bugs: {
         url: "https://github.com/survivejs/gustwind/issues",
       },
-      bin: "./src/cli.js",
+      // TODO: No cli included for now
+      // bin: "./src/cli.js",
       homepage: "https://gustwind.js.org/",
-      keywords: ["ssg", "json", "site-generation", "static-site-generator"],
+      keywords: ["ssg", "site-generation", "static-site-generator"],
     },
   });
 
   Deno.copyFileSync("LICENSE", path.join(outDir, "LICENSE"));
-  Deno.copyFileSync("README.md", path.join(outDir, "README.md"));
+  Deno.copyFileSync(
+    path.join(entryDir, "README.md"),
+    path.join(outDir, "README.md"),
+  );
 }
 
 buildForNpm("gustwind", Deno.args[0]);
