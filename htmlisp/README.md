@@ -18,15 +18,15 @@ If you understand how Lisp evaluation works, then you understand how Gustwind te
 ```html
 <div>
   <SiteLink
-    &children="(get props data.title)"
-    &href="(urlJoin blog (get props data.slug))"
+    &children="(get props title)"
+    &href="(urlJoin blog (get props slug))"
   />
 </div>
 ```
 
-That `(get props data.title)` expression should be read as `get('props', 'data.title'` call. Note the `&` before the attribute name as that signifies an expression binding.
+That `(get props title)` expression should be read as `get('props', 'title'` call. Note the `&` before the attribute name as that signifies an expression binding.
 
-The latter binding illustrates how expressions can be nested and `(concat blog / (get props data.slug))` can be read as `concat('blog', '/' , get('props', 'data.slug'))`.
+The latter binding illustrates how expressions can be nested and `(concat blog / (get props slug))` can be read as `concat('blog', '/' , get('props', 'slug'))`.
 
 ## Iteration
 
@@ -36,8 +36,8 @@ To allow iteration over data, there is a specific `&foreach` syntax as shown bel
 <ul &foreach="(get context blogPosts)">
   <li class="inline">
     <SiteLink
-      &children="(get props data.title)"
-      &href="(urlJoin blog (get props data.slug))"
+      &children="(get props title)"
+      &href="(urlJoin blog (get props slug))"
     />
   </li>
 </ul>
