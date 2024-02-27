@@ -1,4 +1,4 @@
-import { path } from "../server-deps.ts";
+import { join as joinPath } from "https://deno.land/std@0.217.0/path/join.ts";
 import type {
   Context,
   InitLoadApi,
@@ -56,7 +56,7 @@ async function importPlugins(
       pluginModule: await import(
         pluginDefinition.path.startsWith("http")
           ? pluginDefinition.path
-          : path.join(cwd, pluginDefinition.path)
+          : joinPath(cwd, pluginDefinition.path)
       )
         .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
