@@ -137,7 +137,9 @@ async function importPlugin(
         return import(
           `file://${payload.path}?cache=${new Date().getTime()}`,
           {
-            with: { type: "json" },
+            // TODO: For now, Node (dnt) build needs this although `with` is used by Deno
+            assert: { type: "json" },
+            // with: { type: "json" },
           }
         ).then((m) => m.default) as Promise<T>;
       },
