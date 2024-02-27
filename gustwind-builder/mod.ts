@@ -5,6 +5,7 @@ import {
   importPlugins,
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
+import { initLoadApi } from "../load-adapters/deno.ts";
 import { createWorkerPool } from "./createWorkerPool.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 
@@ -45,6 +46,7 @@ async function build(
     cwd,
     pluginDefinitions,
     outputDirectory,
+    initLoadApi,
     mode: "production",
   });
   const prepareTasks = await preparePlugins(plugins);

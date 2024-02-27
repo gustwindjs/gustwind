@@ -44,6 +44,7 @@ type PluginParameters<O = Record<string, unknown>> = {
   options: O;
 };
 
+type InitLoadApi = (tasks: Tasks) => LoadApi;
 type LoadApi = {
   dir({ path, extension, recursive, type }: {
     path: string;
@@ -297,6 +298,7 @@ export type {
   DataSources,
   DataSourcesModule,
   GlobalUtilities,
+  InitLoadApi,
   LoadApi,
   Meta,
   Mode,

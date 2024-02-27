@@ -3,6 +3,7 @@
 import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { fs, path } from "../server-deps.ts";
+import { initLoadApi } from "../load-adapters/deno.ts";
 import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
 import type { BuildWorkerEvent } from "../types.ts";
 
@@ -25,6 +26,7 @@ self.onmessage = async (e) => {
       cwd,
       pluginDefinitions,
       outputDirectory,
+      initLoadApi,
       mode,
     });
     plugins = ret.plugins;

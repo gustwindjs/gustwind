@@ -14,6 +14,7 @@ import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
 import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
 import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
+import { initLoadApi } from "../load-adapters/deno.ts";
 
 function usage() {
   console.log(`
@@ -124,6 +125,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
           pluginModule: fileWatcherPlugin,
           options: { pluginsPath },
           outputDirectory,
+          initLoadApi,
           mode,
         }),
         await importPlugin({
@@ -131,6 +133,7 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
           pluginModule: webSocketPlugin,
           options: { wss },
           outputDirectory,
+          initLoadApi,
           mode,
         }),
       ],

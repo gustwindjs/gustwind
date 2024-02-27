@@ -1,12 +1,11 @@
 import { path } from "../server-deps.ts";
-import { dir } from "../utilities/fs.ts";
 import type {
   Context,
+  InitLoadApi,
   Mode,
   Plugin,
   PluginApi,
   PluginOptions,
-  PluginParameters,
   Route,
   Routes,
   Send,
@@ -27,12 +26,14 @@ async function importPlugins(
     initialImportedPlugins,
     pluginDefinitions,
     outputDirectory,
+    initLoadApi,
     mode,
   }: {
     cwd: string;
     initialImportedPlugins?: LoadedPlugin[];
     pluginDefinitions: PluginOptions[];
     outputDirectory: string;
+    initLoadApi: InitLoadApi;
     mode: Mode;
   },
 ) {
@@ -60,6 +61,7 @@ async function importPlugins(
         .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
       outputDirectory,
+      initLoadApi,
       mode,
     });
     initialTasks = initialTasks.concat(tasks);
@@ -105,11 +107,12 @@ async function importPlugins(
 }
 
 async function importPlugin(
-  { cwd, pluginModule, options, outputDirectory, mode }: {
+  { cwd, pluginModule, options, outputDirectory, initLoadApi, mode }: {
     cwd: string;
     pluginModule: Plugin;
     options: Record<string, unknown>;
     outputDirectory: string;
+    initLoadApi: InitLoadApi;
     mode: Mode;
   },
 ): Promise<LoadedPlugin> {
@@ -119,55 +122,7 @@ async function importPlugin(
     mode,
     options,
     outputDirectory,
-    // TODO: Should it be possible to override the load API? That might help with CF
-    load: {
-      dir({ path, extension, recursive, type }) {
-        tasks.push({
-          type: "listDirectory",
-          payload: { path, type },
-        });
-
-        return dir({ path, extension, recursive });
-      },
-      json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
-        tasks.push({ type: "loadJSON", payload });
-
-        // TODO: Is it enough to support only local paths here?
-        // https://examples.deno.land/importing-json
-        return import(
-          `file://${payload.path}?cache=${new Date().getTime()}`,
-          {
-            // TODO: For now, Node (dnt) build needs this although `with` is used by Deno
-            assert: { type: "json" },
-            // with: { type: "json" },
-          }
-        ).then((m) => m.default) as Promise<T>;
-      },
-      module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
-        tasks.push({ type: "loadModule", payload });
-
-        // TODO: Is it enough to support only local paths here?
-        return import(
-          `file://${payload.path}?cache=${new Date().getTime()}`
-        ) as Promise<T>;
-      },
-      textFile(path: string) {
-        tasks.push({
-          type: "readTextFile",
-          payload: { path, type: "" },
-        });
-
-        return Deno.readTextFile(path);
-      },
-      textFileSync(path: string) {
-        tasks.push({
-          type: "readTextFile",
-          payload: { path, type: "" },
-        });
-
-        return Deno.readTextFileSync(path);
-      },
-    },
+    load: initLoadApi(tasks),
   });
 
   return {

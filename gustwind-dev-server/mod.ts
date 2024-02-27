@@ -1,5 +1,6 @@
 import { contentType } from "https://deno.land/std@0.207.0/media_types/mod.ts";
 import { path } from "../server-deps.ts";
+import { initLoadApi } from "../load-adapters/deno.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyOnTasksRegistered,
@@ -31,6 +32,7 @@ async function gustwindDevServer({
     initialImportedPlugins,
     pluginDefinitions,
     mode,
+    initLoadApi,
     // Output directory doesn't matter for the server since it's
     // using a virtual fs.
     outputDirectory: "",
