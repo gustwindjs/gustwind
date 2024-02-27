@@ -37,4 +37,5 @@ async function build(
   return { markup, tasks: initialTasks.concat(routeTasks) };
 }
 
+export type * from "../types.ts";
 export { build };
