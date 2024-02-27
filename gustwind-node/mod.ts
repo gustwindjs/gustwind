@@ -1,16 +1,16 @@
+import process from "node:process";
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
 import type { InitLoadApi, PluginsDefinition } from "../types.ts";
 
 async function build(
-  cwd: string,
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
   pluginsDefinition: PluginsDefinition,
   url: string,
 ) {
   const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
   const { plugins, router } = await importPlugins({
-    cwd,
+    cwd: process.cwd(),
     pluginDefinitions,
     initLoadApi,
     outputDirectory: "",
