@@ -12,7 +12,8 @@ import type {
   Tasks,
 } from "../types.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
+// TODO: Inject this to the module from outside somehow
+// const DEBUG = Deno.env.get("DEBUG") === "1";
 
 export type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
@@ -430,7 +431,7 @@ async function applyAfterEachRenders(
 function getSend(plugins: PluginDefinition[]): Send {
   return async (pluginName, message) => {
     if (pluginName === "*") {
-      DEBUG && console.log("Send to all", message);
+      // DEBUG && console.log("Send to all", message);
 
       const messageResults = (await Promise.all(
         plugins.map(async (plugin) => {
@@ -456,8 +457,8 @@ function getSend(plugins: PluginDefinition[]): Send {
       // @ts-expect-error Make typing more strict here
       const results = messageResults.flatMap((s) => s.result).filter(Boolean);
 
-      DEBUG &&
-        console.log("Send to all, received from plugins", sends, results);
+      // DEBUG &&
+      //  console.log("Send to all, received from plugins", sends, results);
 
       // TODO: What to do with sends triggered by messages? Maybe it would be
       // better to drop support for this and handle it otherwise?
