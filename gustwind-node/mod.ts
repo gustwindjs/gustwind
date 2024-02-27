@@ -3,14 +3,14 @@ import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinitio
 import type { InitLoadApi, PluginsDefinition } from "../types.ts";
 
 async function build(
+  cwd: string,
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
   pluginsDefinition: PluginsDefinition,
   url: string,
 ) {
   const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
   const { plugins, router } = await importPlugins({
-    // TODO: Drop dependency on cwd somehow
-    cwd: Deno.cwd(),
+    cwd,
     pluginDefinitions,
     initLoadApi,
     outputDirectory: "",
