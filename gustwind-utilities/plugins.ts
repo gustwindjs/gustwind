@@ -119,6 +119,7 @@ async function importPlugin(
     mode,
     options,
     outputDirectory,
+    // TODO: Should it be possible to override the load API? That might help with CF
     load: {
       dir({ path, extension, recursive, type }) {
         tasks.push({
@@ -128,10 +129,17 @@ async function importPlugin(
 
         return dir({ path, extension, recursive });
       },
-      json(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
+      json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
         tasks.push({ type: "loadJSON", payload });
 
-        return Deno.readTextFile(payload.path).then((d) => JSON.parse(d));
+        // TODO: Is it enough to support only local paths here?
+        // https://examples.deno.land/importing-json
+        return import(
+          `file://${payload.path}?cache=${new Date().getTime()}`,
+          {
+            with: { type: "json" },
+          }
+        ).then((m) => m.default) as Promise<T>;
       },
       module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
         tasks.push({ type: "loadModule", payload });
@@ -139,7 +147,7 @@ async function importPlugin(
         // TODO: Is it enough to support only local paths here?
         return import(
           `file://${payload.path}?cache=${new Date().getTime()}`
-        ) as T;
+        ) as Promise<T>;
       },
       textFile(path: string) {
         tasks.push({
