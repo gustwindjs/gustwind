@@ -14,6 +14,8 @@ async function compileTypeScript(
     minify: mode === "production",
     bundle: true,
     format: "esm",
+    // platform: "node" is needed because of "node:path" style imports
+    platform: "node",
     target: ["esnext"],
     treeShaking: true,
     write: false,
