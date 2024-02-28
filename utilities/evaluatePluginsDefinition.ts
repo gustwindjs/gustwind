@@ -3,10 +3,14 @@ import type { PluginsDefinition } from "../types.ts";
 function evaluatePluginsDefinition(
   { env, plugins }: PluginsDefinition,
 ): PluginsDefinition["plugins"] {
-  return plugins.map((plugin) => ({
-    ...plugin,
-    path: stringTemplateParser(plugin.path, env),
-  }));
+  // @ts-expect-error This is fine. There is some weirdness in the type definition or TypeScript
+  return plugins.map((plugin) =>
+    plugin.module ? plugin : ({
+      ...plugin,
+      module: null,
+      path: stringTemplateParser(plugin.path, env),
+    })
+  );
 }
 
 // https://stackoverflow.com/a/56920019/228885
