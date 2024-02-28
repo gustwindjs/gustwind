@@ -14,12 +14,13 @@ async function buildForNpm(name: string, version: string) {
     "copy",
     // editor is experimental so don't expose it
     // "editor",
-    // It doesn't make sese to expose file-watcher for Node
+    // It doesn't make sense to expose file-watcher for Node
     // "file-watcher",
     "meta",
     "og",
     "pagefind",
-    "script",
+    // Omit script plugin for now
+    // "script",
     "sitemap",
     "stats",
     "twind",
