@@ -9,7 +9,7 @@ const plugin: Plugin<{
     name: "gustwind-twind-plugin",
     description:
       "${name} implements Twind styling integration to the site giving access to Tailwind semantics.",
-    dependsOn: ["gustwind-script-plugin"],
+    dependsOn: [],
   },
   init: ({ cwd, options }) => {
     const twindSetupPath = path.join(cwd, options.setupPath);

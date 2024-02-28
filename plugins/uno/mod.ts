@@ -11,7 +11,7 @@ const plugin: Plugin<{
     name: "gustwind-uno-plugin",
     description:
       "${name} implements Uno styling integration to the site giving access to Uno semantics.",
-    dependsOn: ["gustwind-script-plugin"],
+    dependsOn: [],
   },
   init: ({ cwd, options }) => {
     const unoSetupPath = path.join(cwd, options.setupPath);

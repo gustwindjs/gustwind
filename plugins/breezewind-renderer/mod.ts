@@ -30,7 +30,10 @@ const plugin: Plugin<{
     name: "breezewind-renderer-plugin",
     description:
       "${name} implements Breezewind based templating (JSON) and provides a HTML/Lisp based wrapper for bare JSON.",
-    dependsOn: ["gustwind-twind-plugin", "gustwind-meta-plugin"],
+    dependsOn: [
+      "gustwind-meta-plugin",
+      "gustwind-script-plugin",
+    ],
   },
   init({
     cwd,
