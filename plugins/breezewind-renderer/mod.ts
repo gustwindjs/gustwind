@@ -1,4 +1,4 @@
-import { path } from "../../server-deps.ts";
+import * as path from "node:path";
 import breezewind from "../../breezewind/mod.ts";
 import type { Component } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";

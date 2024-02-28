@@ -1,6 +1,6 @@
+import * as path from "node:path";
 // Note that this depends on --allow-ffi
 import sharp from "npm:sharp@0.33.0";
-import { path } from "../../server-deps.ts";
 import { htmlToBreezewind } from "../../htmlisp/mod.ts";
 import breezewind from "../../breezewind/mod.ts";
 import type { Plugin } from "../../types.ts";

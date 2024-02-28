@@ -1,5 +1,5 @@
+import * as _path from "node:path";
 import { walk } from "https://deno.land/std@0.207.0/fs/walk.ts";
-import { path as _path } from "../server-deps.ts";
 
 async function dir(
   { path, extension, recursive }: {

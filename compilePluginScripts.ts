@@ -1,5 +1,6 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
-import { fs, path } from "./server-deps.ts";
+import * as path from "node:path";
+import * as fs from "https://deno.land/std@0.207.0/fs/mod.ts";
 import { compileTypeScript } from "./utilities/compileTypeScript.ts";
 import editorScriptsToCompile from "./plugins/editor/scriptsToCompile.ts";
 import webSocketScriptsToCompile from "./plugins/websocket/scriptsToCompile.ts";

@@ -3,7 +3,7 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import { path } from "../server-deps.ts";
+import * as path from "node:path";
 import * as flags from "https://deno.land/std@0.207.0/flags/mod.ts";
 import { VERSION } from "../version.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";

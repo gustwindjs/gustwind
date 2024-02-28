@@ -1,4 +1,4 @@
-import { path } from "../server-deps.ts";
+import * as path from "node:path";
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 

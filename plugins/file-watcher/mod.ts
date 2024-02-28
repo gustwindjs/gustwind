@@ -1,4 +1,4 @@
-import { path as _path } from "../../server-deps.ts";
+import * as _path from "node:path";
 import { watch } from "../../utilities/watch.ts";
 import type { Plugin } from "../../types.ts";
 

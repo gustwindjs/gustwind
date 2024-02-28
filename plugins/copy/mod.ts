@@ -1,4 +1,4 @@
-import { path } from "../../server-deps.ts";
+import * as path from "node:path";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{

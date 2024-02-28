@@ -1,6 +1,6 @@
+import * as path from "node:path";
 import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import { path } from "../../server-deps.ts";
 import { trim } from "../../utilities/string.ts";
 import type {
   DataSources,

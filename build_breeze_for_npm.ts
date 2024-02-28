@@ -1,5 +1,5 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
-import { path } from "./server-deps.ts";
+import * as path from "node:path";
 
 async function buildForNpm(name: string, version: string) {
   if (!version) {

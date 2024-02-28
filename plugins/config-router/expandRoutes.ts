@@ -1,4 +1,4 @@
-import { path as _path } from "../../server-deps.ts";
+import * as _path from "node:path";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import { get } from "../../utilities/functional.ts";

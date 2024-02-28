@@ -1,8 +1,8 @@
+import * as path from "node:path";
 import {
   generateSitemap,
   sitemapToXML,
 } from "https://deno.land/x/sitemap@v1.1.1/mod.ts";
-import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
 // Note that this works only in production mode for now!

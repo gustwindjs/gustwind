@@ -1,5 +1,5 @@
+import * as path from "node:path";
 import * as pagefind from "npm:pagefind@1.0.3";
-import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin = {

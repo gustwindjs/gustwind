@@ -1,5 +1,5 @@
+import * as path from "node:path";
 import { extract, install } from "https://esm.sh/@twind/core@1.1.1";
-import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{

@@ -1,5 +1,5 @@
+import * as path from "node:path";
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { path } from "../server-deps.ts";
 import { htmlToBreezewind } from "../htmlisp/mod.ts";
 import type { Component } from "../breezewind/types.ts";
 import type { GlobalUtilities } from "../types.ts";

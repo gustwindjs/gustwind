@@ -1,7 +1,7 @@
+import * as path from "node:path";
 import { createGenerator } from "https://esm.sh/@unocss/core@0.57.2";
 import { presetUno } from "https://esm.sh/@unocss/preset-uno@0.57.2";
 import { presetWind } from "https://esm.sh/@unocss/preset-wind@0.57.2";
-import { path } from "../../server-deps.ts";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{

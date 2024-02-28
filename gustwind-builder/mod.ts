@@ -1,4 +1,5 @@
-import { fs, path } from "../server-deps.ts";
+import * as path from "node:path";
+import * as fs from "https://deno.land/std@0.207.0/fs/mod.ts";
 import {
   cleanUpPlugins,
   finishPlugins,
