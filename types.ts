@@ -19,7 +19,17 @@ type PluginsDefinition = {
   env: Record<string, string>;
   plugins: PluginOptions[];
 };
-type PluginOptions = { path: string; options: Record<string, unknown> };
+type PluginOptions = {
+  // The idea is that the consumer can provide an already loaded module. This
+  // is needed for environments like the browser or edge computing platforms.
+  module: Plugin;
+  path: never;
+  options: Record<string, unknown>;
+} | {
+  module: never;
+  path: string;
+  options: Record<string, unknown>;
+};
 
 type Meta = Record<string, string>;
 type Mode = "development" | "production";
