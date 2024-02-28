@@ -7,15 +7,43 @@ async function buildForNpm(name: string, version: string) {
 
     return;
   }
-
+  // TODO: Generate plugin entry points automatically based on the file system
+  const pluginNames = [
+    "breezewind-renderer",
+    "config-router",
+    "copy",
+    // editor is experimental so don't expose it
+    // "editor",
+    // It doesn't make sese to expose file-watcher for Node
+    // "file-watcher",
+    "meta",
+    "og",
+    "pagefind",
+    "script",
+    "sitemap",
+    "stats",
+    "twind",
+    // uno is experimental so don't expose it
+    // "uno",
+    // It doesn't make sense to expose websocket for Node
+    // "websocket",
+  ];
   const entryDir = "./gustwind-node";
   const outDir = `./${entryDir}/npm`;
 
   await emptyDir(outDir);
 
   await build({
-    entryPoints: [path.join(entryDir, "mod.ts")],
-    scriptModule: false, // ESM only
+    entryPoints: [
+      path.join(entryDir, "mod.ts"),
+    ].concat(
+      // @ts-expect-error This is fine, there's some type mismatch that doesn't matter
+      pluginNames.map((name) => ({
+        name: `./plugins/${name}/mod.ts`,
+        path: `plugins/${name}/mod.ts`,
+      })),
+    ),
+    scriptModule: false, // ESM only (allows top-level await)
     outDir,
     shims: {
       deno: true,
