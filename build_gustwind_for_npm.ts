@@ -9,7 +9,7 @@ async function buildForNpm(name: string, version: string) {
   }
   // TODO: Generate plugin entry points automatically based on the file system
   const pluginNames = [
-    "breezewind-renderer",
+    "htmlisp-edge-renderer",
     "config-router",
     "copy",
     // editor is experimental so don't expose it
@@ -38,6 +38,7 @@ async function buildForNpm(name: string, version: string) {
     entryPoints: [
       path.join(entryDir, "mod.ts"),
     ].concat(
+      // @ts-expect-error This is fine
       pluginNames.map((name) => ({
         name: `./plugins/${name}`,
         path: `plugins/${name}/mod.ts`,

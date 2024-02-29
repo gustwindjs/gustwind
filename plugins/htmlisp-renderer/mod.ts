@@ -18,6 +18,7 @@ import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
+// TODO: Check if this can/should be simplified again now that edge renderer is a separate plugin
 const plugin: Plugin<{
   // TODO: Change the type so that either componentLoaders or components is needed
   componentLoaders?: { loader: Loader; path: string; selection?: string[] }[];
@@ -32,9 +33,8 @@ const plugin: Plugin<{
   globalUtilities: GlobalUtilities;
 }> = {
   meta: {
-    name: "breezewind-renderer-plugin",
-    description:
-      "${name} implements Breezewind based templating (JSON) and provides a HTML/Lisp based wrapper for bare JSON.",
+    name: "htmlisp-renderer-plugin",
+    description: "${name} allows rendering using HTMLisp templating language.",
     dependsOn: ["gustwind-meta-plugin"],
   },
   init({
@@ -48,7 +48,7 @@ const plugin: Plugin<{
     // TODO: Push these style checks to the plugin system core
     if (!globalUtilitiesPath && !options.globalUtilities) {
       throw new Error(
-        "breezewind-renderer-plugin - globalUtilitiesPath was not provided",
+        "htmlisp-renderer-plugin - globalUtilitiesPath was not provided",
       );
     }
 
@@ -176,7 +176,7 @@ const plugin: Plugin<{
 
         switch (type) {
           case "fileChanged": {
-            DEBUG && console.log("breezewind-renderer - file changed", payload);
+            DEBUG && console.log("htmlisp-renderer - file changed", payload);
 
             switch (payload.type) {
               case "components": {

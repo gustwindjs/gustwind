@@ -13,7 +13,7 @@ const plugin: Plugin<{
   meta: {
     name: "gustwind-og-plugin",
     description: "${name} allows generating OpenGraph images for a website.",
-    dependsOn: ["breezewind-renderer-plugin", "gustwind-meta-plugin"],
+    dependsOn: ["htmlisp-renderer-plugin", "gustwind-meta-plugin"],
   },
   init: async (
     { options: { layout }, load, outputDirectory },
@@ -27,7 +27,7 @@ const plugin: Plugin<{
             type: "getMeta",
             payload: undefined,
           });
-          const components = await send("breezewind-renderer-plugin", {
+          const components = await send("htmlisp-renderer-plugin", {
             type: "getComponents",
             payload: undefined,
           });

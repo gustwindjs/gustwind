@@ -1,6 +1,6 @@
 {
   "env": {
-    "DEMO": "this value is available for plugin paths through ${DEMO} syntax",
+    "DEMO": "This value is available for plugin paths through ${DEMO} syntax.",
     "GUSTWIND_VERSION": "./plugins"
   },
   "plugins": [
@@ -19,7 +19,7 @@
       }
     },
     {
-      "path": "./plugins/breezewind-renderer/mod.ts",
+      "path": "./plugins/htmlisp-renderer/mod.ts",
       "options": {
         "componentLoaders": [
           { "loader": "html", "path": "./site/components" },
