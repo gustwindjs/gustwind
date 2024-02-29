@@ -83,15 +83,22 @@ const plugin: Plugin<{
         );
         await Deno.writeTextFile(componentFilePath, componentUtilitiesSource);
 
+        if (globalUtilitiesPath) {
+          send("gustwind-script-plugin", {
+            type: "addScripts",
+            payload: [{
+              isExternal: true,
+              localPath: globalUtilitiesPath,
+              remotePath: globalUtilitiesPath,
+              name: "globalUtilities.js",
+              externals: [],
+            }],
+          });
+        }
+
         send("gustwind-script-plugin", {
           type: "addScripts",
           payload: [{
-            isExternal: true,
-            localPath: globalUtilitiesPath,
-            remotePath: globalUtilitiesPath,
-            name: "globalUtilities.js",
-            externals: [],
-          }, {
             isExternal: true,
             localPath: componentFilePath,
             remotePath: componentFilePath,

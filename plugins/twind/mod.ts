@@ -14,11 +14,18 @@ const plugin: Plugin<
   },
   init: ({ cwd, options }) => {
     async function prepareStylesheet() {
+      let twindSetup = {};
+
       // TODO: What if neither has been defined?
-      const twindSetup = options.twindSetup ||
-        await import("file://" + path.join(cwd, options.setupPath)).then((
-          m,
-        ) => m.default);
+      if (options.twindSetup) {
+        twindSetup = options.twindSetup;
+      }
+      if (options.setupPath) {
+        twindSetup = await import("file://" + path.join(cwd, options.setupPath))
+          .then((
+            m,
+          ) => m.default);
+      }
 
       // TODO: Figure out why enabling hash breaks markdown transform styling
       install({ ...twindSetup, hash: false });
