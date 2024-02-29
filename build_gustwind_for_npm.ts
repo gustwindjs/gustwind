@@ -38,9 +38,8 @@ async function buildForNpm(name: string, version: string) {
     entryPoints: [
       path.join(entryDir, "mod.ts"),
     ].concat(
-      // @ts-expect-error This is fine, there's some type mismatch that doesn't matter
       pluginNames.map((name) => ({
-        name: `./plugins/${name}/mod.ts`,
+        name: `./plugins/${name}`,
         path: `plugins/${name}/mod.ts`,
       })),
     ),
