@@ -7,8 +7,7 @@ import type {
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { type Components } from "../../utilities/loaders.ts";
-import type { Plugin } from "../../types.ts";
+import type { Components, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 

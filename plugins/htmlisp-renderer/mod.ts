@@ -5,16 +5,12 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import {
-  type Components,
-  initLoaders,
-  type Loader,
-} from "../../utilities/loaders.ts";
+import { initLoaders, type Loader } from "../../utilities/loaders.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import type { GlobalUtilities, Plugin } from "../../types.ts";
+import type { Components, GlobalUtilities, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 

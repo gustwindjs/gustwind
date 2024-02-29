@@ -306,11 +306,20 @@ type GlobalUtilities = {
   init: ({ routes }: { routes: Routes }) => Utilities;
 };
 
+type Components = Record<string, ComponentsEntry>;
+type ComponentsEntry = {
+  component: Component;
+  utilities?: GlobalUtilities;
+  utilitiesPath: string;
+};
+
 export type {
   Attributes,
   BuildWorkerEvent,
   BuildWorkerMessageTypes,
   Category,
+  Components,
+  ComponentsEntry,
   Context,
   DataContext,
   DataSource,
