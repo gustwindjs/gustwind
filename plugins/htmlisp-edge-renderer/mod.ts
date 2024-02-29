@@ -1,3 +1,4 @@
+import process from "node:process";
 import breezewind from "../../breezewind/mod.ts";
 import type {
   Component,
@@ -9,7 +10,7 @@ import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Components, Plugin } from "../../types.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
+const DEBUG = process.env.DEBUG === "1";
 
 const plugin: Plugin<{
   components: Components;
