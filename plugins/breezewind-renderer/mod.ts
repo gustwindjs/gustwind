@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import breezewind from "../../breezewind/mod.ts";
-import type { Component } from "../../breezewind/types.ts";
+import type { Component, ComponentUtilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
@@ -19,8 +19,13 @@ import type { GlobalUtilities, Plugin } from "../../types.ts";
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
 const plugin: Plugin<{
-  componentLoaders: { loader: Loader; path: string; selection?: string[] }[];
-  globalUtilitiesPath: string;
+  // TODO: Change the type so that either componentLoaders or components is needed
+  componentLoaders?: { loader: Loader; path: string; selection?: string[] }[];
+  components?: Components;
+  componentUtilities?: ComponentUtilities;
+  // TODO: Change the type so that either globalUtilitiesPath or globalUtilities is needed
+  globalUtilitiesPath?: string;
+  globalUtilities?: GlobalUtilities;
 }, {
   loaders: ReturnType<typeof initLoaders>;
   components: Components;
@@ -30,19 +35,18 @@ const plugin: Plugin<{
     name: "breezewind-renderer-plugin",
     description:
       "${name} implements Breezewind based templating (JSON) and provides a HTML/Lisp based wrapper for bare JSON.",
-    dependsOn: [
-      "gustwind-meta-plugin",
-      "gustwind-script-plugin",
-    ],
+    dependsOn: ["gustwind-meta-plugin"],
   },
   init({
     cwd,
-    options: { componentLoaders, globalUtilitiesPath },
+    options,
     load,
     mode,
   }) {
+    const { componentLoaders, globalUtilitiesPath } = options;
+
     // TODO: Push these style checks to the plugin system core
-    if (!globalUtilitiesPath) {
+    if (!globalUtilitiesPath && !options.globalUtilities) {
       throw new Error(
         "breezewind-renderer-plugin - globalUtilitiesPath was not provided",
       );
@@ -64,6 +68,15 @@ const plugin: Plugin<{
         return { loaders, components, globalUtilities };
       },
       sendMessages: async ({ send, pluginContext }) => {
+        const editorExists = await send("gustwind-editor-plugin", {
+          type: "ping",
+          payload: undefined,
+        });
+
+        if (!editorExists) {
+          return;
+        }
+
         const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
         const componentUtilitiesSource = generateComponentUtilitiesSource(
           pluginContext.components,
@@ -147,7 +160,8 @@ const plugin: Plugin<{
             routes,
             route.layout,
           ),
-          componentUtilities: getComponentUtilities(components, routes),
+          componentUtilities: options.componentUtilities ||
+            getComponentUtilities(components, routes),
         });
       },
       onMessage: async ({ message, pluginContext }) => {
@@ -193,20 +207,29 @@ const plugin: Plugin<{
     async function loadComponents(
       loaders: ReturnType<typeof initLoaders>,
     ): Promise<Components> {
-      // Collect components from different directories
-      const components = await Promise.all(
-        componentLoaders.map(({ loader, path: componentsPath, selection }) => {
-          const matchedLoader = loaders[loader];
+      if (options.components) {
+        return Promise.resolve(options.components);
+      }
 
-          if (!matchedLoader) {
-            throw new Error(
-              `No loader named ${loader} found amongst ${Object.keys(loaders)}`,
-            );
-          }
+      const components = componentLoaders
+        ? await Promise.all(
+          componentLoaders.map(
+            ({ loader, path: componentsPath, selection }) => {
+              const matchedLoader = loaders[loader];
 
-          return matchedLoader(componentsPath, selection);
-        }),
-      );
+              if (!matchedLoader) {
+                throw new Error(
+                  `No loader named ${loader} found amongst ${
+                    Object.keys(loaders)
+                  }`,
+                );
+              }
+
+              return matchedLoader(componentsPath, selection);
+            },
+          ),
+        )
+        : {};
 
       // Aggregate components together as a single collection
       // @ts-expect-error This is fine since we either fail or aggregate matches
@@ -214,6 +237,10 @@ const plugin: Plugin<{
     }
 
     async function loadGlobalUtilities() {
+      if (options.globalUtilities) {
+        return options.globalUtilities;
+      }
+
       return globalUtilitiesPath
         ? await load.module<GlobalUtilities>({
           path: path.join(cwd, globalUtilitiesPath),

@@ -2,9 +2,10 @@ import * as path from "node:path";
 import { extract, install } from "https://esm.sh/@twind/core@1.1.1";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin<{
-  setupPath: string;
-}> = {
+const plugin: Plugin<
+  // TODO: Type this so that either has to be defined
+  { setupPath?: string; twindSetup?: Record<string, unknown> }
+> = {
   meta: {
     name: "gustwind-twind-plugin",
     description:
@@ -12,12 +13,12 @@ const plugin: Plugin<{
     dependsOn: [],
   },
   init: ({ cwd, options }) => {
-    const twindSetupPath = path.join(cwd, options.setupPath);
-
     async function prepareStylesheet() {
-      const twindSetup = twindSetupPath
-        ? await import("file://" + twindSetupPath).then((m) => m.default)
-        : { presets: [] };
+      // TODO: What if neither has been defined?
+      const twindSetup = options.twindSetup ||
+        await import("file://" + path.join(cwd, options.setupPath)).then((
+          m,
+        ) => m.default);
 
       // TODO: Figure out why enabling hash breaks markdown transform styling
       install({ ...twindSetup, hash: false });
@@ -59,7 +60,10 @@ const plugin: Plugin<{
       onMessage: ({ message }) => {
         const { type } = message;
 
-        if (type === "getStyleSetupPath") {
+        // TODO: What to do if there's no setupPath (directly twindSetup for example)
+        if (type === "getStyleSetupPath" && options.setupPath) {
+          const twindSetupPath = path.join(cwd, options.setupPath);
+
           return { result: twindSetupPath };
         }
       },
