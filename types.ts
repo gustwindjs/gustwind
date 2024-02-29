@@ -182,7 +182,16 @@ type SendMessageEvent =
     type: "fileChanged";
     payload: {
       path: string;
-      event: Deno.FsEvent;
+      // Duplicated from Deno type to avoid shimming with dnt
+      // event: Deno.FsEvent;
+      event: {
+        /** The kind/type of the file system event. */
+        kind: "any" | "access" | "create" | "modify" | "remove" | "other";
+        /** An array of paths that are associated with the file system event. */
+        paths: string[];
+        /** Any additional flags associated with the event. */
+        flag?: "rescan";
+      };
       extension: string;
       name: string;
       type: string;
