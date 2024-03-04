@@ -69,6 +69,7 @@ type LoadApi = {
 };
 
 type PluginApi<C = Context> = {
+  // Set up initial plugin context during plugin initialization phase.
   initPluginContext?(): C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
