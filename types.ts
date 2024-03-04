@@ -41,6 +41,7 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
+// TODO: Rename as PluginModule for clarity
 type Plugin<O = Record<string, unknown>, C = Context> = {
   meta: {
     name: string;
