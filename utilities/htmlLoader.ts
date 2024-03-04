@@ -1,6 +1,5 @@
 import * as path from "node:path";
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { htmlToBreezewind } from "../htmlisp/mod.ts";
 import type { Components, ComponentsEntry, GlobalUtilities } from "../types.ts";
 
 const initLoader = (
@@ -33,7 +32,6 @@ const initLoader = (
         componentsPath,
         selection,
         extension,
-        htmlToBreezewind,
       );
     } else {
       components = await Promise.all((await loadDir({
@@ -60,7 +58,7 @@ const initLoader = (
         return [
           componentName,
           {
-            component: htmlToBreezewind(await Deno.readTextFile(p)),
+            component: await Deno.readTextFile(p),
             utilities,
             utilitiesPath,
           },
@@ -80,7 +78,6 @@ function loadRemoteComponents(
   componentsPath: string,
   selection: string[],
   extension: string,
-  componentHandler: (input: string) => unknown,
 ) {
   return Promise.all(
     selection.map(async (componentName) => {
@@ -101,7 +98,7 @@ function loadRemoteComponents(
           (
             res,
           ) => res.text(),
-        ).then(componentHandler),
+        ),
         utilities,
       }];
     }),

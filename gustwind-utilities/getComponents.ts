@@ -1,3 +1,4 @@
+import { htmlToBreezewind } from "../htmlisp/mod.ts";
 import type {
   Components as BreezewindComponents,
 } from "../breezewind/types.ts";
@@ -7,7 +8,9 @@ function getComponents(
   components: GustwindComponents,
 ): BreezewindComponents {
   return Object.fromEntries(
-    Object.entries(components).map(([k, v]) => [k, v.component]),
+    Object.entries(components).map((
+      [k, v],
+    ) => [k, htmlToBreezewind(v.component)]),
   );
 }
 

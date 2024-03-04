@@ -151,8 +151,16 @@ const plugin: Plugin<{
           );
         }
 
+        const layout = componentsLookup[route.layout];
+
+        if (!layout) {
+          throw new Error(
+            "htmlisp-renderer-plugin - layout to render was not found",
+          );
+        }
+
         return renderComponent({
-          component: components[route.layout].component,
+          component: layout,
           components: componentsLookup,
           context,
           globalUtilities: getGlobalUtilities(

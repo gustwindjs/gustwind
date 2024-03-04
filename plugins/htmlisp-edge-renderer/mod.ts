@@ -72,10 +72,18 @@ const plugin: Plugin<{
       },
       render: ({ route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
+        const componentsLookup = getComponents(components);
+        const layout = componentsLookup[route.layout];
+
+        if (!layout) {
+          throw new Error(
+            "htmlisp-edge-renderer-plugin - layout to render was not found",
+          );
+        }
 
         return renderComponent({
-          component: components[route.layout].component,
-          components: getComponents(components),
+          component: layout,
+          components: componentsLookup,
           context,
           globalUtilities,
           componentUtilities: options.componentUtilities,

@@ -309,7 +309,7 @@ type GlobalUtilities = {
 
 type Components = Record<string, ComponentsEntry>;
 type ComponentsEntry = {
-  component: Component;
+  component: string; // Initially HTML but converted later to a Component
   utilities?: GlobalUtilities;
   utilitiesPath: string;
 };
