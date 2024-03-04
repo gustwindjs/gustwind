@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import { trim } from "../../utilities/string.ts";
+import { matchRoute } from "../../utilities/matchRoute.ts";
 import type {
   DataSources,
   DataSourcesModule,
@@ -71,7 +71,9 @@ const plugin: Plugin<{
           return { route, tasks: [], allRoutes };
         }
 
-        return { route: undefined, tasks: [], allRoutes };
+        throw new Error(
+          `config-router-plugin - Match for url ${url} was not found`,
+        );
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
@@ -127,24 +129,6 @@ async function getAllRoutes(routes: Routes, dataSources: DataSources) {
   });
 
   return { allRoutes: flattenRoutes(allRoutes), allParameters };
-}
-
-function matchRoute(
-  routes: Record<string, Route>,
-  url: string,
-): Route | undefined {
-  if (!routes) {
-    return;
-  }
-
-  const parts = trim(url, "/").split("/");
-  const match = routes[url] || routes[parts[0]];
-
-  if (match && match.routes && parts.length > 1) {
-    return matchRoute(match.routes, parts.slice(1).join("/"));
-  }
-
-  return match;
 }
 
 export { plugin };
