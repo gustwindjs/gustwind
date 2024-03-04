@@ -7,7 +7,13 @@ type Attributes = Component["attributes"];
 function getConverter(htm: { bind: (hValue: typeof h) => string }) {
   const html = htm.bind(h);
 
-  return function htmlToBreezewind(htmlInput: string): Component | Component[] {
+  return function htmlToBreezewind(
+    htmlInput?: string,
+  ): Component | Component[] {
+    if (!htmlInput) {
+      throw new Error("convert - Missing html input");
+    }
+
     if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
       // @ts-ignore Ignore for now
       const [type, attributes, ...children] = html([htmlInput]) as [
