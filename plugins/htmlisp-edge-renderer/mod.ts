@@ -1,10 +1,13 @@
 import process from "node:process";
+import { htmlToBreezewind } from "../../htmlisp/mod.ts";
 import type { ComponentUtilities, Utilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { getComponents } from "../../gustwind-utilities/getComponents.ts";
 import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
-import type { Components, Plugin } from "../../types.ts";
+import type { Plugin } from "../../types.ts";
+
+// For edge renderer components are directly strings
+type Components = Record<string, string>;
 
 const DEBUG = process.env.DEBUG === "1";
 
@@ -120,11 +123,22 @@ const plugin: Plugin<{
           case "getComponents":
             return { result: getComponents(pluginContext.components) };
           case "getRenderer":
-            return { result: pluginContext.components[payload].component };
+            return { result: pluginContext.components[payload] };
         }
       },
     };
   },
 };
+
+// TODO: It would be good to merge this with the utility
+function getComponents(
+  components: Components,
+) {
+  return Object.fromEntries(
+    Object.entries(components).map((
+      [k, v],
+    ) => [k, htmlToBreezewind(v)]),
+  );
+}
 
 export { plugin };

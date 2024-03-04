@@ -55,6 +55,9 @@ const initLoader = (
           utilitiesPath = "";
         }
 
+        // TODO: It might be a better idea to return utilities in a separate
+        // data structure since they need to be extracted anyway and this
+        // complicates getComponents due to an added lookup.
         return [
           componentName,
           {

@@ -10,6 +10,7 @@ function getComponents(
   return Object.fromEntries(
     Object.entries(components).map((
       [k, v],
+      // TODO: v.component lookup conflicts with htmlisp-edge-renderer
     ) => [k, htmlToBreezewind(v.component)]),
   );
 }
