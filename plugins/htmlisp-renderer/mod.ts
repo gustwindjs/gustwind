@@ -1,6 +1,9 @@
 import * as path from "node:path";
 import breezewind from "../../breezewind/mod.ts";
-import type { Component, ComponentUtilities } from "../../breezewind/types.ts";
+import type {
+  Components as BreezewindComponents,
+  ComponentUtilities,
+} from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
@@ -260,8 +263,8 @@ export { init };`;
 
 function attachIdsToComponents(
   url: string,
-  components: Record<string, Component>,
-): Record<string, Component> {
+  components: BreezewindComponents,
+): BreezewindComponents {
   return Object.fromEntries(
     Object.entries(components).map((
       [k, v],

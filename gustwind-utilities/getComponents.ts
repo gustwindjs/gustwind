@@ -1,9 +1,11 @@
-import type { Component } from "../breezewind/types.ts";
-import type { Components } from "../types.ts";
+import type {
+  Components as BreezewindComponents,
+} from "../breezewind/types.ts";
+import type { Components as GustwindComponents } from "../types.ts";
 
 function getComponents(
-  components: Components,
-): Record<string, Component> {
+  components: GustwindComponents,
+): BreezewindComponents {
   return Object.fromEntries(
     Object.entries(components).map(([k, v]) => [k, v.component]),
   );
