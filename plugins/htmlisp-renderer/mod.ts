@@ -1,14 +1,13 @@
 import * as path from "node:path";
-import breezewind from "../../breezewind/mod.ts";
 import type {
   Components as BreezewindComponents,
   ComponentUtilities,
 } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
-import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import { getComponents } from "../../gustwind-utilities/getComponents.ts";
+import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
@@ -152,7 +151,7 @@ const plugin: Plugin<{
           );
         }
 
-        return renderHTML({
+        return renderComponent({
           component: components[route.layout].component,
           components: componentsLookup,
           context,
@@ -272,24 +271,4 @@ function attachIdsToComponents(
   );
 }
 
-function renderHTML(
-  { component, components, context, globalUtilities, componentUtilities }:
-    Parameters<
-      typeof breezewind
-    >[0],
-) {
-  return breezewind({
-    component,
-    components,
-    extensions: [
-      // It's important visibleIf evaluates before the others to avoid work
-      breezeExtensions.visibleIf,
-      breezeExtensions.foreach,
-    ],
-    context,
-    globalUtilities,
-    componentUtilities,
-  });
-}
-
-export { plugin, renderHTML };
+export { plugin };

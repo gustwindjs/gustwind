@@ -1,10 +1,9 @@
 import process from "node:process";
-import breezewind from "../../breezewind/mod.ts";
 import type { ComponentUtilities, Utilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
-import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import { getComponents } from "../../gustwind-utilities/getComponents.ts";
+import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import type { Components, Plugin } from "../../types.ts";
 
 const DEBUG = process.env.DEBUG === "1";
@@ -74,7 +73,7 @@ const plugin: Plugin<{
       render: ({ route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
 
-        return renderHTML({
+        return renderComponent({
           component: components[route.layout].component,
           components: getComponents(components),
           context,
@@ -121,25 +120,4 @@ const plugin: Plugin<{
   },
 };
 
-// TODO: Same as for htmlisp-renderer -> push to utilities
-function renderHTML(
-  { component, components, context, globalUtilities, componentUtilities }:
-    Parameters<
-      typeof breezewind
-    >[0],
-) {
-  return breezewind({
-    component,
-    components,
-    extensions: [
-      // It's important visibleIf evaluates before the others to avoid work
-      breezeExtensions.visibleIf,
-      breezeExtensions.foreach,
-    ],
-    context,
-    globalUtilities,
-    componentUtilities,
-  });
-}
-
-export { plugin, renderHTML };
+export { plugin };
