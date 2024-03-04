@@ -2,9 +2,9 @@ import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/htmlisp-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
-import type { Component } from "../../breezewind/types.ts";
-import type { Components, LoadApi } from "../../types.ts";
+import type { LoadApi } from "../../types.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
+import { getComponents } from "../../gustwind-utilities/getComponents.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
@@ -215,15 +215,6 @@ function getTransformMarkdown(load: LoadApi) {
 
     return { content: await marked(input), tableOfContents };
   };
-}
-
-// TODO: Same as for htmlisp-renderer -> push to utilities
-function getComponents(
-  components: Components,
-): Record<string, Component> {
-  return Object.fromEntries(
-    Object.entries(components).map(([k, v]) => [k, v.component]),
-  );
 }
 
 function slugify(idBase: string) {

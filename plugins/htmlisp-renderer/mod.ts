@@ -5,6 +5,7 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { getComponents } from "../../gustwind-utilities/getComponents.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
@@ -255,14 +256,6 @@ ${
 }
 
 export { init };`;
-}
-
-function getComponents(
-  components: Components,
-): Record<string, Component> {
-  return Object.fromEntries(
-    Object.entries(components).map(([k, v]) => [k, v.component]),
-  );
 }
 
 function attachIdsToComponents(

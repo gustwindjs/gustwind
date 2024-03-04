@@ -1,13 +1,10 @@
 import process from "node:process";
 import breezewind from "../../breezewind/mod.ts";
-import type {
-  Component,
-  ComponentUtilities,
-  Utilities,
-} from "../../breezewind/types.ts";
+import type { ComponentUtilities, Utilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { getComponents } from "../../gustwind-utilities/getComponents.ts";
 import type { Components, Plugin } from "../../types.ts";
 
 const DEBUG = process.env.DEBUG === "1";
@@ -123,15 +120,6 @@ const plugin: Plugin<{
     };
   },
 };
-
-// TODO: Same as for htmlisp-renderer -> push to utilities
-function getComponents(
-  components: Components,
-): Record<string, Component> {
-  return Object.fromEntries(
-    Object.entries(components).map(([k, v]) => [k, v.component]),
-  );
-}
 
 // TODO: Same as for htmlisp-renderer -> push to utilities
 function renderHTML(
