@@ -5,7 +5,7 @@ import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import * as breezeExtensions from "../../breezewind/extensions.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { initLoaders, type Loader } from "../../utilities/loaders.ts";
+import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
@@ -14,13 +14,12 @@ import type { Components, GlobalUtilities, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
-// TODO: Check if this can/should be simplified again now that edge renderer is a separate plugin
 const plugin: Plugin<{
-  componentLoaders?: { loader: Loader; path: string; selection?: string[] }[];
-  componentUtilities?: ComponentUtilities;
-  globalUtilitiesPath?: string;
+  components: { path: string; selection?: string[] }[];
+  componentUtilities: ComponentUtilities;
+  globalUtilitiesPath: string;
 }, {
-  loaders: ReturnType<typeof initLoaders>;
+  htmlLoader: ReturnType<typeof initLoader>;
   components: Components;
   globalUtilities: GlobalUtilities;
 }> = {
@@ -35,7 +34,7 @@ const plugin: Plugin<{
     load,
     mode,
   }) {
-    const { componentLoaders, globalUtilitiesPath } = options;
+    const { components, globalUtilitiesPath } = options;
 
     // TODO: Push the check to the plugin system core
     if (!globalUtilitiesPath) {
@@ -46,18 +45,18 @@ const plugin: Plugin<{
 
     return {
       initPluginContext: async () => {
-        const loaders = initLoaders({
+        const htmlLoader = initLoader({
           cwd,
           loadDir: load.dir,
           loadModule: (path) =>
             load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
         });
         const [components, globalUtilities] = await Promise.all([
-          loadComponents(loaders),
+          loadComponents(htmlLoader),
           loadGlobalUtilities(),
         ]);
 
-        return { loaders, components, globalUtilities };
+        return { htmlLoader, components, globalUtilities };
       },
       sendMessages: async ({ send, pluginContext }) => {
         const editorExists = await send("gustwind-editor-plugin", {
@@ -172,7 +171,9 @@ const plugin: Plugin<{
 
             switch (payload.type) {
               case "components": {
-                const components = await loadComponents(pluginContext.loaders);
+                const components = await loadComponents(
+                  pluginContext.htmlLoader,
+                );
 
                 return {
                   send: [{ type: "reloadPage", payload: undefined }],
@@ -204,31 +205,18 @@ const plugin: Plugin<{
     };
 
     async function loadComponents(
-      loaders: ReturnType<typeof initLoaders>,
+      htmlLoader: ReturnType<typeof initLoader>,
     ): Promise<Components> {
-      const components = componentLoaders
-        ? await Promise.all(
-          componentLoaders.map(
-            ({ loader, path: componentsPath, selection }) => {
-              const matchedLoader = loaders[loader];
-
-              if (!matchedLoader) {
-                throw new Error(
-                  `No loader named ${loader} found amongst ${
-                    Object.keys(loaders)
-                  }`,
-                );
-              }
-
-              return matchedLoader(componentsPath, selection);
-            },
-          ),
-        )
-        : {};
+      const loadedComponents = await Promise.all(
+        components.map(
+          ({ path: componentsPath, selection }) =>
+            htmlLoader(componentsPath, selection),
+        ),
+      );
 
       // Aggregate components together as a single collection
-      // @ts-expect-error This is fine since we either fail or aggregate matches
-      return Object.assign.apply(undefined, components);
+      // @ts-expect-error This is fine.
+      return Object.assign.apply(undefined, loadedComponents);
     }
 
     async function loadGlobalUtilities() {

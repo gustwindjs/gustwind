@@ -21,9 +21,9 @@
     {
       "path": "./plugins/htmlisp-renderer/mod.ts",
       "options": {
-        "componentLoaders": [
-          { "loader": "html", "path": "./site/components" },
-          { "loader": "html", "path": "./site/layouts" }
+        "components": [
+          { "path": "./site/components" },
+          { "path": "./site/layouts" }
         ],
         "globalUtilitiesPath": "./site/globalUtilities.ts"
       }

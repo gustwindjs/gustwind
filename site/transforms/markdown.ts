@@ -3,8 +3,8 @@ import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
 import { renderHTML } from "../../plugins/htmlisp-renderer/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import type { Component } from "../../breezewind/types.ts";
-import type { LoadApi } from "../../types.ts";
-import { type Components, initLoaders } from "../../utilities/loaders.ts";
+import type { Components, LoadApi } from "../../types.ts";
+import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
@@ -45,7 +45,7 @@ marked.setOptions({
 // @ts-expect-error This is fine
 install(twindSetup);
 
-const loaders = initLoaders({
+const htmlLoader = initLoader({
   cwd: Deno.cwd(),
   loadDir: dir,
   loadModule: (path) => import(path),
@@ -91,7 +91,7 @@ function getTransformMarkdown(load: LoadApi) {
       // @ts-ignore How to type this?
       async walkTokens(token) {
         if (token.type === "importComponent") {
-          const components = await loaders.html("./site/components");
+          const components = await htmlLoader("./site/components");
           const matchedComponent = components[token.component];
 
           if (matchedComponent) {
