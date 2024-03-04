@@ -16,9 +16,7 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 
 // TODO: Check if this can/should be simplified again now that edge renderer is a separate plugin
 const plugin: Plugin<{
-  // TODO: Change the type so that either componentLoaders or components is needed
   componentLoaders?: { loader: Loader; path: string; selection?: string[] }[];
-  components?: Components;
   componentUtilities?: ComponentUtilities;
   // TODO: Change the type so that either globalUtilitiesPath or globalUtilities is needed
   globalUtilitiesPath?: string;
@@ -210,10 +208,6 @@ const plugin: Plugin<{
     async function loadComponents(
       loaders: ReturnType<typeof initLoaders>,
     ): Promise<Components> {
-      if (options.components) {
-        return Promise.resolve(options.components);
-      }
-
       const components = componentLoaders
         ? await Promise.all(
           componentLoaders.map(
