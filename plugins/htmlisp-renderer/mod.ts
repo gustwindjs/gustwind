@@ -1,7 +1,6 @@
 import * as path from "node:path";
 import type {
   Components as BreezewindComponents,
-  ComponentUtilities,
 } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
@@ -19,7 +18,6 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 
 const plugin: Plugin<{
   components: { path: string; selection?: string[] }[];
-  componentUtilities: ComponentUtilities;
   globalUtilitiesPath: string;
 }, {
   htmlLoader: ReturnType<typeof initLoader>;
@@ -169,8 +167,7 @@ const plugin: Plugin<{
             routes,
             route.layout,
           ),
-          componentUtilities: options.componentUtilities ||
-            getComponentUtilities(components, routes),
+          componentUtilities: getComponentUtilities(components, routes),
         });
       },
       onMessage: async ({ message, pluginContext }) => {
