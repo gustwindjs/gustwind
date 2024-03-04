@@ -1,14 +1,16 @@
 import process from "node:process";
 import { htmlToBreezewind } from "../../htmlisp/mod.ts";
-import type { ComponentUtilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import type { Utilities } from "../../breezewind/types.ts";
 import { getGlobalUtilities } from "../../gustwind-utilities/getUtilities.ts";
 import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
-import type { GlobalUtilities, Plugin } from "../../types.ts";
+import type { GlobalUtilities, Plugin, Routes } from "../../types.ts";
 
 // For edge renderer components are directly strings
 type Components = Record<string, string>;
+
+type ComponentUtilities = Record<string, GlobalUtilities>;
 
 const DEBUG = process.env.DEBUG === "1";
 
@@ -92,7 +94,10 @@ const plugin: Plugin<{
             globalUtilities,
             routes,
           }),
-          componentUtilities: options.componentUtilities,
+          componentUtilities: getComponentUtilities(
+            options.componentUtilities,
+            routes,
+          ),
         });
       },
       onMessage: ({ message, pluginContext }) => {
@@ -134,7 +139,7 @@ const plugin: Plugin<{
   },
 };
 
-// TODO: It would be good to merge this with the utility
+// TODO: It would be good to merge this with the matching utility
 function getComponents(
   components: Components,
 ) {
@@ -142,6 +147,17 @@ function getComponents(
     Object.entries(components).map((
       [k, v],
     ) => [k, htmlToBreezewind(v)]),
+  );
+}
+
+// TODO: It would be good to merge this with the matching utility
+function getComponentUtilities(
+  componentUtilities: ComponentUtilities,
+  routes: Routes,
+): Record<string, Utilities> {
+  return Object.fromEntries(
+    Object.entries(componentUtilities).map(([k, v]) => [k, v.init({ routes })])
+      .filter(<T>(n?: T): n is T => Boolean(n)),
   );
 }
 
