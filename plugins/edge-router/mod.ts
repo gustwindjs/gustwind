@@ -28,9 +28,8 @@ const plugin: Plugin<{
           return { route: allRoutes[url], tasks: [], allRoutes };
         }
 
-        throw new Error(
-          `edge-router-plugin - Match for url ${url} was not found`,
-        );
+        // This can happen for dynamically generated routes, for example pagefind
+        return { route: undefined, tasks: [], allRoutes };
       },
     };
   },

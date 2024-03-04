@@ -213,20 +213,25 @@ async function applyPlugins(
     url,
     routes,
     route,
+    initialContext,
   }: {
     routes: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
+    initialContext?: Context;
   },
 ) {
   const send = getSend(plugins);
-  const context = await applyPrepareContext({
-    plugins,
-    send,
-    route,
-    url,
-  });
+  const context = {
+    ...initialContext,
+    ...(await applyPrepareContext({
+      plugins,
+      send,
+      route,
+      url,
+    })),
+  };
 
   const { tasks } = await applyBeforeEachRenders({
     context,

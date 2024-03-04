@@ -71,9 +71,8 @@ const plugin: Plugin<{
           return { route, tasks: [], allRoutes };
         }
 
-        throw new Error(
-          `config-router-plugin - Match for url ${url} was not found`,
-        );
+        // This can happen for dynamically generated routes, for example pagefind
+        return { route: undefined, tasks: [], allRoutes };
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;

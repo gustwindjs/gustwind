@@ -155,7 +155,7 @@ const plugin: Plugin<{
 
         if (!layout) {
           throw new Error(
-            "htmlisp-renderer-plugin - layout to render was not found",
+            `htmlisp-renderer-plugin - layout ${route.layout} to render was not found for url ${url}`,
           );
         }
 
@@ -209,8 +209,11 @@ const plugin: Plugin<{
           }
           case "getComponents":
             return { result: getComponents(pluginContext.components) };
-          case "getRenderer":
-            return { result: pluginContext.components[payload].component };
+          case "getRenderer": {
+            const componentsLookup = getComponents(pluginContext.components);
+
+            return { result: componentsLookup[payload] };
+          }
         }
       },
     };
