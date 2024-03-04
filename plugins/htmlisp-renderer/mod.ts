@@ -18,9 +18,7 @@ const DEBUG = Deno.env.get("DEBUG") === "1";
 const plugin: Plugin<{
   componentLoaders?: { loader: Loader; path: string; selection?: string[] }[];
   componentUtilities?: ComponentUtilities;
-  // TODO: Change the type so that either globalUtilitiesPath or globalUtilities is needed
   globalUtilitiesPath?: string;
-  globalUtilities?: GlobalUtilities;
 }, {
   loaders: ReturnType<typeof initLoaders>;
   components: Components;
@@ -39,8 +37,8 @@ const plugin: Plugin<{
   }) {
     const { componentLoaders, globalUtilitiesPath } = options;
 
-    // TODO: Push these style checks to the plugin system core
-    if (!globalUtilitiesPath && !options.globalUtilities) {
+    // TODO: Push the check to the plugin system core
+    if (!globalUtilitiesPath) {
       throw new Error(
         "htmlisp-renderer-plugin - globalUtilitiesPath was not provided",
       );
@@ -234,10 +232,6 @@ const plugin: Plugin<{
     }
 
     async function loadGlobalUtilities() {
-      if (options.globalUtilities) {
-        return options.globalUtilities;
-      }
-
       return globalUtilitiesPath
         ? await load.module<GlobalUtilities>({
           path: path.join(cwd, globalUtilitiesPath),
