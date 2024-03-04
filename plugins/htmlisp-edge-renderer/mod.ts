@@ -12,6 +12,8 @@ import type { Components, Plugin } from "../../types.ts";
 
 const DEBUG = process.env.DEBUG === "1";
 
+// TODO: Add HTML -> Gustwind conversion step to a good spot
+// TODO: See if rendering should be decoupled from routing somehow to allow usage without a router
 const plugin: Plugin<{
   components: Components;
   componentUtilities: ComponentUtilities;
