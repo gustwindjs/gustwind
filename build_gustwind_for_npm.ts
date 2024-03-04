@@ -10,8 +10,10 @@ async function buildForNpm(name: string, version: string) {
   // TODO: Generate plugin entry points automatically based on the file system
   const pluginNames = [
     "htmlisp-edge-renderer",
-    "config-router",
+    // Skip config-router for now as it doesn't make sense on the edge
+    // "config-router",
     "copy",
+    "edge-router",
     // editor is experimental so don't expose it
     // "editor",
     // It doesn't make sense to expose file-watcher for Node
