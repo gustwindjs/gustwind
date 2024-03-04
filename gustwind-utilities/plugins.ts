@@ -3,9 +3,9 @@ import process from "node:process";
 import type {
   Context,
   InitLoadApi,
+  LoadedPlugin,
   Mode,
   Plugin,
-  PluginApi,
   PluginOptions,
   Route,
   Routes,
@@ -15,10 +15,6 @@ import type {
 
 const DEBUG = process.env.DEBUG === "1";
 
-export type LoadedPlugin = {
-  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
-  tasks: Tasks;
-};
 export type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(

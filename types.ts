@@ -15,6 +15,10 @@ type DataSourcesModule = {
 type DataSource = { operation: string; name?: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
+type LoadedPlugin = {
+  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
+  tasks: Tasks;
+};
 type PluginsDefinition = {
   env: Record<string, string>;
   plugins: PluginOptions[];
@@ -329,6 +333,7 @@ export type {
   GlobalUtilities,
   InitLoadApi,
   LoadApi,
+  LoadedPlugin,
   Meta,
   Mode,
   ParentCategory,

@@ -7,11 +7,10 @@ import {
   applyPlugins,
   finishPlugins,
   importPlugins,
-  type LoadedPlugin,
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
-import type { Mode, PluginOptions } from "../types.ts";
+import type { LoadedPlugin, Mode, PluginOptions } from "../types.ts";
 
 async function gustwindDevServer({
   cwd,

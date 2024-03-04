@@ -1,15 +1,14 @@
 import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
-import type { InitLoadApi, PluginsDefinition } from "../types.ts";
+import type { InitLoadApi, LoadedPlugin } from "../types.ts";
 
 async function initRender(
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
-  pluginsDefinition: PluginsDefinition,
+  initialImportedPlugins: LoadedPlugin[],
 ) {
-  const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
   const { plugins, router } = await importPlugins({
     cwd: "",
-    pluginDefinitions,
+    initialImportedPlugins,
+    pluginDefinitions: [],
     initLoadApi,
     outputDirectory: "",
     mode: "production",
