@@ -161,12 +161,11 @@ const plugin: Plugin<{
           component: layout,
           components: componentsLookup,
           context,
-          globalUtilities: getGlobalUtilities(
+          globalUtilities: getGlobalUtilities({
             globalUtilities,
-            components,
             routes,
-            route.layout,
-          ),
+            layout: components[route.layout],
+          }),
           componentUtilities: getComponentUtilities(components, routes),
         });
       },

@@ -98,12 +98,7 @@ function getTransformMarkdown(load: LoadApi) {
             token.html = await renderComponent({
               component: matchedComponent.component,
               components: getComponents(components),
-              globalUtilities: getGlobalUtilities(
-                globalUtilities,
-                components,
-                {},
-                "",
-              ),
+              globalUtilities: getGlobalUtilities({ globalUtilities }),
               componentUtilities: getComponentUtilities(components, {}),
             });
           } else {

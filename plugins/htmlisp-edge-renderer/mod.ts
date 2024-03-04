@@ -1,10 +1,11 @@
 import process from "node:process";
 import { htmlToBreezewind } from "../../htmlisp/mod.ts";
-import type { ComponentUtilities, Utilities } from "../../breezewind/types.ts";
+import type { ComponentUtilities } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { getGlobalUtilities } from "../../gustwind-utilities/getUtilities.ts";
 import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
-import type { Plugin } from "../../types.ts";
+import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 // For edge renderer components are directly strings
 type Components = Record<string, string>;
@@ -15,10 +16,10 @@ const DEBUG = process.env.DEBUG === "1";
 const plugin: Plugin<{
   components: Components;
   componentUtilities: ComponentUtilities;
-  globalUtilities: Utilities;
+  globalUtilities: GlobalUtilities;
 }, {
   components: Components;
-  globalUtilities: Utilities;
+  globalUtilities: GlobalUtilities;
 }> = {
   meta: {
     name: "htmlisp-edge-renderer-plugin",
@@ -72,7 +73,7 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ route, context, pluginContext }) => {
+      render: ({ routes, route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
         const componentsLookup = getComponents(components);
         const layout = componentsLookup[route.layout];
@@ -87,7 +88,10 @@ const plugin: Plugin<{
           component: layout,
           components: componentsLookup,
           context,
-          globalUtilities,
+          globalUtilities: getGlobalUtilities({
+            globalUtilities,
+            routes,
+          }),
           componentUtilities: options.componentUtilities,
         });
       },
