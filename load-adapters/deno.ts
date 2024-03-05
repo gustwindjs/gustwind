@@ -14,10 +14,11 @@ function initLoadApi(tasks: Tasks): LoadApi {
     json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
       tasks.push({ type: "loadJSON", payload });
 
-      // TODO: Is it enough to support only local paths here?
+      const pathPrefix = isRelativeImport(payload.path) ? "file://" : "";
+
       // https://examples.deno.land/importing-json
       return import(
-        `file://${payload.path}?cache=${new Date().getTime()}`,
+        `${pathPrefix}${payload.path}?cache=${new Date().getTime()}`,
         {
           with: { type: "json" },
         }
@@ -26,9 +27,10 @@ function initLoadApi(tasks: Tasks): LoadApi {
     module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
       tasks.push({ type: "loadModule", payload });
 
-      // TODO: Is it enough to support only local paths here?
+      const pathPrefix = isRelativeImport(payload.path) ? "file://" : "";
+
       return import(
-        `file://${payload.path}?cache=${new Date().getTime()}`
+        `${pathPrefix}${payload.path}?cache=${new Date().getTime()}`
       ) as Promise<T>;
     },
     textFile(path: string) {
@@ -48,6 +50,10 @@ function initLoadApi(tasks: Tasks): LoadApi {
       return Deno.readTextFileSync(path);
     },
   };
+}
+
+function isRelativeImport(s: string) {
+  return ["/", "./", "../"].some((prefix) => s.startsWith(prefix));
 }
 
 export { initLoadApi };
