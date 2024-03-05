@@ -7,6 +7,8 @@ async function buildForNpm(name: string, version: string) {
 
     return;
   }
+
+  // TODO: Ideally plugins would be published standalone behind a namespace
   // TODO: Generate plugin entry points automatically based on the file system
   const pluginNames = [
     "htmlisp-edge-renderer",
@@ -19,7 +21,8 @@ async function buildForNpm(name: string, version: string) {
     // It doesn't make sense to expose file-watcher for Node
     // "file-watcher",
     "meta",
-    "og",
+    // sharp is a difficult dependency for the edge so skip for now
+    // "og",
     "pagefind",
     // Omit script plugin for now
     // "script",
