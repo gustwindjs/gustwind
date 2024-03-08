@@ -1,18 +1,18 @@
 import * as path from "node:path";
+import { htmlToBreezewind } from "../../htmlisp/mod.ts";
 import type {
   Components as BreezewindComponents,
 } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { getComponents } from "../../gustwind-utilities/getComponents.ts";
 import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import type { Components, GlobalUtilities, Plugin } from "../../types.ts";
+import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -21,7 +21,8 @@ const plugin: Plugin<{
   globalUtilitiesPath: string;
 }, {
   htmlLoader: ReturnType<typeof initLoader>;
-  components: Components;
+  components: Record<string, ReturnType<typeof htmlToBreezewind>>;
+  componentUtilities: Record<string, GlobalUtilities | undefined>;
   globalUtilities: GlobalUtilities;
 }> = {
   meta: {
@@ -52,14 +53,17 @@ const plugin: Plugin<{
           loadModule: (path) =>
             load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
         });
-        const [components, globalUtilities] = await Promise.all([
-          loadComponents(htmlLoader),
-          loadGlobalUtilities(),
-        ]);
+        const [{ components, componentUtilities }, globalUtilities] =
+          await Promise.all([
+            loadComponents(htmlLoader),
+            loadGlobalUtilities(),
+          ]);
 
-        return { htmlLoader, components, globalUtilities };
+        return { htmlLoader, components, componentUtilities, globalUtilities };
       },
       sendMessages: async ({ send, pluginContext }) => {
+        // TODO: Redo/restore this portion
+        /*
         const editorExists = await send("gustwind-editor-plugin", {
           type: "ping",
           payload: undefined,
@@ -98,6 +102,7 @@ const plugin: Plugin<{
             externals: [],
           }],
         });
+        */
       },
       prepareContext: async ({ url, route, send }) => {
         const meta = await send("gustwind-meta-plugin", {
@@ -134,8 +139,9 @@ const plugin: Plugin<{
         };
       },
       render: async ({ routes, route, context, url, send, pluginContext }) => {
-        const { components, globalUtilities } = pluginContext;
-        let componentsLookup = getComponents(components);
+        const { components, componentUtilities, globalUtilities } =
+          pluginContext;
+        let componentsLookup = components;
         const editorExists = await send("gustwind-editor-plugin", {
           type: "ping",
           payload: undefined,
@@ -157,16 +163,23 @@ const plugin: Plugin<{
           );
         }
 
+        const layoutUtilities = componentUtilities[route.layout];
+
         return renderComponent({
           component: layout,
           components: componentsLookup,
           context,
           globalUtilities: getGlobalUtilities({
             globalUtilities,
+            layoutUtilities: layoutUtilities
+              ? layoutUtilities.init({ routes })
+              : {},
             routes,
-            layout: components[route.layout],
           }),
-          componentUtilities: getComponentUtilities(components, routes),
+          componentUtilities: getComponentUtilities({
+            componentUtilities,
+            routes,
+          }),
         });
       },
       onMessage: async ({ message, pluginContext }) => {
@@ -204,19 +217,19 @@ const plugin: Plugin<{
             return { send: [{ type: "reloadPage", payload: undefined }] };
           }
           case "getComponents":
-            return { result: getComponents(pluginContext.components) };
+            return { result: pluginContext.components };
           case "getRenderer": {
-            const componentsLookup = getComponents(pluginContext.components);
-
-            return { result: componentsLookup[payload] };
+            return { result: pluginContext.components[payload] };
           }
         }
       },
     };
 
+    // This function looks into different component paths, loads them,
+    // and finally aggregates them into a single data structure.
     async function loadComponents(
       htmlLoader: ReturnType<typeof initLoader>,
-    ): Promise<Components> {
+    ): ReturnType<ReturnType<typeof initLoader>> {
       const loadedComponents = await Promise.all(
         components.map(
           ({ path: componentsPath, selection }) =>
@@ -224,9 +237,18 @@ const plugin: Plugin<{
         ),
       );
 
-      // Aggregate components together as a single collection
-      // @ts-expect-error This is fine.
-      return Object.assign.apply(undefined, loadedComponents);
+      return {
+        components: Object.assign(
+          {},
+          ...loadedComponents.map(({ components }) => components),
+        ),
+        componentUtilities: Object.assign(
+          {},
+          ...loadedComponents.map(({ componentUtilities }) =>
+            componentUtilities
+          ),
+        ),
+      };
     }
 
     async function loadGlobalUtilities() {
@@ -240,6 +262,7 @@ const plugin: Plugin<{
   },
 };
 
+/*
 function generateComponentUtilitiesSource(components: Components) {
   const componentsWithUtilities = Object.entries(components).map((
     [name, { utilitiesPath }],
@@ -266,6 +289,7 @@ ${
 
 export { init };`;
 }
+*/
 
 function attachIdsToComponents(
   url: string,

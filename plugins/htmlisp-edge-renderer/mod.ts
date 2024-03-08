@@ -2,22 +2,22 @@ import process from "node:process";
 import { htmlToBreezewind } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import type { Utilities } from "../../breezewind/types.ts";
-import { getGlobalUtilities } from "../../gustwind-utilities/getUtilities.ts";
+import {
+  getComponentUtilities,
+  getGlobalUtilities,
+} from "../../gustwind-utilities/getUtilities.ts";
 import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
-import type { GlobalUtilities, Plugin, Routes } from "../../types.ts";
+import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 // For edge renderer components are directly strings
 type Components = Record<string, string>;
-
-type ComponentUtilities = Record<string, GlobalUtilities>;
 
 const DEBUG = process.env.DEBUG === "1";
 
 // TODO: See if rendering should be decoupled from routing somehow to allow usage without a router
 const plugin: Plugin<{
   components: Components;
-  componentUtilities: ComponentUtilities;
+  componentUtilities: Record<string, GlobalUtilities | undefined>;
   globalUtilities: GlobalUtilities;
 }, {
   components: Components;
@@ -86,18 +86,23 @@ const plugin: Plugin<{
           );
         }
 
+        const layoutUtilities = options.componentUtilities[route.layout];
+
         return renderComponent({
           component: layout,
           components: componentsLookup,
           context,
           globalUtilities: getGlobalUtilities({
             globalUtilities,
+            layoutUtilities: layoutUtilities
+              ? layoutUtilities.init({ routes })
+              : {},
             routes,
           }),
-          componentUtilities: getComponentUtilities(
-            options.componentUtilities,
+          componentUtilities: getComponentUtilities({
+            componentUtilities: options.componentUtilities,
             routes,
-          ),
+          }),
         });
       },
       onMessage: ({ message, pluginContext }) => {
@@ -130,7 +135,7 @@ const plugin: Plugin<{
             return { send: [{ type: "reloadPage", payload: undefined }] };
           }
           case "getComponents":
-            return { result: getComponents(pluginContext.components) };
+            return { result: pluginContext.components };
           case "getRenderer":
             return { result: pluginContext.components[payload] };
         }
@@ -139,7 +144,6 @@ const plugin: Plugin<{
   },
 };
 
-// TODO: It would be good to merge this with the matching utility
 function getComponents(
   components: Components,
 ) {
@@ -147,17 +151,6 @@ function getComponents(
     Object.entries(components).map((
       [k, v],
     ) => [k, htmlToBreezewind(v)]),
-  );
-}
-
-// TODO: It would be good to merge this with the matching utility
-function getComponentUtilities(
-  componentUtilities: ComponentUtilities,
-  routes: Routes,
-): Record<string, Utilities> {
-  return Object.fromEntries(
-    Object.entries(componentUtilities).map(([k, v]) => [k, v.init({ routes })])
-      .filter(<T>(n?: T): n is T => Boolean(n)),
   );
 }
 

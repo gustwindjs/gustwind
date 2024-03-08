@@ -1,6 +1,15 @@
 import * as path from "node:path";
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import type { Components, ComponentsEntry, GlobalUtilities } from "../types.ts";
+import { htmlToBreezewind } from "../htmlisp/mod.ts";
+import type { GlobalUtilities } from "../types.ts";
+
+type ParsedComponents = [
+  string,
+  {
+    component: ReturnType<typeof htmlToBreezewind>;
+    utilities: GlobalUtilities | undefined;
+  },
+][];
 
 const initLoader = (
   { cwd, loadDir, loadModule }: {
@@ -19,9 +28,12 @@ const initLoader = (
   return async (
     componentsPath: string,
     selection?: string[],
-  ): Promise<Components> => {
+  ): Promise<{
+    components: Record<string, ReturnType<typeof htmlToBreezewind>>;
+    componentUtilities: Record<string, GlobalUtilities | undefined>;
+  }> => {
     const extension = ".html";
-    let components = {};
+    let components: ParsedComponents = [];
 
     if (componentsPath.startsWith("http")) {
       if (!selection) {
@@ -44,35 +56,34 @@ const initLoader = (
       ) => {
         const componentName = path.basename(p, path.extname(p));
         let utilities;
-        let utilitiesPath = p.replace(extension, ".server.ts");
+        const utilitiesPath = p.replace(extension, ".server.ts");
 
         try {
           await Deno.lstat(p);
 
           utilities = await loadModule(utilitiesPath);
-        } catch (_) {
-          // No utilities were found so get rid of the path
-          utilitiesPath = "";
+        } catch (_err) {
+          // Nothing to do
         }
 
-        // TODO: It might be a better idea to return utilities in a separate
-        // data structure since they need to be extracted anyway and this
-        // complicates getComponents due to an added lookup.
         return [
           componentName,
           {
-            component: await Deno.readTextFile(p),
+            component: htmlToBreezewind(await Deno.readTextFile(p)),
             utilities,
-            utilitiesPath,
           },
         ];
       }));
     }
 
-    return Object.fromEntries<ComponentsEntry>(
-      // @ts-expect-error The type is wrong here. Likely htmToBreezewind needs a fix.
-      components,
-    );
+    return {
+      components: Object.fromEntries(
+        components.map(([k, { component }]) => [k, component]),
+      ),
+      componentUtilities: Object.fromEntries(
+        components.map(([k, { utilities }]) => [k, utilities]),
+      ),
+    };
   };
 };
 
@@ -81,7 +92,7 @@ function loadRemoteComponents(
   componentsPath: string,
   selection: string[],
   extension: string,
-) {
+): Promise<ParsedComponents> {
   return Promise.all(
     selection.map(async (componentName) => {
       let utilities;
@@ -97,11 +108,7 @@ function loadRemoteComponents(
       return [componentName, {
         component: await fetch(
           urlJoin(componentsPath, componentName + extension),
-        ).then(
-          (
-            res,
-          ) => res.text(),
-        ),
+        ).then((res) => res.text()).then(htmlToBreezewind),
         utilities,
       }];
     }),

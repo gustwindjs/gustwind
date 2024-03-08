@@ -1,41 +1,36 @@
+import type { GlobalUtilities, Routes } from "../types.ts";
 import type { Utilities } from "../breezewind/types.ts";
-import type {
-  Components,
-  ComponentsEntry,
-  GlobalUtilities,
-  Routes,
-} from "../types.ts";
 
-// https://stackoverflow.com/a/47636222/228885
 function getComponentUtilities(
-  components: Components,
-  routes: Routes,
-): Record<string, Utilities> {
+  { componentUtilities, routes }: {
+    componentUtilities: Record<string, GlobalUtilities | undefined>;
+    routes: Routes;
+  },
+) {
   return Object.fromEntries(
-    Object.entries(components).map(([k, v]) =>
-      v.utilities && [k, v.utilities.init({ routes })]
-    )
-      .filter(<T>(n?: T): n is T => Boolean(n)),
+    Object.entries(componentUtilities).map((
+      [k, v],
+    ) => [k, v ? v.init({ routes }) : {}]),
   );
 }
 
 function getGlobalUtilities(
   {
     globalUtilities,
+    layoutUtilities,
     routes,
-    layout,
   }: {
     globalUtilities: GlobalUtilities;
+    layoutUtilities: Utilities;
     routes?: Routes;
-    layout?: ComponentsEntry;
   },
 ) {
   routes = routes || {};
   const ret = globalUtilities.init({ routes });
 
   // Expose layout-specific utilities as global utilities
-  if (layout) {
-    return { ...ret, ...layout.utilities?.init({ routes }) };
+  if (layoutUtilities) {
+    return { ...ret, ...layoutUtilities };
   }
 
   return ret;

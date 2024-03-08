@@ -4,12 +4,10 @@ import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import { dir } from "../../utilities/fs.ts";
 import type { LoadApi } from "../../types.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
-import { getComponents } from "../../gustwind-utilities/getComponents.ts";
+import * as globalUtilities from "../globalUtilities.ts";
 import {
   getComponentUtilities,
-  getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import * as globalUtilities from "../globalUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.9.0/es/languages/bash.js";
 import highlightJS from "https://unpkg.com/highlight.js@11.9.0/es/languages/javascript.js";
@@ -91,15 +89,20 @@ function getTransformMarkdown(load: LoadApi) {
       // @ts-ignore How to type this?
       async walkTokens(token) {
         if (token.type === "importComponent") {
-          const components = await htmlLoader("./site/components");
+          const { components, componentUtilities } = await htmlLoader(
+            "./site/components",
+          );
           const matchedComponent = components[token.component];
 
           if (matchedComponent) {
             token.html = await renderComponent({
-              component: matchedComponent.component,
-              components: getComponents(components),
-              globalUtilities: getGlobalUtilities({ globalUtilities }),
-              componentUtilities: getComponentUtilities(components, {}),
+              component: matchedComponent,
+              components,
+              globalUtilities: globalUtilities.init(),
+              componentUtilities: getComponentUtilities({
+                componentUtilities,
+                routes: {},
+              }),
             });
           } else {
             throw new Error(
