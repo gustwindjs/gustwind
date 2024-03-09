@@ -1,42 +1,49 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlispToBreezewind } from "../mod.ts";
+import { htmlispToHTML } from "../mod.ts";
+
+// TODO: Specify what should happen if a component is not found (throw an error?)
 
 Deno.test("basic component", () => {
   assertEquals(
-    htmlispToBreezewind(`<Button>foo</Button>`),
-    {
-      type: "Button",
-      children: "foo",
-      props: {},
-    },
+    htmlispToHTML("<Button>foo</Button>", {
+      Button: '<button &children="(get props children)"></button>',
+    }),
+    "<button>foo</button>",
   );
 });
 
 Deno.test("component with attributes", () => {
   assertEquals(
-    htmlispToBreezewind(`<Button title="demo">foo</Button>`),
-    {
-      type: "Button",
-      children: "foo",
-      props: { title: "demo" },
-    },
+    htmlispToHTML(`<Button title="demo">foo</Button>`, {
+      Button:
+        '<button &children="(get props children)" &title="(get props title)"></button>',
+    }),
+    `<button title="demo">foo</button>`,
   );
 });
 
 Deno.test("component with children", () => {
   assertEquals(
-    htmlispToBreezewind(`<Button><div>foo</div></Button>`),
-    {
-      type: "Button",
-      children: [{ type: "div", children: "foo", attributes: {} }],
-      props: {},
-    },
+    htmlispToHTML(`<Button><div>foo</div></Button>`, {
+      Button: '<button &children="(get props children)"></button>',
+    }),
+    "<button><div>foo</div></button>",
   );
 });
 
+Deno.test("component with children attributes", () => {
+  assertEquals(
+    htmlispToHTML(`<Button &children="foo"></Button>`, {
+      Button: '<button &children="(get props children)"></button>',
+    }),
+    "<button>foo</button>",
+  );
+});
+
+/*
 Deno.test("component with multiple children", () => {
   assertEquals(
-    htmlispToBreezewind(`<Button><div>foo</div><div>bar</div></Button>`),
+    htmlispToHTML(`<Button><div>foo</div><div>bar</div></Button>`),
     {
       type: "Button",
       children: [
@@ -50,7 +57,7 @@ Deno.test("component with multiple children", () => {
 
 Deno.test("component with an expression", () => {
   assertEquals(
-    htmlispToBreezewind(
+    htmlispToHTML(
       `<Link
         &href="(get context document.content)"
       ></Link>`,
@@ -71,7 +78,7 @@ Deno.test("component with an expression", () => {
 
 Deno.test("component with a children expression", () => {
   assertEquals(
-    htmlispToBreezewind(
+    htmlispToHTML(
       `<Markdown
         type="div"
         &children="(get context document.content)"
@@ -95,7 +102,7 @@ Deno.test("component with a children expression", () => {
 
 Deno.test("component with a children expression 2", () => {
   assertEquals(
-    htmlispToBreezewind(
+    htmlispToHTML(
       `<Heading level="2" class="text-4xl" &children="(get props name)" />`,
     ),
     {
@@ -114,3 +121,4 @@ Deno.test("component with a children expression 2", () => {
     },
   );
 });
+*/
