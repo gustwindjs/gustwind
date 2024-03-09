@@ -1,102 +1,60 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlispToBreezewind } from "../mod.ts";
+import { htmlispToHTML } from "../mod.ts";
 
 Deno.test("basic element", () => {
   assertEquals(
-    htmlispToBreezewind(`<div>foo</div>`),
-    {
-      type: "div",
-      children: "foo",
-      attributes: {},
-    },
+    htmlispToHTML(`<div>foo</div>`),
+    `<div>foo</div>`,
   );
 });
 
 Deno.test("nested element", () => {
   assertEquals(
-    htmlispToBreezewind(`<div><span>foo</span></div>`),
-    {
-      type: "div",
-      children: [
-        {
-          type: "span",
-          children: "foo",
-          attributes: {},
-        },
-      ],
-      attributes: {},
-    },
+    htmlispToHTML(`<div><span>foo</span></div>`),
+    `<div><span>foo</span></div>`,
   );
 });
 
 Deno.test("element with an attribute", () => {
   assertEquals(
-    htmlispToBreezewind(`<div title="bar">foo</div>`),
-    {
-      type: "div",
-      children: "foo",
-      attributes: {
-        title: "bar",
-      },
-    },
+    htmlispToHTML(`<div title="bar">foo</div>`),
+    `<div title="bar">foo</div>`,
+  );
+});
+
+Deno.test("element with multiple attributes", () => {
+  assertEquals(
+    htmlispToHTML(`<div title="bar" alt="foo">foo</div>`),
+    `<div title="bar" alt="foo">foo</div>`,
   );
 });
 
 Deno.test("element with a class", () => {
   assertEquals(
-    htmlispToBreezewind(`<div class="bar">foo</div>`),
-    {
-      type: "div",
-      children: "foo",
-      // Instead of using the class shortcut, map to an attribute directly as it is the same
-      attributes: {
-        class: "bar",
-      },
-    },
+    htmlispToHTML(`<div class="bar">foo</div>`),
+    `<div class="bar">foo</div>`,
   );
 });
 
 Deno.test("doctype", () => {
   assertEquals(
-    htmlispToBreezewind("<!DOCTYPE html>"),
-    [{
-      type: "!DOCTYPE",
-      attributes: {
-        html: true,
-      },
-      closingCharacter: "",
-    }],
+    htmlispToHTML("<!DOCTYPE html>"),
+    "<!DOCTYPE html>",
   );
 });
 
 Deno.test("doctype and content", () => {
   assertEquals(
-    htmlispToBreezewind(`<!DOCTYPE html>
+    htmlispToHTML(`<!DOCTYPE html>
     <div>hello</div>`),
-    [{
-      type: "!DOCTYPE",
-      attributes: {
-        html: true,
-      },
-      closingCharacter: "",
-    }, {
-      type: "div",
-      attributes: {},
-      children: "hello",
-    }],
+    `<!DOCTYPE html>
+    <div>hello</div>`,
   );
 });
 
 Deno.test("xml", () => {
   assertEquals(
-    htmlispToBreezewind('<?xml version="1.0" encoding="utf-8" ?>'),
-    [{
-      type: "?xml",
-      attributes: {
-        version: "1.0",
-        encoding: "utf-8",
-      },
-      closingCharacter: "?",
-    }],
+    htmlispToHTML('<?xml version="1.0" encoding="utf-8" ?>'),
+    '<?xml version="1.0" encoding="utf-8" ?>',
   );
 });
