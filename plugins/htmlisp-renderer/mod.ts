@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { htmlToBreezewind } from "../../htmlisp/mod.ts";
+import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
 import type {
   Components as BreezewindComponents,
 } from "../../breezewind/types.ts";
@@ -21,7 +21,7 @@ const plugin: Plugin<{
   globalUtilitiesPath: string;
 }, {
   htmlLoader: ReturnType<typeof initLoader>;
-  components: Record<string, ReturnType<typeof htmlToBreezewind>>;
+  components: Record<string, ReturnType<typeof htmlispToBreezewind>>;
   componentUtilities: Record<string, GlobalUtilities | undefined>;
   globalUtilities: GlobalUtilities;
 }> = {

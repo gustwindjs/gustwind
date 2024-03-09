@@ -1,5 +1,5 @@
 import process from "node:process";
-import { htmlToBreezewind } from "../../htmlisp/mod.ts";
+import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import {
@@ -150,7 +150,7 @@ function getComponents(
   return Object.fromEntries(
     Object.entries(components).map((
       [k, v],
-    ) => [k, htmlToBreezewind(v)]),
+    ) => [k, htmlispToBreezewind(v)]),
   );
 }
 

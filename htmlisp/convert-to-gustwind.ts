@@ -7,7 +7,7 @@ type Attributes = Component["attributes"];
 function getConverter(htm: { bind: (hValue: typeof h) => string }) {
   const html = htm.bind(h);
 
-  return function htmlToBreezewind(
+  return function htmlispToBreezewind(
     htmlInput?: string,
   ): Component | Component[] {
     if (!htmlInput) {

@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlToBreezewind } from "../mod.ts";
+import { htmlispToBreezewind } from "../mod.ts";
 
 Deno.test("props through slots as elements", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout>
         <slot name="content">
           <div>hello</div>
@@ -28,7 +28,7 @@ Deno.test("props through slots as elements", () => {
 
 Deno.test("props through slots as elements including normal props", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout title="demo">
         <slot name="content">
           <div>hello</div>
@@ -54,7 +54,7 @@ Deno.test("props through slots as elements including normal props", () => {
 
 Deno.test("props through slots as elements including bound props", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout &title="(get props title)">
         <slot name="content">
           <div>hello</div>
@@ -85,7 +85,7 @@ Deno.test("props through slots as elements including bound props", () => {
 
 Deno.test("children binding within slots", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout>
         <slot name="content">
           <span &children="(get props day)"></span>
@@ -113,7 +113,7 @@ Deno.test("children binding within slots", () => {
 
 Deno.test("attribute binding within slots", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout>
         <slot name="content">
           <div &title="(get props day)"></div>
@@ -149,7 +149,7 @@ Deno.test("attribute binding within slots", () => {
 
 Deno.test("attribute binding to children within slots", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<BaseLayout>
         <slot name="content">
           <div class="flex flex-col gap-8">

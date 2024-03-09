@@ -1,7 +1,7 @@
 import * as path from "node:path";
 // Note that this depends on --allow-ffi
 import sharp from "npm:sharp@0.33.0";
-import { htmlToBreezewind } from "../../htmlisp/mod.ts";
+import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
 import breezewind from "../../breezewind/mod.ts";
 import type { Plugin } from "../../types.ts";
 
@@ -18,7 +18,7 @@ const plugin: Plugin<{
   init: async (
     { options: { layout }, load, outputDirectory },
   ) => {
-    const ogLayout = htmlToBreezewind(await load.textFile(layout));
+    const ogLayout = htmlispToBreezewind(await load.textFile(layout));
 
     return {
       beforeEachRender: async ({ url, route, send }) => {
