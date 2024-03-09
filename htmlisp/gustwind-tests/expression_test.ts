@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlToBreezewind } from "../mod.ts";
+import { htmlispToBreezewind } from "../mod.ts";
 
 Deno.test("element with an expression shortcut for attribute", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(get props href)" />`,
     ),
     {
@@ -17,7 +17,7 @@ Deno.test("element with an expression shortcut for attribute", () => {
 
 Deno.test("element with braces inside strings", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(concat foo '(' bar ')' )" />`,
     ),
     {
@@ -33,7 +33,7 @@ Deno.test("element with braces inside strings", () => {
 
 Deno.test("element with an expression after expression", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(get (get props href))" />`,
     ),
     {
@@ -52,7 +52,7 @@ Deno.test("element with an expression after expression", () => {
 
 Deno.test("element with multiple expressions", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(urlJoin (get props href) (get props suffix))" />`,
     ),
     {
@@ -74,7 +74,7 @@ Deno.test("element with multiple expressions", () => {
 
 Deno.test("element with a string after an expression after expression", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(get (get props href) /)" />`,
     ),
     {
@@ -93,7 +93,7 @@ Deno.test("element with a string after an expression after expression", () => {
 
 Deno.test("element with an expression and multiple parameters", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(echo hello ' ' world!)" />`,
     ),
     {
@@ -109,7 +109,7 @@ Deno.test("element with an expression and multiple parameters", () => {
 
 Deno.test("element with a nested expression shortcut for attribute", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a &href="(urlJoin / (get props href))" />`,
     ),
     {
@@ -128,7 +128,7 @@ Deno.test("element with a nested expression shortcut for attribute", () => {
 
 Deno.test("element with an expression shortcut for children", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<div &children="(get props href)" />`,
     ),
     {
@@ -144,7 +144,7 @@ Deno.test("element with an expression shortcut for children", () => {
 
 Deno.test("element with a nested expression shortcut for children", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<div &children="(concat / (get props href))" />`,
     ),
     {
@@ -163,7 +163,7 @@ Deno.test("element with a nested expression shortcut for children", () => {
 
 Deno.test("element with a complex nested expression shortcut for children", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<div &children="(urlJoin / (get props href) /)" />`,
     ),
     {
@@ -186,7 +186,7 @@ Deno.test("element with a complex nested expression shortcut for children", () =
 
 Deno.test("complex expression", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<a
         &href="(urlJoin (get context meta.url) / blog / (get props data.slug) /)"
       ></a>`,
@@ -214,7 +214,7 @@ Deno.test("complex expression", () => {
 
 Deno.test("&foreach", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<ul &foreach="(get context blogPosts)">
         <li class="inline">
           <SiteLink
@@ -266,7 +266,7 @@ Deno.test("&foreach", () => {
 
 Deno.test("element with a visibleIf", () => {
   assertEquals(
-    htmlToBreezewind(`<div &visibleIf="(get props showToc)">foo</div>`),
+    htmlispToBreezewind(`<div &visibleIf="(get props showToc)">foo</div>`),
     {
       type: "div",
       children: "foo",
@@ -278,7 +278,7 @@ Deno.test("element with a visibleIf", () => {
 
 Deno.test("element with a visibleIf and multiple checks", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<div &visibleIf="(and (get props showToc) (get props isAdmin))">foo</div>`,
     ),
     {
@@ -298,7 +298,7 @@ Deno.test("element with a visibleIf and multiple checks", () => {
 
 Deno.test("element with a class", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<div &class="(pick (get props href) font-bold)">foo</div>`,
     ),
     {

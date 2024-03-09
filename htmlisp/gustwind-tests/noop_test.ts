@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlToBreezewind } from "../mod.ts";
+import { htmlispToBreezewind } from "../mod.ts";
 
 Deno.test("element with a type expression for noop type", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<noop &type="(get props type)" />`,
     ),
     {
@@ -17,7 +17,7 @@ Deno.test("element with a type expression for noop type", () => {
 
 Deno.test("&foreach with noop", () => {
   assertEquals(
-    htmlToBreezewind(
+    htmlispToBreezewind(
       `<noop &foreach="(get context blogPosts)">
         <div class="inline">
           <SiteLink
@@ -68,14 +68,14 @@ Deno.test("&foreach with noop", () => {
 
 Deno.test("component with noop", () => {
   assertEquals(
-    htmlToBreezewind(`<noop><div>foo</div></noop>`),
+    htmlispToBreezewind(`<noop><div>foo</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }],
   );
 });
 
 Deno.test("component with noop and siblings", () => {
   assertEquals(
-    htmlToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
+    htmlispToBreezewind(`<noop><div>foo</div><div>bar</div></noop>`),
     [{ type: "div", children: "foo", attributes: {} }, {
       type: "div",
       children: "bar",
@@ -86,7 +86,7 @@ Deno.test("component with noop and siblings", () => {
 
 Deno.test("noop with children", () => {
   assertEquals(
-    htmlToBreezewind(`<noop &children="(render (get props content))" />`),
+    htmlispToBreezewind(`<noop &children="(render (get props content))" />`),
     {
       children: {
         utility: "render",
@@ -99,7 +99,7 @@ Deno.test("noop with children", () => {
 
 Deno.test("nested noops", () => {
   assertEquals(
-    htmlToBreezewind(`<noop
+    htmlispToBreezewind(`<noop
       &visibleIf="(get props children)"
       &type="(concat h (get props level))"
       &id="(getUniqueAnchorId (get props children))"
