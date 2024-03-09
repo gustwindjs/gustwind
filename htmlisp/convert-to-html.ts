@@ -1,6 +1,8 @@
 import { isObject, omit } from "../utilities/functional.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
 
+type Attributes = Record<string, unknown> | null;
+
 function getConverter(htm: { bind: (hValue: typeof h) => string }) {
   const html = htm.bind(h);
 
@@ -12,19 +14,7 @@ function getConverter(htm: { bind: (hValue: typeof h) => string }) {
     }
 
     if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
-      // @ts-ignore Ignore for now
-      const [type, attributes, ...children] = html([htmlInput]) as [
-        string,
-        Record<string, unknown>,
-      ];
-      const endsWithQuestion = attributes["?"];
-
-      // @ts-ignore Ignore for now
-      return [{
-        type,
-        attributes: omit(attributes, "?"),
-        closingCharacter: endsWithQuestion ? "?" : "",
-      }].concat(children);
+      return htmlInput;
     }
 
     // @ts-ignore Ignore for now
@@ -34,10 +24,20 @@ function getConverter(htm: { bind: (hValue: typeof h) => string }) {
 
 function h(
   type: string,
-  attributes: Record<string, unknown> | null,
+  attributes: Attributes,
   ...children: string[]
 ) {
-  return `<${type}>${children}</${type}>`;
+  return `<${type} ${getAttributeBindings(attributes)}>${children}</${type}>`;
+}
+
+function getAttributeBindings(attributes: Attributes) {
+  if (!attributes) {
+    return "";
+  }
+
+  return Object.entries(attributes).map(
+    ([k, v]) => `${k}="${v}"`,
+  ).join(" ");
 }
 
 export { getConverter };
