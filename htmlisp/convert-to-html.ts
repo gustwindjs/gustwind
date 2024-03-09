@@ -1,15 +1,12 @@
 import { isObject, omit } from "../utilities/functional.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
-import type { AttributeValue, Component } from "../breezewind/types.ts";
-
-type Attributes = Component["attributes"];
 
 function getConverter(htm: { bind: (hValue: typeof h) => string }) {
   const html = htm.bind(h);
 
   return function htmlispToBreezewind(
     htmlInput?: string,
-  ): Component | Component[] {
+  ): string {
     if (!htmlInput) {
       throw new Error("convert - Missing html input");
     }
@@ -37,10 +34,10 @@ function getConverter(htm: { bind: (hValue: typeof h) => string }) {
 
 function h(
   type: string,
-  attributes: Attributes, // Record<string, unknown> | null,
-  ...children: Component[]
+  attributes: Record<string, unknown> | null,
+  ...children: string[]
 ) {
-  return "foobar";
+  return `<${type}>${children}</${type}>`;
 }
 
 export { getConverter };
