@@ -55,8 +55,7 @@ function getH(
   return async function h(
     type: string,
     attributes: Attributes,
-    children: string,
-    // ...children: string[]
+    ...children: string[]
   ) {
     // Components begin with an uppercase letter always
     if (type[0].toUpperCase() === type[0]) {
@@ -99,7 +98,9 @@ function getH(
       );
     }
 
-    return `<${type}${attrs && " " + attrs}>${children || ""}</${type}>`;
+    return `<${type}${attrs && " " + attrs}>${
+      (await Promise.all(children)).join("") || ""
+    }</${type}>`;
   };
 }
 
