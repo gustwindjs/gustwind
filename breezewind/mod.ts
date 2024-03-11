@@ -108,7 +108,7 @@ async function render(
   let boundProps = {};
 
   if (component.bindToProps) {
-    boundProps = await applyUtilities(
+    boundProps = await applyUtilities<Utility, Utilities, Context>(
       component.bindToProps,
       globalUtilities,
       { context, props: scopedProps },
@@ -194,11 +194,15 @@ async function render(
         }
         // @ts-expect-error This is fine
         if (child.utility) {
-          // @ts-expect-error This is fine
-          return applyUtility(child, globalUtilities, {
-            context,
-            props: scopedProps,
-          });
+          return applyUtility<Utility, Utilities, Context>(
+            // @ts-expect-error This is fine
+            child,
+            globalUtilities,
+            {
+              context,
+              props: scopedProps,
+            },
+          );
         }
         return child;
       }));
@@ -213,10 +217,14 @@ async function render(
         componentUtilities,
       });
     } else if (children.utility && globalUtilities) {
-      children = await applyUtility(children, globalUtilities, {
-        context,
-        props: scopedProps,
-      });
+      children = await applyUtility<Utility, Utilities, Context>(
+        children,
+        globalUtilities,
+        {
+          context,
+          props: scopedProps,
+        },
+      );
     }
 
     return toHTML(e, attributes, children);

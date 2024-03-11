@@ -1,9 +1,13 @@
 import type { Context, Utilities, Utility } from "./types.ts";
 
-async function applyUtilities(
-  props: Record<string, string | Utility>,
-  utilities?: Utilities,
-  context?: Context,
+async function applyUtilities<
+  U extends Utility,
+  US extends Utilities,
+  C extends Context,
+>(
+  props: Record<string, string | U>,
+  utilities?: US,
+  context?: C,
 ): Promise<Record<string, unknown>> {
   return Object.fromEntries(
     await Promise.all(
@@ -11,16 +15,24 @@ async function applyUtilities(
         [k, v],
       ) => [
         k,
-        typeof v === "string" ? v : await applyUtility(v, utilities, context),
+        typeof v === "string" ? v : await applyUtility<U, US, C>(
+          v,
+          utilities,
+          context,
+        ),
       ]),
     ),
   );
 }
 
-async function applyUtility(
-  value?: Utility,
-  utilities?: Utilities,
-  context?: Context,
+async function applyUtility<
+  U extends Utility,
+  US extends Utilities,
+  C extends Context,
+>(
+  value?: U,
+  utilities?: US,
+  context?: C,
   // deno-lint-ignore no-explicit-any
 ): Promise<any> {
   if (!utilities) {

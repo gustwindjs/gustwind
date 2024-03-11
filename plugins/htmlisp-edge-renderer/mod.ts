@@ -2,6 +2,7 @@ import process from "node:process";
 import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import type { Context, Utilities, Utility } from "../../breezewind/types.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,
@@ -66,9 +67,9 @@ const plugin: Plugin<{
           context: {
             ...context,
             url,
-            meta: await applyUtilities(
+            meta: await applyUtilities<Utility, Utilities, Context>(
               context,
-              // @ts-expect-error This is ok
+              // @ts-expect-error This is fine
               defaultUtilities,
               { context },
             ),
