@@ -1,7 +1,8 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
-
-// TODO: Specify what should happen if a component is not found (throw an error?)
 
 Deno.test("basic component", () => {
   assertEquals(
@@ -9,6 +10,14 @@ Deno.test("basic component", () => {
       Button: '<button &children="(get props children)"></button>',
     }),
     "<button>foo</button>",
+  );
+});
+
+Deno.test("throws if a component is not found", () => {
+  assertThrows(
+    () => htmlispToHTML("<Button>foo</Button>"),
+    Error,
+    `Component "Button" was not found!`,
   );
 });
 
