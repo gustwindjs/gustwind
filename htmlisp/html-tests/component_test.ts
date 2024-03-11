@@ -61,21 +61,19 @@ Deno.test("component with children attributes", async () => {
   );
 });
 
-/*
-Deno.test("component with multiple children", () => {
+Deno.test("component with multiple children", async () => {
   assertEquals(
-    htmlispToHTML(`<Button><div>foo</div><div>bar</div></Button>`),
-    {
-      type: "Button",
-      children: [
-        { type: "div", children: "foo", attributes: {} },
-        { type: "div", children: "bar", attributes: {} },
-      ],
-      props: {},
-    },
+    await htmlispToHTML({
+      htmlInput: `<Button><div>foo</div><div>bar</div></Button>`,
+      components: {
+        Button: '<button &children="(get context children)"></button>',
+      },
+    }),
+    "<button><div>foo</div><div>bar</div></button>",
   );
 });
 
+/*
 Deno.test("component with an expression", () => {
   assertEquals(
     htmlispToHTML(
