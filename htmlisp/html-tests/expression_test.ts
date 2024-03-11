@@ -165,27 +165,3 @@ Deno.test("element with a complex visibleIf", async () => {
     "",
   );
 });
-
-/*
-Deno.test("element with a class", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<div &class="(pick (get props href) font-bold)">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      bindToProps: {
-        class: {
-          utility: "pick",
-          parameters: [
-            { utility: "get", parameters: ["props", "href"] },
-            "font-bold",
-          ],
-        },
-      },
-      attributes: { class: { utility: "get", parameters: ["props", "class"] } },
-    },
-  );
-});
-*/
