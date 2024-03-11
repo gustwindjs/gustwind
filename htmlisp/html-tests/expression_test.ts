@@ -7,18 +7,14 @@ Deno.test("element with an expression shortcut for attribute", () => {
       {
         htmlInput: `<a &href="(get props href)" />`,
         context: { href: "demo" },
-        utilities: {
-          get: (ctx: Record<string, unknown>, k: string) => ctx[k],
-        },
       },
-      // TODO: Should it be possible to define all utilities or should there be some defaults in place?
-      // { get: (ctx) => a}
     ),
-    `<a href="demo" />`,
+    `<a href="demo"></a>`,
   );
 });
 
 // TODO: Restore these
+// TODO: Show usage of custom utilities
 /*
 Deno.test("element with braces inside strings", () => {
   assertEquals(

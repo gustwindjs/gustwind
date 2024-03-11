@@ -1,5 +1,6 @@
 import { isObject, omit } from "../utilities/functional.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
+import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 
 type Attributes = Record<string, string> | null;
 type Components = Record<string, string>;
@@ -26,7 +27,10 @@ function getConverter(
     }
 
     const html = htm.bind(
-      getH(components || {}, context || {}, utilities || {}),
+      getH(components || {}, context || {}, {
+        ...defaultUtilities,
+        ...utilities,
+      }),
     );
 
     // @ts-ignore Ignore for now
@@ -65,20 +69,52 @@ function getH(components: Components, context: Context, utilities: Utilities) {
     }
 
     // TODO: Add expression parsing logic and context execution logic here
-    const attrs = getAttributeBindings(attributes);
+    const attrs = getAttributeBindings(attributes, context, utilities);
 
     return `<${type}${attrs && " " + attrs}>${children}</${type}>`;
   };
+}
 
-  function getAttributeBindings(attributes: Attributes) {
-    if (!attributes) {
-      return "";
-    }
-
-    return Object.entries(attributes).map(
-      ([k, v]) => !k.startsWith("__") && `${k}="${v}"`,
-    ).filter(Boolean).join(" ");
+function getAttributeBindings(
+  attributes: Attributes,
+  context: Context,
+  utilities: Utilities,
+) {
+  if (!attributes) {
+    return "";
   }
+
+  return Object.entries(attributes).map(
+    ([k, v]) => {
+      // Skip commented attributes
+      if (k.startsWith("__")) {
+        return;
+      }
+
+      // Check bindings
+      if (k.startsWith("&")) {
+        const parsedExpression = parseExpression(v);
+
+        // TODO: Test this case
+        if (!parsedExpression) {
+          throw new Error(`Failed to parse ${v} for attribute ${k}!`);
+        }
+
+        const { utility, parameters } = parsedExpression;
+
+        return `${k.slice(1)}="${
+          utilities[utility].apply(
+            // TODO: Clarify global "context" vs. component "props"
+            // -> rename context as props? Is it important to have both?
+            { context: { props: context } },
+            parameters,
+          )
+        }"`;
+      }
+
+      return `${k}="${v}"`;
+    },
+  ).filter(Boolean).join(" ");
 }
 
 export { getConverter };
