@@ -1,49 +1,61 @@
 import {
   assertEquals,
-  assertThrows,
+  assertRejects,
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("basic component", () => {
+Deno.test("basic component", async () => {
   assertEquals(
-    htmlispToHTML("<Button>foo</Button>", {
-      Button: '<button &children="(get props children)"></button>',
+    await htmlispToHTML({
+      htmlInput: "<Button>foo</Button>",
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
     }),
     "<button>foo</button>",
   );
 });
 
 Deno.test("throws if a component is not found", () => {
-  assertThrows(
-    () => htmlispToHTML("<Button>foo</Button>"),
+  assertRejects(
+    async () => await htmlispToHTML({ htmlInput: "<Button>foo</Button>" }),
     Error,
     `Component "Button" was not found!`,
   );
 });
 
-Deno.test("component with attributes", () => {
+Deno.test("component with attributes", async () => {
   assertEquals(
-    htmlispToHTML(`<Button title="demo">foo</Button>`, {
-      Button:
-        '<button &children="(get props children)" &title="(get props title)"></button>',
+    await htmlispToHTML({
+      htmlInput: `<Button title="demo">foo</Button>`,
+      components: {
+        Button:
+          '<button &children="(get props children)" &title="(get props title)"></button>',
+      },
     }),
     `<button title="demo">foo</button>`,
   );
 });
 
-Deno.test("component with children", () => {
+Deno.test("component with children", async () => {
   assertEquals(
-    htmlispToHTML(`<Button><div>foo</div></Button>`, {
-      Button: '<button &children="(get props children)"></button>',
+    await htmlispToHTML({
+      htmlInput: `<Button><div>foo</div></Button>`,
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
     }),
     "<button><div>foo</div></button>",
   );
 });
 
-Deno.test("component with children attributes", () => {
+Deno.test("component with children attributes", async () => {
   assertEquals(
-    htmlispToHTML(`<Button &children="foo"></Button>`, {
-      Button: '<button &children="(get props children)"></button>',
+    await htmlispToHTML({
+      htmlInput: `<Button &children="foo"></Button>`,
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
     }),
     "<button>foo</button>",
   );

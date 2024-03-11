@@ -55,6 +55,8 @@ function getH(components: Components, context: Context, utilities: Utilities) {
     if (type[0].toUpperCase() === type[0]) {
       const foundComponent = components[type];
 
+      console.log("foobar");
+
       if (foundComponent) {
         // TODO: 1. Get props
         // TODO: 2. Execute match (same function but with props as context)
@@ -71,6 +73,8 @@ function getH(components: Components, context: Context, utilities: Utilities) {
         // TODO: Handle bindings within found component definitions somehow
         return "<button>foo</button>";
       }
+
+      console.log("barfoo");
 
       throw new Error(`Component "${type}" was not found!`);
     }
