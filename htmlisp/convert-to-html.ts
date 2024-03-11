@@ -1,11 +1,13 @@
 import { isObject, omit } from "../utilities/functional.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
+import { applyUtility } from "../breezewind/applyUtility.ts";
+import type { Utilities, Utility } from "../breezewind/types.ts";
 
 type Attributes = Record<string, string> | null;
 type Components = Record<string, string>;
 type Context = Record<string, unknown>;
-type Utilities = Record<string, (...args: any) => unknown>;
+// type Utilities = Record<string, (...args: any) => unknown>;
 
 function getConverter(
   htm: { bind: (hValue: ReturnType<typeof getH>) => string },
@@ -27,10 +29,14 @@ function getConverter(
     }
 
     const html = htm.bind(
-      getH(components || {}, context || {}, {
-        ...defaultUtilities,
-        ...utilities,
-      }),
+      getH(
+        components || {},
+        context || {}, // @ts-expect-error TODO: Figure out what's wrong with this type
+        {
+          ...defaultUtilities,
+          ...utilities,
+        },
+      ),
     );
 
     // @ts-ignore Ignore for now
@@ -39,7 +45,7 @@ function getConverter(
 }
 
 function getH(components: Components, context: Context, utilities: Utilities) {
-  return function h(
+  return async function h(
     type: string,
     attributes: Attributes,
     ...children: string[]
@@ -69,13 +75,13 @@ function getH(components: Components, context: Context, utilities: Utilities) {
     }
 
     // TODO: Add expression parsing logic and context execution logic here
-    const attrs = getAttributeBindings(attributes, context, utilities);
+    const attrs = await getAttributeBindings(attributes, context, utilities);
 
     return `<${type}${attrs && " " + attrs}>${children}</${type}>`;
   };
 }
 
-function getAttributeBindings(
+async function getAttributeBindings(
   attributes: Attributes,
   context: Context,
   utilities: Utilities,
@@ -84,37 +90,49 @@ function getAttributeBindings(
     return "";
   }
 
-  return Object.entries(attributes).map(
-    ([k, v]) => {
-      // Skip commented attributes
-      if (k.startsWith("__")) {
-        return;
-      }
-
-      // Check bindings
-      if (k.startsWith("&")) {
-        const parsedExpression = parseExpression(v);
-
-        // TODO: Test this case
-        if (!parsedExpression) {
-          throw new Error(`Failed to parse ${v} for attribute ${k}!`);
+  return (await Promise.all(
+    Object.entries(attributes).map(
+      async ([k, v]) => {
+        // Skip commented attributes
+        if (k.startsWith("__")) {
+          return;
         }
 
-        const { utility, parameters } = parsedExpression;
+        // Check bindings
+        if (k.startsWith("&")) {
+          const parsedExpression = parseExpression(v);
 
-        return `${k.slice(1)}="${
+          // TODO: Test this case
+          if (!parsedExpression) {
+            throw new Error(`Failed to parse ${v} for attribute ${k}!`);
+          }
+
+          return `${k.slice(1)}="${await applyUtility<
+              Utility,
+              Utilities,
+              Context
+            >(
+              parsedExpression,
+              utilities,
+              { props: context },
+            )
+
+            /*
           utilities[utility].apply(
             // TODO: Clarify global "context" vs. component "props"
             // -> rename context as props? Is it important to have both?
             { context: { props: context } },
+            // TODO: Apply parameters recursively now
             parameters,
           )
-        }"`;
-      }
+          */
+          }"`;
+        }
 
-      return `${k}="${v}"`;
-    },
-  ).filter(Boolean).join(" ");
+        return `${k}="${v}"`;
+      },
+    ),
+  )).filter(Boolean).join(" ");
 }
 
 export { getConverter };

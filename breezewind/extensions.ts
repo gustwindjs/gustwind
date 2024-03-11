@@ -27,7 +27,11 @@ function classShortcut(tw?: (...args: string[]) => string) {
       classes.push(component.attributes.class);
     } else if (component.class?.utility && component.class.parameters) {
       classes.push(
-        await applyUtility(component.class, utilities, context),
+        await applyUtility<Utility, Utilities, Context>(
+          component.class,
+          utilities,
+          context,
+        ),
       );
     }
 
@@ -36,7 +40,11 @@ function classShortcut(tw?: (...args: string[]) => string) {
         await Object.entries(component.classList as ClassList)
           .map(
             async ([k, values]) => {
-              const firstValue = await applyUtility(
+              const firstValue = await applyUtility<
+                Utility,
+                Utilities,
+                Context
+              >(
                 values[0] as Utility,
                 utilities,
                 context,

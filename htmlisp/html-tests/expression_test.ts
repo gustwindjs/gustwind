@@ -1,9 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with an expression shortcut for attribute", () => {
+// TODO: Show usage of custom utilities
+
+Deno.test("element with an expression shortcut for attribute", async () => {
   assertEquals(
-    htmlispToHTML(
+    await htmlispToHTML(
       {
         htmlInput: `<a &href="(get props href)" />`,
         context: { href: "demo" },
@@ -13,44 +15,28 @@ Deno.test("element with an expression shortcut for attribute", () => {
   );
 });
 
-// TODO: Restore these
-// TODO: Show usage of custom utilities
+Deno.test("element with braces inside strings", async () => {
+  assertEquals(
+    await htmlispToHTML(
+      {
+        htmlInput: `<a &href="(concat foo '(' bar ')' )" />`,
+      },
+    ),
+    `<a href="foo(bar)"></a>`,
+  );
+});
+
+Deno.test("element with expressions within an expression", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<a &href="(concat (get props demo) (get props href))" />`,
+      context: { demo: "foobar", href: "demo" },
+    }),
+    `<a href="foobardemo"></a>`,
+  );
+});
+
 /*
-Deno.test("element with braces inside strings", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(concat foo '(' bar ')' )" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: { utility: "concat", parameters: ["foo", "(", "bar", ")"] },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
-Deno.test("element with an expression after expression", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(get (get props href))" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: {
-          utility: "get",
-          parameters: [{ utility: "get", parameters: ["props", "href"] }],
-        },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
 Deno.test("element with multiple expressions", () => {
   assertEquals(
     htmlispToHTML(
