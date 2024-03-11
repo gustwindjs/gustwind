@@ -8,17 +8,18 @@ type Attributes = Record<string, string> | null;
 type Components = Record<string, string>;
 type Context = Record<string, unknown>;
 // type Utilities = Record<string, (...args: any) => unknown>;
+type HtmllispToHTMLParameters = {
+  htmlInput?: string;
+  components?: Components;
+  context?: Context;
+  utilities?: Utilities;
+};
 
 function getConverter(
   htm: { bind: (hValue: ReturnType<typeof getH>) => string },
 ) {
   return function htmlispToHTML(
-    { htmlInput, components, context, utilities }: {
-      htmlInput?: string;
-      components?: Components;
-      context?: Context;
-      utilities?: Utilities;
-    },
+    { htmlInput, components, context, utilities }: HtmllispToHTMLParameters,
   ): string {
     if (!htmlInput) {
       throw new Error("convert - Missing html input");
@@ -36,6 +37,7 @@ function getConverter(
           ...defaultUtilities,
           ...utilities,
         },
+        htmlispToHTML,
       ),
     );
 
@@ -44,7 +46,12 @@ function getConverter(
   };
 }
 
-function getH(components: Components, context: Context, utilities: Utilities) {
+function getH(
+  components: Components,
+  context: Context,
+  utilities: Utilities,
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
+) {
   return async function h(
     type: string,
     attributes: Attributes,
@@ -56,20 +63,15 @@ function getH(components: Components, context: Context, utilities: Utilities) {
       const foundComponent = components[type];
 
       if (foundComponent) {
-        // TODO: 1. Get props
-        // TODO: 2. Execute match (same function but with props as context)
-
-        const childrenAttribute = attributes?.["&children"];
-
-        // TODO: Handle other & attributes
-        if (childrenAttribute) {
-          const parsedExpression = parseExpression(childrenAttribute);
-
-          console.log("got parsed children expression", parsedExpression);
-        }
-
-        // TODO: Handle bindings within found component definitions somehow
-        return "<button>foo</button>";
+        return htmlispToHTML({
+          htmlInput: foundComponent,
+          components,
+          context: {
+            ...context,
+            ...attributes,
+            children: attributes?.["&children"] || children,
+          },
+        });
       }
 
       throw new Error(`Component "${type}" was not found!`);

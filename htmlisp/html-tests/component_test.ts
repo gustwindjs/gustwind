@@ -9,7 +9,7 @@ Deno.test("basic component", async () => {
     await htmlispToHTML({
       htmlInput: "<Button>foo</Button>",
       components: {
-        Button: '<button &children="(get props children)"></button>',
+        Button: '<button &children="(get context children)"></button>',
       },
     }),
     "<button>foo</button>",
@@ -30,7 +30,7 @@ Deno.test("component with attributes", async () => {
       htmlInput: `<Button title="demo">foo</Button>`,
       components: {
         Button:
-          '<button &children="(get props children)" &title="(get props title)"></button>',
+          '<button &children="(get context children)" &title="(get context title)"></button>',
       },
     }),
     `<button title="demo">foo</button>`,
@@ -42,7 +42,7 @@ Deno.test("component with children", async () => {
     await htmlispToHTML({
       htmlInput: `<Button><div>foo</div></Button>`,
       components: {
-        Button: '<button &children="(get props children)"></button>',
+        Button: '<button &children="(get context children)"></button>',
       },
     }),
     "<button><div>foo</div></button>",
@@ -54,7 +54,7 @@ Deno.test("component with children attributes", async () => {
     await htmlispToHTML({
       htmlInput: `<Button &children="foo"></Button>`,
       components: {
-        Button: '<button &children="(get props children)"></button>',
+        Button: '<button &children="(get context children)"></button>',
       },
     }),
     "<button>foo</button>",
