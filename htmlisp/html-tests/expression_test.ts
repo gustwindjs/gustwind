@@ -1,3 +1,4 @@
+import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
@@ -36,48 +37,28 @@ Deno.test("element with expressions within an expression", async () => {
   );
 });
 
+Deno.test("element with custom utilities", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<a &href="(urlJoin (get props href) (get props suffix))" />`,
+      utilities: { urlJoin },
+      context: { href: "foo", suffix: "bar" },
+    }),
+    `<a href="foo/bar"></a>`,
+  );
+});
+
+Deno.test("element with a string after an expression after expression", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<a &href="(get (get props href) /)" />`,
+      context: { href: "props", "/": "foo/bar" },
+    }),
+    `<a href="foo/bar"></a>`,
+  );
+});
+
 /*
-Deno.test("element with multiple expressions", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(urlJoin (get props href) (get props suffix))" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: {
-          utility: "urlJoin",
-          parameters: [
-            { utility: "get", parameters: ["props", "href"] },
-            { utility: "get", parameters: ["props", "suffix"] },
-          ],
-        },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
-Deno.test("element with a string after an expression after expression", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(get (get props href) /)" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: {
-          utility: "get",
-          parameters: [{ utility: "get", parameters: ["props", "href"] }, "/"],
-        },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
 Deno.test("element with an expression and multiple parameters", () => {
   assertEquals(
     htmlispToHTML(
