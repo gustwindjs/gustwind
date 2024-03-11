@@ -152,27 +152,21 @@ Deno.test("element with a visibleIf disabled", async () => {
   );
 });
 
-/*
-Deno.test("element with a visibleIf and multiple checks", () => {
+Deno.test("element with a complex visibleIf", async () => {
   assertEquals(
-    htmlispToHTML(
-      `<div &visibleIf="(and (get props showToc) (get props isAdmin))">foo</div>`,
-    ),
-    {
-      type: "div",
-      children: "foo",
-      visibleIf: {
-        utility: "and",
-        parameters: [{ utility: "get", parameters: ["props", "showToc"] }, {
-          utility: "get",
-          parameters: ["props", "isAdmin"],
-        }],
+    await htmlispToHTML({
+      htmlInput:
+        `<div &visibleIf="(and (get context showToc) (get context isAdmin))">foo</div>`,
+      context: {
+        showToc: false,
+        isAdmin: false,
       },
-      attributes: {},
-    },
+    }),
+    "",
   );
 });
 
+/*
 Deno.test("element with a class", () => {
   assertEquals(
     htmlispToHTML(
