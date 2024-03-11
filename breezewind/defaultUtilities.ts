@@ -22,7 +22,7 @@ const defaultUtilities = {
     const ctx = get(context, c);
 
     if (!isObject(ctx)) {
-      console.error(context, c);
+      console.error("context", context, "context key", c);
       throw new Error("get - Found context is not an object");
     }
 
