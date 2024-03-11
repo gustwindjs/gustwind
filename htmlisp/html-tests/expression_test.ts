@@ -2,13 +2,11 @@ import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-// TODO: Show usage of custom utilities
-
 Deno.test("element with an expression shortcut for attribute", async () => {
   assertEquals(
     await htmlispToHTML(
       {
-        htmlInput: `<a &href="(get props href)" />`,
+        htmlInput: `<a &href="(get context href)" />`,
         context: { href: "demo" },
       },
     ),
@@ -30,7 +28,7 @@ Deno.test("element with braces inside strings", async () => {
 Deno.test("element with expressions within an expression", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<a &href="(concat (get props demo) (get props href))" />`,
+      htmlInput: `<a &href="(concat (get context demo) (get context href))" />`,
       context: { demo: "foobar", href: "demo" },
     }),
     `<a href="foobardemo"></a>`,
@@ -40,7 +38,8 @@ Deno.test("element with expressions within an expression", async () => {
 Deno.test("element with custom utilities", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<a &href="(urlJoin (get props href) (get props suffix))" />`,
+      htmlInput:
+        `<a &href="(urlJoin (get context href) (get context suffix))" />`,
       utilities: { urlJoin },
       context: { href: "foo", suffix: "bar" },
     }),
@@ -51,8 +50,8 @@ Deno.test("element with custom utilities", async () => {
 Deno.test("element with a string after an expression after expression", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<a &href="(get (get props href) /)" />`,
-      context: { href: "props", "/": "foo/bar" },
+      htmlInput: `<a &href="(get (get context href) /)" />`,
+      context: { href: "context", "/": "foo/bar" },
     }),
     `<a href="foo/bar"></a>`,
   );
@@ -61,7 +60,7 @@ Deno.test("element with a string after an expression after expression", async ()
 Deno.test("element with an expression shortcut for children", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<div &children="(get props href)" />`,
+      htmlInput: `<div &children="(get context href)" />`,
       context: { href: "foobar" },
     }),
     `<div>foobar</div>`,
@@ -71,7 +70,7 @@ Deno.test("element with an expression shortcut for children", async () => {
 Deno.test("element with a nested expression shortcut for children", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<div &children="(concat / (get props href))" />`,
+      htmlInput: `<div &children="(concat / (get context href))" />`,
       context: { href: "foobar" },
     }),
     `<div>/foobar</div>`,
@@ -81,7 +80,7 @@ Deno.test("element with a nested expression shortcut for children", async () => 
 Deno.test("element with a complex nested expression shortcut for children", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<div &children="(urlJoin / (get props href) /)" />`,
+      htmlInput: `<div &children="(urlJoin / (get context href) /)" />`,
       context: { href: "foobar" },
       utilities: { urlJoin },
     }),
@@ -89,35 +88,27 @@ Deno.test("element with a complex nested expression shortcut for children", asyn
   );
 });
 
-/*
-Deno.test("complex expression", () => {
+Deno.test("complex expression", async () => {
   assertEquals(
-    htmlispToHTML(
-      `<a
-        &href="(urlJoin (get context meta.url) / blog / (get props data.slug) /)"
+    await htmlispToHTML({
+      htmlInput: `<a
+        &href="(urlJoin (get context meta.url) blog (get context data.slug))"
       ></a>`,
-    ),
-    {
-      type: "a",
-      children: [],
-      bindToProps: {
-        href: {
-          utility: "urlJoin",
-          parameters: [
-            { utility: "get", parameters: ["context", "meta.url"] },
-            "/",
-            "blog",
-            "/",
-            { utility: "get", parameters: ["props", "data.slug"] },
-            "/",
-          ],
+      context: {
+        meta: {
+          url: "foo",
+        },
+        data: {
+          slug: "bar",
         },
       },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-    },
+      utilities: { urlJoin },
+    }),
+    `<a href="foo/blog/bar"></a>`,
   );
 });
 
+/*
 Deno.test("&foreach", () => {
   assertEquals(
     htmlispToHTML(
