@@ -108,71 +108,51 @@ Deno.test("complex expression", async () => {
   );
 });
 
+// TODO
 /*
-Deno.test("&foreach", () => {
+Deno.test("&foreach", async () => {
   assertEquals(
-    htmlispToHTML(
-      `<ul &foreach="(get context blogPosts)">
-        <li class="inline">
-          <SiteLink
-            &children="(get props data.title)"
-            &href="(urlJoin blog (get props data.slug))"
-          />
+    await htmlispToHTML({
+      htmlInput: `<ul &foreach="(get context blogPosts)">
+        <li class="inline" &title="(get context title)" &children="(get context content)">
         </li>
       </ul>
     `,
-    ),
-    {
-      type: "ul",
-      attributes: {},
-      foreach: [{
-        utility: "get",
-        parameters: ["context", "blogPosts"],
-      }, [{
-        type: "li",
-        attributes: {
-          class: "inline",
-        },
-        children: [
-          {
-            type: "SiteLink",
-            bindToProps: {
-              children: {
-                utility: "get",
-                parameters: ["props", "data.title"],
-              },
-              href: {
-                utility: "urlJoin",
-                parameters: [
-                  "blog",
-                  {
-                    "utility": "get",
-                    "parameters": ["props", "data.slug"],
-                  },
-                ],
-              },
-            },
-            children: [],
-            props: {},
-          },
-        ],
-      }]],
-    },
+      context: {
+        blogPosts: [{ title: "foo", content: "bar" }],
+      },
+      utilities: { urlJoin },
+    }),
+    `<ul><li class="inline" title="foo">bar</li></ul>`,
   );
 });
+*/
 
-Deno.test("element with a visibleIf", () => {
+Deno.test("element with a visibleIf enabled", async () => {
   assertEquals(
-    htmlispToHTML(`<div &visibleIf="(get props showToc)">foo</div>`),
-    {
-      type: "div",
-      children: "foo",
-      visibleIf: { utility: "get", parameters: ["props", "showToc"] },
-      attributes: {},
-    },
+    await htmlispToHTML({
+      htmlInput: `<div &visibleIf="(get context showToc)">foo</div>`,
+      context: {
+        showToc: false,
+      },
+    }),
+    "",
   );
 });
 
+Deno.test("element with a visibleIf disabled", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &visibleIf="(get context showToc)">foo</div>`,
+      context: {
+        showToc: true,
+      },
+    }),
+    "<div>foo</div>",
+  );
+});
+
+/*
 Deno.test("element with a visibleIf and multiple checks", () => {
   assertEquals(
     htmlispToHTML(

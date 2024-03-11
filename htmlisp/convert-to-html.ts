@@ -75,6 +75,18 @@ function getH(components: Components, context: Context, utilities: Utilities) {
       throw new Error(`Component "${type}" was not found!`);
     }
 
+    if (attributes?.["&visibleIf"]) {
+      const showElement = await applyUtility<Utility, Utilities, Context>(
+        parseExpression(attributes["&visibleIf"]),
+        utilities,
+        { context },
+      );
+
+      if (!showElement) {
+        return "";
+      }
+    }
+
     const attrs = await getAttributeBindings(attributes, context, utilities);
 
     if (attributes?.["&children"]) {
@@ -108,6 +120,11 @@ async function getAttributeBindings(
 
         // Skip children
         if (k === "&children") {
+          return;
+        }
+
+        // Skip visibleIf
+        if (k === "&visibleIf") {
           return;
         }
 
