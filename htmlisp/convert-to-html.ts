@@ -81,11 +81,11 @@ function getH(components: Components, context: Context, utilities: Utilities) {
       children = await applyUtility<Utility, Utilities, Context>(
         parseExpression(attributes["&children"]),
         utilities,
-        { props: context },
+        { context },
       );
     }
 
-    return `<${type}${attrs && " " + attrs}>${children}</${type}>`;
+    return `<${type}${attrs && " " + attrs}>${children || ""}</${type}>`;
   };
 }
 
@@ -127,7 +127,7 @@ async function getAttributeBindings(
           >(
             parsedExpression,
             utilities,
-            { props: context },
+            { context },
           )}"`;
         }
 
