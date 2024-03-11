@@ -58,100 +58,38 @@ Deno.test("element with a string after an expression after expression", async ()
   );
 });
 
+Deno.test("element with an expression shortcut for children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &children="(get props href)" />`,
+      context: { href: "foobar" },
+    }),
+    `<div>foobar</div>`,
+  );
+});
+
+Deno.test("element with a nested expression shortcut for children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &children="(concat / (get props href))" />`,
+      context: { href: "foobar" },
+    }),
+    `<div>/foobar</div>`,
+  );
+});
+
+Deno.test("element with a complex nested expression shortcut for children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &children="(urlJoin / (get props href) /)" />`,
+      context: { href: "foobar" },
+      utilities: { urlJoin },
+    }),
+    `<div>/foobar/</div>`,
+  );
+});
+
 /*
-Deno.test("element with an expression and multiple parameters", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(echo hello ' ' world!)" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: { utility: "echo", parameters: ["hello", " ", "world!"] },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
-Deno.test("element with a nested expression shortcut for attribute", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<a &href="(urlJoin / (get props href))" />`,
-    ),
-    {
-      type: "a",
-      bindToProps: {
-        href: {
-          utility: "urlJoin",
-          parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
-        },
-      },
-      attributes: { href: { utility: "get", parameters: ["props", "href"] } },
-      children: [],
-    },
-  );
-});
-
-Deno.test("element with an expression shortcut for children", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<div &children="(get props href)" />`,
-    ),
-    {
-      type: "div",
-      bindToProps: {
-        children: { utility: "get", parameters: ["props", "href"] },
-      },
-      children: { utility: "get", parameters: ["props", "children"] },
-      attributes: {},
-    },
-  );
-});
-
-Deno.test("element with a nested expression shortcut for children", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<div &children="(concat / (get props href))" />`,
-    ),
-    {
-      type: "div",
-      bindToProps: {
-        children: {
-          utility: "concat",
-          parameters: ["/", { utility: "get", parameters: ["props", "href"] }],
-        },
-      },
-      children: { utility: "get", parameters: ["props", "children"] },
-      attributes: {},
-    },
-  );
-});
-
-Deno.test("element with a complex nested expression shortcut for children", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<div &children="(urlJoin / (get props href) /)" />`,
-    ),
-    {
-      type: "div",
-      bindToProps: {
-        children: {
-          utility: "urlJoin",
-          parameters: [
-            "/",
-            { utility: "get", parameters: ["props", "href"] },
-            "/",
-          ],
-        },
-      },
-      children: { utility: "get", parameters: ["props", "children"] },
-      attributes: {},
-    },
-  );
-});
-
 Deno.test("complex expression", () => {
   assertEquals(
     htmlispToHTML(

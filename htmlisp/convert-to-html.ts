@@ -48,7 +48,8 @@ function getH(components: Components, context: Context, utilities: Utilities) {
   return async function h(
     type: string,
     attributes: Attributes,
-    ...children: string[]
+    children: string,
+    // ...children: string[]
   ) {
     // Components begin with an uppercase letter always
     if (type[0].toUpperCase() === type[0]) {
@@ -58,7 +59,7 @@ function getH(components: Components, context: Context, utilities: Utilities) {
         // TODO: 1. Get props
         // TODO: 2. Execute match (same function but with props as context)
 
-        const childrenAttribute = attributes?.["&children"] as string;
+        const childrenAttribute = attributes?.["&children"];
 
         // TODO: Handle other & attributes
         if (childrenAttribute) {
@@ -74,8 +75,15 @@ function getH(components: Components, context: Context, utilities: Utilities) {
       throw new Error(`Component "${type}" was not found!`);
     }
 
-    // TODO: Add expression parsing logic and context execution logic here
     const attrs = await getAttributeBindings(attributes, context, utilities);
+
+    if (attributes?.["&children"]) {
+      children = await applyUtility<Utility, Utilities, Context>(
+        parseExpression(attributes["&children"]),
+        utilities,
+        { props: context },
+      );
+    }
 
     return `<${type}${attrs && " " + attrs}>${children}</${type}>`;
   };
@@ -98,6 +106,11 @@ async function getAttributeBindings(
           return;
         }
 
+        // Skip children
+        if (k === "&children") {
+          return;
+        }
+
         // Check bindings
         if (k.startsWith("&")) {
           const parsedExpression = parseExpression(v);
@@ -108,25 +121,14 @@ async function getAttributeBindings(
           }
 
           return `${k.slice(1)}="${await applyUtility<
-              Utility,
-              Utilities,
-              Context
-            >(
-              parsedExpression,
-              utilities,
-              { props: context },
-            )
-
-            /*
-          utilities[utility].apply(
-            // TODO: Clarify global "context" vs. component "props"
-            // -> rename context as props? Is it important to have both?
-            { context: { props: context } },
-            // TODO: Apply parameters recursively now
-            parameters,
-          )
-          */
-          }"`;
+            Utility,
+            Utilities,
+            Context
+          >(
+            parsedExpression,
+            utilities,
+            { props: context },
+          )}"`;
         }
 
         return `${k}="${v}"`;
