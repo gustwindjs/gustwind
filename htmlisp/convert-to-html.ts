@@ -12,6 +12,7 @@ type HtmllispToHTMLParameters = {
   htmlInput?: string;
   components?: Components;
   context?: Context;
+  props?: Context;
   utilities?: Utilities;
 };
 
@@ -19,7 +20,8 @@ function getConverter(
   htm: { bind: (hValue: ReturnType<typeof getH>) => string },
 ) {
   return function htmlispToHTML(
-    { htmlInput, components, context, utilities }: HtmllispToHTMLParameters,
+    { htmlInput, components, context, props, utilities }:
+      HtmllispToHTMLParameters,
   ): string {
     if (!htmlInput) {
       throw new Error("convert - Missing html input");
@@ -32,7 +34,9 @@ function getConverter(
     const html = htm.bind(
       getH(
         components || {},
-        context || {}, // @ts-expect-error TODO: Figure out what's wrong with this type
+        context || {},
+        props || {},
+        // @ts-expect-error TODO: Figure out what's wrong with this type
         {
           ...defaultUtilities,
           ...utilities,
@@ -49,6 +53,7 @@ function getConverter(
 function getH(
   components: Components,
   context: Context,
+  props: Context,
   utilities: Utilities,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
 ) {
@@ -70,6 +75,7 @@ function getH(
             ...attributes,
             children: attributes?.["&children"] || children,
           },
+          props: await parseExpressions(attributes, context, props, utilities),
         });
       }
 
@@ -88,7 +94,12 @@ function getH(
       }
     }
 
-    const attrs = await getAttributeBindings(attributes, context, utilities);
+    const attrs = await getAttributeBindings(
+      attributes,
+      context,
+      props,
+      utilities,
+    );
 
     if (attributes?.["&children"]) {
       children = await applyUtility<Utility, Utilities, Context>(
@@ -107,13 +118,32 @@ function getH(
 async function getAttributeBindings(
   attributes: Attributes,
   context: Context,
+  props: Context,
+  utilities: Utilities,
+) {
+  const parsedExpressions = await parseExpressions(
+    attributes,
+    context,
+    props,
+    utilities,
+  );
+
+  return Object.entries(parsedExpressions).map(([k, v]) => `${k}="${v}"`).join(
+    " ",
+  );
+}
+
+async function parseExpressions(
+  attributes: Attributes,
+  context: Context,
+  props: Context,
   utilities: Utilities,
 ) {
   if (!attributes) {
-    return "";
+    return {};
   }
 
-  return (await Promise.all(
+  const entries = (await Promise.all(
     Object.entries(attributes).map(
       async ([k, v]) => {
         // Skip commented attributes
@@ -140,21 +170,27 @@ async function getAttributeBindings(
             throw new Error(`Failed to parse ${v} for attribute ${k}!`);
           }
 
-          return `${k.slice(1)}="${await applyUtility<
-            Utility,
-            Utilities,
-            Context
-          >(
-            parsedExpression,
-            utilities,
-            { context },
-          )}"`;
+          return [
+            k.slice(1),
+            await applyUtility<
+              Utility,
+              Utilities,
+              Context
+            >(
+              parsedExpression,
+              utilities,
+              { context, props },
+            ),
+          ];
         }
 
-        return `${k}="${v}"`;
+        return [k, v];
       },
     ),
-  )).filter(Boolean).join(" ");
+  )).filter(Boolean);
+
+  // @ts-expect-error This is fine
+  return Object.fromEntries(entries);
 }
 
 export { getConverter };

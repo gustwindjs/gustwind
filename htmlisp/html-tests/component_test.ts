@@ -4,6 +4,8 @@ import {
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
+// TODO: Move children passed to components from context to props
+
 Deno.test("basic component", async () => {
   assertEquals(
     await htmlispToHTML({
@@ -73,28 +75,22 @@ Deno.test("component with multiple children", async () => {
   );
 });
 
-/*
-Deno.test("component with an expression", () => {
+Deno.test("component with an expression", async () => {
   assertEquals(
-    htmlispToHTML(
-      `<Link
-        &href="(get context document.content)"
-      ></Link>`,
-    ),
-    {
-      type: "Link",
-      children: [],
-      bindToProps: {
-        href: {
-          utility: "get",
-          parameters: ["context", "document.content"],
-        },
+    await htmlispToHTML({
+      htmlInput: `<Link &href="(get context demo)"></Link>`,
+      components: {
+        Link: '<a &href="(get props href)"></a>',
       },
-      props: {},
-    },
+      context: {
+        demo: "foobar",
+      },
+    }),
+    `<a href="foobar"></a>`,
   );
 });
 
+/*
 Deno.test("component with a children expression", () => {
   assertEquals(
     htmlispToHTML(

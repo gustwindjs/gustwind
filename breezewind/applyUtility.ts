@@ -5,10 +5,14 @@ async function applyUtilities<
   US extends Utilities,
   C extends Context,
 >(
-  props: Record<string, string | U>,
+  props: Record<string, U> | null,
   utilities?: US,
   context?: C,
 ): Promise<Record<string, unknown>> {
+  if (!props) {
+    return {};
+  }
+
   return Object.fromEntries(
     await Promise.all(
       Object.entries(props).map(async (
