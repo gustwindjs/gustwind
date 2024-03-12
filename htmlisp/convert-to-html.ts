@@ -70,12 +70,12 @@ function getH(
         return htmlispToHTML({
           htmlInput: foundComponent,
           components,
-          context: {
-            ...context,
-            ...attributes,
+          context,
+          props: {
             children: attributes?.["&children"] || children,
+            ...attributes,
+            ...await parseExpressions(attributes, context, props, utilities),
           },
-          props: await parseExpressions(attributes, context, props, utilities),
         });
       }
 
@@ -105,7 +105,7 @@ function getH(
       children = await applyUtility<Utility, Utilities, Context>(
         parseExpression(attributes["&children"]),
         utilities,
-        { context },
+        { context, props },
       );
     }
 
