@@ -21,6 +21,44 @@ Deno.test("&foreach with an array of objects", async () => {
 });
 
 // TODO: Restore
+Deno.test("&foreach with an array of objects and an attribute", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<ul &foreach="(get context blogPosts)" title="demo">
+        <li class="inline" &title="(get props data.title)" &children="(get props data.content)">
+        </li>
+      </ul>
+    `,
+      context: {
+        blogPosts: [{ title: "foo", content: "bar" }],
+      },
+      utilities: { urlJoin },
+    }),
+    `<ul title="demo"><li class="inline" title="foo">bar</li></ul>`,
+  );
+});
+
+// TODO: Restore
+Deno.test("&foreach with an array of objects and an evaluated attribute", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput:
+        `<ul &foreach="(get context blogPosts)" &title="(get context demo)">
+        <li class="inline" &title="(get props data.title)" &children="(get props data.content)">
+        </li>
+      </ul>
+    `,
+      context: {
+        demo: "demo",
+        blogPosts: [{ title: "foo", content: "bar" }],
+      },
+      utilities: { urlJoin },
+    }),
+    `<ul title="demo"><li class="inline" title="foo">bar</li></ul>`,
+  );
+});
+
+// TODO: Restore
 Deno.test("&foreach with an array of values", async () => {
   assertEquals(
     await htmlispToHTML({
