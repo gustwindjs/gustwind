@@ -70,8 +70,10 @@ function getH(
         let awaitedChildren = await Promise.all(children);
         let additionalProps = {};
 
-        // Children are slots if the results was an array
-        if (Array.isArray(awaitedChildren)) {
+        // Children are slots if the results was an array of tuples
+        if (
+          Array.isArray(awaitedChildren) && awaitedChildren[0]?.length === 2
+        ) {
           // @ts-expect-error This is fine
           additionalProps = Object.fromEntries(awaitedChildren);
           awaitedChildren = [""];
