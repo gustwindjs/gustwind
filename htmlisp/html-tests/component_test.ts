@@ -52,7 +52,7 @@ Deno.test("component with children", async () => {
 Deno.test("component with children attributes", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<Button &children="foo"></Button>`,
+      htmlInput: `<Button children="foo"></Button>`,
       components: {
         Button: '<button &children="(get props children)"></button>',
       },
