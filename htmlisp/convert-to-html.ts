@@ -135,7 +135,7 @@ async function getAttributeBindings(
     }
 
     return `${k}="${v}"`;
-  }).join(
+  }).filter(Boolean).join(
     " ",
   );
 }
