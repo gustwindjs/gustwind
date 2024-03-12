@@ -102,27 +102,3 @@ Deno.test("component with a children expression", async () => {
     `<div>foobar</div>`,
   );
 });
-
-/*
-Deno.test("component with a children expression 2", () => {
-  assertEquals(
-    htmlispToHTML(
-      `<Heading level="2" class="text-4xl" &children="(get props name)" />`,
-    ),
-    {
-      type: "Heading",
-      children: [],
-      props: {
-        class: "text-4xl",
-        level: "2",
-      },
-      bindToProps: {
-        children: {
-          utility: "get",
-          parameters: ["props", "name"],
-        },
-      },
-    },
-  );
-});
-*/
