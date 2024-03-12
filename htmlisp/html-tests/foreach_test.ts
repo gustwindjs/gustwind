@@ -3,11 +3,11 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
 // TODO: Restore
-Deno.test("&foreach", async () => {
+Deno.test("&foreach with an array of objects", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
-        <li class="inline" &title="(get context title)" &children="(get context content)">
+        <li class="inline" &title="(get props data.title)" &children="(get props data.content)">
         </li>
       </ul>
     `,
@@ -17,5 +17,23 @@ Deno.test("&foreach", async () => {
       utilities: { urlJoin },
     }),
     `<ul><li class="inline" title="foo">bar</li></ul>`,
+  );
+});
+
+// TODO: Restore
+Deno.test("&foreach with an array of values", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<ul &foreach="(get context blogPosts)">
+        <li class="inline" &children="(get props data)">
+        </li>
+      </ul>
+    `,
+      context: {
+        blogPosts: ["foo"],
+      },
+      utilities: { urlJoin },
+    }),
+    `<ul><li class="inline">foo</li></ul>`,
   );
 });
