@@ -88,31 +88,22 @@ Deno.test("component with an expression", async () => {
   );
 });
 
-/*
-Deno.test("component with a children expression", () => {
+Deno.test("component with a children expression", async () => {
   assertEquals(
-    htmlispToHTML(
-      `<Markdown
-        type="div"
-        &children="(get context document.content)"
-      ></Markdown>`,
-    ),
-    {
-      type: "Markdown",
-      children: [],
-      props: {
-        type: "div",
+    await htmlispToHTML({
+      htmlInput: `<Markdown &children="(get context demo)"></Markdown>`,
+      components: {
+        Markdown: '<div &children="(get props children)"></div>',
       },
-      bindToProps: {
-        children: {
-          utility: "get",
-          parameters: ["context", "document.content"],
-        },
+      context: {
+        demo: "foobar",
       },
-    },
+    }),
+    `<div>foobar</div>`,
   );
 });
 
+/*
 Deno.test("component with a children expression 2", () => {
   assertEquals(
     htmlispToHTML(

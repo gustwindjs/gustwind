@@ -72,7 +72,7 @@ function getH(
           components,
           context,
           props: {
-            children: attributes?.["&children"] || children,
+            children,
             ...attributes,
             ...await parseExpressions(attributes, context, props, utilities),
           },
@@ -128,7 +128,14 @@ async function getAttributeBindings(
     utilities,
   );
 
-  return Object.entries(parsedExpressions).map(([k, v]) => `${k}="${v}"`).join(
+  return Object.entries(parsedExpressions).map(([k, v]) => {
+    // Skip children
+    if (k === "children") {
+      return;
+    }
+
+    return `${k}="${v}"`;
+  }).join(
     " ",
   );
 }
@@ -148,11 +155,6 @@ async function parseExpressions(
       async ([k, v]) => {
         // Skip commented attributes
         if (k.startsWith("__")) {
-          return;
-        }
-
-        // Skip children
-        if (k === "&children") {
           return;
         }
 
