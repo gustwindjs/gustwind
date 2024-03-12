@@ -37,3 +37,19 @@ Deno.test("&foreach with an array of values", async () => {
     `<ul><li class="inline">foo</li></ul>`,
   );
 });
+
+// TODO: Restore
+Deno.test("&foreach with noop", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<noop &foreach="(get context blogPosts)">
+        <div class="inline" &children="(get props data)"></div>
+      </noop>,
+    `,
+      context: {
+        blogPosts: ["foo", "bar", "baz"],
+      },
+    }),
+    `<div class="inline">foo</div><div class="inline">bar</div><div class="inline">baz</div>`,
+  );
+});

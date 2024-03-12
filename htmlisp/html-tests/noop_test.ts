@@ -13,22 +13,7 @@ Deno.test("element with a type expression for noop type", async () => {
   );
 });
 
-Deno.test("&foreach with noop", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<noop &foreach="(get context blogPosts)">
-        <div class="inline" &children="(get props data)"></div>
-      </noop>,
-    `,
-      context: {
-        blogPosts: ["foo", "bar", "baz"],
-      },
-    }),
-    `<div class="inline">foo</div><div class="inline">bar</div><div class="inline">baz</div>`,
-  );
-});
-
-Deno.test("component with noop", async () => {
+Deno.test("element children with noop", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<noop><div>foo</div></noop>` }),
     "<div>foo</div>",
@@ -66,8 +51,8 @@ Deno.test("nested noops", async () => {
     >
       <noop &children="(get context children)" />
       <a
-        &visibleIf="(invert (get context hideAnchor))"
-        &href="(concat # (get props id))"
+        &visibleIf="(get context showAnchor)"
+        &href="(concat # (get context id))"
         >🔗</a
       >
     </noop>`,
@@ -75,10 +60,10 @@ Deno.test("nested noops", async () => {
         children: "<div>foobar</div>",
         level: 2,
         class: "demo",
-        hideAnchor: false,
+        showAnchor: true,
         id: "foo",
       },
     }),
-    `<div>foobar</div><a href="#foo">🔗</a>`,
+    `<h2 class="demo"><div>foobar</div><a href="#foo">🔗</a></h2>`,
   );
 });
