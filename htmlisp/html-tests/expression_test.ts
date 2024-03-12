@@ -108,26 +108,6 @@ Deno.test("complex expression", async () => {
   );
 });
 
-// TODO
-/*
-Deno.test("&foreach", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<ul &foreach="(get context blogPosts)">
-        <li class="inline" &title="(get context title)" &children="(get context content)">
-        </li>
-      </ul>
-    `,
-      context: {
-        blogPosts: [{ title: "foo", content: "bar" }],
-      },
-      utilities: { urlJoin },
-    }),
-    `<ul><li class="inline" title="foo">bar</li></ul>`,
-  );
-});
-*/
-
 Deno.test("element with a visibleIf enabled", async () => {
   assertEquals(
     await htmlispToHTML({

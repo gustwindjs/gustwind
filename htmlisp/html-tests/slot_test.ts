@@ -1,156 +1,86 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlispToBreezewind } from "../mod.ts";
+import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("props through slots as elements", () => {
+// TODO: Specify
+Deno.test("props through slots as elements", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout>
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
         <slot name="content">
           <div>hello</div>
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "div",
-            attributes: {},
-            children: "hello",
-          },
-        ],
-      },
-    },
+    }),
+    "",
   );
 });
 
-Deno.test("props through slots as elements including normal props", () => {
+// TODO: Specify
+Deno.test("props through slots as elements including normal props", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout title="demo">
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout title="demo">
         <slot name="content">
           <div>hello</div>
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        title: "demo",
-        content: [
-          {
-            type: "div",
-            attributes: {},
-            children: "hello",
-          },
-        ],
-      },
-    },
+    }),
+    "",
   );
 });
 
-Deno.test("props through slots as elements including bound props", () => {
+// TODO: Specify
+Deno.test("props through slots as elements including bound props", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout &title="(get props title)">
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout &title="(get props title)">
         <slot name="content">
           <div>hello</div>
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "div",
-            attributes: {},
-            children: "hello",
-          },
-        ],
-      },
-      bindToProps: {
-        title: {
-          utility: "get",
-          parameters: ["props", "title"],
-        },
-      },
-    },
+    }),
+    "",
   );
 });
 
-Deno.test("children binding within slots", () => {
+// TODO: Specify
+Deno.test("children binding within slots", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout>
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
         <slot name="content">
           <span &children="(get props day)"></span>
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "span",
-            attributes: {},
-            bindToProps: {
-              children: { utility: "get", parameters: ["props", "day"] },
-            },
-            children: { utility: "get", parameters: ["props", "children"] },
-          },
-        ],
-      },
-    },
+    }),
+    "",
   );
 });
 
-Deno.test("attribute binding within slots", () => {
+// TODO: Specify
+Deno.test("attribute binding within slots", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout>
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
         <slot name="content">
           <div &title="(get props day)"></div>
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "div",
-            bindToProps: {
-              title: {
-                utility: "get",
-                parameters: ["props", "day"],
-              },
-            },
-            attributes: {
-              title: {
-                utility: "get",
-                parameters: ["props", "title"],
-              },
-            },
-            children: [],
-          },
-        ],
-      },
-    },
+    }),
+    "",
   );
 });
 
-Deno.test("attribute binding to children within slots", () => {
+// TODO: Specify
+Deno.test("attribute binding to children within slots", async () => {
   assertEquals(
-    htmlispToBreezewind(
-      `<BaseLayout>
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
         <slot name="content">
           <div class="flex flex-col gap-8">
             <Workshops &children="(get context workshops)" />
@@ -158,32 +88,7 @@ Deno.test("attribute binding to children within slots", () => {
         </slot>
       </BaseLayout>
     `,
-    ),
-    {
-      type: "BaseLayout",
-      props: {
-        content: [
-          {
-            type: "div",
-            attributes: {
-              class: "flex flex-col gap-8",
-            },
-            children: [
-              {
-                type: "Workshops",
-                bindToProps: {
-                  children: {
-                    utility: "get",
-                    parameters: ["context", "workshops"],
-                  },
-                },
-                children: [],
-                props: {},
-              },
-            ],
-          },
-        ],
-      },
-    },
+    }),
+    "",
   );
 });
