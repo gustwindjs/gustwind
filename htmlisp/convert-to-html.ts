@@ -94,11 +94,15 @@ function getH(
       }
     }
 
-    const attrs = await getAttributeBindings(
+    const parsedExpressions = await parseExpressions(
       attributes,
       context,
       props,
       utilities,
+    );
+
+    const attrs = await getAttributeBindings(
+      omit(omit(parsedExpressions, "children"), "type"),
     );
 
     if (attributes?.["&children"]) {
@@ -109,35 +113,23 @@ function getH(
       );
     }
 
-    return `<${type}${attrs && " " + attrs}>${
-      (await Promise.all(children)).join("") || ""
-    }</${type}>`;
+    const content = (await Promise.all(children)).join("") || "";
+
+    if (!parsedExpressions.type && type === "noop") {
+      return content;
+    }
+
+    return `<${parsedExpressions.type || type}${
+      attrs && " " + attrs
+    }>${content}</${parsedExpressions.type || type}>`;
   };
 }
 
-async function getAttributeBindings(
-  attributes: Attributes,
-  context: Context,
-  props: Context,
-  utilities: Utilities,
+function getAttributeBindings(
+  parsedExpressions: Awaited<ReturnType<typeof parseExpressions>>,
 ) {
-  const parsedExpressions = await parseExpressions(
-    attributes,
-    context,
-    props,
-    utilities,
-  );
-
-  return Object.entries(parsedExpressions).map(([k, v]) => {
-    // Skip children
-    if (k === "children") {
-      return;
-    }
-
-    return `${k}="${v}"`;
-  }).filter(Boolean).join(
-    " ",
-  );
+  return Object.entries(parsedExpressions).map(([k, v]) => `${k}="${v}"`)
+    .join(" ");
 }
 
 async function parseExpressions(
