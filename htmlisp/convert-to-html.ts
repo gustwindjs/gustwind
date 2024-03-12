@@ -1,4 +1,4 @@
-import { isObject, omit } from "../utilities/functional.ts";
+import { omit } from "../utilities/functional.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 import { applyUtility } from "../breezewind/applyUtility.ts";
@@ -67,12 +67,23 @@ function getH(
       const foundComponent = components[type];
 
       if (foundComponent) {
+        let awaitedChildren = await Promise.all(children);
+        let additionalProps = {};
+
+        // Children are slots if the results was an array
+        if (Array.isArray(awaitedChildren)) {
+          // @ts-expect-error This is fine
+          additionalProps = Object.fromEntries(awaitedChildren);
+          awaitedChildren = [""];
+        }
+
         return htmlispToHTML({
           htmlInput: foundComponent,
           components,
           context,
           props: {
-            children,
+            children: awaitedChildren,
+            ...additionalProps,
             ...attributes,
             ...await parseExpressions(attributes, context, props, utilities),
           },
@@ -114,6 +125,16 @@ function getH(
     }
 
     const content = (await Promise.all(children)).join("") || "";
+
+    if (type === "slot") {
+      const name = attributes?.name;
+
+      if (!name) {
+        throw new Error(`Slot is missing a name!`);
+      }
+
+      return [name, content];
+    }
 
     if (!parsedExpressions.type && type === "noop") {
       return content;

@@ -11,7 +11,7 @@ Deno.test("props through slots as elements", async () => {
       </BaseLayout>
     `,
       components: {
-        BaseComponent: `<div><main &children="(get props content)" /></div>`,
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
       },
     }),
     "<div><main><div>hello</div></main></div>",
@@ -28,7 +28,7 @@ Deno.test("props through slots as elements including normal props", async () => 
       </BaseLayout>
     `,
       components: {
-        BaseComponent:
+        BaseLayout:
           `<div &title="(get props title)"><main &children="(get props content)" /></div>`,
       },
     }),
@@ -46,7 +46,7 @@ Deno.test("props through slots as elements including bound props", async () => {
       </BaseLayout>
     `,
       components: {
-        BaseComponent:
+        BaseLayout:
           `<div &title="(get props title)"><main &children="(get props content)" /></div>`,
       },
       context: {
@@ -67,7 +67,7 @@ Deno.test("children binding within slots", async () => {
       </BaseLayout>
     `,
       components: {
-        BaseComponent: `<div><main &children="(get props content)" /></div>`,
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
       },
       context: {
         title: "demo",
@@ -87,7 +87,7 @@ Deno.test("attribute binding within slots", async () => {
       </BaseLayout>
     `,
       components: {
-        BaseComponent: `<div><main &children="(get props content)" /></div>`,
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
       },
       context: {
         title: "demo",
@@ -107,7 +107,7 @@ Deno.test("attribute binding to children within slots", async () => {
       </BaseLayout>
     `,
       components: {
-        BaseComponent: `<div><main &children="(get props content)" /></div>`,
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
         Workshops: `<div &children="(get props children)"></div>`,
       },
       context: {
