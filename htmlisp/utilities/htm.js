@@ -29,14 +29,13 @@ export function htm(statics) {
   tmp = evaluate(
     this,
     tmp.get(statics) || (tmp.set(statics, (tmp = build(statics))), tmp),
-    arguments,
     []
   );
 
   return tmp.length > 1 ? tmp : tmp[0];
 }
 
-export const evaluate = (h, built, fields, args) => {
+export const evaluate = (h, built, args) => {
   // `build()` used the first element of the operation list as
   // temporary workspace.
   built[0] = 0;
@@ -54,9 +53,8 @@ export const evaluate = (h, built, fields, args) => {
     } else if (type === PROP_APPEND) {
       args[1][built[++i]] += value + "";
     } else if (type === CHILD_RECURSE) {
-      args.push(h.apply(undefined, evaluate(h, value, fields, ["", null])));
-    } else {
-      // type === CHILD_APPEND
+      args.push(h.apply(undefined, evaluate(h, value, ["", null])));
+    } else if (type === CHILD_APPEND) {
       args.push(value);
     }
   }
