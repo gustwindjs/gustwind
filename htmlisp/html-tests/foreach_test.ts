@@ -1,31 +1,29 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-// TODO: Try this option
-/*
 Deno.test("Foreach with an array of objects", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<foreach type="ul" values="(get context blogPosts)">
-        <li class="inline" &title="(get props data.title)" &children="(get props data.content)">
+      htmlInput: `<Foreach type="ul" &values="(get context blogPosts)">
+        <li &title="(get props title)" &children="(get props content)">
         </li>
-      </foreach>
+      </Foreach>
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
       },
       components: {
         Foreach:
-          `<noop &type="(get props type)" &children="(join (get props values) ' ')"></noop>`,
+          // TODO: How to apply each value against &children template
+          `<noop &type="(get props type)" &children="(concat (get props values) ' ')"></noop>`,
       },
       utilities: {
         join: (values: unknown[], separator: string) => values.join(separator),
       },
     }),
-    `<ul><li class="inline" title="foo">bar</li></ul>`,
+    `<ul><li title="foo">bar</li></ul>`,
   );
 });
-*/
 
 // TODO: Restore
 Deno.test("&foreach with an array of objects", async () => {
