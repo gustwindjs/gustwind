@@ -67,8 +67,19 @@ function getH(
       const foundComponent = components[type];
 
       if (foundComponent) {
-        let awaitedChildren = await Promise.all(children);
         let additionalProps = {};
+        let awaitedChildren = [""];
+
+        // Due to iteration order htm goes to the branches first
+        // and those will be missing props. The code below works
+        // around the problem by trying again.
+        try {
+          awaitedChildren = await Promise.all(children);
+        } catch (_error) {
+          // Nothing to do
+
+          // TODO: Add some logic to catch &children ?
+        }
 
         // Children are slots if the results was an array of tuples
         if (
