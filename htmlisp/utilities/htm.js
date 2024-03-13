@@ -53,20 +53,10 @@ export const evaluate = (h, built, fields, args) => {
       (args[1] = args[1] || {})[built[++i]] = value;
     } else if (type === PROP_APPEND) {
       args[1][built[++i]] += value + "";
-    } else if (type) {
-      // type === CHILD_RECURSE
+    } else if (type === CHILD_RECURSE) {
       // Set the operation list (including the staticness bits) as
       // `this` for the `h` call.
-      const tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
-      args.push(tmp);
-
-      // Rewrite the operation list in-place.
-      // The currently evaluated piece `CHILD_RECURSE, 0, [...]` becomes
-      // `CHILD_APPEND, 0, tmp`.
-      // Essentially the operation list gets optimized for potential future
-      // re-evaluations.
-      built[i - 2] = CHILD_APPEND;
-      built[i] = tmp;
+      args.push(h.apply(value, evaluate(h, value, fields, ["", null])));
     } else {
       // type === CHILD_APPEND
       args.push(value);
