@@ -135,9 +135,7 @@ function getH(
       );
     }
 
-    const content = Array.isArray(children)
-      ? (await Promise.all(children)).join("")
-      : "";
+    const content = (children && (await Promise.all(children)).join("")) || "";
 
     if (type === "slot") {
       const name = attributes?.name;
