@@ -77,8 +77,6 @@ function getH(
           awaitedChildren = await Promise.all(children);
         } catch (_error) {
           // Nothing to do
-
-          // TODO: Add some logic to catch &children ?
         }
 
         // Children are slots if the results was an array of tuples
@@ -137,7 +135,9 @@ function getH(
       );
     }
 
-    const content = (await Promise.all(children)).join("") || "";
+    const content = Array.isArray(children)
+      ? (await Promise.all(children)).join("")
+      : "";
 
     if (type === "slot") {
       const name = attributes?.name;
