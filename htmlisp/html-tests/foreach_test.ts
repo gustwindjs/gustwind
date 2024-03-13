@@ -66,21 +66,6 @@ Deno.test("Foreach with an array of values", async () => {
   );
 });
 
-Deno.test("Foreach without a type sdsdf", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<Foreach &values="(get context blogPosts)">
-        <div class="inline" #children="(get props content)"></div>
-      </Foreach>,
-    `,
-      context: {
-        blogPosts: [{ title: "foo", content: "bar" }],
-      },
-    }),
-    `<div class="inline">bar</div>`,
-  );
-});
-
 Deno.test("Foreach without a type", async () => {
   assertEquals(
     await htmlispToHTML({
