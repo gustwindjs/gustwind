@@ -47,11 +47,7 @@ export const evaluate = (h, built, fields, args) => {
 
   for (let i = 1; i < built.length; i++) {
     const type = built[i++];
-
-    // Set `built[0]`'s appropriate bits if this element depends on a dynamic value.
-    const value = built[i]
-      ? ((built[0] |= type ? 1 : 2), fields[built[i++]])
-      : built[++i];
+    const value = built[++i];
 
     if (type === TAG_SET) {
       args[0] = value;
@@ -68,18 +64,13 @@ export const evaluate = (h, built, fields, args) => {
       tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
       args.push(tmp);
 
-      if (value[0]) {
-        // Set the 2nd lowest bit it the child element is dynamic.
-        built[0] |= 2;
-      } else {
-        // Rewrite the operation list in-place if the child element is static.
-        // The currently evaluated piece `CHILD_RECURSE, 0, [...]` becomes
-        // `CHILD_APPEND, 0, tmp`.
-        // Essentially the operation list gets optimized for potential future
-        // re-evaluations.
-        built[i - 2] = CHILD_APPEND;
-        built[i] = tmp;
-      }
+      // Rewrite the operation list in-place if the child element is static.
+      // The currently evaluated piece `CHILD_RECURSE, 0, [...]` becomes
+      // `CHILD_APPEND, 0, tmp`.
+      // Essentially the operation list gets optimized for potential future
+      // re-evaluations.
+      built[i - 2] = CHILD_APPEND;
+      built[i] = tmp;
     } else {
       // type === CHILD_APPEND
       args.push(value);
