@@ -56,7 +56,7 @@ export const evaluate = (h, built, fields, args) => {
     } else if (type === CHILD_RECURSE) {
       // Set the operation list (including the staticness bits) as
       // `this` for the `h` call.
-      args.push(h.apply(value, evaluate(h, value, fields, ["", null])));
+      args.push(h.apply(undefined, evaluate(h, value, fields, ["", null])));
     } else {
       // type === CHILD_APPEND
       args.push(value);
