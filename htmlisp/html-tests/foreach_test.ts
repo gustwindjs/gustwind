@@ -5,20 +5,22 @@ Deno.test("Foreach with an array of objects", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<Foreach type="ul" &values="(get context blogPosts)">
-        <li &title="(get props title)" &children="(get props content)">
+        <li #title="(get props title)" #children="(get props content)">
         </li>
       </Foreach>
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
       },
+      // TODO: Likely Foreach component and the related utility belong to the core
       components: {
         Foreach:
-          // TODO: How to apply each value against &children template
-          `<noop &type="(get props type)" &children="(concat (get props values) ' ')"></noop>`,
+          `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
       },
       utilities: {
-        join: (values: unknown[], separator: string) => values.join(separator),
+        // TODO: This should take values and children and produce applied HTML
+        render: (values: unknown[], children: string) =>
+          values.map((v) => children).join(""),
       },
     }),
     `<ul><li title="foo">bar</li></ul>`,

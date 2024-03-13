@@ -1,13 +1,11 @@
 import { omit } from "../utilities/functional.ts";
+import { parseExpressions } from "./utilities/parseExpressions.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 import { applyUtility } from "../breezewind/applyUtility.ts";
 import type { Utilities, Utility } from "../breezewind/types.ts";
+import type { Attributes, Components, Context } from "./types.ts";
 
-type Attributes = Record<string, string> | null;
-type Components = Record<string, string>;
-type Context = Record<string, unknown>;
-// type Utilities = Record<string, (...args: any) => unknown>;
 type HtmllispToHTMLParameters = {
   htmlInput?: string;
   components?: Components;
@@ -96,8 +94,15 @@ function getH(
             children: awaitedChildren,
             ...additionalProps,
             ...attributes,
-            ...await parseExpressions(attributes, context, props, utilities),
+            ...await parseExpressions(
+              attributes,
+              context,
+              props,
+              utilities,
+              "&",
+            ),
           },
+          utilities,
         });
       }
 
@@ -121,6 +126,7 @@ function getH(
       context,
       props,
       utilities,
+      "&",
     );
 
     const attrs = await getAttributeBindings(
@@ -162,61 +168,6 @@ function getAttributeBindings(
 ) {
   return Object.entries(parsedExpressions).map(([k, v]) => `${k}="${v}"`)
     .join(" ");
-}
-
-async function parseExpressions(
-  attributes: Attributes,
-  context: Context,
-  props: Context,
-  utilities: Utilities,
-) {
-  if (!attributes) {
-    return {};
-  }
-
-  const entries = (await Promise.all(
-    Object.entries(attributes).map(
-      async ([k, v]) => {
-        // Skip commented attributes
-        if (k.startsWith("__")) {
-          return;
-        }
-
-        // Skip visibleIf
-        if (k === "&visibleIf") {
-          return;
-        }
-
-        // Check bindings
-        if (k.startsWith("&")) {
-          const parsedExpression = parseExpression(v);
-
-          // TODO: Test this case
-          if (!parsedExpression) {
-            throw new Error(`Failed to parse ${v} for attribute ${k}!`);
-          }
-
-          return [
-            k.slice(1),
-            await applyUtility<
-              Utility,
-              Utilities,
-              Context
-            >(
-              parsedExpression,
-              utilities,
-              { context, props },
-            ),
-          ];
-        }
-
-        return [k, v];
-      },
-    ),
-  )).filter(Boolean);
-
-  // @ts-expect-error This is fine
-  return Object.fromEntries(entries);
 }
 
 export { getConverter };
