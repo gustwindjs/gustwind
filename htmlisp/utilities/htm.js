@@ -38,9 +38,7 @@ export function htm(statics) {
 
 export const evaluate = (h, built, fields, args) => {
   // `build()` used the first element of the operation list as
-  // temporary workspace. Now that `build()` is done we can use
-  // that space to track whether the current element is "dynamic"
-  // (i.e. it or any of its descendants depend on dynamic values).
+  // temporary workspace.
   built[0] = 0;
 
   for (let i = 1; i < built.length; i++) {
