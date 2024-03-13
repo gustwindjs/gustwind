@@ -37,8 +37,6 @@ export function htm(statics) {
 }
 
 export const evaluate = (h, built, fields, args) => {
-  let tmp;
-
   // `build()` used the first element of the operation list as
   // temporary workspace. Now that `build()` is done we can use
   // that space to track whether the current element is "dynamic"
@@ -61,7 +59,7 @@ export const evaluate = (h, built, fields, args) => {
       // type === CHILD_RECURSE
       // Set the operation list (including the staticness bits) as
       // `this` for the `h` call.
-      tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
+      let tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
       args.push(tmp);
 
       // Rewrite the operation list in-place if the child element is static.
