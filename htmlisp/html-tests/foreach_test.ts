@@ -3,6 +3,8 @@ import { htmlispToHTML } from "../mod.ts";
 
 Deno.test("Foreach with an array of objects", async () => {
   assertEquals(
+    // Due to recursion order in htm (leaf first), there is a workaround for bindings in the
+    // form of # that allows to address values within props.
     await htmlispToHTML({
       htmlInput: `<Foreach type="ul" &values="(get context blogPosts)">
         <li #title="(get props title)" #children="(get props content)">
@@ -11,11 +13,6 @@ Deno.test("Foreach with an array of objects", async () => {
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
-      },
-      // TODO: Likely Foreach component belongs to the core
-      components: {
-        Foreach:
-          `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
       },
     }),
     `<ul><li title="foo">bar</li></ul>`,

@@ -15,6 +15,11 @@ type HtmllispToHTMLParameters = {
   evaluateProps?: boolean;
 };
 
+const defaultComponents = {
+  Foreach:
+    `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
+};
+
 function getConverter(
   htm: { bind: (hValue: ReturnType<typeof getH>) => string },
 ) {
@@ -36,7 +41,10 @@ function getConverter(
 
     const html = htm.bind(
       getH(
-        components || {},
+        {
+          ...defaultComponents,
+          ...components,
+        },
         context || {},
         props || {},
         // @ts-expect-error TODO: Figure out what's wrong with this type
