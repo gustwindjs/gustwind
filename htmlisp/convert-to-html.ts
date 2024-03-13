@@ -1,4 +1,4 @@
-import { omit } from "../utilities/functional.ts";
+import { isString, omit } from "../utilities/functional.ts";
 import { parseExpressions } from "./utilities/parseExpressions.ts";
 import { parseExpression } from "./utilities/parseExpression.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
@@ -12,17 +12,22 @@ type HtmllispToHTMLParameters = {
   context?: Context;
   props?: Context;
   utilities?: Utilities;
+  evaluateProps?: boolean;
 };
 
 function getConverter(
   htm: { bind: (hValue: ReturnType<typeof getH>) => string },
 ) {
   return function htmlispToHTML(
-    { htmlInput, components, context, props, utilities }:
+    { htmlInput, components, context, props, utilities, evaluateProps }:
       HtmllispToHTMLParameters,
   ): string {
     if (!htmlInput) {
       throw new Error("convert - Missing html input");
+    }
+
+    if (!isString(htmlInput)) {
+      throw new Error("convert - html input was not a string");
     }
 
     if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
@@ -40,6 +45,7 @@ function getConverter(
           ...utilities,
         },
         htmlispToHTML,
+        evaluateProps,
       ),
     );
 
@@ -54,6 +60,7 @@ function getH(
   props: Context,
   utilities: Utilities,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
+  evaluateProps: boolean,
 ) {
   return async function h(
     type: string,
@@ -86,23 +93,43 @@ function getH(
           awaitedChildren = [""];
         }
 
+        const render = async (values: Context[], htmlInput: string) =>
+          (
+            await Promise.all(
+              values.map((props) =>
+                htmlispToHTML({
+                  htmlInput,
+                  components,
+                  context,
+                  props,
+                  utilities,
+                  evaluateProps: true,
+                })
+              ),
+            )
+          ).join("");
+
         return htmlispToHTML({
           htmlInput: foundComponent,
           components,
           context,
           props: {
-            children: awaitedChildren,
+            children: awaitedChildren.join(""),
             ...additionalProps,
             ...attributes,
             ...await parseExpressions(
               attributes,
               context,
               props,
-              utilities,
-              "&",
+              {
+                ...utilities,
+                render,
+              },
+              evaluateProps,
             ),
           },
-          utilities,
+          utilities: { ...utilities, render },
+          evaluateProps,
         });
       }
 
@@ -126,7 +153,7 @@ function getH(
       context,
       props,
       utilities,
-      "&",
+      evaluateProps,
     );
 
     const attrs = await getAttributeBindings(
@@ -136,6 +163,14 @@ function getH(
     if (attributes?.["&children"]) {
       children = await applyUtility<Utility, Utilities, Context>(
         parseExpression(attributes["&children"]),
+        utilities,
+        { context, props },
+      );
+    }
+
+    if (attributes?.["#children"]) {
+      children = await applyUtility<Utility, Utilities, Context>(
+        parseExpression(attributes["#children"]),
         utilities,
         { context, props },
       );

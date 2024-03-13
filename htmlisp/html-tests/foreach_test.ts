@@ -12,15 +12,10 @@ Deno.test("Foreach with an array of objects", async () => {
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
       },
-      // TODO: Likely Foreach component and the related utility belong to the core
+      // TODO: Likely Foreach component belongs to the core
       components: {
         Foreach:
           `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
-      },
-      utilities: {
-        // TODO: This should take values and children and produce applied HTML
-        render: (values: unknown[], children: string) =>
-          values.map((v) => children).join(""),
       },
     }),
     `<ul><li title="foo">bar</li></ul>`,

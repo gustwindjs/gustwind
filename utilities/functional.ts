@@ -85,4 +85,4 @@ function omit<V = unknown>(o: Record<string, V> | undefined, k: string) {
   return ret;
 }
 
-export { get, isBoolean, isObject, isUndefined, last, omit };
+export { get, isBoolean, isObject, isString, isUndefined, last, omit };

@@ -8,7 +8,7 @@ async function parseExpressions(
   context: Context,
   props: Context,
   utilities: Utilities,
-  bindingPrefix: string,
+  evaluateProps: boolean,
 ) {
   if (!attributes) {
     return {};
@@ -23,12 +23,12 @@ async function parseExpressions(
         }
 
         // Skip visibleIf
-        if (k === bindingPrefix + "visibleIf") {
+        if (k === "&visibleIf") {
           return;
         }
 
         // Check bindings
-        if (k.startsWith(bindingPrefix)) {
+        if (k.startsWith("&") || (evaluateProps && k.startsWith("#"))) {
           const parsedExpression = parseExpression(v);
 
           // TODO: Test this case
