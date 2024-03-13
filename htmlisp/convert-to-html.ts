@@ -16,6 +16,7 @@ type HtmllispToHTMLParameters = {
 };
 
 const defaultComponents = {
+  // TODO: Figure out a good pattern for passing arbitrary attributes to noop
   Foreach:
     `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
 };
@@ -200,9 +201,9 @@ function getH(
       return content;
     }
 
-    return `<${parsedExpressions.type || type}${
-      attrs && " " + attrs
-    }>${content}</${parsedExpressions.type || type}>`;
+    const t = parsedExpressions.type || type;
+
+    return `<${t}${attrs && " " + attrs}>${content}</${t}>`;
   };
 }
 
