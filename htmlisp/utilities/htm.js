@@ -59,7 +59,7 @@ export const evaluate = (h, built, fields, args) => {
       // type === CHILD_RECURSE
       // Set the operation list (including the staticness bits) as
       // `this` for the `h` call.
-      let tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
+      const tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
       args.push(tmp);
 
       // Rewrite the operation list in-place if the child element is static.
