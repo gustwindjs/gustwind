@@ -62,7 +62,7 @@ export const evaluate = (h, built, fields, args) => {
       const tmp = h.apply(value, evaluate(h, value, fields, ["", null]));
       args.push(tmp);
 
-      // Rewrite the operation list in-place if the child element is static.
+      // Rewrite the operation list in-place.
       // The currently evaluated piece `CHILD_RECURSE, 0, [...]` becomes
       // `CHILD_APPEND, 0, tmp`.
       // Essentially the operation list gets optimized for potential future
