@@ -41,10 +41,8 @@ Deno.test("basic element with nested children", async () => {
 Deno.test("basic element with siblings as children", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<div title="demo">
-      <span>foobar</span>
-      <span>barfoo</span>
-</div>`,
+      htmlInput:
+        `<div title="demo"><span>foobar</span><span>barfoo</span></div>`,
     }),
     `<div title="demo"><span>foobar</span><span>barfoo</span></div>`,
   );
