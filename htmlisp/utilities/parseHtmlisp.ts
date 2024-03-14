@@ -105,7 +105,6 @@ function parseHtmlisp(input: string): Tag[] {
           tagIndex++;
           capturedTags.push({
             name: tagName,
-            // TODO: Check how to handle attributes in this case (capture separately and connect?)
             attributes: [],
             children: [],
           });
