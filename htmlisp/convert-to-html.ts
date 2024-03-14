@@ -100,6 +100,8 @@ const PARSE_ATTRIBUTE_NAME = "parse attribute name";
 const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG_END = "parse tag end";
 
+type Attribute = { name: string; value: string };
+
 function getConvertToHTML(
   components: Components,
   context: Context,
@@ -114,12 +116,11 @@ function getConvertToHTML(
     let quotesFound = 0;
     let capturedTag: {
       name: string;
-      // TODO: Generalize
-      attributeName: string;
-      attributeValue: string;
+      attributes: Attribute[];
       // TODO: Potentially add children here
       body: string;
-    } = { name: "", attributeName: "", attributeValue: "", body: "" };
+    } = { name: "", attributes: [], body: "" };
+    let capturedAttribute: Attribute = { name: "", value: "" };
     const capturedTags = [];
 
     for (let i = 0; i < input.length; i++) {
@@ -139,6 +140,7 @@ function getConvertToHTML(
           parsingState = PARSE_BODY;
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
+          capturedAttribute = { name: "", value: "" };
         } else {
           capturedTag.name += c;
         }
@@ -146,18 +148,19 @@ function getConvertToHTML(
         if (c === "=") {
           parsingState = PARSE_ATTRIBUTE_VALUE;
         } else {
-          capturedTag.attributeName += c;
+          capturedAttribute.name += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_VALUE) {
         if (c === '"') {
           quotesFound++;
 
           if (quotesFound === 2) {
+            capturedTag.attributes.push(capturedAttribute);
             parsingState = NOT_PARSING;
             quotesFound = 0;
           }
         } else {
-          capturedTag.attributeValue += c;
+          capturedAttribute.value += c;
         }
       } else if (parsingState === PARSE_BODY) {
         if (c === "<") {
@@ -171,8 +174,7 @@ function getConvertToHTML(
           capturedTags.push(structuredClone(capturedTag));
           capturedTag = {
             name: "",
-            attributeName: "",
-            attributeValue: "",
+            attributes: [],
             body: "",
           };
           quotesFound = 0;
