@@ -4,6 +4,7 @@ import { parseExpression } from "./utilities/parseExpression.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 import { applyUtility } from "../breezewind/applyUtility.ts";
 import { parseHtmlisp } from "./utilities/parseHtmlisp.ts";
+import { astToHtml } from "./utilities/astToHtml.ts";
 import type { Utilities, Utility } from "../breezewind/types.ts";
 import type { Attributes, Components, Context } from "./types.ts";
 
@@ -94,13 +95,7 @@ function getConvertToHTML(
   evaluateProps: boolean,
 ) {
   return function convert(input: string) {
-    const ret: string[] = [];
-    const parsedHtmlisp = parseHtmlisp(input);
-
-    console.log(parsedHtmlisp);
-
-    // TODO: Stringify parsed structure
-    return ret.join("");
+    return astToHtml(parseHtmlisp(input));
   };
 }
 

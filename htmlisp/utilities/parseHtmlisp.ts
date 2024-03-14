@@ -16,16 +16,17 @@ const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG_END = "parse tag end";
 
 type Attribute = { name: string; value: string };
+type Tag = {
+  name: string;
+  attributes: Attribute[];
+  // TODO: Potentially add children here
+  children: string;
+};
 
-function parseHtmlisp(input: string) {
+function parseHtmlisp(input: string): Tag[] {
   let parsingState = NOT_PARSING;
   let quotesFound = 0;
-  let capturedTag: {
-    name: string;
-    attributes: Attribute[];
-    // TODO: Potentially add children here
-    children: string;
-  } = { name: "", attributes: [], children: "" };
+  let capturedTag: Tag = { name: "", attributes: [], children: "" };
   let capturedAttribute: Attribute = { name: "", value: "" };
   const capturedTags = [];
 
@@ -91,4 +92,4 @@ function parseHtmlisp(input: string) {
   return capturedTags;
 }
 
-export { parseHtmlisp };
+export { parseHtmlisp, type Tag };
