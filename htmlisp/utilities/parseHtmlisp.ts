@@ -168,4 +168,4 @@ function parseHtmlisp(input: string): Tag[] {
   return finalTags;
 }
 
-export { parseHtmlisp, type Tag };
+export { type Attribute, parseHtmlisp, type Tag };

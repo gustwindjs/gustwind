@@ -1,38 +1,37 @@
+import { parseExpressions } from "./parseExpressions.ts";
+import { getAttributeBindings } from "./getAttributeBindings.ts";
 import type { Tag } from "./parseHtmlisp.ts";
+import type { Context } from "../types.ts";
+import type { Utilities } from "../../breezewind/types.ts";
 
-function astToHtml(ast: (string | Tag)[]): string {
-  return ast.map((tag) => {
+// Currently this contains htmlisp syntax specific logic but technically
+// that could be decoupled as well.
+async function astToHtml(
+  ast: (string | Tag)[],
+  context?: Context,
+  utilities?: Utilities,
+): Promise<string> {
+  return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
       return tag;
     }
 
     const { name, attributes, children, isSelfClosing } = tag;
 
+    const parsedExpressions = await parseExpressions(
+      attributes,
+      context || {},
+      utilities || {},
+    );
+
+    const attrs = getAttributeBindings(parsedExpressions);
+
     if (isSelfClosing) {
-      return `<${name}${convertAttributes(attributes)}/>`;
+      return `<${name}${attrs}/>`;
     }
 
-    return `<${name}${convertAttributes(attributes)}>${
-      astToHtml(children)
-    }</${name}>`;
-  }).join("");
-}
-
-function convertAttributes(attributes: Tag["attributes"]): string {
-  const ret = attributes.map(({ name, value }) => {
-    // Skip comments
-    if (name.startsWith("__")) {
-      return;
-    }
-
-    return `${name}="${value}"`;
-  }).filter(Boolean).join(" ");
-
-  if (ret.length) {
-    return " " + ret;
-  }
-
-  return "";
+    return `<${name}${attrs}>${await astToHtml(children)}</${name}>`;
+  }))).join("");
 }
 
 export { astToHtml };
