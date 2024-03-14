@@ -50,6 +50,15 @@ function parseHtmlisp(input: string): Tag[] {
         parsingState = PARSE_CHILDREN;
       } else if (c === " ") {
         parsingState = PARSE_ATTRIBUTE_NAME;
+      } // Self-closing tag
+      else if (c === "/") {
+        const capturedTag = capturedTags.at(-1);
+
+        if (capturedTag) {
+          capturedTag.isSelfClosing = true;
+          tagName = capturedTag.name;
+          parsingState = PARSE_TAG;
+        }
       }
     } else if (parsingState === PARSE_TAG_START) {
       if (c === ">") {
