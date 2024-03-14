@@ -19,7 +19,6 @@ async function astToHtml(
     }
 
     const { name, attributes, children, isSelfClosing } = tag;
-
     const parsedExpressions = await parseExpressions(
       attributes,
       context || {},
