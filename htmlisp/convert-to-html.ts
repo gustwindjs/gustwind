@@ -7,16 +7,12 @@ import { parseHtmlisp } from "./utilities/parseHtmlisp.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
 import { getAttributeBindings } from "./utilities/getAttributeBindings.ts";
 import type { Utilities, Utility } from "../breezewind/types.ts";
-import type { Attributes, Components, Context } from "./types.ts";
-
-type HtmllispToHTMLParameters = {
-  htmlInput?: string;
-  components?: Components;
-  context?: Context;
-  props?: Context;
-  utilities?: Utilities;
-  evaluateProps?: boolean;
-};
+import type {
+  Attributes,
+  Components,
+  Context,
+  HtmllispToHTMLParameters,
+} from "./types.ts";
 
 const defaultComponents = {
   // TODO: Figure out a good pattern for passing arbitrary attributes to noop
@@ -54,7 +50,7 @@ function getConverter() {
         ...utilities,
       },
       htmlispToHTML,
-      evaluateProps,
+      // evaluateProps,
     )(htmlInput);
   };
 }
@@ -65,10 +61,17 @@ function getConvertToHTML(
   props: Context,
   utilities: Utilities,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
-  evaluateProps: boolean,
+  //  evaluateProps: boolean,
 ) {
   return function convert(input: string) {
-    return astToHtml(parseHtmlisp(input), context, utilities);
+    return astToHtml(
+      parseHtmlisp(input),
+      htmlispToHTML,
+      context,
+      props,
+      utilities,
+      components,
+    );
   };
 }
 

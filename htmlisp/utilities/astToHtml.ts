@@ -1,15 +1,22 @@
 import { parseExpressions } from "./parseExpressions.ts";
 import { getAttributeBindings } from "./getAttributeBindings.ts";
 import type { Tag } from "./parseHtmlisp.ts";
-import type { Context } from "../types.ts";
+import type {
+  Components,
+  Context,
+  HtmllispToHTMLParameters,
+} from "../types.ts";
 import type { Utilities } from "../../breezewind/types.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
 async function astToHtml(
   ast: (string | Tag)[],
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
   context?: Context,
+  props?: Context,
   utilities?: Utilities,
+  components?: Components,
 ): Promise<string> {
   return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
@@ -17,9 +24,40 @@ async function astToHtml(
     }
 
     const { name, attributes, children, isSelfClosing } = tag;
+
+    const renderedChildren = await astToHtml(
+      children,
+      htmlispToHTML,
+      context,
+      props,
+      utilities,
+      components,
+    );
+
+    // Components begin with an uppercase letter always
+    if (components && name[0].toUpperCase() === name[0]) {
+      const foundComponent = components[name];
+
+      if (foundComponent) {
+        return htmlispToHTML({
+          htmlInput: foundComponent,
+          components,
+          context,
+          props: {
+            children: renderedChildren,
+            props,
+          },
+          utilities,
+        });
+      }
+
+      throw new Error(`Component "${name}" was not found!`);
+    }
+
     const parsedExpressions = await parseExpressions(
       attributes,
       context || {},
+      props || {},
       utilities || {},
     );
 
@@ -34,7 +72,6 @@ async function astToHtml(
       return `<${name}${attrs}/>`;
     }
 
-    const renderedChildren = await astToHtml(children, context, utilities);
     const content = parsedChildren
       ? parsedChildren.concat(renderedChildren)
       : renderedChildren;

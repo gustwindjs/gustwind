@@ -27,13 +27,13 @@ Deno.test("throws if a component is not found", () => {
 Deno.test("component with attributes", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<Button title="demo">foo</Button>`,
+      htmlInput: `<Button title="demo">foobar</Button>`,
       components: {
         Button:
           '<button &children="(get props children)" &title="(get props title)"></button>',
       },
     }),
-    `<button title="demo">foo</button>`,
+    `<button title="demo">foobar</button>`,
   );
 });
 
