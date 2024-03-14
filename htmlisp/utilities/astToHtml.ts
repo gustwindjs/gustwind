@@ -12,7 +12,7 @@ import type { Utilities } from "../../breezewind/types.ts";
 // that could be decoupled as well.
 async function astToHtml(
   ast: (string | Tag)[],
-  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
   utilities?: Utilities,
