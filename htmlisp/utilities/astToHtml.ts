@@ -1,10 +1,20 @@
 import type { Tag } from "./parseHtmlisp.ts";
 
-// TODO
 function astToHtml(ast: Tag[]) {
-  console.log("ast", ast);
+  return ast.map(({ name, attributes, children }) =>
+    `<${name}${convertAttributes(attributes)}>${children}</${name}>`
+  ).join("");
+}
 
-  return "foobar";
+function convertAttributes(attributes: Tag["attributes"]) {
+  return attributes.map(({ name, value }) => {
+    // Skip comments
+    if (name.startsWith("__")) {
+      return;
+    }
+
+    return `${name}="${value}"`;
+  }).filter(Boolean).join(" ");
 }
 
 export { astToHtml };
