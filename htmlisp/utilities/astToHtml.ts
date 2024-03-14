@@ -44,6 +44,9 @@ async function astToHtml(
           components,
           context,
           props: {
+            ...Object.fromEntries(
+              attributes.map(({ name, value }) => [name, value]),
+            ),
             children: renderedChildren,
             props,
           },
