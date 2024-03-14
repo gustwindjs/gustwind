@@ -86,8 +86,10 @@ function parseHtmlisp(input: string): Tag[] {
       // is content without whitespace so children parsing logic can kick in.
       else if (parsingState === PARSE_CHILDREN_START) {
         if (c !== " ") {
-          i--;
           parsingState = PARSE_CHILDREN;
+
+          // Move back a step to capture the first character when parsing
+          i--;
         }
       } else if (parsingState === PARSE_CHILDREN) {
         if (c === "<") {
