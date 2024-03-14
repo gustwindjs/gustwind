@@ -45,6 +45,29 @@ async function astToHtml(
     if (components && name[0].toUpperCase() === name[0]) {
       const foundComponent = components[name];
 
+      const slots = await Promise.all(
+        children.filter((o) => typeof o !== "string" && o.name === "slot").map(
+          async (o) =>
+            typeof o !== "string" &&
+            ({
+              name: o.attributes[0].value,
+              value: await astToHtml(
+                o.children,
+                htmlispToHTML,
+                context,
+                props,
+                utilities,
+                components,
+              ),
+            }),
+        ).filter(Boolean),
+      );
+
+      // @ts-expect-error This is fine
+      if (!slots.every((s) => s.name)) {
+        throw new Error(`Slot is missing a name!`);
+      }
+
       if (foundComponent) {
         return htmlispToHTML({
           htmlInput: foundComponent,
@@ -53,7 +76,8 @@ async function astToHtml(
           props: {
             children: renderedChildren,
             ...Object.fromEntries(
-              attributes.map(({ name, value }) => [name, value]),
+              // @ts-expect-error This is fine
+              slots.concat(attributes).map(({ name, value }) => [name, value]),
             ),
             ...parsedExpressions,
             props,
