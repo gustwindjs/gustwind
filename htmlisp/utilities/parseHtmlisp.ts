@@ -17,7 +17,7 @@ const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG = "parse tag";
 const PARSE_CHILDREN_START = "parse children start";
 
-const DEBUG = 0;
+const DEBUG = 1;
 
 type Attribute = { name: string; value: string };
 type Tag = {
@@ -25,23 +25,26 @@ type Tag = {
   attributes: Attribute[];
   children: (string | Tag)[];
   isSelfClosing?: boolean;
+  depth: number;
 };
 
 function parseHtmlisp(input: string): Tag[] {
   let parsingState = PARSE_TAG_START;
   let quotesFound = 0;
-  let capturedTag: Tag = { name: "", attributes: [], children: [] };
-  let parentTag: Tag = capturedTag;
-  const capturedTags: Tag[] = [capturedTag];
+  let currentTag: Tag = { name: "", attributes: [], children: [], depth: 0 };
+  // TODO: This has to become parentTags
+  let parentTag: Tag = currentTag;
+  const capturedTags: Tag[] = [currentTag];
   let capturedAttribute: Attribute = { name: "", value: "" };
   let capturedBody = "";
+  let depth = 0;
 
   for (let i = 0; i < input.length; i++) {
     const c = input[i];
 
     if (c !== "\n") {
       if (DEBUG) {
-        console.log(parsingState, c, capturedTag, capturedBody);
+        console.log(parsingState, c, currentTag, capturedBody);
       }
 
       if (parsingState === NOT_PARSING) {
@@ -58,7 +61,7 @@ function parseHtmlisp(input: string): Tag[] {
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
         } else if (c !== "<") {
-          capturedTag.name += c;
+          currentTag.name += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
         if (c === "=") {
@@ -74,7 +77,7 @@ function parseHtmlisp(input: string): Tag[] {
           quotesFound++;
 
           if (quotesFound === 2) {
-            capturedTag.attributes.push(capturedAttribute);
+            currentTag.attributes.push(capturedAttribute);
             parsingState = NOT_PARSING;
             quotesFound = 0;
             capturedAttribute = { name: "", value: "" };
@@ -96,7 +99,7 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_TAG;
 
           // Reached next tag so store the body to the tag
-          capturedTag.children.push(capturedBody);
+          capturedBody && currentTag.children.push(capturedBody);
           capturedBody = "";
         } else {
           capturedBody += c;
@@ -107,13 +110,27 @@ function parseHtmlisp(input: string): Tag[] {
         if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
+          depth--;
+
           // This is an end tag which we can safely skip
           parsingState = NOT_PARSING;
         } else {
-          // Attach the new structure to the earlier parent and make it the new parent
-          capturedTag = { name: "", attributes: [], children: [] };
-          parentTag.children.push(capturedTag);
-          parentTag = capturedTag;
+          depth++;
+
+          // Attach the new structure to the earlier parent
+          currentTag = { name: "", attributes: [], children: [], depth };
+          parentTag.children.push(currentTag);
+
+          console.log("XDDD", depth, parentTag.depth);
+
+          // Direct sibling
+          if (depth - parentTag.depth === 1) {
+            parentTag = currentTag;
+          } // Sibling case
+          else {
+            // TODO: Set as parent of parent - this means tracking parents somehow
+            // parentTag = parentTag.parent;
+          }
 
           parsingState = PARSE_TAG_START;
 
