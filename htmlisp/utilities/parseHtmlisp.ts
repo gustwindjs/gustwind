@@ -59,6 +59,8 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
+        } else if (c === "/") {
+          currentTag.isSelfClosing = true;
         } else if (c !== "<") {
           currentTag.name += c;
         }
@@ -68,6 +70,8 @@ function parseHtmlisp(input: string): Tag[] {
         } // Attribute name was not found after all
         else if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
+        } else if (c === "/") {
+          currentTag.isSelfClosing = true;
         } else if (c !== " ") {
           capturedAttribute.name += c;
         }
