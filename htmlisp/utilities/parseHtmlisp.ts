@@ -24,7 +24,7 @@ type Tag = {
 };
 
 function parseHtmlisp(input: string): Tag[] {
-  let parsingState = NOT_PARSING;
+  let parsingState = PARSE_TAG_START;
   let quotesFound = 0;
   let capturedTags: Tag[] = [{
     name: "",
@@ -76,7 +76,7 @@ function parseHtmlisp(input: string): Tag[] {
             tagName = capturedTag.name;
             parsingState = PARSE_TAG;
           }
-        } else {
+        } else if (c !== "<") {
           capturedTags[tagIndex].name += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
