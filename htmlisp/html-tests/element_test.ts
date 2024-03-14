@@ -8,6 +8,26 @@ Deno.test("basic element", async () => {
   );
 });
 
+Deno.test("basic element with a newline", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div
+    >foo</div>`,
+    }),
+    `<div>foo</div>`,
+  );
+});
+
+Deno.test("basic element with a newline and an attribute", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div
+    title="foobar">foo</div>`,
+    }),
+    `<div title="foobar">foo</div>`,
+  );
+});
+
 Deno.test("nested element", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<div><span>foo</span></div>` }),
