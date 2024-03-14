@@ -44,10 +44,10 @@ async function astToHtml(
           components,
           context,
           props: {
+            children: renderedChildren,
             ...Object.fromEntries(
               attributes.map(({ name, value }) => [name, value]),
             ),
-            children: renderedChildren,
             props,
           },
           utilities,
