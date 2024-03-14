@@ -1,12 +1,16 @@
 import type { Tag } from "./parseHtmlisp.ts";
 
 function astToHtml(ast: (string | Tag)[]): string {
-  return ast.map((v) => {
-    if (typeof v === "string") {
-      return v;
+  return ast.map((tag) => {
+    if (typeof tag === "string") {
+      return tag;
     }
 
-    const { name, attributes, children } = v;
+    const { name, attributes, children, isSelfClosing } = tag;
+
+    if (isSelfClosing) {
+      return `<${name}${convertAttributes(attributes)}/>`;
+    }
 
     return `<${name}${convertAttributes(attributes)}>${
       astToHtml(children)

@@ -20,6 +20,7 @@ type Tag = {
   name: string;
   attributes: Attribute[];
   children: (string | Tag)[];
+  isSelfClosing?: boolean;
 };
 
 function parseHtmlisp(input: string): Tag[] {
@@ -56,6 +57,14 @@ function parseHtmlisp(input: string): Tag[] {
       } else if (c === " ") {
         parsingState = PARSE_ATTRIBUTE_NAME;
         capturedAttribute = { name: "", value: "" };
+      } else if (c === "/") {
+        const capturedTag = capturedTags.at(-1);
+
+        if (capturedTag) {
+          capturedTag.isSelfClosing = true;
+          tagName = capturedTag.name;
+          parsingState = PARSE_TAG;
+        }
       } else {
         capturedTags[tagIndex].name += c;
       }

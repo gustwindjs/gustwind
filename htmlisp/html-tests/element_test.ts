@@ -36,7 +36,26 @@ Deno.test("element with a class", async () => {
   );
 });
 
-// TODO: Test self-closing tags
+Deno.test("self-closing element without whitespace", async () => {
+  assertEquals(
+    await htmlispToHTML({ htmlInput: `<hr/>` }),
+    `<hr/>`,
+  );
+});
+
+Deno.test("self-closing element with whitespace", async () => {
+  assertEquals(
+    await htmlispToHTML({ htmlInput: `<hr />` }),
+    `<hr />`,
+  );
+});
+
+Deno.test("self-closing element with an attribute", async () => {
+  assertEquals(
+    await htmlispToHTML({ htmlInput: `<div title="bar" />` }),
+    `<div title="bar" />`,
+  );
+});
 
 Deno.test("doctype", async () => {
   assertEquals(
