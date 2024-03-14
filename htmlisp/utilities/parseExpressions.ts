@@ -22,11 +22,6 @@ async function parseExpressions(
           return;
         }
 
-        // Skip visibleIf
-        if (name === "&visibleIf") {
-          return;
-        }
-
         // Check bindings
         if (name.startsWith("&")) {
           const parsedExpression = parseExpression(value);
