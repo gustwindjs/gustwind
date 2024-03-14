@@ -6,11 +6,11 @@ Deno.test("element with an expression shortcut for attribute", async () => {
   assertEquals(
     await htmlispToHTML(
       {
-        htmlInput: `<a &href="(get context href)" />`,
+        htmlInput: `<a &href="(get context href)">foobar</a>`,
         context: { href: "demo" },
       },
     ),
-    `<a href="demo"></a>`,
+    `<a href="demo">foobar</a>`,
   );
 });
 
@@ -21,7 +21,7 @@ Deno.test("element with braces inside strings", async () => {
         htmlInput: `<a &href="(concat foo '(' bar ')' )" />`,
       },
     ),
-    `<a href="foo(bar)"></a>`,
+    `<a href="foo(bar)"/>`,
   );
 });
 
@@ -31,7 +31,7 @@ Deno.test("element with expressions within an expression", async () => {
       htmlInput: `<a &href="(concat (get context demo) (get context href))" />`,
       context: { demo: "foobar", href: "demo" },
     }),
-    `<a href="foobardemo"></a>`,
+    `<a href="foobardemo"/>`,
   );
 });
 
@@ -43,7 +43,7 @@ Deno.test("element with custom utilities", async () => {
       utilities: { urlJoin },
       context: { href: "foo", suffix: "bar" },
     }),
-    `<a href="foo/bar"></a>`,
+    `<a href="foo/bar"/>`,
   );
 });
 
@@ -53,7 +53,7 @@ Deno.test("element with a string after an expression after expression", async ()
       htmlInput: `<a &href="(get (get context href) /)" />`,
       context: { href: "context", "/": "foo/bar" },
     }),
-    `<a href="foo/bar"></a>`,
+    `<a href="foo/bar"/>`,
   );
 });
 

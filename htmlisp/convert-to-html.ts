@@ -5,6 +5,7 @@ import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
 import { applyUtility } from "../breezewind/applyUtility.ts";
 import { parseHtmlisp } from "./utilities/parseHtmlisp.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
+import { getAttributeBindings } from "./utilities/getAttributeBindings.ts";
 import type { Utilities, Utility } from "../breezewind/types.ts";
 import type { Attributes, Components, Context } from "./types.ts";
 
@@ -95,10 +96,11 @@ function getConvertToHTML(
   evaluateProps: boolean,
 ) {
   return function convert(input: string) {
-    return astToHtml(parseHtmlisp(input));
+    return astToHtml(parseHtmlisp(input), context, utilities);
   };
 }
 
+/*
 function getH(
   components: Components,
   context: Context,
@@ -201,9 +203,7 @@ function getH(
       evaluateProps,
     );
 
-    const attrs = await getAttributeBindings(
-      omit(omit(parsedExpressions, "children"), "type"),
-    );
+    const attrs = getAttributeBindings(parsedExpressions);
 
     if (attributes?.["&children"]) {
       children = await applyUtility<Utility, Utilities, Context>(
@@ -242,12 +242,6 @@ function getH(
     return `<${t}${attrs && " " + attrs}>${content}</${t}>`;
   };
 }
-
-function getAttributeBindings(
-  parsedExpressions: Awaited<ReturnType<typeof parseExpressions>>,
-) {
-  return Object.entries(parsedExpressions).map(([k, v]) => `${k}="${v}"`)
-    .join(" ");
-}
+*/
 
 export { getConverter };
