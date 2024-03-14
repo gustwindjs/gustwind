@@ -34,6 +34,13 @@ async function astToHtml(
       components,
     );
 
+    const parsedExpressions = await parseExpressions(
+      attributes,
+      context || {},
+      props || {},
+      utilities || {},
+    );
+
     // Components begin with an uppercase letter always
     if (components && name[0].toUpperCase() === name[0]) {
       const foundComponent = components[name];
@@ -48,6 +55,7 @@ async function astToHtml(
             ...Object.fromEntries(
               attributes.map(({ name, value }) => [name, value]),
             ),
+            ...parsedExpressions,
             props,
           },
           utilities,
@@ -56,13 +64,6 @@ async function astToHtml(
 
       throw new Error(`Component "${name}" was not found!`);
     }
-
-    const parsedExpressions = await parseExpressions(
-      attributes,
-      context || {},
-      props || {},
-      utilities || {},
-    );
 
     if (parsedExpressions.visibleIf === false) {
       return "";
