@@ -31,12 +31,15 @@ async function astToHtml(
     }
 
     const attrs = getAttributeBindings(parsedExpressions);
+    const parsedChildren = parsedExpressions.children;
 
-    if (isSelfClosing) {
+    if (!parsedChildren && isSelfClosing) {
       return `<${name}${attrs}/>`;
     }
 
-    return `<${name}${attrs}>${await astToHtml(children)}</${name}>`;
+    return `<${name}${attrs}>${
+      parsedChildren || await astToHtml(children)
+    }</${name}>`;
   }))).join("");
 }
 
