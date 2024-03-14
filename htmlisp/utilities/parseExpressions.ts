@@ -7,7 +7,7 @@ import type { Utilities, Utility } from "../../breezewind/types.ts";
 async function parseExpressions(
   attributes: Attribute[],
   context: Context,
-  // props: Context,
+  props: Context,
   utilities: Utilities,
 ) {
   if (!attributes) {
@@ -40,7 +40,7 @@ async function parseExpressions(
             >(
               parsedExpression,
               utilities,
-              { context }, // { context, props },
+              { context, props },
             ),
           ];
         }
