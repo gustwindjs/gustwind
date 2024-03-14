@@ -51,7 +51,7 @@ type Utilities =
       this: { context?: Context },
       // deno-lint-ignore no-explicit-any
       ...args: any
-    ) => string | Promise<string> | void
+    ) => unknown | Promise<unknown> | void
   >
   & {
     _onRenderStart?: (context: Context) => void;

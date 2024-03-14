@@ -26,7 +26,6 @@ function getConverter() {
       components || {},
       context || {},
       props || {},
-      // @ts-expect-error TODO: Figure out what's wrong with this type
       {
         ...defaultUtilities,
         ...utilities,
@@ -41,7 +40,7 @@ function getConvertToHTML(
   context: Context,
   props: Context,
   utilities: Utilities,
-  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
 ) {
   return function convert(input: string) {
     return astToHtml(
