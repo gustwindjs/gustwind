@@ -118,8 +118,8 @@ function getConvertToHTML(
       name: string;
       attributes: Attribute[];
       // TODO: Potentially add children here
-      body: string;
-    } = { name: "", attributes: [], body: "" };
+      children: string;
+    } = { name: "", attributes: [], children: "" };
     let capturedAttribute: Attribute = { name: "", value: "" };
     const capturedTags = [];
 
@@ -166,7 +166,7 @@ function getConvertToHTML(
         if (c === "<") {
           parsingState = PARSE_TAG_END;
         } else {
-          capturedTag.body += c;
+          capturedTag.children += c;
         }
       } else if (parsingState === PARSE_TAG_END) {
         if (c === ">") {
@@ -175,7 +175,7 @@ function getConvertToHTML(
           capturedTag = {
             name: "",
             attributes: [],
-            body: "",
+            children: "",
           };
           quotesFound = 0;
 
