@@ -58,6 +58,15 @@ Deno.test("basic element with siblings as children 3", async () => {
   );
 });
 
+Deno.test("basic element with a child with a title", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div title="demo"><span title="demo">foobar</span></div>`,
+    }),
+    `<div title="demo"><span title="demo">foobar</span></div>`,
+  );
+});
+
 Deno.test("basic element with newlines and nesting", async () => {
   assertEquals(
     await htmlispToHTML({
