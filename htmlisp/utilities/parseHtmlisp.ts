@@ -1,14 +1,5 @@
-/*
-const NOT_PARSING = 0;
-const PARSE_TAG_START = 1;
-const PARSE_CHILDREN = 2;
-const PARSE_ATTRIBUTE_NAME = 3;
-const PARSE_ATTRIBUTE_VALUE = 4;
-const PARSE_TAG = 5;
-const PARSE_CHILDREN_START = 6;
-*/
+const DEBUG = 0;
 
-// Debug helpers
 const NOT_PARSING = "not parsing";
 const PARSE_TAG_START = "parse tag start";
 const PARSE_CHILDREN = "parse children";
@@ -16,8 +7,6 @@ const PARSE_ATTRIBUTE_NAME = "parse attribute name";
 const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG = "parse tag";
 const PARSE_CHILDREN_START = "parse children start";
-
-const DEBUG = 1;
 
 type Attribute = { name: string; value: string };
 type Tag = {
@@ -53,6 +42,8 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
+        } else if (c === "/") {
+          currentTag.isSelfClosing = true;
         }
       } else if (parsingState === PARSE_TAG_START) {
         if (c === ">") {
