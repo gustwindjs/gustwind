@@ -47,6 +47,8 @@ function parseHtmlisp(input: string): Tag[] {
         parsingState = PARSE_TAG_START;
       } else if (c === ">") {
         parsingState = PARSE_CHILDREN;
+      } else if (c === " ") {
+        parsingState = PARSE_ATTRIBUTE_NAME;
       }
     } else if (parsingState === PARSE_TAG_START) {
       if (c === ">") {
@@ -71,6 +73,7 @@ function parseHtmlisp(input: string): Tag[] {
           capturedTags[tagIndex].attributes.push(capturedAttribute);
           parsingState = NOT_PARSING;
           quotesFound = 0;
+          capturedAttribute = { name: "", value: "" };
         }
       } else {
         capturedAttribute.value += c;
