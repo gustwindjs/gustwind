@@ -18,6 +18,25 @@ Deno.test("basic element with a newline", async () => {
   );
 });
 
+// TODO: Add a simple sibling test
+
+Deno.test("basic element with newlines and nesting", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div
+      title="demo"
+    >
+      <span>foobar</span>
+      <a
+        href="#foo"
+        >🔗</a
+      >
+    </div>`,
+    }),
+    `<div title="demo"><span>foobar</span><a href="#foo">🔗</a></div>`,
+  );
+});
+
 Deno.test("basic element with a newline and an attribute", async () => {
   assertEquals(
     await htmlispToHTML({

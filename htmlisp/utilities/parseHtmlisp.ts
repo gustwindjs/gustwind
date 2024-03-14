@@ -42,7 +42,7 @@ function parseHtmlisp(input: string): Tag[] {
 
     if (c !== "\n") {
       // Debug helper
-      // console.log(parsingState, c);
+      console.log(parsingState, c);
 
       if (parsingState === NOT_PARSING) {
         if (c === "<") {
@@ -163,12 +163,18 @@ function parseHtmlisp(input: string): Tag[] {
               capturedBody = "";
             }
           }
+        } else if (c === " ") {
+          parsingState = PARSE_ATTRIBUTE_NAME;
+          capturedAttribute = { name: "", value: "" };
         } else {
           tagName += c;
         }
       }
     }
   }
+
+  // TODO: Figure out why final tags don't get constructed for a complex sibling case
+  console.log("final tags", finalTags, "captured tags", capturedTags);
 
   return finalTags;
 }
