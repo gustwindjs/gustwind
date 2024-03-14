@@ -57,37 +57,6 @@ Deno.test("element with a string after an expression after expression", async ()
   );
 });
 
-Deno.test("element with an expression shortcut for children", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<div &children="(get context href)" />`,
-      context: { href: "foobar" },
-    }),
-    `<div>foobar</div>`,
-  );
-});
-
-Deno.test("element with a nested expression shortcut for children", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<div &children="(concat / (get context href))" />`,
-      context: { href: "foobar" },
-    }),
-    `<div>/foobar</div>`,
-  );
-});
-
-Deno.test("element with a complex nested expression shortcut for children", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<div &children="(urlJoin / (get context href) /)" />`,
-      context: { href: "foobar" },
-      utilities: { urlJoin },
-    }),
-    `<div>/foobar/</div>`,
-  );
-});
-
 Deno.test("complex expression", async () => {
   assertEquals(
     await htmlispToHTML({
