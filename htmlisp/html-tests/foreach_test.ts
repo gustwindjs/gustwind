@@ -1,14 +1,12 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("Foreach with an array of objects", async () => {
+Deno.test("foreach with an array of objects", async () => {
   assertEquals(
-    // Due to recursion order in htm (leaf first), there is a workaround for bindings in the
-    // form of # that allows to address values within props.
     await htmlispToHTML({
-      htmlInput: `<Foreach type="ul" &values="(get context blogPosts)">
-        <li class="inline" #title="(get props title)" #children="(get props content)"></li>
-      </Foreach>
+      htmlInput: `<ul &foreach="(get context blogPosts)">
+        <li class="inline" &title="(get props title)" &children="(get props content)"></li>
+      </ul>
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
@@ -18,13 +16,12 @@ Deno.test("Foreach with an array of objects", async () => {
   );
 });
 
-Deno.test("Foreach with an array of objects and an attribute", async () => {
+Deno.test("foreach with an array of objects and an attribute", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput:
-        `<Foreach type="ul" &values="(get context blogPosts)" title="demo">
-        <li class="inline" #title="(get props data.title)" #children="(get props data.content)"></li>
-      </Foreach>
+      htmlInput: `<ul &foreach="(get context blogPosts)" title="demo">
+        <li class="inline" &title="(get props title)" &children="(get props content)"></li>
+      </ul>
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
@@ -34,13 +31,13 @@ Deno.test("Foreach with an array of objects and an attribute", async () => {
   );
 });
 
-Deno.test("Foreach with an array of objects and an evaluated attribute", async () => {
+Deno.test("foreach with an array of objects and an evaluated attribute", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput:
-        `<Foreach type="ul" &values="(get context blogPosts)" &title="(get context demo)">
-        <li class="inline" #title="(get props data.title)" #children="(get props data.content)"></li>
-      </Foreach>
+        `<ul &foreach="(get context blogPosts)" &title="(get context demo)">
+        <li class="inline" &title="(get props title)" &children="(get props content)"></li>
+      </ul>
     `,
       context: {
         demo: "demo",
@@ -51,12 +48,12 @@ Deno.test("Foreach with an array of objects and an evaluated attribute", async (
   );
 });
 
-Deno.test("Foreach with an array of values", async () => {
+Deno.test("foreach with an array of values", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<Foreach type="ul" &values="(get context blogPosts)">
-        <li class="inline" #children="(get props data)"></li>
-      </Foreach>
+      htmlInput: `<ul &foreach="(get context blogPosts)">
+        <li class="inline" &children="(get props item)"></li>
+      </ul>
     `,
       context: {
         blogPosts: ["foo"],
@@ -66,12 +63,12 @@ Deno.test("Foreach with an array of values", async () => {
   );
 });
 
-Deno.test("Foreach without a type", async () => {
+Deno.test("foreach without a type", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<Foreach &values="(get context blogPosts)">
-        <div class="inline" #children="(get props content)"></div>
-      </Foreach>
+      htmlInput: `<noop &foreach="(get context blogPosts)">
+        <div class="inline" &children="(get props content)"></div>
+      </noop>
     `,
       context: {
         blogPosts: [{ title: "foo", content: "bar" }],
