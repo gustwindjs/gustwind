@@ -3,6 +3,6 @@ import { getConverter as getBreezewindConverter } from "./convert-to-gustwind.ts
 import { getConverter as getHTMLConverter } from "./convert-to-html.ts";
 
 const htmlispToBreezewind = getBreezewindConverter(htm);
-const htmlispToHTML = getHTMLConverter(htm);
+const htmlispToHTML = getHTMLConverter();
 
 export { htmlispToBreezewind, htmlispToHTML };
