@@ -5,6 +5,7 @@ const PARSE_CHILDREN = 2;
 const PARSE_ATTRIBUTE_NAME = 3;
 const PARSE_ATTRIBUTE_VALUE = 4;
 const PARSE_TAG = 5;
+const PARSE_CHILDREN_START = 6;
 */
 
 // Debug helpers
@@ -14,6 +15,9 @@ const PARSE_CHILDREN = "parse children";
 const PARSE_ATTRIBUTE_NAME = "parse attribute name";
 const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG = "parse tag";
+const PARSE_CHILDREN_START = "parse children start";
+
+const DEBUG = 0;
 
 type Attribute = { name: string; value: string };
 type Tag = {
@@ -26,74 +30,42 @@ type Tag = {
 function parseHtmlisp(input: string): Tag[] {
   let parsingState = PARSE_TAG_START;
   let quotesFound = 0;
-  let capturedTags: Tag[] = [{
-    name: "",
-    attributes: [],
-    children: [],
-  }];
+  let capturedTag: Tag = { name: "", attributes: [], children: [] };
+  let parentTag: Tag = capturedTag;
+  const capturedTags: Tag[] = [capturedTag];
   let capturedAttribute: Attribute = { name: "", value: "" };
   let capturedBody = "";
-  let tagName = "";
-  let tagIndex = 0;
-  const finalTags = [];
 
   for (let i = 0; i < input.length; i++) {
     const c = input[i];
 
     if (c !== "\n") {
-      // Debug helper
-      console.log(parsingState, c);
+      if (DEBUG) {
+        console.log(parsingState, c, capturedTag, capturedBody);
+      }
 
       if (parsingState === NOT_PARSING) {
         if (c === "<") {
           parsingState = PARSE_TAG_START;
         } else if (c === ">") {
-          parsingState = PARSE_CHILDREN;
+          parsingState = PARSE_CHILDREN_START;
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
-        } // Self-closing tag
-        else if (c === "/") {
-          const capturedTag = capturedTags.at(-1);
-
-          if (capturedTag) {
-            capturedTag.isSelfClosing = true;
-            tagName = capturedTag.name;
-            parsingState = PARSE_TAG;
-          }
         }
       } else if (parsingState === PARSE_TAG_START) {
         if (c === ">") {
-          parsingState = PARSE_CHILDREN;
+          parsingState = PARSE_CHILDREN_START;
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
-          capturedAttribute = { name: "", value: "" };
-        } // Self-closing tag
-        else if (c === "/") {
-          const capturedTag = capturedTags.at(-1);
-
-          if (capturedTag) {
-            capturedTag.isSelfClosing = true;
-            tagName = capturedTag.name;
-            parsingState = PARSE_TAG;
-          }
         } else if (c !== "<") {
-          capturedTags[tagIndex].name += c;
+          capturedTag.name += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
         if (c === "=") {
           parsingState = PARSE_ATTRIBUTE_VALUE;
-        } // Self-closing case after all
-        else if (c === "/") {
-          const capturedTag = capturedTags.at(-1);
-
-          if (capturedTag) {
-            capturedTag.isSelfClosing = true;
-            tagName = capturedTag.name;
-            parsingState = PARSE_TAG;
-          }
         } // Attribute name was not found after all
         else if (c === ">") {
-          parsingState = PARSE_CHILDREN;
+          parsingState = PARSE_CHILDREN_START;
         } else if (c !== " ") {
           capturedAttribute.name += c;
         }
@@ -102,7 +74,7 @@ function parseHtmlisp(input: string): Tag[] {
           quotesFound++;
 
           if (quotesFound === 2) {
-            capturedTags[tagIndex].attributes.push(capturedAttribute);
+            capturedTag.attributes.push(capturedAttribute);
             parsingState = NOT_PARSING;
             quotesFound = 0;
             capturedAttribute = { name: "", value: "" };
@@ -110,9 +82,20 @@ function parseHtmlisp(input: string): Tag[] {
         } else {
           capturedAttribute.value += c;
         }
+      } // The only purpose of this state is to detect when there
+      // is content without whitespace so children parsing logic can kick in.
+      else if (parsingState === PARSE_CHILDREN_START) {
+        if (c !== " ") {
+          i--;
+          parsingState = PARSE_CHILDREN;
+        }
       } else if (parsingState === PARSE_CHILDREN) {
         if (c === "<") {
           parsingState = PARSE_TAG;
+
+          // Reached next tag so store the body to the tag
+          capturedTag.children.push(capturedBody);
+          capturedBody = "";
         } else {
           capturedBody += c;
         }
@@ -120,63 +103,30 @@ function parseHtmlisp(input: string): Tag[] {
       // or whether it has children so both options have to be considered.
       else if (parsingState === PARSE_TAG) {
         if (c === ">") {
-          if (capturedTags[tagIndex].name === tagName) {
-            parsingState = NOT_PARSING;
-
-            // TODO: Check indexing here
-            if (capturedBody) {
-              capturedTags[0].children.push(capturedBody);
-            }
-
-            finalTags.push(structuredClone(capturedTags[0]));
-            capturedTags = [{
-              name: "",
-              attributes: [],
-              children: [],
-            }];
-            capturedBody = "";
-            tagName = "";
-            quotesFound = 0;
-          } else {
-            tagIndex++;
-            capturedTags.push({
-              name: tagName,
-              attributes: [],
-              children: [],
-            });
-            capturedBody = "";
-            tagName = "";
-
-            // Tag name was already parsed so parse children now
-            parsingState = PARSE_CHILDREN;
-          }
+          parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
-          if (tagIndex > 0) {
-            const lastTag = capturedTags.pop();
-            tagIndex--;
-
-            if (lastTag) {
-              lastTag.children.push(capturedBody);
-
-              capturedTags[tagIndex].children.push(lastTag);
-              parsingState = NOT_PARSING;
-              capturedBody = "";
-            }
-          }
-        } else if (c === " ") {
-          parsingState = PARSE_ATTRIBUTE_NAME;
-          capturedAttribute = { name: "", value: "" };
+          // This is an end tag which we can safely skip
+          parsingState = NOT_PARSING;
         } else {
-          tagName += c;
+          // Attach the new structure to the earlier parent and make it the new parent
+          capturedTag = { name: "", attributes: [], children: [] };
+          parentTag.children.push(capturedTag);
+          parentTag = capturedTag;
+
+          parsingState = PARSE_TAG_START;
+
+          // Move back a step to capture the first character of the tag
+          i--;
         }
       }
     }
   }
 
-  // TODO: Figure out why final tags don't get constructed for a complex sibling case
-  console.log("final tags", finalTags, "captured tags", capturedTags);
+  if (DEBUG) {
+    console.log("captured tags", JSON.stringify(capturedTags, null, 2));
+  }
 
-  return finalTags;
+  return capturedTags;
 }
 
 export { type Attribute, parseHtmlisp, type Tag };
