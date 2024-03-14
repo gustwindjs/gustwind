@@ -1,28 +1,13 @@
-import { isString, omit } from "../utilities/functional.ts";
-import { parseExpressions } from "./utilities/parseExpressions.ts";
-import { parseExpression } from "./utilities/parseExpression.ts";
+import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
-import { applyUtility } from "../breezewind/applyUtility.ts";
 import { parseHtmlisp } from "./utilities/parseHtmlisp.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
-import { getAttributeBindings } from "./utilities/getAttributeBindings.ts";
-import type { Utilities, Utility } from "../breezewind/types.ts";
-import type {
-  Attributes,
-  Components,
-  Context,
-  HtmllispToHTMLParameters,
-} from "./types.ts";
-
-const defaultComponents = {
-  // TODO: Figure out a good pattern for passing arbitrary attributes to noop
-  Foreach:
-    `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
-};
+import type { Utilities } from "../breezewind/types.ts";
+import type { Components, Context, HtmllispToHTMLParameters } from "./types.ts";
 
 function getConverter() {
   return function htmlispToHTML(
-    { htmlInput, components, context, props, utilities, evaluateProps }:
+    { htmlInput, components, context, props, utilities }:
       HtmllispToHTMLParameters,
   ): Promise<string> | string {
     if (!htmlInput) {
@@ -38,10 +23,7 @@ function getConverter() {
     }
 
     return getConvertToHTML(
-      {
-        ...defaultComponents,
-        ...components,
-      },
+      components || {},
       context || {},
       props || {},
       // @ts-expect-error TODO: Figure out what's wrong with this type
@@ -50,7 +32,6 @@ function getConverter() {
         ...utilities,
       },
       htmlispToHTML,
-      // evaluateProps,
     )(htmlInput);
   };
 }
@@ -61,7 +42,6 @@ function getConvertToHTML(
   props: Context,
   utilities: Utilities,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
-  //  evaluateProps: boolean,
 ) {
   return function convert(input: string) {
     return astToHtml(
@@ -74,149 +54,5 @@ function getConvertToHTML(
     );
   };
 }
-
-/*
-function getH(
-  components: Components,
-  context: Context,
-  props: Context,
-  utilities: Utilities,
-  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
-  evaluateProps: boolean,
-) {
-  return async function h(
-    type: string,
-    attributes: Attributes,
-    ...children: string[]
-  ) {
-    // Components begin with an uppercase letter always
-    if (type[0].toUpperCase() === type[0]) {
-      const foundComponent = components[type];
-
-      if (foundComponent) {
-        let additionalProps = {};
-        let awaitedChildren = [""];
-
-        // Due to iteration order htm goes to the branches first
-        // and those will be missing props. The code below works
-        // around the problem by trying again.
-        try {
-          awaitedChildren = await Promise.all(children);
-        } catch (_error) {
-          // Nothing to do
-        }
-
-        // Children are slots if the results was an array of tuples
-        if (
-          Array.isArray(awaitedChildren) && awaitedChildren[0]?.length === 2
-        ) {
-          // @ts-expect-error This is fine
-          additionalProps = Object.fromEntries(awaitedChildren);
-          awaitedChildren = [""];
-        }
-
-        const render = async (values: Context[], htmlInput: string) =>
-          (
-            await Promise.all(
-              values.map((props) =>
-                htmlispToHTML({
-                  htmlInput,
-                  components,
-                  context,
-                  props,
-                  utilities,
-                  evaluateProps: true,
-                })
-              ),
-            )
-          ).join("");
-
-        return htmlispToHTML({
-          htmlInput: foundComponent,
-          components,
-          context,
-          props: {
-            children: awaitedChildren.join(""),
-            ...additionalProps,
-            ...attributes,
-            ...await parseExpressions(
-              attributes,
-              context,
-              props,
-              {
-                ...utilities,
-                render,
-              },
-              evaluateProps,
-            ),
-          },
-          utilities: { ...utilities, render },
-          evaluateProps,
-        });
-      }
-
-      throw new Error(`Component "${type}" was not found!`);
-    }
-
-    if (attributes?.["&visibleIf"]) {
-      const showElement = await applyUtility<Utility, Utilities, Context>(
-        parseExpression(attributes["&visibleIf"]),
-        utilities,
-        { context },
-      );
-
-      if (!showElement) {
-        return "";
-      }
-    }
-
-    const parsedExpressions = await parseExpressions(
-      attributes,
-      context,
-      props,
-      utilities,
-      evaluateProps,
-    );
-
-    const attrs = getAttributeBindings(parsedExpressions);
-
-    if (attributes?.["&children"]) {
-      children = await applyUtility<Utility, Utilities, Context>(
-        parseExpression(attributes["&children"]),
-        utilities,
-        { context, props },
-      );
-    }
-
-    if (attributes?.["#children"]) {
-      children = await applyUtility<Utility, Utilities, Context>(
-        parseExpression(attributes["#children"]),
-        utilities,
-        { context, props },
-      );
-    }
-
-    const content = (children && (await Promise.all(children)).join("")) || "";
-
-    if (type === "slot") {
-      const name = attributes?.name;
-
-      if (!name) {
-        throw new Error(`Slot is missing a name!`);
-      }
-
-      return [name, content];
-    }
-
-    if (!parsedExpressions.type && type === "noop") {
-      return content;
-    }
-
-    const t = parsedExpressions.type || type;
-
-    return `<${t}${attrs && " " + attrs}>${content}</${t}>`;
-  };
-}
-*/
 
 export { getConverter };
