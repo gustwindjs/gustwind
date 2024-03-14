@@ -32,13 +32,20 @@ async function astToHtml(
     const attrs = getAttributeBindings(parsedExpressions);
     const parsedChildren = parsedExpressions.children;
 
-    if (!parsedChildren && isSelfClosing) {
+    if (name !== "noop" && !parsedChildren && isSelfClosing) {
       return `<${name}${attrs}/>`;
     }
 
-    return `<${name}${attrs}>${
-      parsedChildren || await astToHtml(children)
-    }</${name}>`;
+    const content = parsedChildren || await astToHtml(children);
+
+    if (name === "noop" && !parsedExpressions.type) {
+      return content;
+    }
+
+    // TODO: Rename "name" as "type" to be consistent
+    const t = parsedExpressions.type || name;
+
+    return `<${t}${attrs}>${content}</${t}>`;
   }))).join("");
 }
 
