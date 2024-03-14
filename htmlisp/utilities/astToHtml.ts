@@ -26,6 +26,10 @@ async function astToHtml(
       utilities || {},
     );
 
+    if (parsedExpressions.visibleIf === false) {
+      return "";
+    }
+
     const attrs = getAttributeBindings(parsedExpressions);
 
     if (isSelfClosing) {
