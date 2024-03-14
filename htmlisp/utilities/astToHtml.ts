@@ -24,15 +24,7 @@ async function astToHtml(
     }
 
     const { name, attributes, children, isSelfClosing } = tag;
-
-    const renderedChildren = await astToHtml(
-      children,
-      htmlispToHTML,
-      context,
-      props,
-      utilities,
-      components,
-    );
+    let renderedChildren = "";
 
     const parsedExpressions = await parseExpressions(
       attributes,
@@ -41,56 +33,88 @@ async function astToHtml(
       utilities || {},
     );
 
-    // Components begin with an uppercase letter always
-    if (components && name[0].toUpperCase() === name[0]) {
-      const foundComponent = components[name];
-
-      const slots = await Promise.all(
-        children.filter((o) => typeof o !== "string" && o.name === "slot").map(
-          async (o) =>
-            typeof o !== "string" &&
-            ({
-              name: o.attributes[0].value,
-              value: await astToHtml(
-                o.children,
-                htmlispToHTML,
-                context,
-                props,
-                utilities,
-                components,
-              ),
-            }),
-        ).filter(Boolean),
-      );
-
-      // @ts-expect-error This is fine
-      if (!slots.every((s) => s.name)) {
-        throw new Error(`Slot is missing a name!`);
-      }
-
-      if (foundComponent) {
-        return htmlispToHTML({
-          htmlInput: foundComponent,
-          components,
-          context,
-          props: {
-            children: renderedChildren,
-            ...Object.fromEntries(
-              // @ts-expect-error This is fine
-              slots.concat(attributes).map(({ name, value }) => [name, value]),
-            ),
-            ...parsedExpressions,
-            props,
-          },
-          utilities,
-        });
-      }
-
-      throw new Error(`Component "${name}" was not found!`);
-    }
-
     if (parsedExpressions.visibleIf === false) {
       return "";
+    }
+
+    if (parsedExpressions.foreach) {
+      const items = parsedExpressions.foreach as unknown[];
+
+      delete parsedExpressions.foreach;
+
+      renderedChildren = (await Promise.all(
+        items.map((p) =>
+          astToHtml(
+            children,
+            htmlispToHTML,
+            context,
+            // @ts-expect-error This is fine
+            { ...p, item: p },
+            utilities,
+            components,
+          )
+        ),
+      )).join("");
+    } else {
+      renderedChildren = await astToHtml(
+        children,
+        htmlispToHTML,
+        context,
+        props,
+        utilities,
+        components,
+      );
+
+      // Components begin with an uppercase letter always
+      if (components && name[0].toUpperCase() === name[0]) {
+        const foundComponent = components[name];
+
+        const slots = await Promise.all(
+          children.filter((o) => typeof o !== "string" && o.name === "slot")
+            .map(
+              async (o) =>
+                typeof o !== "string" &&
+                ({
+                  name: o.attributes[0].value,
+                  value: await astToHtml(
+                    o.children,
+                    htmlispToHTML,
+                    context,
+                    props,
+                    utilities,
+                    components,
+                  ),
+                }),
+            ).filter(Boolean),
+        );
+
+        // @ts-expect-error This is fine
+        if (!slots.every((s) => s.name)) {
+          throw new Error(`Slot is missing a name!`);
+        }
+
+        if (foundComponent) {
+          return htmlispToHTML({
+            htmlInput: foundComponent,
+            components,
+            context,
+            props: {
+              children: renderedChildren,
+              ...Object.fromEntries(
+                slots.concat(attributes).map((
+                  // @ts-expect-error This is fine
+                  { name, value },
+                ) => [name, value]),
+              ),
+              ...parsedExpressions,
+              props,
+            },
+            utilities,
+          });
+        }
+
+        throw new Error(`Component "${name}" was not found!`);
+      }
     }
 
     const attrs = getAttributeBindings(parsedExpressions);
