@@ -14,8 +14,8 @@ function astToHtml(ast: (string | Tag)[]): string {
   }).join("");
 }
 
-function convertAttributes(attributes: Tag["attributes"]) {
-  return attributes.map(({ name, value }) => {
+function convertAttributes(attributes: Tag["attributes"]): string {
+  const ret = attributes.map(({ name, value }) => {
     // Skip comments
     if (name.startsWith("__")) {
       return;
@@ -23,6 +23,12 @@ function convertAttributes(attributes: Tag["attributes"]) {
 
     return `${name}="${value}"`;
   }).filter(Boolean).join(" ");
+
+  if (ret.length) {
+    return " " + ret;
+  }
+
+  return "";
 }
 
 export { astToHtml };
