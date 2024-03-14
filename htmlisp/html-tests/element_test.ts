@@ -36,6 +36,8 @@ Deno.test("element with a class", async () => {
   );
 });
 
+// TODO: Test self-closing tags
+
 Deno.test("doctype", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: "<!DOCTYPE html>" }),

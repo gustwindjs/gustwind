@@ -1,26 +1,25 @@
 /*
 const NOT_PARSING = 0;
 const PARSE_TAG_START = 1;
-const PARSE_BODY = 2;
+const PARSE_CHILDREN = 2;
 const PARSE_ATTRIBUTE_NAME = 3;
 const PARSE_ATTRIBUTE_VALUE = 4;
-const PARSE_TAG_END = 5;
+const PARSE_TAG = 5;
 */
 
 // Debug helpers
 const NOT_PARSING = "not parsing";
 const PARSE_TAG_START = "parse tag start";
-const PARSE_BODY = "parse body";
+const PARSE_CHILDREN = "parse children";
 const PARSE_ATTRIBUTE_NAME = "parse attribute name";
 const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
-const PARSE_TAG_END = "parse tag end";
+const PARSE_TAG = "parse tag";
 
 type Attribute = { name: string; value: string };
 type Tag = {
   name: string;
   attributes: Attribute[];
-  // TODO: Potentially add children here
-  children: string;
+  children: string | Tag[];
 };
 
 function parseHtmlisp(input: string): Tag[] {
@@ -28,6 +27,7 @@ function parseHtmlisp(input: string): Tag[] {
   let quotesFound = 0;
   let capturedTag: Tag = { name: "", attributes: [], children: "" };
   let capturedAttribute: Attribute = { name: "", value: "" };
+  let tagName = "";
   const capturedTags = [];
 
   for (let i = 0; i < input.length; i++) {
@@ -40,11 +40,11 @@ function parseHtmlisp(input: string): Tag[] {
       if (c === "<") {
         parsingState = PARSE_TAG_START;
       } else if (c === ">") {
-        parsingState = PARSE_BODY;
+        parsingState = PARSE_CHILDREN;
       }
     } else if (parsingState === PARSE_TAG_START) {
       if (c === ">") {
-        parsingState = PARSE_BODY;
+        parsingState = PARSE_CHILDREN;
       } else if (c === " ") {
         parsingState = PARSE_ATTRIBUTE_NAME;
         capturedAttribute = { name: "", value: "" };
@@ -69,22 +69,30 @@ function parseHtmlisp(input: string): Tag[] {
       } else {
         capturedAttribute.value += c;
       }
-    } else if (parsingState === PARSE_BODY) {
+    } else if (parsingState === PARSE_CHILDREN) {
       if (c === "<") {
-        parsingState = PARSE_TAG_END;
+        parsingState = PARSE_TAG;
       } else {
         capturedTag.children += c;
       }
-    } else if (parsingState === PARSE_TAG_END) {
+    } else if (parsingState === PARSE_TAG) {
       if (c === ">") {
-        parsingState = NOT_PARSING;
-        capturedTags.push(structuredClone(capturedTag));
-        capturedTag = {
-          name: "",
-          attributes: [],
-          children: "",
-        };
-        quotesFound = 0;
+        if (capturedTag.name === tagName) {
+          parsingState = NOT_PARSING;
+          capturedTags.push(structuredClone(capturedTag));
+          capturedTag = {
+            name: "",
+            attributes: [],
+            children: "",
+          };
+          tagName = "";
+          quotesFound = 0;
+        } else {
+          // TODO: Add recursion logic here (where/how to start, maybe avoiding recursion is easier)
+          console.log("found child tag", c, tagName);
+        }
+      } else {
+        tagName += c;
       }
     }
   }
