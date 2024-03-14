@@ -36,7 +36,8 @@ async function astToHtml(
       return `<${name}${attrs}/>`;
     }
 
-    const content = parsedChildren || await astToHtml(children);
+    const content = parsedChildren ||
+      await astToHtml(children, context, utilities);
 
     if (name === "noop" && !parsedExpressions.type) {
       return content;
