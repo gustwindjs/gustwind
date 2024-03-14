@@ -46,14 +46,21 @@ Deno.test("self-closing element without whitespace", async () => {
 Deno.test("self-closing element with whitespace", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<hr />` }),
-    `<hr />`,
+    `<hr/>`,
   );
 });
 
 Deno.test("self-closing element with an attribute", async () => {
   assertEquals(
+    await htmlispToHTML({ htmlInput: `<div title="bar"/>` }),
+    `<div title="bar"/>`,
+  );
+});
+
+Deno.test("self-closing element with an attribute and whitespace", async () => {
+  assertEquals(
     await htmlispToHTML({ htmlInput: `<div title="bar" />` }),
-    `<div title="bar" />`,
+    `<div title="bar"/>`,
   );
 });
 
