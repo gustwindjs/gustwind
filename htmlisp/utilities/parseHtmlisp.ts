@@ -57,7 +57,8 @@ function parseHtmlisp(input: string): Tag[] {
       } else if (c === " ") {
         parsingState = PARSE_ATTRIBUTE_NAME;
         capturedAttribute = { name: "", value: "" };
-      } else if (c === "/") {
+      } // Self-closing tag
+      else if (c === "/") {
         const capturedTag = capturedTags.at(-1);
 
         if (capturedTag) {
@@ -71,6 +72,15 @@ function parseHtmlisp(input: string): Tag[] {
     } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
       if (c === "=") {
         parsingState = PARSE_ATTRIBUTE_VALUE;
+      } // Self-closing case after all
+      else if (c === "/") {
+        const capturedTag = capturedTags.at(-1);
+
+        if (capturedTag) {
+          capturedTag.isSelfClosing = true;
+          tagName = capturedTag.name;
+          parsingState = PARSE_TAG;
+        }
       } else {
         capturedAttribute.name += c;
       }
@@ -89,12 +99,13 @@ function parseHtmlisp(input: string): Tag[] {
       }
     } else if (parsingState === PARSE_CHILDREN) {
       if (c === "<") {
-        // When < is reached, it can mean either end tag or a new child tag has been found
         parsingState = PARSE_TAG;
       } else {
         capturedBody += c;
       }
-    } else if (parsingState === PARSE_TAG) {
+    } // The challenge here is that it is not clear if the current tag is ending
+    // or whether it has children so both options have to be considered.
+    else if (parsingState === PARSE_TAG) {
       if (c === ">") {
         if (capturedTags[tagIndex].name === tagName) {
           parsingState = NOT_PARSING;
