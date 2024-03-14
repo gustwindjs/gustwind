@@ -18,7 +18,45 @@ Deno.test("basic element with a newline", async () => {
   );
 });
 
-// TODO: Add a simple sibling test
+Deno.test("basic element with siblings as children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div title="demo">
+      <span>foobar</span>
+      <span>barfoo</span>
+</div>`,
+    }),
+    `<div title="demo"><span>foobar</span><span>barfoo</span></div>`,
+  );
+});
+
+Deno.test("basic element with siblings as children 2", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div
+      title="demo"
+    >
+      <span>foobar</span>
+      <span>barfoo</span>
+</div>`,
+    }),
+    `<div title="demo"><span>foobar</span><span>barfoo</span></div>`,
+  );
+});
+
+Deno.test("basic element with siblings as children 3", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div
+      title="demo"
+    >
+      <span title="demo">foobar</span>
+      <span>barfoo</span>
+</div>`,
+    }),
+    `<div title="demo"><span title="demo">foobar</span><span>barfoo</span></div>`,
+  );
+});
 
 Deno.test("basic element with newlines and nesting", async () => {
   assertEquals(
@@ -31,7 +69,7 @@ Deno.test("basic element with newlines and nesting", async () => {
         href="#foo"
         >🔗</a
       >
-    </div>`,
+</div>`,
     }),
     `<div title="demo"><span>foobar</span><a href="#foo">🔗</a></div>`,
   );
