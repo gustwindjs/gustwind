@@ -23,7 +23,7 @@ async function astToHtml(
       return tag;
     }
 
-    const { name, attributes, children, isSelfClosing } = tag;
+    const { type, attributes, children, isSelfClosing } = tag;
     let renderedChildren = "";
 
     const parsedExpressions = await parseExpressions(
@@ -66,11 +66,11 @@ async function astToHtml(
       );
 
       // Components begin with an uppercase letter always
-      if (components && name[0].toUpperCase() === name[0]) {
-        const foundComponent = components[name];
+      if (components && type[0].toUpperCase() === type[0]) {
+        const foundComponent = components[type];
 
         const slots = await Promise.all(
-          children.filter((o) => typeof o !== "string" && o.name === "slot")
+          children.filter((o) => typeof o !== "string" && o.type === "slot")
             .map(
               async (o) =>
                 typeof o !== "string" &&
@@ -113,27 +113,26 @@ async function astToHtml(
           });
         }
 
-        throw new Error(`Component "${name}" was not found!`);
+        throw new Error(`Component "${type}" was not found!`);
       }
     }
 
     const attrs = getAttributeBindings(parsedExpressions);
     const parsedChildren = parsedExpressions.children;
 
-    if (name !== "noop" && !parsedChildren && isSelfClosing) {
-      return `<${name}${attrs}/>`;
+    if (type !== "noop" && !parsedChildren && isSelfClosing) {
+      return `<${type}${attrs}/>`;
     }
 
     const content = parsedChildren
       ? parsedChildren.concat(renderedChildren)
       : renderedChildren;
 
-    if (name === "noop" && !parsedExpressions.type) {
+    if (type === "noop" && !parsedExpressions.type) {
       return content;
     }
 
-    // TODO: Rename "name" as "type" to be consistent
-    const t = parsedExpressions.type || name;
+    const t = parsedExpressions.type || type;
 
     return `<${t}${attrs}>${content}</${t}>`;
   }))).join("");
