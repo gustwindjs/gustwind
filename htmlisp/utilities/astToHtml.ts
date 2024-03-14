@@ -11,8 +11,6 @@ async function astToHtml(
   context?: Context,
   utilities?: Utilities,
 ): Promise<string> {
-  // console.log("ast", ast);
-
   return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
       return tag;
@@ -36,8 +34,10 @@ async function astToHtml(
       return `<${name}${attrs}/>`;
     }
 
-    const content = parsedChildren ||
-      await astToHtml(children, context, utilities);
+    const renderedChildren = await astToHtml(children, context, utilities);
+    const content = parsedChildren
+      ? parsedChildren.concat(renderedChildren)
+      : renderedChildren;
 
     if (name === "noop" && !parsedExpressions.type) {
       return content;
