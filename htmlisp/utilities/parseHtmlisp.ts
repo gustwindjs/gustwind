@@ -83,7 +83,6 @@ function parseHtmlisp(input: string): Tag[] {
         capturedBody += c;
       }
     } else if (parsingState === PARSE_TAG) {
-      // TODO: Figure out where to pop capturedTags and connect to parent tag
       if (c === ">") {
         if (capturedTags[tagIndex].name === tagName) {
           console.log("adding to final tags", capturedTags);
