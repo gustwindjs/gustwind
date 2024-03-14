@@ -1,9 +1,17 @@
 import type { Tag } from "./parseHtmlisp.ts";
 
-function astToHtml(ast: Tag[]) {
-  return ast.map(({ name, attributes, children }) =>
-    `<${name}${convertAttributes(attributes)}>${children}</${name}>`
-  ).join("");
+function astToHtml(ast: (string | Tag)[]): string {
+  return ast.map((v) => {
+    if (typeof v === "string") {
+      return v;
+    }
+
+    const { name, attributes, children } = v;
+
+    return `<${name}${convertAttributes(attributes)}>${
+      astToHtml(children)
+    }</${name}>`;
+  }).join("");
 }
 
 function convertAttributes(attributes: Tag["attributes"]) {
