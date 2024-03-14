@@ -40,6 +40,26 @@ function getConverter(
       return htmlInput;
     }
 
+    const convertToHTML = getConvertToHTML(
+      {
+        ...defaultComponents,
+        ...components,
+      },
+      context || {},
+      props || {},
+      // @ts-expect-error TODO: Figure out what's wrong with this type
+      {
+        ...defaultUtilities,
+        ...utilities,
+      },
+      htmlispToHTML,
+      evaluateProps,
+    );
+
+    // TODO
+    return convertToHTML(htmlInput);
+
+    /*
     const html = htm.bind(
       getH(
         {
@@ -60,6 +80,112 @@ function getConverter(
 
     // @ts-ignore Ignore for now
     return html([htmlInput]);
+    */
+  };
+}
+/*
+const NOT_PARSING = 0;
+const PARSE_TAG_START = 1;
+const PARSE_BODY = 2;
+const PARSE_ATTRIBUTE_NAME = 3;
+const PARSE_ATTRIBUTE_VALUE = 4;
+const PARSE_TAG_END = 5;
+*/
+
+// Debug helpers
+const NOT_PARSING = "not parsing";
+const PARSE_TAG_START = "parse tag start";
+const PARSE_BODY = "parse body";
+const PARSE_ATTRIBUTE_NAME = "parse attribute name";
+const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
+const PARSE_TAG_END = "parse tag end";
+
+function getConvertToHTML(
+  components: Components,
+  context: Context,
+  props: Context,
+  utilities: Utilities,
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => string,
+  evaluateProps: boolean,
+) {
+  return function convert(input: string) {
+    const ret: string[] = [];
+    let parsingState = NOT_PARSING;
+    let quotesFound = 0;
+    let capturedTag: {
+      name: string;
+      // TODO: Generalize
+      attributeName: string;
+      attributeValue: string;
+      // TODO: Potentially add children here
+      body: string;
+    } = { name: "", attributeName: "", attributeValue: "", body: "" };
+    const capturedTags = [];
+
+    for (let i = 0; i < input.length; i++) {
+      const c = input[i];
+
+      // Debug helper
+      // console.log(parsingState, c);
+
+      if (parsingState === NOT_PARSING) {
+        if (c === "<") {
+          parsingState = PARSE_TAG_START;
+        } else if (c === ">") {
+          parsingState = PARSE_BODY;
+        }
+      } else if (parsingState === PARSE_TAG_START) {
+        if (c === ">") {
+          parsingState = PARSE_BODY;
+        } else if (c === " ") {
+          parsingState = PARSE_ATTRIBUTE_NAME;
+        } else {
+          capturedTag.name += c;
+        }
+      } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
+        if (c === "=") {
+          parsingState = PARSE_ATTRIBUTE_VALUE;
+        } else {
+          capturedTag.attributeName += c;
+        }
+      } else if (parsingState === PARSE_ATTRIBUTE_VALUE) {
+        if (c === '"') {
+          quotesFound++;
+
+          if (quotesFound === 2) {
+            parsingState = NOT_PARSING;
+            quotesFound = 0;
+          }
+        } else {
+          capturedTag.attributeValue += c;
+        }
+      } else if (parsingState === PARSE_BODY) {
+        if (c === "<") {
+          parsingState = PARSE_TAG_END;
+        } else {
+          capturedTag.body += c;
+        }
+      } else if (parsingState === PARSE_TAG_END) {
+        if (c === ">") {
+          parsingState = NOT_PARSING;
+          capturedTags.push(structuredClone(capturedTag));
+          capturedTag = {
+            name: "",
+            attributeName: "",
+            attributeValue: "",
+            body: "",
+          };
+          quotesFound = 0;
+
+          // TODO: This would be the spot to convert already most likely
+        }
+      }
+    }
+
+    // TODO: Comment - __ - potentially this could be done when committing
+    console.log(capturedTags);
+
+    return ret.join("");
   };
 }
 
