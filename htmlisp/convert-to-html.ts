@@ -24,13 +24,11 @@ const defaultComponents = {
     `<noop &type="(get props type)" &children="(render (get props values) (get props children))"></noop>`,
 };
 
-function getConverter(
-  htm: { bind: (hValue: ReturnType<typeof getH>) => string },
-) {
+function getConverter() {
   return function htmlispToHTML(
     { htmlInput, components, context, props, utilities, evaluateProps }:
       HtmllispToHTMLParameters,
-  ): string {
+  ): Promise<string> | string {
     if (!htmlInput) {
       throw new Error("convert - Missing html input");
     }
@@ -43,7 +41,7 @@ function getConverter(
       return htmlInput;
     }
 
-    const convertToHTML = getConvertToHTML(
+    return getConvertToHTML(
       {
         ...defaultComponents,
         ...components,
@@ -57,33 +55,7 @@ function getConverter(
       },
       htmlispToHTML,
       evaluateProps,
-    );
-
-    // TODO
-    return convertToHTML(htmlInput);
-
-    /*
-    const html = htm.bind(
-      getH(
-        {
-          ...defaultComponents,
-          ...components,
-        },
-        context || {},
-        props || {},
-        // @ts-expect-error TODO: Figure out what's wrong with this type
-        {
-          ...defaultUtilities,
-          ...utilities,
-        },
-        htmlispToHTML,
-        evaluateProps,
-      ),
-    );
-
-    // @ts-ignore Ignore for now
-    return html([htmlInput]);
-    */
+    )(htmlInput);
   };
 }
 
