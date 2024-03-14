@@ -11,6 +11,8 @@ async function astToHtml(
   context?: Context,
   utilities?: Utilities,
 ): Promise<string> {
+  // console.log("ast", ast);
+
   return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
       return tag;
