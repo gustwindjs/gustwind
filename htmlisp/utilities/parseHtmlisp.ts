@@ -40,7 +40,7 @@ function parseHtmlisp(input: string): Tag[] {
     const c = input[i];
 
     // Debug helper
-    console.log(parsingState, c);
+    // console.log(parsingState, c);
 
     if (parsingState === NOT_PARSING) {
       if (c === "<") {
@@ -85,13 +85,13 @@ function parseHtmlisp(input: string): Tag[] {
     } else if (parsingState === PARSE_TAG) {
       if (c === ">") {
         if (capturedTags[tagIndex].name === tagName) {
-          console.log("adding to final tags", capturedTags);
-
           parsingState = NOT_PARSING;
 
-          // TODO: Should this do something with capturedBody?
+          // TODO: Check indexing here
+          if (capturedBody) {
+            capturedTags[0].children.push(capturedBody);
+          }
 
-          // TODO: Check what to add here exactly
           finalTags.push(structuredClone(capturedTags[0]));
           capturedTags = [{
             name: "",
@@ -102,8 +102,6 @@ function parseHtmlisp(input: string): Tag[] {
           tagName = "";
           quotesFound = 0;
         } else {
-          console.log("found child tag", tagName);
-
           tagIndex++;
           capturedTags.push({
             name: tagName,
@@ -127,6 +125,7 @@ function parseHtmlisp(input: string): Tag[] {
 
             capturedTags[tagIndex].children.push(lastTag);
             parsingState = NOT_PARSING;
+            capturedBody = "";
           }
         }
       } else {
