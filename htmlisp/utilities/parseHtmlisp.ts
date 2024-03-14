@@ -10,7 +10,7 @@ const PARSE_CHILDREN_START = "parse children start";
 
 type Attribute = { name: string; value: string };
 type Tag = {
-  name: string;
+  type: string;
   attributes: Attribute[];
   children: (string | Tag)[];
   isSelfClosing?: boolean;
@@ -20,7 +20,7 @@ type Tag = {
 function parseHtmlisp(input: string): Tag[] {
   let parsingState = PARSE_TAG_START;
   let quotesFound = 0;
-  let currentTag: Tag = { name: "", attributes: [], children: [], depth: 0 };
+  let currentTag: Tag = { type: "", attributes: [], children: [], depth: 0 };
   const parentTags: Tag[] = [currentTag];
   const capturedTags: Tag[] = [currentTag];
   let capturedAttribute: Attribute = { name: "", value: "" };
@@ -53,7 +53,7 @@ function parseHtmlisp(input: string): Tag[] {
         } else if (c === "/") {
           currentTag.isSelfClosing = true;
         } else if (c !== "<") {
-          currentTag.name += c;
+          currentTag.type += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_NAME) {
         if (c === "=") {
@@ -112,7 +112,7 @@ function parseHtmlisp(input: string): Tag[] {
         } else {
           // Attach the new structure to the earlier parent
           currentTag = {
-            name: "",
+            type: "",
             attributes: [],
             children: [],
             depth: depth + 1,
