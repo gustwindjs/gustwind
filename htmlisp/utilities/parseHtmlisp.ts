@@ -32,8 +32,7 @@ function parseHtmlisp(input: string): Tag[] {
   let parsingState = PARSE_TAG_START;
   let quotesFound = 0;
   let currentTag: Tag = { name: "", attributes: [], children: [], depth: 0 };
-  // TODO: This has to become parentTags
-  let parentTag: Tag = currentTag;
+  const parentTags: Tag[] = [currentTag];
   const capturedTags: Tag[] = [currentTag];
   let capturedAttribute: Attribute = { name: "", value: "" };
   let capturedBody = "";
@@ -111,27 +110,21 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
           depth--;
+          parentTags.pop();
 
           // This is an end tag which we can safely skip
           parsingState = NOT_PARSING;
         } else {
-          depth++;
-
           // Attach the new structure to the earlier parent
-          currentTag = { name: "", attributes: [], children: [], depth };
-          parentTag.children.push(currentTag);
-
-          console.log("XDDD", depth, parentTag.depth);
-
-          // Direct sibling
-          if (depth - parentTag.depth === 1) {
-            parentTag = currentTag;
-          } // Sibling case
-          else {
-            // TODO: Set as parent of parent - this means tracking parents somehow
-            // parentTag = parentTag.parent;
-          }
-
+          currentTag = {
+            name: "",
+            attributes: [],
+            children: [],
+            depth: depth + 1,
+          };
+          parentTags[depth].children.push(currentTag);
+          parentTags.push(currentTag);
+          depth++;
           parsingState = PARSE_TAG_START;
 
           // Move back a step to capture the first character of the tag
