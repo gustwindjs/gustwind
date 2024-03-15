@@ -17,7 +17,6 @@ Deno.test("doctype and content", async () => {
         meta: { siteName: "demo" },
       },
     }),
-    `<!DOCTYPE html>
-    <div title="demo">hello</div>`,
+    `<!DOCTYPE html><div title="demo">hello</div>`,
   );
 });

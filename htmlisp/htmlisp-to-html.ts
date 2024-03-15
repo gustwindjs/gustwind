@@ -16,11 +16,6 @@ function htmlispToHTML(
     throw new Error("convert - html input was not a string");
   }
 
-  // TODO: This might be a problem - likely this should be handled internally
-  if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
-    return htmlInput;
-  }
-
   return astToHtml(
     parseHtmlisp(htmlInput),
     htmlispToHTML,

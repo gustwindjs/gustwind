@@ -65,8 +65,13 @@ async function astToHtml(
         components,
       );
 
-      // Components begin with an uppercase letter always
-      if (components && type[0].toUpperCase() === type[0]) {
+      const typeFirstLetter = type[0];
+
+      // Components begin with an uppercase letter always but not with ! or ?
+      if (
+        !["!", "?"].some((s) => s === typeFirstLetter) && components &&
+        type[0].toUpperCase() === typeFirstLetter
+      ) {
         const foundComponent = components[type];
 
         const slots = await Promise.all(

@@ -139,3 +139,5 @@ Deno.test("element with a class", async () => {
     `<div class="bar">foo</div>`,
   );
 });
+
+// TODO: Test flag style attributes that don't have values, only keys
