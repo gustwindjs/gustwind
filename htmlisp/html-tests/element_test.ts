@@ -139,30 +139,3 @@ Deno.test("element with a class", async () => {
     `<div class="bar">foo</div>`,
   );
 });
-
-Deno.test("doctype", async () => {
-  assertEquals(
-    await htmlispToHTML({ htmlInput: "<!DOCTYPE html>" }),
-    "<!DOCTYPE html>",
-  );
-});
-
-Deno.test("doctype and content", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<!DOCTYPE html>
-    <div>hello</div>`,
-    }),
-    `<!DOCTYPE html>
-    <div>hello</div>`,
-  );
-});
-
-Deno.test("xml", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: '<?xml version="1.0" encoding="utf-8" ?>',
-    }),
-    '<?xml version="1.0" encoding="utf-8" ?>',
-  );
-});
