@@ -5,34 +5,32 @@ import { astToHtml } from "./utilities/astToHtml.ts";
 import type { Utilities } from "../breezewind/types.ts";
 import type { Components, Context, HtmllispToHTMLParameters } from "./types.ts";
 
-function getConverter() {
-  return function htmlispToHTML(
-    { htmlInput, components, context, props, utilities }:
-      HtmllispToHTMLParameters,
-  ): Promise<string> | string {
-    if (!htmlInput) {
-      throw new Error("convert - Missing html input");
-    }
+function htmlispToHTML(
+  { htmlInput, components, context, props, utilities }:
+    HtmllispToHTMLParameters,
+): Promise<string> | string {
+  if (!htmlInput) {
+    throw new Error("convert - Missing html input");
+  }
 
-    if (!isString(htmlInput)) {
-      throw new Error("convert - html input was not a string");
-    }
+  if (!isString(htmlInput)) {
+    throw new Error("convert - html input was not a string");
+  }
 
-    if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
-      return htmlInput;
-    }
+  if (htmlInput.startsWith("<!") || htmlInput.startsWith("<?")) {
+    return htmlInput;
+  }
 
-    return getConvertToHTML(
-      components || {},
-      context || {},
-      props || {},
-      {
-        ...defaultUtilities,
-        ...utilities,
-      },
-      htmlispToHTML,
-    )(htmlInput);
-  };
+  return getConvertToHTML(
+    components || {},
+    context || {},
+    props || {},
+    {
+      ...defaultUtilities,
+      ...utilities,
+    },
+    htmlispToHTML,
+  )(htmlInput);
 }
 
 function getConvertToHTML(
@@ -54,4 +52,4 @@ function getConvertToHTML(
   };
 }
 
-export { getConverter };
+export { htmlispToHTML };
