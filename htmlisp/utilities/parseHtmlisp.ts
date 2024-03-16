@@ -50,6 +50,10 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_ATTRIBUTE_NAME;
         } else if (c === "/") {
           currentTag.closesWith = "/";
+        } else if (c === "!") {
+          // DOCTYPE case
+          currentTag.closesWith = "";
+          currentTag.type += c;
         } else if (c !== "<") {
           currentTag.type += c;
         }
