@@ -23,7 +23,7 @@ async function astToHtml(
       return tag;
     }
 
-    const { type, attributes, children, isSelfClosing } = tag;
+    const { type, attributes, children, closesWith } = tag;
     let renderedChildren = "";
 
     const parsedExpressions = await parseExpressions(
@@ -125,8 +125,8 @@ async function astToHtml(
     const attrs = getAttributeBindings(parsedExpressions);
     const parsedChildren = parsedExpressions.children;
 
-    if (type !== "noop" && !parsedChildren && isSelfClosing) {
-      return `<${type}${attrs}/>`;
+    if (type !== "noop" && !parsedChildren && closesWith) {
+      return `<${type}${attrs}${closesWith}>`;
     }
 
     const content = parsedChildren

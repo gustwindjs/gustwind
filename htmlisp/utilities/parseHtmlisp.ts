@@ -13,7 +13,7 @@ type Tag = {
   type: string;
   attributes: Attribute[];
   children: (string | Tag)[];
-  isSelfClosing?: boolean;
+  closesWith?: string;
   depth: number;
 };
 
@@ -43,7 +43,7 @@ function parseHtmlisp(input: string): Tag[] {
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
         } else if (c === "/") {
-          currentTag.isSelfClosing = true;
+          currentTag.closesWith = "/";
         }
       } else if (parsingState === PARSE_TAG_START) {
         if (c === ">") {
@@ -51,7 +51,7 @@ function parseHtmlisp(input: string): Tag[] {
         } else if (c === " ") {
           parsingState = PARSE_ATTRIBUTE_NAME;
         } else if (c === "/") {
-          currentTag.isSelfClosing = true;
+          currentTag.closesWith = "/";
         } else if (c !== "<") {
           currentTag.type += c;
         }
@@ -61,8 +61,12 @@ function parseHtmlisp(input: string): Tag[] {
         } // Attribute name was not found after all
         else if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
+        } // XML end case - i.e., <?xml ... ?>
+        else if (c === "?") {
+          currentTag.closesWith = "?";
+          parsingState = NOT_PARSING;
         } else if (c === "/") {
-          currentTag.isSelfClosing = true;
+          currentTag.closesWith = "/";
         } else if (c !== " ") {
           capturedAttribute.name += c;
         }
