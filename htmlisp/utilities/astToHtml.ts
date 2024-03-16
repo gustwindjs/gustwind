@@ -68,9 +68,11 @@ async function astToHtml(
       const typeFirstLetter = type[0];
 
       // Components begin with an uppercase letter always but not with ! or ?
+      // Component names aren't also fully in uppercase
       if (
         !["!", "?"].some((s) => s === typeFirstLetter) && components &&
-        type[0].toUpperCase() === typeFirstLetter
+        type[0].toUpperCase() === typeFirstLetter &&
+        !type.split("").every((t) => t.toUpperCase() === t)
       ) {
         const foundComponent = components[type];
 
@@ -125,7 +127,7 @@ async function astToHtml(
     const attrs = getAttributeBindings(parsedExpressions);
     const parsedChildren = parsedExpressions.children;
 
-    if (type !== "noop" && !parsedChildren && closesWith) {
+    if (type !== "noop" && !parsedChildren && typeof closesWith === "string") {
       return `<${type}${attrs}${closesWith}>`;
     }
 
