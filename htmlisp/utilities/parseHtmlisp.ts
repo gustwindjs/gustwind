@@ -38,10 +38,8 @@ function parseHtmlisp(input: string): Tag[] {
       if (parsingState === NOT_PARSING) {
         if (c === "<") {
           parsingState = PARSE_TAG_START;
-        } else if (c === ">") {
+        } else if (c === ">" && input[i - 1] !== "?") {
           parsingState = PARSE_CHILDREN_START;
-        } else if (c === " ") {
-          parsingState = PARSE_ATTRIBUTE_NAME;
         } else if (c === "/") {
           currentTag.closesWith = "/";
         }
@@ -63,8 +61,20 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_CHILDREN_START;
         } // XML end case - i.e., <?xml ... ?>
         else if (c === "?") {
+          // The challenge here is that in this case a new sibling node where
+          // to capture has to be created as the existing one is an orphan
+          // by definition.
           currentTag.closesWith = "?";
           parsingState = NOT_PARSING;
+          parentTags.pop();
+          currentTag = {
+            type: "",
+            attributes: [],
+            children: [],
+            depth: depth + 1,
+          };
+          capturedTags.push(currentTag);
+          parentTags.push(currentTag);
         } else if (c === "/") {
           currentTag.closesWith = "/";
         } else if (c !== " ") {
@@ -76,7 +86,7 @@ function parseHtmlisp(input: string): Tag[] {
 
           if (quotesFound === 2) {
             currentTag.attributes.push(capturedAttribute);
-            parsingState = NOT_PARSING;
+            parsingState = PARSE_ATTRIBUTE_NAME; // NOT_PARSING;
             quotesFound = 0;
             capturedAttribute = { name: "", value: "" };
           }
