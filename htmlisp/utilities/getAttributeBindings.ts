@@ -10,7 +10,7 @@ function getAttributeBindings(
   )
     .map((
       [k, v],
-    ) => `${k}="${v}"`)
+    ) => typeof v === "string" ? `${k}="${v}"` : k)
     .join(" ");
 
   if (ret.length) {

@@ -76,26 +76,27 @@ async function astToHtml(
       ) {
         const foundComponent = components[type];
 
-        const slots = await Promise.all(
-          children.filter((o) => typeof o !== "string" && o.type === "slot")
-            .map(
-              async (o) =>
-                typeof o !== "string" &&
-                ({
-                  name: o.attributes[0].value,
-                  value: await astToHtml(
-                    o.children,
-                    htmlispToHTML,
-                    context,
-                    props,
-                    utilities,
-                    components,
-                  ),
-                }),
-            ).filter(Boolean),
-        );
+        // @ts-expect-error Filter breaks the type here
+        const slots: { name: string | null; value: string | null }[] =
+          await Promise.all(
+            children.filter((o) => typeof o !== "string" && o.type === "slot")
+              .map(
+                async (o) =>
+                  typeof o !== "string" &&
+                  ({
+                    name: o.attributes[0].value,
+                    value: await astToHtml(
+                      o.children,
+                      htmlispToHTML,
+                      context,
+                      props,
+                      utilities,
+                      components,
+                    ),
+                  }),
+              ).filter(Boolean),
+          );
 
-        // @ts-expect-error This is fine
         if (!slots.every((s) => s.name)) {
           throw new Error(`Slot is missing a name!`);
         }
@@ -109,7 +110,6 @@ async function astToHtml(
               children: renderedChildren,
               ...Object.fromEntries(
                 slots.concat(attributes).map((
-                  // @ts-expect-error This is fine
                   { name, value },
                 ) => [name, value]),
               ),

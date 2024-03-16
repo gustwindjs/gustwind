@@ -23,7 +23,7 @@ async function parseExpressions(
         }
 
         // Check bindings
-        if (name.startsWith("&")) {
+        if (name.startsWith("&") && value !== null) {
           const parsedExpression = parseExpression(value);
 
           // TODO: Test this case

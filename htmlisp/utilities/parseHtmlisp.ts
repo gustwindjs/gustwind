@@ -8,7 +8,7 @@ const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
 const PARSE_TAG = "parse tag";
 const PARSE_CHILDREN_START = "parse children start";
 
-type Attribute = { name: string; value: string };
+type Attribute = { name: string; value: string | null };
 type Tag = {
   type: string;
   attributes: Attribute[];
@@ -81,7 +81,17 @@ function parseHtmlisp(input: string): Tag[] {
           parentTags.push(currentTag);
         } else if (c === "/") {
           currentTag.closesWith = "/";
-        } else if (c !== " ") {
+        } // Self-closing attribute
+        else if (c === " ") {
+          if (capturedAttribute.name) {
+            currentTag.attributes.push({
+              name: capturedAttribute.name,
+              value: null,
+            });
+            parsingState = PARSE_ATTRIBUTE_NAME;
+            capturedAttribute = { name: "", value: "" };
+          }
+        } else {
           capturedAttribute.name += c;
         }
       } else if (parsingState === PARSE_ATTRIBUTE_VALUE) {
@@ -90,7 +100,7 @@ function parseHtmlisp(input: string): Tag[] {
 
           if (quotesFound === 2) {
             currentTag.attributes.push(capturedAttribute);
-            parsingState = PARSE_ATTRIBUTE_NAME; // NOT_PARSING;
+            parsingState = PARSE_ATTRIBUTE_NAME;
             quotesFound = 0;
             capturedAttribute = { name: "", value: "" };
           }
