@@ -6,7 +6,7 @@ Deno.test("xml", async () => {
     await htmlispToHTML({
       htmlInput: '<?xml version="1.0" encoding="utf-8" ?>',
     }),
-    '<?xml version="1.0" encoding="utf-8" ?>',
+    '<?xml version="1.0" encoding="utf-8"?>',
   );
 });
 
@@ -24,7 +24,7 @@ Deno.test("xml and content", async () => {
         meta: { siteName: "demo" },
       },
     }),
-    `<?xml version="1.0" encoding="utf-8" ?>
+    `<?xml version="1.0" encoding="utf-8"?>
 <feed
 __reference="https://kevincox.ca/2022/05/06/rss-feed-best-practices/"
 xmlns="http://www.w3.org/2005/Atom"
