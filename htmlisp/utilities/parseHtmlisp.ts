@@ -62,6 +62,15 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_ATTRIBUTE_VALUE;
         } // Attribute name was not found after all
         else if (c === ">") {
+          // Note that self-closing attributes can be found at the end of a tag
+          if (capturedAttribute.name) {
+            currentTag.attributes.push({
+              name: capturedAttribute.name,
+              value: null,
+            });
+            capturedAttribute = { name: "", value: "" };
+          }
+
           parsingState = PARSE_CHILDREN_START;
         } // XML end case - i.e., <?xml ... ?>
         else if (c === "?") {
