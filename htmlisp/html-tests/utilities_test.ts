@@ -13,3 +13,18 @@ Deno.test("element with custom utilities", async () => {
     `<a href="foo/bar"/>`,
   );
 });
+
+Deno.test("element with component utilities", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput:
+        `<SiteLink &href="(urlJoin (get context href) (get context suffix))" />`,
+      componentUtilities: { SiteLink: { urlJoin } },
+      context: { href: "foo", suffix: "bar" },
+      components: {
+        SiteLink: '<a &href="(get props href)" />',
+      },
+    }),
+    `<a href="foo/bar"/>`,
+  );
+});
