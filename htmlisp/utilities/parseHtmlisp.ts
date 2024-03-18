@@ -54,6 +54,9 @@ function parseHtmlisp(input: string): Tag[] {
           // DOCTYPE case
           currentTag.closesWith = "";
           currentTag.type += c;
+        } else if (c === "?") {
+          currentTag.closesWith = "?";
+          currentTag.type += c;
         } else if (c !== "<") {
           currentTag.type += c;
         }
@@ -72,24 +75,8 @@ function parseHtmlisp(input: string): Tag[] {
           }
 
           parsingState = PARSE_CHILDREN_START;
-        } // XML end case - i.e., <?xml ... ?>
-        else if (c === "?") {
-          // The challenge here is that in this case a new sibling node where
-          // to capture has to be created as the existing one is an orphan
-          // by definition.
-          currentTag.closesWith = "?";
-          parsingState = NOT_PARSING;
-          parentTags.pop();
-          currentTag = {
-            type: "",
-            attributes: [],
-            children: [],
-            depth: depth + 1,
-          };
-          capturedTags.push(currentTag);
-          parentTags.push(currentTag);
-        } else if (c === "/") {
-          currentTag.closesWith = "/";
+        } else if (c === "?" || c === "/") {
+          currentTag.closesWith = c;
         } // Self-closing attribute
         else if (c === " ") {
           if (capturedAttribute.name) {
@@ -119,7 +106,22 @@ function parseHtmlisp(input: string): Tag[] {
       } // The only purpose of this state is to detect when there
       // is content without whitespace so children parsing logic can kick in.
       else if (parsingState === PARSE_CHILDREN_START) {
-        if (c !== " ") {
+        // DOCTYPE case
+        if (currentTag.closesWith === "" || currentTag.closesWith === "?") {
+          parentTags.pop();
+          currentTag = {
+            type: "",
+            attributes: [],
+            children: [],
+            depth: depth + 1,
+          };
+          capturedTags.push(currentTag);
+          parentTags.push(currentTag);
+          parsingState = NOT_PARSING;
+
+          // Move back a step to capture the first character when parsing
+          i--;
+        } else if (c !== " ") {
           parsingState = PARSE_CHILDREN;
 
           // Move back a step to capture the first character when parsing
