@@ -90,17 +90,17 @@ const plugin: Plugin<{
           htmlInput: layout,
           components,
           context,
-          // @ts-expect-error TODO: Check typing here
           utilities: getGlobalUtilities({
             globalUtilities,
             layoutUtilities: layoutUtilities
               ? layoutUtilities.init({ routes })
               : {},
             routes,
-          }).concat(getComponentUtilities({
+          }),
+          componentUtilities: getComponentUtilities({
             componentUtilities: options.componentUtilities,
             routes,
-          })),
+          }),
         });
       },
       onMessage: ({ message, pluginContext }) => {
