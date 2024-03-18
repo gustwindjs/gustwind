@@ -149,6 +149,12 @@ function parseHtmlisp(input: string): Tag[] {
           // This is an end tag which we can safely skip
           parsingState = NOT_PARSING;
         } else {
+          // This case should not be possible
+          if (!parentTags[depth]) {
+            console.error(parentTags, depth, currentTag, capturedTags);
+            throw new Error("Missing parent tags!");
+          }
+
           // Attach the new structure to the earlier parent
           currentTag = {
             type: "",
@@ -156,6 +162,7 @@ function parseHtmlisp(input: string): Tag[] {
             children: [],
             depth: depth + 1,
           };
+
           parentTags[depth].children.push(currentTag);
           parentTags.push(currentTag);
           depth++;
