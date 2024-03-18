@@ -1,15 +1,9 @@
 import * as path from "node:path";
-import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
-import type {
-  Components as BreezewindComponents,
-  Context,
-  Utilities,
-  Utility,
-} from "../../breezewind/types.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
+import type { Context, Utilities, Utility } from "../../breezewind/types.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
-import { attachIds } from "../../utilities/attachIds.ts";
+// import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,
@@ -24,7 +18,7 @@ const plugin: Plugin<{
   globalUtilitiesPath: string;
 }, {
   htmlLoader: ReturnType<typeof initLoader>;
-  components: Record<string, ReturnType<typeof htmlispToBreezewind>>;
+  components: Record<string, string>;
   componentUtilities: Record<string, GlobalUtilities | undefined>;
   globalUtilities: GlobalUtilities;
 }> = {
@@ -134,21 +128,23 @@ const plugin: Plugin<{
             url,
             meta: await applyUtilities<Utility, Utilities, Context>(
               context,
-              // @ts-expect-error This is fine
               defaultUtilities,
               { context },
             ),
           },
         };
       },
-      render: async ({ routes, route, context, url, send, pluginContext }) => {
+      render: ({ routes, route, context, url, pluginContext }) => {
         const { components, componentUtilities, globalUtilities } =
           pluginContext;
-        let componentsLookup = components;
+
+        // TODO: Figure out if this needs to be restored
+        /*
         const editorExists = await send("gustwind-editor-plugin", {
           type: "ping",
           payload: undefined,
         });
+
 
         if (editorExists) {
           // TODO: Consider caching this (html + xml separately) to speed things up
@@ -157,8 +153,9 @@ const plugin: Plugin<{
             componentsLookup,
           );
         }
+        */
 
-        const layout = componentsLookup[route.layout];
+        const layout = components[route.layout];
 
         if (!layout) {
           throw new Error(
@@ -168,21 +165,24 @@ const plugin: Plugin<{
 
         const layoutUtilities = componentUtilities[route.layout];
 
-        return renderComponent({
-          component: layout,
-          components: componentsLookup,
+        return htmlispToHTML({
+          htmlInput: layout,
+          components,
           context,
-          globalUtilities: getGlobalUtilities({
-            globalUtilities,
-            layoutUtilities: layoutUtilities
-              ? layoutUtilities.init({ routes })
-              : {},
-            routes,
-          }),
-          componentUtilities: getComponentUtilities({
-            componentUtilities,
-            routes,
-          }),
+          // @ts-expect-error Check types here
+          utilities: {
+            ...getGlobalUtilities({
+              globalUtilities,
+              layoutUtilities: layoutUtilities
+                ? layoutUtilities.init({ routes })
+                : {},
+              routes,
+            }),
+            ...getComponentUtilities({
+              componentUtilities,
+              routes,
+            }),
+          },
         });
       },
       onMessage: async ({ message, pluginContext }) => {
@@ -194,7 +194,7 @@ const plugin: Plugin<{
 
             switch (payload.type) {
               case "components": {
-                const components = await loadComponents(
+                const { components } = await loadComponents(
                   pluginContext.htmlLoader,
                 );
 
@@ -203,6 +203,7 @@ const plugin: Plugin<{
                   pluginContext: { components },
                 };
               }
+
               case "globalUtilities": {
                 const globalUtilities = await loadGlobalUtilities();
 
@@ -292,7 +293,6 @@ ${
 
 export { init };`;
 }
-*/
 
 function attachIdsToComponents(
   url: string,
@@ -304,5 +304,6 @@ function attachIdsToComponents(
     ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
   );
 }
+*/
 
 export { plugin };

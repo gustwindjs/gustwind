@@ -2,10 +2,5 @@
   example='<a &href="(concat / breezewind)">Link goes here</a>'
   language="html"
 >
-  <div
-    class="p-4 bg-gray-200 rounded-b-lg"
-    x="JSON.stringify(compileHTML(state.code), null, 2)"
-    &children="(get props example)"
-  ></div>
-  <div x="compileBreezewind(state.code)"></div>
+  <div x="compileHTML(state.code)"></div>
 </CodeEditor>
