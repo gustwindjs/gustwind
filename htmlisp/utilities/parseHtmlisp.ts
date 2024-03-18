@@ -19,7 +19,8 @@ type Tag = {
 
 function parseHtmlisp(input: string): Tag[] {
   let parsingState = PARSE_TAG_START;
-  let quotesFound = 0;
+  let singleQuotesFound = 0;
+  let doubleQuotesFound = 0;
   let currentTag: Tag = { type: "", attributes: [], children: [], depth: 0 };
   const parentTags: Tag[] = [currentTag];
   const capturedTags: Tag[] = [currentTag];
@@ -92,13 +93,30 @@ function parseHtmlisp(input: string): Tag[] {
         }
       } else if (parsingState === PARSE_ATTRIBUTE_VALUE) {
         if (c === '"') {
-          quotesFound++;
+          if (singleQuotesFound > 0) {
+            capturedAttribute.value += `\"`;
+          } else {
+            doubleQuotesFound++;
 
-          if (quotesFound === 2) {
-            currentTag.attributes.push(capturedAttribute);
-            parsingState = PARSE_ATTRIBUTE_NAME;
-            quotesFound = 0;
-            capturedAttribute = { name: "", value: "" };
+            if (doubleQuotesFound === 2) {
+              currentTag.attributes.push(capturedAttribute);
+              parsingState = PARSE_ATTRIBUTE_NAME;
+              doubleQuotesFound = 0;
+              capturedAttribute = { name: "", value: "" };
+            }
+          }
+        } else if (c === "'") {
+          if (doubleQuotesFound === 0) {
+            singleQuotesFound++;
+
+            if (singleQuotesFound === 2) {
+              currentTag.attributes.push(capturedAttribute);
+              parsingState = PARSE_ATTRIBUTE_NAME;
+              singleQuotesFound = 0;
+              capturedAttribute = { name: "", value: "" };
+            }
+          } else {
+            capturedAttribute.value += c;
           }
         } else {
           capturedAttribute.value += c;

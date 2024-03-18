@@ -60,15 +60,24 @@ Deno.test("element with multiple attributes", async () => {
   );
 });
 
+Deno.test("element with single quotes in an attribute", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div title="b'a'r" alt="foo">foo</div>`,
+    }),
+    `<div title="b'a'r" alt="foo">foo</div>`,
+  );
+});
+
 Deno.test("element with ' attributes", async () => {
   assertEquals(
     await htmlispToHTML({
-      htmlInput: `<CodeEditor
+      htmlInput: `<div
     example='<a &href="(concat / breezewind)">Link goes here</a>'
   >
     <div x="compileHTML(state.code)"></div>
-  </CodeEditor>`,
+  </div>`,
     }),
-    `<CodeEditor example='<a &href="(concat / breezewind)">Link goes here</a>'><div x="compileHTML(state.code)"></div></CodeEditor>`,
+    `<div example="<a &href=\"(concat / breezewind)\">Link goes here</a>"><div x="compileHTML(state.code)"></div></div>`,
   );
 });
