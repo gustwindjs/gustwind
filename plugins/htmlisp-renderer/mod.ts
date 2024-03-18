@@ -169,20 +169,17 @@ const plugin: Plugin<{
           htmlInput: layout,
           components,
           context,
-          // @ts-expect-error Check types here
-          utilities: {
-            ...getGlobalUtilities({
-              globalUtilities,
-              layoutUtilities: layoutUtilities
-                ? layoutUtilities.init({ routes })
-                : {},
-              routes,
-            }),
-            ...getComponentUtilities({
-              componentUtilities,
-              routes,
-            }),
-          },
+          utilities: getGlobalUtilities({
+            globalUtilities,
+            layoutUtilities: layoutUtilities
+              ? layoutUtilities.init({ routes })
+              : {},
+            routes,
+          }),
+          componentUtilities: getComponentUtilities({
+            componentUtilities,
+            routes,
+          }),
         });
       },
       onMessage: async ({ message, pluginContext }) => {

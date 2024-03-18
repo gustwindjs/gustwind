@@ -98,13 +98,11 @@ function getTransformMarkdown(load: LoadApi) {
             token.html = await htmlispToHTML({
               htmlInput: matchedComponent,
               components,
-              utilities: {
-                ...globalUtilities.init(),
-                ...getComponentUtilities({
-                  componentUtilities,
-                  routes: {},
-                }),
-              },
+              utilities: globalUtilities.init(),
+              componentUtilities: getComponentUtilities({
+                componentUtilities,
+                routes: {},
+              }),
             });
           } else {
             throw new Error(
