@@ -113,7 +113,7 @@ function parseHtmlisp(input: string): Tag[] {
             type: "",
             attributes: [],
             children: [],
-            depth: depth + 1,
+            depth,
           };
           capturedTags.push(currentTag);
           parentTags.push(currentTag);
