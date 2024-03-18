@@ -59,3 +59,16 @@ Deno.test("element with multiple attributes", async () => {
     `<div title="bar" alt="foo">foo</div>`,
   );
 });
+
+Deno.test("element with ' attributes", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<CodeEditor
+    example='<a &href="(concat / breezewind)">Link goes here</a>'
+  >
+    <div x="compileHTML(state.code)"></div>
+  </CodeEditor>`,
+    }),
+    `<CodeEditor example='<a &href="(concat / breezewind)">Link goes here</a>'><div x="compileHTML(state.code)"></div></CodeEditor>`,
+  );
+});
