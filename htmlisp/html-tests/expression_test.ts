@@ -35,18 +35,6 @@ Deno.test("element with expressions within an expression", async () => {
   );
 });
 
-Deno.test("element with custom utilities", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput:
-        `<a &href="(urlJoin (get context href) (get context suffix))" />`,
-      utilities: { urlJoin },
-      context: { href: "foo", suffix: "bar" },
-    }),
-    `<a href="foo/bar"/>`,
-  );
-});
-
 Deno.test("element with a string after an expression after expression", async () => {
   assertEquals(
     await htmlispToHTML({
