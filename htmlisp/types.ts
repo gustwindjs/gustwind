@@ -10,6 +10,7 @@ type HtmllispToHTMLParameters = {
   context?: Context;
   props?: Context;
   utilities?: Utilities;
+  componentUtilities?: Record<string, Utilities>;
 };
 
 export type { Attributes, Components, Context, HtmllispToHTMLParameters };

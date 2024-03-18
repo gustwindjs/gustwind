@@ -5,7 +5,7 @@ import { astToHtml } from "./utilities/astToHtml.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
 function htmlispToHTML(
-  { htmlInput, components, context, props, utilities }:
+  { htmlInput, components, context, props, utilities, componentUtilities }:
     HtmllispToHTMLParameters,
 ): Promise<string> | string {
   if (!htmlInput) {
@@ -25,6 +25,7 @@ function htmlispToHTML(
       ...defaultUtilities,
       ...utilities,
     },
+    componentUtilities,
     components || {},
   );
 }

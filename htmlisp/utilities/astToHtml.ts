@@ -10,12 +10,14 @@ import type { Utilities } from "../../breezewind/types.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
+// TODO: Derive this type from HtmllispToHTMLParameters
 async function astToHtml(
   ast: (string | Tag)[],
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
   utilities?: Utilities,
+  componentUtilities?: Record<string, Utilities>,
   components?: Components,
 ): Promise<string> {
   return (await Promise.all(ast.map(async (tag) => {
@@ -26,11 +28,23 @@ async function astToHtml(
     const { type, attributes, children, closesWith } = tag;
     let renderedChildren = "";
 
+    // Components begin with an uppercase letter always but not with ! or ?
+    // Component names aren't also fully in uppercase
+    const typeFirstLetter = type[0];
+    const isComponent = !["!", "?"].some((s) => s === typeFirstLetter) &&
+      components &&
+      type[0].toUpperCase() === typeFirstLetter &&
+      !type.split("").every((t) => t.toUpperCase() === t);
+
     const parsedExpressions = await parseExpressions(
       attributes,
       context || {},
       props || {},
-      utilities || {},
+      isComponent
+        ? { ...utilities, ...componentUtilities?.[type] }
+        : utilities
+        ? utilities
+        : {},
     );
 
     if (parsedExpressions.visibleIf === false) {
@@ -51,6 +65,7 @@ async function astToHtml(
             // @ts-expect-error This is fine
             { ...p, item: p },
             utilities,
+            componentUtilities,
             components,
           )
         ),
@@ -62,18 +77,11 @@ async function astToHtml(
         context,
         props,
         utilities,
+        componentUtilities,
         components,
       );
 
-      const typeFirstLetter = type[0];
-
-      // Components begin with an uppercase letter always but not with ! or ?
-      // Component names aren't also fully in uppercase
-      if (
-        !["!", "?"].some((s) => s === typeFirstLetter) && components &&
-        type[0].toUpperCase() === typeFirstLetter &&
-        !type.split("").every((t) => t.toUpperCase() === t)
-      ) {
+      if (isComponent) {
         const foundComponent = components[type];
 
         // @ts-expect-error Filter breaks the type here
@@ -91,6 +99,7 @@ async function astToHtml(
                       context,
                       props,
                       utilities,
+                      componentUtilities,
                       components,
                     ),
                   }),
@@ -116,7 +125,8 @@ async function astToHtml(
               ...parsedExpressions,
               props,
             },
-            utilities,
+            utilities: { ...utilities, ...componentUtilities?.[type] },
+            componentUtilities,
           });
         }
 
