@@ -1,5 +1,5 @@
 import process from "node:process";
-import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../breezewind/applyUtility.ts";
 import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../breezewind/types.ts";
@@ -7,7 +7,6 @@ import {
   getComponentUtilities,
   getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 // For edge renderer components are directly strings
@@ -69,7 +68,6 @@ const plugin: Plugin<{
             url,
             meta: await applyUtilities<Utility, Utilities, Context>(
               context,
-              // @ts-expect-error This is fine
               defaultUtilities,
               { context },
             ),
@@ -78,8 +76,7 @@ const plugin: Plugin<{
       },
       render: ({ routes, route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
-        const componentsLookup = getComponents(components);
-        const layout = componentsLookup[route.layout];
+        const layout = components[route.layout];
 
         if (!layout) {
           throw new Error(
@@ -89,21 +86,21 @@ const plugin: Plugin<{
 
         const layoutUtilities = options.componentUtilities[route.layout];
 
-        return renderComponent({
-          component: layout,
-          components: componentsLookup,
+        return htmlispToHTML({
+          htmlInput: layout,
+          components,
           context,
-          globalUtilities: getGlobalUtilities({
+          // @ts-expect-error TODO: Check typing here
+          utilities: getGlobalUtilities({
             globalUtilities,
             layoutUtilities: layoutUtilities
               ? layoutUtilities.init({ routes })
               : {},
             routes,
-          }),
-          componentUtilities: getComponentUtilities({
+          }).concat(getComponentUtilities({
             componentUtilities: options.componentUtilities,
             routes,
-          }),
+          })),
         });
       },
       onMessage: ({ message, pluginContext }) => {
@@ -144,15 +141,5 @@ const plugin: Plugin<{
     };
   },
 };
-
-function getComponents(
-  components: Components,
-) {
-  return Object.fromEntries(
-    Object.entries(components).map((
-      [k, v],
-    ) => [k, htmlispToBreezewind(v)]),
-  );
-}
 
 export { plugin };

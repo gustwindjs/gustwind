@@ -1,8 +1,7 @@
 import * as path from "node:path";
 // Note that this depends on --allow-ffi
 import sharp from "npm:sharp@0.33.0";
-import { htmlispToBreezewind } from "../../htmlisp/mod.ts";
-import breezewind from "../../breezewind/mod.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import type { Plugin } from "../../types.ts";
 
 const encoder = new TextEncoder();
@@ -18,7 +17,7 @@ const plugin: Plugin<{
   init: async (
     { options: { layout }, load, outputDirectory },
   ) => {
-    const ogLayout = htmlispToBreezewind(await load.textFile(layout));
+    const ogLayout = await load.textFile(layout);
 
     return {
       beforeEachRender: async ({ url, route, send }) => {
@@ -32,10 +31,8 @@ const plugin: Plugin<{
             payload: undefined,
           });
 
-          // TODO: Add a strict mode to breezewind to disallow empty fields
-          // as that helps catching svg issues
-          const svg = await breezewind({
-            component: ogLayout,
+          const svg = await htmlispToHTML({
+            htmlInput: ogLayout,
             // @ts-expect-error It would be better to type this somehow but this will do
             components,
             context: {

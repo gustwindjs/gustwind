@@ -1,12 +1,11 @@
 import * as path from "node:path";
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { htmlispToBreezewind } from "../htmlisp/mod.ts";
 import type { GlobalUtilities } from "../types.ts";
 
 type ParsedComponents = [
   string,
   {
-    component: ReturnType<typeof htmlispToBreezewind>;
+    component: string;
     utilities: GlobalUtilities | undefined;
   },
 ][];
@@ -29,7 +28,7 @@ const initLoader = (
     componentsPath: string,
     selection?: string[],
   ): Promise<{
-    components: Record<string, ReturnType<typeof htmlispToBreezewind>>;
+    components: Record<string, string>;
     componentUtilities: Record<string, GlobalUtilities | undefined>;
   }> => {
     const extension = ".html";
@@ -69,7 +68,7 @@ const initLoader = (
         return [
           componentName,
           {
-            component: htmlispToBreezewind(await Deno.readTextFile(p)),
+            component: await Deno.readTextFile(p),
             utilities,
           },
         ];
@@ -108,7 +107,7 @@ function loadRemoteComponents(
       return [componentName, {
         component: await fetch(
           urlJoin(componentsPath, componentName + extension),
-        ).then((res) => res.text()).then(htmlispToBreezewind),
+        ).then((res) => res.text()),
         utilities,
       }];
     }),

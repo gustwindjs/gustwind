@@ -1,6 +1,6 @@
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
-import { renderComponent } from "../../gustwind-utilities/renderComponent.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import { dir } from "../../utilities/fs.ts";
 import type { LoadApi } from "../../types.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
@@ -95,14 +95,16 @@ function getTransformMarkdown(load: LoadApi) {
           const matchedComponent = components[token.component];
 
           if (matchedComponent) {
-            token.html = await renderComponent({
-              component: matchedComponent,
+            token.html = await htmlispToHTML({
+              htmlInput: matchedComponent,
               components,
-              globalUtilities: globalUtilities.init(),
-              componentUtilities: getComponentUtilities({
-                componentUtilities,
-                routes: {},
-              }),
+              utilities: {
+                ...globalUtilities.init(),
+                ...getComponentUtilities({
+                  componentUtilities,
+                  routes: {},
+                }),
+              },
             });
           } else {
             throw new Error(
