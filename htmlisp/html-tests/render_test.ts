@@ -39,9 +39,6 @@ Deno.test("render within a component", async () => {
         SiteLink:
           `<a &href="(get props href)" &children="(render (get props children))"></a>`,
       },
-      context: {
-        button: undefined,
-      },
     }),
     `<a href="test">Foobar</a>`,
   );
@@ -54,9 +51,6 @@ Deno.test("render within a component 2", async () => {
       components: {
         SiteLink:
           `<a &href="(get props href)" &children="(render (get props children))"></a>`,
-      },
-      context: {
-        button: undefined,
       },
     }),
     `<a href="test">foobar</a>`,
