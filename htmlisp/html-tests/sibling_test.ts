@@ -43,12 +43,12 @@ Deno.test("self-closing siblings", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<head>
-  <link rel="icon" href="demo" />
-  <link rel="preload" href="demo" />
+  <link rel="icon" />
+  <link rel="preload" />
 </head>
 `,
     }),
-    `<head><link rel="icon" href="demo"/><link rel="preload" href="demo"/></head>`,
+    `<head><link rel="icon"/><link rel="preload"/></head>`,
   );
 });
 
