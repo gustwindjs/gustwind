@@ -18,7 +18,7 @@ type Tag = {
 };
 
 function parseHtmlisp(input: string): Tag[] {
-  let parsingState = PARSE_TAG_START;
+  let parsingState = NOT_PARSING;
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
   let currentTag: Tag = { type: "", attributes: [], children: [], depth: 0 };
@@ -43,6 +43,9 @@ function parseHtmlisp(input: string): Tag[] {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
           currentTag.closesWith = "/";
+        } else if (c !== " ") {
+          parsingState = PARSE_CHILDREN;
+          i--;
         }
       } else if (parsingState === PARSE_TAG_START) {
         if (c === ">") {
@@ -207,6 +210,12 @@ function parseHtmlisp(input: string): Tag[] {
         }
       }
     }
+  }
+
+  // If something remained, this is likely a fragment of text
+  // without a parent tag for example
+  if (capturedBody) {
+    currentTag.children = [capturedBody];
   }
 
   if (DEBUG) {
