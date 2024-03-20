@@ -115,3 +115,12 @@ Deno.test("element with a class", async () => {
     `<div class="bar">foo</div>`,
   );
 });
+
+Deno.test("siblings only", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div class="bar">foo</div><div class="bar">foo</div>`,
+    }),
+    `<div class="bar">foo</div><div class="bar">foo</div>`,
+  );
+});
