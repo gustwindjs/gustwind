@@ -161,30 +161,14 @@ function parseHtmlisp(input: string): Tag[] {
         if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
-          // TODO: This check is somehow critical for nested/sibling behavior
-          if (depth > 1) {
-            depth--;
-          }
+          depth--;
           parentTags.pop();
 
           // This is an end tag which we can safely skip
           parsingState = NOT_PARSING;
         } else {
-          // Sibling case
-          if (!parentTags[depth]) {
-            // Attach the new structure to the captured tags and parent tags
-            currentTag = {
-              type: "",
-              attributes: [],
-              children: [],
-              depth,
-            };
-            capturedTags.push(currentTag);
-            parentTags.push(currentTag);
-            depth--;
-            parsingState = PARSE_TAG_START;
-          } // Parent case
-          else {
+          // Parent case
+          if (parentTags[depth]) {
             // Attach the new structure to the earlier parent
             currentTag = {
               type: "",
@@ -196,6 +180,19 @@ function parseHtmlisp(input: string): Tag[] {
             parentTags[depth].children.push(currentTag);
             parentTags.push(currentTag);
             depth++;
+            parsingState = PARSE_TAG_START;
+          } // Sibling case
+          else {
+            // Attach the new structure to the captured tags and parent tags
+            currentTag = {
+              type: "",
+              attributes: [],
+              children: [],
+              depth,
+            };
+            capturedTags.push(currentTag);
+            parentTags.push(currentTag);
+            depth--;
             parsingState = PARSE_TAG_START;
           }
 
