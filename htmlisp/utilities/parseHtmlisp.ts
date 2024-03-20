@@ -1,11 +1,12 @@
 const DEBUG = 0;
 
 const NOT_PARSING = "not parsing";
+const PARSE_TAG = "parse tag";
 const PARSE_TAG_START = "parse tag start";
+const PARSE_TAG_END = "parse tag end";
 const PARSE_CHILDREN = "parse children";
 const PARSE_ATTRIBUTE_NAME = "parse attribute name";
 const PARSE_ATTRIBUTE_VALUE = "parse attribute value";
-const PARSE_TAG = "parse tag";
 const PARSE_CHILDREN_START = "parse children start";
 
 type Attribute = { name: string; value: string | null };
@@ -39,8 +40,6 @@ function parseHtmlisp(input: string): Tag[] {
       if (parsingState === NOT_PARSING) {
         if (c === "<") {
           parsingState = PARSE_TAG_START;
-        } else if (c === ">" && input[i - 1] !== "?") {
-          parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
           currentTag.closesWith = "/";
         } else if (c !== " ") {
@@ -170,7 +169,7 @@ function parseHtmlisp(input: string): Tag[] {
           parentTags.pop();
 
           // This is an end tag which we can safely skip
-          parsingState = NOT_PARSING;
+          parsingState = PARSE_TAG_END;
         } else {
           // Parent case
           if (parentTags[depth]) {
@@ -207,6 +206,14 @@ function parseHtmlisp(input: string): Tag[] {
 
           // Move back a step to capture the first character of the tag
           i--;
+        }
+      } else if (parsingState === PARSE_TAG_END) {
+        if (c === ">") {
+          if (input[i - 1] !== "?") {
+            parsingState = PARSE_CHILDREN_START;
+          } else {
+            parsingState = NOT_PARSING;
+          }
         }
       }
     }
