@@ -2,9 +2,9 @@ import {
   CAPTURE_ATTRIBUTE,
   PARSE_ATTRIBUTE_NAME,
   PARSE_ATTRIBUTE_VALUE,
-} from "./states.ts";
+} from "./modes.ts";
 
-function* parseAttributeName(c: string, value: string) {
+function* parseAttributeName(value: string, c: string) {
   if (c === "=") {
     yield { value, mode: PARSE_ATTRIBUTE_VALUE };
   } // Attribute name was not found after all
@@ -40,11 +40,11 @@ function* parseAttributeName(c: string, value: string) {
     // yield { value, mode: PARSE_ATTRIBUTE_NAME };
     yield { value, mode: CAPTURE_ATTRIBUTE };
   } else {
-    yield { value, mode: PARSE_ATTRIBUTE_NAME };
+    yield { value: value + c, mode: PARSE_ATTRIBUTE_NAME };
   }
 }
 
-function* parseAttributeValue(c: string, value: string) {
+function* parseAttributeValue(value: string, c: string) {
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
 
