@@ -1,19 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("head integration simple", async () => {
-  assertEquals(
-    await htmlispToHTML({
-      htmlInput: `<head>
-  <link rel="icon" href="demo" />
-  <link rel="preload" href="demo" />
-</head>
-`,
-    }),
-    `<head><link rel="icon" href="demo"/><link rel="preload" href="demo"/></head>`,
-  );
-});
-
 Deno.test("head integration", async () => {
   assertEquals(
     await htmlispToHTML({
