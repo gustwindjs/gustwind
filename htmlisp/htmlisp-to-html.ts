@@ -38,6 +38,7 @@ function htmlispToHTML(
     },
     componentUtilities,
     components || {},
+    [],
   );
 }
 

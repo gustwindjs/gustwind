@@ -19,6 +19,8 @@ async function astToHtml(
   utilities?: Utilities,
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
+  // Helper for debugging
+  parentAst?: (string | Tag)[],
 ): Promise<string> {
   return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
@@ -67,6 +69,8 @@ async function astToHtml(
             utilities,
             componentUtilities,
             components,
+            // Pass original ast to help with debugging
+            ast,
           )
         ),
       )).join("");
@@ -79,6 +83,8 @@ async function astToHtml(
         utilities,
         componentUtilities,
         components,
+        // Pass original ast to help with debugging
+        ast,
       );
 
       if (isComponent) {
@@ -101,6 +107,8 @@ async function astToHtml(
                       utilities,
                       componentUtilities,
                       components,
+                      // Pass original ast to help with debugging
+                      ast,
                     ),
                   }),
               ).filter(Boolean),
@@ -130,6 +138,7 @@ async function astToHtml(
           });
         }
 
+        console.error({ parentAst, ast });
         throw new Error(`Component "${type}" was not found!`);
       }
     }
