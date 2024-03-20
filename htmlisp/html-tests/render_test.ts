@@ -30,3 +30,35 @@ Deno.test("component with undefined render", async () => {
     `<div></div>`,
   );
 });
+
+Deno.test("render within a component", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<SiteLink href="test">Foobar</SiteLink>`,
+      components: {
+        SiteLink:
+          `<a &href="(get props href)" &children="(render (get props children))"></a>`,
+      },
+      context: {
+        button: undefined,
+      },
+    }),
+    `<a href="test">Foobar</a>`,
+  );
+});
+
+Deno.test("render within a component 2", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<SiteLink href="test">foobar</SiteLink>`,
+      components: {
+        SiteLink:
+          `<a &href="(get props href)" &children="(render (get props children))"></a>`,
+      },
+      context: {
+        button: undefined,
+      },
+    }),
+    `<a href="test">foobar</a>`,
+  );
+});
