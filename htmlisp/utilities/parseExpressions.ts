@@ -26,7 +26,6 @@ async function parseExpressions(
         if (name.startsWith("&") && value !== null) {
           const parsedExpression = parseExpression(value);
 
-          // TODO: Test this case
           if (!parsedExpression) {
             throw new Error(`Failed to parse ${value} for attribute ${name}!`);
           }

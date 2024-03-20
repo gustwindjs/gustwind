@@ -9,7 +9,7 @@ Deno.test("component with render", async () => {
         Button: '<button &children="(get props children)"></button>',
       },
       context: {
-        button: '<Button &children="demo" />',
+        button: '<Button children="demo" />',
       },
     }),
     `<div><button>demo</button></div>`,
