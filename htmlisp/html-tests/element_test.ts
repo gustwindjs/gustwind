@@ -124,3 +124,13 @@ Deno.test("siblings only", async () => {
     `<div class="bar">foo</div><div class="bar">foo</div>`,
   );
 });
+
+Deno.test("siblings only with children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput:
+        `<div class="bar"><span>foo</span></div><div class="bar"><span>foo</span></div>`,
+    }),
+    `<div class="bar"><span>foo</span></div><div class="bar"><span>foo</span></div>`,
+  );
+});
