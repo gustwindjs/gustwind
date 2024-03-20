@@ -117,3 +117,64 @@ Deno.test("attribute binding to children within slots", async () => {
     `<div><main><div>demo</div></main></div>`,
   );
 });
+
+Deno.test("components through slots", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
+        <slot name="content">
+          <SiteLink href="modes">Modes</SiteLink>
+        </slot>
+      </BaseLayout>
+    `,
+      components: {
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
+        SiteLink:
+          '<a &href="(get props href)" &children="(get props children)"></a>',
+      },
+    }),
+    `<div><main><a href="modes">Modes</a></main></div>`,
+  );
+});
+
+Deno.test("complex components through slots", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
+        <slot name="content">
+          <Navigation />
+        </slot>
+      </BaseLayout>
+    `,
+      components: {
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
+        Navigation: '<SiteLink href="modes">Modes</SiteLink>',
+        SiteLink:
+          '<a &href="(get props href)" &children="(get props children)"></a>',
+      },
+    }),
+    `<div><main><a href="modes">Modes</a></main></div>`,
+  );
+});
+
+Deno.test("complex components within elements through slots", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<BaseLayout>
+        <slot name="content">
+          <div>
+            <Navigation />
+          </div>
+        </slot>
+      </BaseLayout>
+    `,
+      components: {
+        BaseLayout: `<div><main &children="(get props content)" /></div>`,
+        Navigation: '<SiteLink href="modes">Modes</SiteLink>',
+        SiteLink:
+          '<a &href="(get props href)" &children="(get props children)"></a>',
+      },
+    }),
+    `<div><main><div><a href="modes">Modes</a></div></main></div>`,
+  );
+});
