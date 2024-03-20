@@ -157,7 +157,7 @@ Deno.test("complex components through slots", async () => {
   );
 });
 
-Deno.test("complex components within elements through slots", async () => {
+Deno.test("complex components containing siblings within elements through slots", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<BaseLayout>
@@ -170,11 +170,12 @@ Deno.test("complex components within elements through slots", async () => {
     `,
       components: {
         BaseLayout: `<div><main &children="(get props content)" /></div>`,
-        Navigation: '<SiteLink href="modes">Modes</SiteLink>',
+        Navigation:
+          '<SiteLink href="modes">Modes</SiteLink><SiteLink href="documentation">Documentation</SiteLink>',
         SiteLink:
           '<a &href="(get props href)" &children="(get props children)"></a>',
       },
     }),
-    `<div><main><div><a href="modes">Modes</a></div></main></div>`,
+    `<div><main><div><a href="modes">Modes</a><a href="documentation">Documentation</a></div></main></div>`,
   );
 });
