@@ -15,3 +15,18 @@ Deno.test("component with render", async () => {
     `<div><button>demo</button></div>`,
   );
 });
+
+Deno.test("component with undefined render", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &children="(render (get context button))"></div>`,
+      components: {
+        Button: "<div></div>",
+      },
+      context: {
+        button: undefined,
+      },
+    }),
+    `<div></div>`,
+  );
+});
