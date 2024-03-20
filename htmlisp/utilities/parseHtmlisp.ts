@@ -161,30 +161,43 @@ function parseHtmlisp(input: string): Tag[] {
         if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
-          depth--;
+          // TODO: This check is somehow critical for nested/sibling behavior
+          if (depth > 1) {
+            depth--;
+          }
           parentTags.pop();
 
           // This is an end tag which we can safely skip
           parsingState = NOT_PARSING;
         } else {
-          // This case should not be possible
+          // Sibling case
           if (!parentTags[depth]) {
-            console.error(parentTags, depth, currentTag, capturedTags);
-            throw new Error("Missing parent tags!");
+            // Attach the new structure to the captured tags and parent tags
+            currentTag = {
+              type: "",
+              attributes: [],
+              children: [],
+              depth,
+            };
+            capturedTags.push(currentTag);
+            parentTags.push(currentTag);
+            depth--;
+            parsingState = PARSE_TAG_START;
+          } // Parent case
+          else {
+            // Attach the new structure to the earlier parent
+            currentTag = {
+              type: "",
+              attributes: [],
+              children: [],
+              depth: depth + 1,
+            };
+
+            parentTags[depth].children.push(currentTag);
+            parentTags.push(currentTag);
+            depth++;
+            parsingState = PARSE_TAG_START;
           }
-
-          // Attach the new structure to the earlier parent
-          currentTag = {
-            type: "",
-            attributes: [],
-            children: [],
-            depth: depth + 1,
-          };
-
-          parentTags[depth].children.push(currentTag);
-          parentTags.push(currentTag);
-          depth++;
-          parsingState = PARSE_TAG_START;
 
           // Move back a step to capture the first character of the tag
           i--;
