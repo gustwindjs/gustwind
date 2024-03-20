@@ -16,6 +16,20 @@ Deno.test("basic component", async () => {
   );
 });
 
+Deno.test("basic component 2", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<SiteLink href="modes">Modes</SiteLink>
+<SiteLink href="configuration">Configuration</SiteLink>`,
+      components: {
+        SiteLink:
+          '<a &href="(get props href)" &children="(get props children)"></a>',
+      },
+    }),
+    `<a href="modes">Modes</a><a href="configuration">Configuration</a>`,
+  );
+});
+
 Deno.test("throws if a component is not found", () => {
   assertRejects(
     async () => await htmlispToHTML({ htmlInput: "<Button>foo</Button>" }),
