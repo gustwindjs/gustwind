@@ -161,7 +161,9 @@ function parseHtmlisp(input: string): Tag[] {
         if (c === ">") {
           parsingState = PARSE_CHILDREN_START;
         } else if (c === "/") {
-          depth--;
+          if (depth > 0) {
+            depth--;
+          }
           parentTags.pop();
 
           // This is an end tag which we can safely skip
@@ -192,7 +194,11 @@ function parseHtmlisp(input: string): Tag[] {
             };
             capturedTags.push(currentTag);
             parentTags.push(currentTag);
-            depth--;
+
+            if (depth > 0) {
+              depth--;
+            }
+
             parsingState = PARSE_TAG_START;
           }
 
