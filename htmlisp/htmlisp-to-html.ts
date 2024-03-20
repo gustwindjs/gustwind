@@ -23,14 +23,16 @@ function htmlispToHTML(
     props,
     {
       render: (htmlInput: string) =>
-        htmlispToHTML({
-          htmlInput,
-          components,
-          context,
-          props,
-          utilities,
-          componentUtilities,
-        }),
+        htmlInput
+          ? htmlispToHTML({
+            htmlInput,
+            components,
+            context,
+            props,
+            utilities,
+            componentUtilities,
+          })
+          : "",
       ...defaultUtilities,
       ...utilities,
     },
