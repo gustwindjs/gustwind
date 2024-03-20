@@ -35,7 +35,7 @@ async function astToHtml(
     const typeFirstLetter = type[0];
     const isComponent = !["!", "?"].some((s) => s === typeFirstLetter) &&
       components &&
-      type[0].toUpperCase() === typeFirstLetter &&
+      type[0]?.toUpperCase() === typeFirstLetter &&
       !type.split("").every((t) => t.toUpperCase() === t);
 
     const parsedExpressions = await parseExpressions(
@@ -160,7 +160,11 @@ async function astToHtml(
 
     const t = parsedExpressions.type || type;
 
-    return `<${t}${attrs}>${content}</${t}>`;
+    if (t) {
+      return `<${t}${attrs}>${content}</${t}>`;
+    }
+
+    return content;
   }))).join("");
 }
 
