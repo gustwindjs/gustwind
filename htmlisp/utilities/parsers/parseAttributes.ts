@@ -9,13 +9,13 @@ function parseAttributes(getCharacter: CharacterGenerator) {
 
     if (k) {
       attributes[k] = v;
+    } else {
+      break;
     }
 
     const current = getCharacter.next();
 
     if (!current) {
-      getCharacter.previous();
-
       break;
     }
   }

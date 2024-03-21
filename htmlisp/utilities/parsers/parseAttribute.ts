@@ -41,10 +41,9 @@ function parseAttribute(
 
 function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
-
   let c = getCharacter.next();
 
-  if (c === "/") {
+  if (c === "/" || c === "<") {
     return attributeName;
   }
 
