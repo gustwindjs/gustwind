@@ -2,30 +2,35 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseTag } from "./parseTag.ts";
 import { asGenerator } from "./utils.ts";
 
-// TODO: Probably this should be able to parse pure content without tags as well
+Deno.test("content", () => {
+  assertEquals(
+    parseTag(asGenerator(`foobar`)()),
+    [{ type: "", children: ["foobar"] }],
+  );
+});
 
 Deno.test("self-closing parse tag", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar" />`)()),
-    { type: "a", attributes: { href: "test", title: "foobar" } },
+    [{ type: "a", attributes: { href: "test", title: "foobar" } }],
   );
 });
 
 Deno.test("parse tag", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
-    { type: "a", attributes: { href: "test", title: "foobar" } },
+    [{ type: "a", attributes: { href: "test", title: "foobar" } }],
   );
 });
 
 Deno.test("parse tag with content", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar">barfoo</a>`)()),
-    {
+    [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
       children: ["foobar"],
-    },
+    }],
   );
 });
 
@@ -34,15 +39,83 @@ Deno.test("parse tag with another tag", () => {
     parseTag(
       asGenerator(`<a href="test" title="foobar"><span>barfoo</span></a>`)(),
     ),
-    {
+    [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
       children: [{
         type: "span",
         children: ["barfoo"],
       }],
-    },
+    }],
   );
 });
 
-// TODO: Siblings, closesWith cases
+Deno.test("self-closing siblings", () => {
+  assertEquals(
+    parseTag(
+      asGenerator(
+        `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
+      )(),
+    ),
+    [{ type: "a", attributes: { href: "test", title: "foobar" } }, {
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+    }],
+  );
+});
+
+Deno.test("sibling tags", () => {
+  assertEquals(
+    parseTag(
+      asGenerator(
+        `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
+      )(),
+    ),
+    [{
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+      children: ["foo"],
+    }, {
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+      children: ["bar"],
+    }],
+  );
+});
+
+Deno.test("doctype", () => {
+  assertEquals(
+    parseTag(
+      asGenerator(
+        `<!DOCTYPE html>
+        <a href="test" title="foobar" /><a href="test" title="foobar" />`,
+      )(),
+    ),
+    [{
+      type: "!DOCTYPE",
+      attributes: { html: null },
+      closesWith: "",
+    }, {
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+    }, {
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+    }],
+  );
+});
+
+Deno.test("xml", () => {
+  assertEquals(
+    parseTag(
+      asGenerator(
+        `<?xml version="1.0" encoding="utf-8" ?>`,
+      )(),
+    ),
+    [{
+      type: "?xml",
+      attributes: { version: "1.0", encoding: "utf-8" },
+      closesWith: "?",
+    }],
+  );
+});
