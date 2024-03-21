@@ -14,6 +14,9 @@ function asGenerator(s: string) {
     let i = 0;
 
     return {
+      current() {
+        return s[i];
+      },
       next() {
         if (i > s.length - 1) {
           return null;

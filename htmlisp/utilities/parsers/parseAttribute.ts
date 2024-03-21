@@ -18,7 +18,15 @@ function parseAttribute(
       attributeName = parseAttributeName(getCharacter);
 
       if (attributeName) {
-        state = STATES.PARSE_ATTRIBUTE_VALUE;
+        const c = getCharacter.current();
+
+        if (c === " ") {
+          break;
+        } else {
+          getCharacter.next();
+
+          state = STATES.PARSE_ATTRIBUTE_VALUE;
+        }
       } else {
         break;
       }
@@ -35,8 +43,15 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
 
   let c = getCharacter.next();
+
+  if (c === "/") {
+    return attributeName;
+  }
+
   while (c) {
     if (c === "=" || c === "/" || c === "?" || c === " ") {
+      getCharacter.previous();
+
       return attributeName;
     }
 
