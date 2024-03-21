@@ -9,21 +9,44 @@ const STATES = {
 function parseAttribute(
   getCharacter: CharacterGenerator,
 ): Attributes {
-  const { value } = getCharacter.next();
+  // const { value, done } = getCharacter.next();
   let state = STATES.PARSE_ATTRIBUTE_NAME;
+  let attributeName = "";
+  let attributeValue = null;
 
-  // TODO: The logic here should be able to parse a single attribute and
-  // return it as an object
-  console.log(value);
+  // TODO: Maybe this needs to be captured into a helper function
+  //let result = getCharacter.next();
+  while (true /*!result.done*/) {
+    if (state === STATES.PARSE_ATTRIBUTE_NAME) {
+      // TODO: Run parseAttributeName now and capture return value + state
+      // Most likely it should receive the generator and use it to figure out
+      // the name
+      attributeName = parseAttributeName(getCharacter);
+      state = STATES.PARSE_ATTRIBUTE_VALUE;
+    } else if (state === STATES.PARSE_ATTRIBUTE_VALUE) {
+      // TODO
+      attributeValue = parseAttributeValue(getCharacter);
+    }
+
+    // result = getCharacter.next();
+
+    // TODO: Termination state
+    break;
+  }
+
+  // TODO: To rewind, pass { rewind: true } to next() as a parameter
 
   // 1. Parse attribute name
+  /*
   if (value === "=") {
+    // TODO
   } // Self-closing case
   else if (value === "/") {
     // TODO: Rewind and return
   } else if (value === " ") {
     // Ok,done
   }
+  */
 
   // If parsing name ended with =, parse value as well
   // 2. Parse attribute value
@@ -31,16 +54,20 @@ function parseAttribute(
 
   // TODO: This should return once end state has been reached
   // TODO: This should also be able to rewind getCharacter for special cases (non-whitespace as a terminator)
-  return { href: "test" };
+  return { [attributeName]: attributeValue };
 }
 
-function* parseAttributeName(value: string, c: string) {
+function parseAttributeName(getCharacter: CharacterGenerator) {
+  // TODO: Parse name until terminating
+  return "href";
+
+  /*
   if (c === "=") {
     yield { value, mode: STATES.PARSE_ATTRIBUTE_VALUE };
   } // Attribute name was not found after all
   else if (c === ">") {
     // Note that self-closing attributes can be found at the end of a tag
-    /*if (capturedAttribute.name) {
+    if (capturedAttribute.name) {
       currentTag.attributes.push({
         name: capturedAttribute.name,
         value: null,
@@ -49,14 +76,12 @@ function* parseAttributeName(value: string, c: string) {
     }
 
     parsingState = PARSE_CHILDREN_START;
-    */
     yield { value, state: STATES.CAPTURE_ATTRIBUTE };
   } else if (c === "?" || c === "/") {
     // TODO: Figure out how to model this case -> push to another parser?
     // currentTag.closesWith = c;
   } // Self-closing attribute
   else if (c === " ") {
-    /*
     if (capturedAttribute.name) {
       currentTag.attributes.push({
         name: capturedAttribute.name,
@@ -64,7 +89,7 @@ function* parseAttributeName(value: string, c: string) {
       });
       parsingState = PARSE_ATTRIBUTE_NAME;
       capturedAttribute = { name: "", value: "" };
-    }*/
+    }
 
     // TODO: Capture attribute name now, no value in this case
     // yield { value, mode: PARSE_ATTRIBUTE_NAME };
@@ -72,9 +97,12 @@ function* parseAttributeName(value: string, c: string) {
   } else {
     yield { value: value + c, state: STATES.PARSE_ATTRIBUTE_NAME };
   }
+  */
 }
 
-function* parseAttributeValue(value: string, c: string) {
+function parseAttributeValue(getCharacter: CharacterGenerator) {
+  return "test";
+  /*
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
 
@@ -108,6 +136,7 @@ function* parseAttributeValue(value: string, c: string) {
   } else {
     yield { value: value + c, state: STATES.PARSE_ATTRIBUTE_VALUE };
   }
+  */
 }
 
 export { parseAttribute, parseAttributeName, parseAttributeValue };
