@@ -29,6 +29,8 @@ function parseAttribute(
   // 2. Parse attribute value
   // 3. Repeat the process until all attributes are clear
 
+  // TODO: This should return once end state has been reached
+  // TODO: This should also be able to rewind getCharacter for special cases (non-whitespace as a terminator)
   return { href: "test" };
 }
 
