@@ -1,31 +1,24 @@
-import * as states from "./states.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseAttributeName, parseAttributeValue } from "./parseAttribute.ts";
+import { parseAttribute, parseAttributes } from "./parseAttribute.ts";
 
-Deno.test("parse attribute name", () => {
+Deno.test("parse attributes", () => {
   assertEquals(
-    parseAttributeName("woo", "f").next().value,
-    { value: "woof", state: states.PARSE_ATTRIBUTE_NAME },
+    parseAttributes(asGenerator(`href="test" title="foobar"`)()),
+    { href: "test", title: "foobar" },
   );
 });
 
-Deno.test("parse attribute equals", () => {
+Deno.test("parse attribute", () => {
   assertEquals(
-    parseAttributeName("woo", "=").next().value,
-    { value: "woo", state: states.PARSE_ATTRIBUTE_VALUE },
+    parseAttribute(asGenerator(`href="test"`)()),
+    { href: "test" },
   );
 });
 
-Deno.test("parse attribute whitespace", () => {
-  assertEquals(
-    parseAttributeName("woo", " ").next().value,
-    { value: "woo", state: states.CAPTURE_ATTRIBUTE },
-  );
-});
-
-Deno.test("parse attribute value", () => {
-  assertEquals(
-    parseAttributeValue("woo", "f").next().value,
-    { value: "woof", state: states.PARSE_ATTRIBUTE_VALUE },
-  );
-});
+function asGenerator(s: string) {
+  return function* getCharacter() {
+    for (let i = 0; i < s.length; i++) {
+      yield s[i];
+    }
+  };
+}

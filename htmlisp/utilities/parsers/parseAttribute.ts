@@ -1,5 +1,24 @@
 import * as states from "./states.ts";
 
+type CharacterGenerator = Generator<string, void, unknown>;
+
+// TODO: Add parseAttributes (a generalization of parseAttribute that can handle many)
+function parseAttributes(getCharacter: CharacterGenerator) {
+  // TODO: The logic here should be able to parse multiple attributes
+
+  return { href: "test", title: "foobar" };
+}
+
+function parseAttribute(getCharacter: CharacterGenerator) {
+  const c = getCharacter.next();
+
+  // TODO: The logic here should be able to parse a single attribute and
+  // return it as an object
+  console.log(c);
+
+  return { href: "test" };
+}
+
 function* parseAttributeName(value: string, c: string) {
   if (c === "=") {
     yield { value, mode: states.PARSE_ATTRIBUTE_VALUE };
@@ -76,4 +95,9 @@ function* parseAttributeValue(value: string, c: string) {
   }
 }
 
-export { parseAttributeName, parseAttributeValue };
+export {
+  parseAttribute,
+  parseAttributeName,
+  parseAttributes,
+  parseAttributeValue,
+};
