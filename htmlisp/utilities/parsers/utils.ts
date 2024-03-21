@@ -1,7 +1,16 @@
 function asGenerator(s: string) {
-  return function* getCharacter() {
+  return function* getCharacter(): Generator<
+    string,
+    void,
+    { previous: boolean } | undefined
+  > {
     for (let i = 0; i < s.length; i++) {
-      yield s[i];
+      // https://stackoverflow.com/questions/23848113/is-it-possible-to-reset-an-ecmascript-6-generator-to-its-initial-state
+      const o = yield s[i];
+
+      if (o?.previous) {
+        i--;
+      }
     }
   };
 }

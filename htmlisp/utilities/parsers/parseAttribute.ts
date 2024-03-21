@@ -16,7 +16,12 @@ function parseAttribute(
   while (true) {
     if (state === STATES.PARSE_ATTRIBUTE_NAME) {
       attributeName = parseAttributeName(getCharacter);
-      state = STATES.PARSE_ATTRIBUTE_VALUE;
+
+      if (attributeName) {
+        state = STATES.PARSE_ATTRIBUTE_VALUE;
+      } else {
+        break;
+      }
     } else if (state === STATES.PARSE_ATTRIBUTE_VALUE) {
       attributeValue = parseAttributeValue(getCharacter) || null;
       break;

@@ -46,24 +46,32 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       const [k, v] = parseAttribute(getCharacter);
 
-      attributes[k] = v;
+      if (k) {
+        attributes[k] = v;
+      }
 
-      break;
-
-      // TODO: Take a peek at the last character and figure out what to do next
       const c = getCharacter.next({ previous: true });
+      getCharacter.next();
 
-      if (c === " ") {
+      if (c.value === '"' || c.value === "'") {
+        // Keep on parsing attributes
+      } else {
+        break;
+      }
+
+      /*
+      if (c.value === " ") {
         // Keep parsing attributes
-      } else if (c === ">") {
+      } else if (c.value === ">") {
         // Parse children
       } else {
-        // Self-closing caes
+        // Self-closing case
 
         tag.closesWith = c;
 
         return tag;
       }
+      */
     } else if (state === STATES.PARSE_CHILDREN) {
       // TODO
       break;
