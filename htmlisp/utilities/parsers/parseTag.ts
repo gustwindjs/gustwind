@@ -1,8 +1,10 @@
 import * as states from "./states.ts";
 import { parseAttribute } from "./parseAttribute.ts";
-import type { CharacterGenerator } from "./types.ts";
+import type { Attributes, CharacterGenerator } from "./types.ts";
 
-function parseTag(getCharacter: CharacterGenerator) {
+function parseTag(
+  getCharacter: CharacterGenerator,
+): { type: string; attributes: Attributes } {
   const c = getCharacter.next();
 
   // TODO: The logic here should be able to parse a tag and use
