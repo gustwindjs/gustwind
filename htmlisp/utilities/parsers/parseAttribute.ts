@@ -35,9 +35,9 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
 
     if (c === "=" || c === "/" || c === "?" || c === " ") {
       return attributeName;
-    } else {
-      attributeName += c;
     }
+
+    attributeName += c;
 
     result = getCharacter.next();
   }
