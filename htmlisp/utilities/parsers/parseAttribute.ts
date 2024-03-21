@@ -9,51 +9,20 @@ const STATES = {
 function parseAttribute(
   getCharacter: CharacterGenerator,
 ): Attributes {
-  // const { value, done } = getCharacter.next();
   let state = STATES.PARSE_ATTRIBUTE_NAME;
   let attributeName = "";
   let attributeValue = null;
 
-  // TODO: Maybe this needs to be captured into a helper function
-  //let result = getCharacter.next();
-  while (true /*!result.done*/) {
+  while (true) {
     if (state === STATES.PARSE_ATTRIBUTE_NAME) {
-      // TODO: Run parseAttributeName now and capture return value + state
-      // Most likely it should receive the generator and use it to figure out
-      // the name
       attributeName = parseAttributeName(getCharacter);
       state = STATES.PARSE_ATTRIBUTE_VALUE;
     } else if (state === STATES.PARSE_ATTRIBUTE_VALUE) {
-      // TODO
-      attributeValue = parseAttributeValue(getCharacter);
+      attributeValue = parseAttributeValue(getCharacter) || null;
+      break;
     }
-
-    // result = getCharacter.next();
-
-    // TODO: Termination state
-    break;
   }
 
-  // TODO: To rewind, pass { rewind: true } to next() as a parameter
-
-  // 1. Parse attribute name
-  /*
-  if (value === "=") {
-    // TODO
-  } // Self-closing case
-  else if (value === "/") {
-    // TODO: Rewind and return
-  } else if (value === " ") {
-    // Ok,done
-  }
-  */
-
-  // If parsing name ended with =, parse value as well
-  // 2. Parse attribute value
-  // 3. Repeat the process until all attributes are clear
-
-  // TODO: This should return once end state has been reached
-  // TODO: This should also be able to rewind getCharacter for special cases (non-whitespace as a terminator)
   return { [attributeName]: attributeValue };
 }
 
@@ -64,7 +33,7 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
   while (!result.done) {
     const c = result.value;
 
-    if (c === "=" || c === "/" || c === "?") {
+    if (c === "=" || c === "/" || c === "?" || c === " ") {
       return attributeName;
     } else {
       attributeName += c;
@@ -77,42 +46,43 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
 }
 
 function parseAttributeValue(getCharacter: CharacterGenerator) {
-  return "test";
-  /*
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
+  let attributeValue = "";
 
-  if (c === '"') {
-    if (singleQuotesFound > 0) {
-      // Escape "'s in single quote mode
-      yield { value: value + `\"`, state: STATES.PARSE_ATTRIBUTE_VALUE };
-    } else {
-      doubleQuotesFound++;
+  let result = getCharacter.next();
+  while (!result.done) {
+    const c = result.value;
 
-      if (doubleQuotesFound === 2) {
-        doubleQuotesFound = 0;
-        singleQuotesFound = 0;
+    if (c === '"') {
+      if (singleQuotesFound > 0) {
+        // Escape "'s in single quote mode
+        attributeValue += `\"`;
+      } else {
+        doubleQuotesFound++;
 
-        yield { value, state: STATES.PARSE_ATTRIBUTE_NAME };
+        if (doubleQuotesFound === 2) {
+          return attributeValue;
+        }
       }
-    }
-  } else if (c === "'") {
-    if (doubleQuotesFound === 0) {
-      singleQuotesFound++;
+    } else if (c === "'") {
+      if (doubleQuotesFound === 0) {
+        singleQuotesFound++;
 
-      if (singleQuotesFound === 2) {
-        doubleQuotesFound = 0;
-        singleQuotesFound = 0;
-
-        yield { value, state: STATES.PARSE_ATTRIBUTE_VALUE };
+        if (singleQuotesFound === 2) {
+          return attributeValue;
+        }
+      } else {
+        attributeValue += c;
       }
     } else {
-      yield { value: value + c, state: STATES.PARSE_ATTRIBUTE_VALUE };
+      attributeValue += c;
     }
-  } else {
-    yield { value: value + c, state: STATES.PARSE_ATTRIBUTE_VALUE };
+
+    result = getCharacter.next();
   }
-  */
+
+  return attributeValue;
 }
 
-export { parseAttribute, parseAttributeName, parseAttributeValue };
+export { parseAttribute };

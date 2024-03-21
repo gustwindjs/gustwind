@@ -2,6 +2,8 @@ import * as states from "./states.ts";
 import { parseAttribute } from "./parseAttribute.ts";
 import type { Attributes, CharacterGenerator } from "./types.ts";
 
+// TODO: After parsing an attribute, rollback and check the character here
+// TODO: To rewind, pass { rewind: true } to next() as a parameter
 function parseTag(
   getCharacter: CharacterGenerator,
 ): { type: string; attributes: Attributes } {
