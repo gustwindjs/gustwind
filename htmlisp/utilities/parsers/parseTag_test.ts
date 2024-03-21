@@ -12,14 +12,14 @@ Deno.test("content", () => {
 Deno.test("self-closing tag", () => {
   assertEquals(
     parseTag(asGenerator(`<a />`)()),
-    [{ type: "a", attributes: {}, children: null }],
+    [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
 Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" />`)()),
-    [{ type: "a", attributes: { href: "test" }, children: null }],
+    [{ type: "a", attributes: { href: "test" }, children: [] }],
   );
 });
 
@@ -29,7 +29,7 @@ Deno.test("self-closing tag with attributes", () => {
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
-      children: null,
+      children: [],
     }],
   );
 });
@@ -40,7 +40,7 @@ Deno.test("parse tag", () => {
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
-      children: null,
+      children: [],
     }],
   );
 });
@@ -51,7 +51,7 @@ Deno.test("parse tag with content", () => {
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
-      children: ["foobar"],
+      children: [{ type: "", attributes: {}, children: ["barfoo"] }],
     }],
   );
 });
@@ -66,7 +66,7 @@ Deno.test("parse tag with another tag", () => {
       attributes: { href: "test", title: "foobar" },
       children: [{
         type: "span",
-        children: ["barfoo"],
+        children: [{ type: "", attributes: {}, children: ["barfoo"] }],
       }],
     }],
   );
@@ -79,10 +79,18 @@ Deno.test("self-closing siblings", () => {
         `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
       )(),
     ),
-    [{ type: "a", attributes: { href: "test", title: "foobar" } }, {
-      type: "a",
-      attributes: { href: "test", title: "foobar" },
-    }],
+    [
+      {
+        type: "a",
+        attributes: { href: "test", title: "foobar" },
+        children: [],
+      },
+      {
+        type: "a",
+        attributes: { href: "test", title: "foobar" },
+        children: [],
+      },
+    ],
   );
 });
 

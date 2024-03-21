@@ -13,7 +13,7 @@ const STATES = {
 type Tag = {
   type: string;
   attributes?: Attributes;
-  children: (string | Tag)[] | null;
+  children: (string | Tag)[];
   closesWith?: string;
 };
 
@@ -21,8 +21,10 @@ type Tag = {
 // TODO: To rewind, pass { rewind: true } to next() as a parameter
 function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let state = STATES.IDLE;
+  // TODO: Maybe this needs to become a Tag directly
   let type = "";
   let content = "";
+  const children: (string | Tag)[] = [];
   const attributes: Attributes = {};
 
   while (true) {
@@ -33,8 +35,14 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
         // No-op
       } else if (c.value === "<") {
         state = STATES.PARSE_TAG_NAME;
-      } else if (c.value) {
-        content += c.value;
+      } // Found content
+      else if (c.value) {
+        console.log("FFFF", c.value);
+
+        // TODO: Replace with .previous()
+        getCharacter.next({ previous: true });
+
+        state = STATES.PARSE_CHILDREN;
       }
 
       if (c.done) {
@@ -50,10 +58,22 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
         attributes[k] = v;
       }
 
-      const c = getCharacter.next({ previous: true });
-      getCharacter.next();
+      const previous = getCharacter.next({ previous: true });
+      const current = getCharacter.next();
 
-      if (c.value === '"' || c.value === "'") {
+      if (current.value === ">") {
+        console.log("parse nested tag");
+
+        const tags = parseTag(getCharacter);
+
+        console.log("tags", tags);
+
+        tags.forEach((t) => {
+          children.push(t);
+        });
+
+        break;
+      } else if (previous.value === '"' || previous.value === "'") {
         // Keep on parsing attributes
       } else {
         break;
@@ -73,14 +93,29 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
       }
       */
     } else if (state === STATES.PARSE_CHILDREN) {
-      // TODO
-      break;
+      const c = getCharacter.next();
 
-      // state = STATES.PARSE_TAG_END;
+      console.log("c", c);
+
+      if (c.value === "<") {
+        state = STATES.PARSE_TAG_END;
+      } else {
+        content += c.value;
+      }
+    } else if (state === STATES.PARSE_TAG_END) {
+      const c = getCharacter.next();
+
+      if (c.value === ">") {
+        break;
+      }
     }
   }
 
-  return [{ type, attributes, children: content ? [content] : null }];
+  if (content) {
+    children.push(content);
+  }
+
+  return [{ type, attributes, children }];
 }
 
 // TODO
