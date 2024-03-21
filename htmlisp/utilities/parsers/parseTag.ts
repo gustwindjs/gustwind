@@ -17,8 +17,6 @@ type Tag = {
   closesWith?: string;
 };
 
-// TODO: After parsing an attribute, rollback and check the character here
-// TODO: To rewind, pass { rewind: true } to next() as a parameter
 function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let state = STATES.IDLE;
   // TODO: Maybe this needs to become a Tag directly
@@ -31,21 +29,18 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     if (state === STATES.IDLE) {
       const c = getCharacter.next();
 
-      if (c.value === " ") {
+      if (c === " ") {
         // No-op
-      } else if (c.value === "<") {
+      } else if (c === "<") {
         state = STATES.PARSE_TAG_NAME;
       } // Found content
-      else if (c.value) {
-        console.log("FFFF", c.value);
-
-        // TODO: Replace with .previous()
-        getCharacter.next({ previous: true });
+      else if (c) {
+        getCharacter.previous();
 
         state = STATES.PARSE_CHILDREN;
       }
 
-      if (c.done) {
+      if (!c) {
         break;
       }
     } else if (state === STATES.PARSE_TAG_NAME) {
@@ -58,22 +53,18 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
         attributes[k] = v;
       }
 
-      const previous = getCharacter.next({ previous: true });
+      const previous = getCharacter.previous();
       const current = getCharacter.next();
 
-      if (current.value === ">") {
-        console.log("parse nested tag");
-
+      if (current === ">") {
         const tags = parseTag(getCharacter);
-
-        console.log("tags", tags);
 
         tags.forEach((t) => {
           children.push(t);
         });
 
         break;
-      } else if (previous.value === '"' || previous.value === "'") {
+      } else if (previous === '"' || previous === "'") {
         // Keep on parsing attributes
       } else {
         break;
@@ -95,17 +86,17 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
-      console.log("c", c);
-
-      if (c.value === "<") {
+      if (c === "<") {
         state = STATES.PARSE_TAG_END;
+      } else if (c) {
+        content += c;
       } else {
-        content += c.value;
+        break;
       }
     } else if (state === STATES.PARSE_TAG_END) {
       const c = getCharacter.next();
 
-      if (c.value === ">") {
+      if (c === ">") {
         break;
       }
     }
@@ -122,58 +113,18 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
 function parseTagName(getCharacter: CharacterGenerator) {
   let tagName = "";
 
-  let result = getCharacter.next();
-  while (!result.done) {
-    const c = result.value;
-
+  let c = getCharacter.next();
+  while (c) {
     if (c === " ") {
       return tagName;
     }
 
     tagName += c;
 
-    result = getCharacter.next();
+    c = getCharacter.next();
   }
 
   return tagName;
-
-  /*
-  if (c === ">") {
-    parsingState = PARSE_CHILDREN_START;
-  } else if (c === " ") {
-    parsingState = PARSE_ATTRIBUTE_NAME;
-  } else if (c === "/") {
-    currentTag.closesWith = "/";
-  } else if (c === "!") {
-    // DOCTYPE case
-    currentTag.closesWith = "";
-    currentTag.type += c;
-  } else if (c === "?") {
-    currentTag.closesWith = "?";
-    currentTag.type += c;
-  } else if (c !== "<") {
-    currentTag.type += c;
-  }
-  */
-
-  // yield { value, state: states.IDLE };
-}
-
-// TODO
-function parseTagEnd(getCharacter: CharacterGenerator) {
-  return "foobar";
-
-  /*
-  if (c === ">") {
-    if (input[i - 1] !== "?") {
-      parsingState = PARSE_CHILDREN_START;
-    } else {
-      parsingState = NOT_PARSING;
-    }
-  }
-  */
-
-  // yield { value, state: states.IDLE };
 }
 
 export { parseTag };

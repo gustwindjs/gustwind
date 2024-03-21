@@ -1,19 +1,42 @@
+import type { CharacterGenerator } from "./types.ts";
+
+// This is a rough approximation of a generator based on
+// a closure. The implementation is not as generic as
+// it has been designed to be used with strings but it's
+// good enough for the purposes of this project.
+//
+// For this use case, null signifies ending of iteration.
+// If nulls could occur within the input structure, then
+// it would make sense to wrap the return value within
+// an object generator style
 function asGenerator(s: string) {
-  return function* getCharacter(): Generator<
-    string,
-    void,
-    { previous: boolean } | undefined
-  > {
-    for (let i = 0; i < s.length; i++) {
-      // console.log("get from", i);
+  return function getCharacter(): CharacterGenerator {
+    let i = 0;
 
-      // https://stackoverflow.com/questions/23848113/is-it-possible-to-reset-an-ecmascript-6-generator-to-its-initial-state
-      const o = yield s[i];
+    return {
+      next() {
+        if (i > s.length - 1) {
+          return null;
+        }
 
-      if (o?.previous) {
+        const ret = s[i];
+
+        i++;
+
+        return ret;
+      },
+      previous() {
+        if (i < 1) {
+          return null;
+        }
+
+        const ret = s[i];
+
         i--;
-      }
-    }
+
+        return ret;
+      },
+    };
   };
 }
 

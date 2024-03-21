@@ -34,17 +34,15 @@ function parseAttribute(
 function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
 
-  let result = getCharacter.next();
-  while (!result.done) {
-    const c = result.value;
-
+  let c = getCharacter.next();
+  while (c) {
     if (c === "=" || c === "/" || c === "?" || c === " ") {
       return attributeName;
     }
 
     attributeName += c;
 
-    result = getCharacter.next();
+    c = getCharacter.next();
   }
 
   return attributeName;
@@ -55,10 +53,8 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
   let doubleQuotesFound = 0;
   let attributeValue = "";
 
-  let result = getCharacter.next();
-  while (!result.done) {
-    const c = result.value;
-
+  let c = getCharacter.next();
+  while (c) {
     if (c === '"') {
       if (singleQuotesFound > 0) {
         // Escape "'s in single quote mode
@@ -84,7 +80,7 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
       attributeValue += c;
     }
 
-    result = getCharacter.next();
+    c = getCharacter.next();
   }
 
   return attributeValue;
