@@ -9,7 +9,21 @@ Deno.test("content", () => {
   );
 });
 
-Deno.test("self-closing parse tag", () => {
+Deno.test("self-closing tag", () => {
+  assertEquals(
+    parseTag(asGenerator(`<a />`)()),
+    [{ type: "a", children: [""] }],
+  );
+});
+
+Deno.test("self-closing tag with a single attribute", () => {
+  assertEquals(
+    parseTag(asGenerator(`<a href="test" />`)()),
+    [{ type: "a", attributes: { href: "test" } }],
+  );
+});
+
+Deno.test("self-closing tag with attributes", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar" />`)()),
     [{ type: "a", attributes: { href: "test", title: "foobar" } }],

@@ -3,9 +3,9 @@ import type { Attributes, CharacterGenerator } from "./types.ts";
 
 const STATES = {
   IDLE: "idle",
-  PARSE_TAG_START: "parse tag start",
   PARSE_TAG_END: "parse tag end",
   PARSE_TAG_NAME: "parse tag name",
+  PARSE_TAG_ATTRIBUTES: "parse tag attributes",
   PARSE_CHILDREN: "parse children",
 };
 
@@ -21,7 +21,7 @@ type Tag = {
 // TODO: To rewind, pass { rewind: true } to next() as a parameter
 function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let state = STATES.IDLE;
-  let tag: Tag;
+  let type = "";
   let content = "";
 
   while (true) {
@@ -39,14 +39,11 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
       if (c.done) {
         break;
       }
-    } else if (state === STATES.PARSE_TAG_START) {
-      // TODO
-      break;
-
-      tag.type = parseTagStart(getCharacter);
-      state = STATES.PARSE_TAG_NAME;
     } else if (state === STATES.PARSE_TAG_NAME) {
-      // TODO
+      type = parseTagName(getCharacter);
+      state = STATES.PARSE_TAG_ATTRIBUTES;
+    } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
+      // TODO: Apply attribute parser here
       break;
 
       const attribute = parseAttribute(getCharacter);
@@ -73,12 +70,27 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     }
   }
 
-  return [{ type: "", children: [content] }];
+  return [{ type, children: [content] }];
 }
 
 // TODO
-function parseTagStart(getCharacter: CharacterGenerator) {
-  return "foobar";
+function parseTagName(getCharacter: CharacterGenerator) {
+  let tagName = "";
+
+  let result = getCharacter.next();
+  while (!result.done) {
+    const c = result.value;
+
+    if (c === " ") {
+      return tagName;
+    }
+
+    tagName += c;
+
+    result = getCharacter.next();
+  }
+
+  return tagName;
 
   /*
   if (c === ">") {
@@ -119,4 +131,4 @@ function parseTagEnd(getCharacter: CharacterGenerator) {
   // yield { value, state: states.IDLE };
 }
 
-export { parseTag, parseTagEnd, parseTagStart };
+export { parseTag };
