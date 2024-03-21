@@ -18,7 +18,7 @@ type Tag = {
 
 // TODO: After parsing an attribute, rollback and check the character here
 // TODO: To rewind, pass { rewind: true } to next() as a parameter
-function parseTag(getCharacter: CharacterGenerator): Tag {
+function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let state = STATES.PARSE_TAG_START;
   let tag: Tag;
 
