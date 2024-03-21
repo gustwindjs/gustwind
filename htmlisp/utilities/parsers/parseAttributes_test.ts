@@ -57,3 +57,10 @@ Deno.test(`parse tag end`, () => {
     {},
   );
 });
+
+Deno.test(`parse tag end 2`, () => {
+  assertEquals(
+    parseAttributes(asGenerator(`href="test" title="foobar"></a>`)()),
+    { href: "test", title: "foobar" },
+  );
+});
