@@ -37,9 +37,16 @@ Deno.test(`parse attribute without a value at the end 2`, () => {
   );
 });
 
-Deno.test(`parse attribute at the end`, () => {
+Deno.test(`parse attribute at the end of a self-closing tag`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href="foobar"/`)()),
+    ["href", "foobar"],
+  );
+});
+
+Deno.test(`parse attribute at the end of a tag`, () => {
+  assertEquals(
+    parseAttribute(asGenerator(`href="foobar">`)()),
     ["href", "foobar"],
   );
 });
