@@ -1,7 +1,9 @@
 import * as states from "./states.ts";
-import type { CharacterGenerator } from "./types.ts";
+import type { Attributes, CharacterGenerator } from "./types.ts";
 
-function parseAttribute(getCharacter: CharacterGenerator) {
+function parseAttribute(
+  getCharacter: CharacterGenerator,
+): Attributes {
   const c = getCharacter.next();
 
   // TODO: The logic here should be able to parse a single attribute and
