@@ -1,4 +1,16 @@
 import * as states from "./states.ts";
+import { parseAttribute } from "./parseAttribute.ts";
+import type { CharacterGenerator } from "./types.ts";
+
+function parseTag(getCharacter: CharacterGenerator) {
+  const c = getCharacter.next();
+
+  // TODO: The logic here should be able to parse a tag and use
+  // parseAttribute as a helper
+  console.log(c);
+
+  return { type: "a", attributes: { href: "test", title: "foobar" } };
+}
 
 // TODO
 function* parseTagStart(value: string, c: string) {
@@ -39,4 +51,4 @@ function* parseTagEnd(value: string, c: string) {
   yield { value, state: states.IDLE };
 }
 
-export { parseTagEnd, parseTagStart };
+export { parseTag, parseTagEnd, parseTagStart };

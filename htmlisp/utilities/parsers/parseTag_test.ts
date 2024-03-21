@@ -1,19 +1,10 @@
-import * as states from "./states.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseTagEnd, parseTagStart } from "./parseTag.ts";
+import { parseTag } from "./parseTag.ts";
+import { asGenerator } from "./utils.ts";
 
-// TODO
-Deno.test("parse tag start", () => {
+Deno.test("parse tag", () => {
   assertEquals(
-    parseTagStart("", "<").next().value,
-    { value: "woof", state: states.IDLE },
-  );
-});
-
-// TODO
-Deno.test("parse tag end", () => {
-  assertEquals(
-    parseTagEnd("", ">").next().value,
-    { value: "woof", state: states.IDLE },
+    parseTag(asGenerator(`<a href="test" title="foobar">`)()),
+    { type: "a", attributes: { href: "test", title: "foobar" } },
   );
 });

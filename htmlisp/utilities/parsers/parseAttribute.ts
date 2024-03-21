@@ -1,13 +1,5 @@
 import * as states from "./states.ts";
-
-type CharacterGenerator = Generator<string, void, unknown>;
-
-// TODO: Add parseAttributes (a generalization of parseAttribute that can handle many)
-function parseAttributes(getCharacter: CharacterGenerator) {
-  // TODO: The logic here should be able to parse multiple attributes
-
-  return { href: "test", title: "foobar" };
-}
+import type { CharacterGenerator } from "./types.ts";
 
 function parseAttribute(getCharacter: CharacterGenerator) {
   const c = getCharacter.next();
@@ -95,9 +87,4 @@ function* parseAttributeValue(value: string, c: string) {
   }
 }
 
-export {
-  parseAttribute,
-  parseAttributeName,
-  parseAttributes,
-  parseAttributeValue,
-};
+export { parseAttribute, parseAttributeName, parseAttributeValue };
