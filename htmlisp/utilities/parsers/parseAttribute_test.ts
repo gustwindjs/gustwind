@@ -37,9 +37,6 @@ Deno.test(`parse attribute without a value at the end 2`, () => {
   );
 });
 
-// TODO: In this case it should return and also rollback the generator a step somehow
-// Maybe it's a better idea to treat it as a closure instead since a method could be
-// added
 Deno.test(`parse attribute at the end`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href="foobar"/`)()),
