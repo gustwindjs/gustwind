@@ -1,4 +1,4 @@
-import { parseAttribute } from "./parseAttribute.ts";
+import { parseAttributes } from "./parseAttributes.ts";
 import type { Attributes, CharacterGenerator } from "./types.ts";
 
 const STATES = {
@@ -6,6 +6,7 @@ const STATES = {
   PARSE_TAG_END: "parse tag end",
   PARSE_TAG_NAME: "parse tag name",
   PARSE_TAG_ATTRIBUTES: "parse tag attributes",
+  PARSE_END_TAG: "parse end tag",
   PARSE_CHILDREN: "parse children",
 };
 
@@ -23,7 +24,7 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let type = "";
   let content = "";
   const children: (string | Tag)[] = [];
-  const attributes: Attributes = {};
+  let attributes: Attributes = {};
 
   while (true) {
     if (state === STATES.IDLE) {
@@ -47,29 +48,8 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
       type = parseTagName(getCharacter);
       state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
-      const [k, v] = parseAttribute(getCharacter);
-
-      if (k) {
-        attributes[k] = v;
-      }
-
-      // Step back to catch the terminating character
-      getCharacter.previous();
-      const current = getCharacter.next();
-
-      if (current === ">") {
-        const tags = parseTag(getCharacter);
-
-        tags.forEach((t) => {
-          children.push(t);
-        });
-
-        break;
-      } else if (current === " " || current === '"' || current === "'") {
-        // Keep on parsing attributes
-      } else {
-        break;
-      }
+      attributes = parseAttributes(getCharacter);
+      state = STATES.PARSE_END_TAG;
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
@@ -86,6 +66,16 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
       if (c === ">") {
         break;
       }
+    } else if (state === STATES.PARSE_END_TAG) {
+      // TODO: Figure out what to do in this case
+      break;
+      /*
+      const c = getCharacter.next();
+
+      if (c === ">") {
+        break;
+      }
+      */
     }
   }
 
