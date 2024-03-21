@@ -1,12 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseAttribute, parseAttributes } from "./parseAttribute.ts";
-
-Deno.test("parse attributes", () => {
-  assertEquals(
-    parseAttributes(asGenerator(`href="test" title="foobar"`)()),
-    { href: "test", title: "foobar" },
-  );
-});
+import { parseAttribute } from "./parseAttribute.ts";
+import { asGenerator } from "./utils.ts";
 
 Deno.test("parse attribute", () => {
   assertEquals(
@@ -14,11 +8,3 @@ Deno.test("parse attribute", () => {
     { href: "test" },
   );
 });
-
-function asGenerator(s: string) {
-  return function* getCharacter() {
-    for (let i = 0; i < s.length; i++) {
-      yield s[i];
-    }
-  };
-}
