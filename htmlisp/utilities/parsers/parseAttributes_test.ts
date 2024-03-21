@@ -12,7 +12,7 @@ Deno.test(`parse attributes with "`, () => {
 Deno.test(`parse attribute with '`, () => {
   assertEquals(
     parseAttributes(asGenerator(`href='test' title='foo'`)()),
-    { href: "test", title: "bar" },
+    { href: "test", title: "foo" },
   );
 });
 
