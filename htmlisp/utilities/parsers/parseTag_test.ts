@@ -125,12 +125,15 @@ Deno.test("doctype", () => {
       type: "!DOCTYPE",
       attributes: { html: null },
       closesWith: "",
+      children: [],
     }, {
       type: "a",
       attributes: { href: "test", title: "foobar" },
+      children: [],
     }, {
       type: "a",
       attributes: { href: "test", title: "foobar" },
+      children: [],
     }],
   );
 });
@@ -146,6 +149,7 @@ Deno.test("xml", () => {
       type: "?xml",
       attributes: { version: "1.0", encoding: "utf-8" },
       closesWith: "?",
+      children: [],
     }],
   );
 });
