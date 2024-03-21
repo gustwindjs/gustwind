@@ -5,41 +5,41 @@ import { asGenerator } from "./utils.ts";
 Deno.test(`parse attribute with "`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href="test" `)()),
-    { href: "test" },
+    ["href", "test"],
   );
 });
 
 Deno.test(`parse attribute with '`, () => {
   assertEquals(
     parseAttribute(asGenerator(`title='foo' `)()),
-    { title: "foo" },
+    ["title", "foo"],
   );
 });
 
 Deno.test(`parse attribute without a value`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href `)()),
-    { href: null },
+    ["href", null],
   );
 });
 
 Deno.test(`parse attribute without a value at the end`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href/`)()),
-    { href: null },
+    ["href", null],
   );
 });
 
 Deno.test(`parse attribute without a value at the end 2`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href?`)()),
-    { href: null },
+    ["href", null],
   );
 });
 
 Deno.test(`parse attribute at the end`, () => {
   assertEquals(
     parseAttribute(asGenerator(`href="foobar"/`)()),
-    { href: "foobar" },
+    ["href", "foobar"],
   );
 });
