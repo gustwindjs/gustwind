@@ -2,6 +2,7 @@ import { parseAttribute } from "./parseAttribute.ts";
 import type { Attributes, CharacterGenerator } from "./types.ts";
 
 const STATES = {
+  IDLE: "idle",
   PARSE_TAG_START: "parse tag start",
   PARSE_TAG_END: "parse tag end",
   PARSE_TAG_NAME: "parse tag name",
@@ -19,11 +20,26 @@ type Tag = {
 // TODO: After parsing an attribute, rollback and check the character here
 // TODO: To rewind, pass { rewind: true } to next() as a parameter
 function parseTag(getCharacter: CharacterGenerator): Tag[] {
-  let state = STATES.PARSE_TAG_START;
+  let state = STATES.IDLE;
   let tag: Tag;
+  let content = "";
 
   while (true) {
-    if (state === STATES.PARSE_TAG_START) {
+    if (state === STATES.IDLE) {
+      const c = getCharacter.next();
+
+      if (c.value === " ") {
+        // No-op
+      } else if (c.value === "<") {
+        state = STATES.PARSE_TAG_NAME;
+      } else if (c.value) {
+        content += c.value;
+      }
+
+      if (c.done) {
+        break;
+      }
+    } else if (state === STATES.PARSE_TAG_START) {
       // TODO
       break;
 
@@ -57,7 +73,7 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     }
   }
 
-  return { type: "a", attributes: { href: "test", title: "foobar" } };
+  return [{ type: "", children: [content] }];
 }
 
 // TODO
