@@ -13,7 +13,7 @@ const STATES = {
 type Tag = {
   type: string;
   attributes?: Attributes;
-  children?: (string | Tag)[];
+  children: (string | Tag)[] | null;
   closesWith?: string;
 };
 
@@ -23,6 +23,7 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
   let state = STATES.IDLE;
   let type = "";
   let content = "";
+  const attributes: Attributes = {};
 
   while (true) {
     if (state === STATES.IDLE) {
@@ -43,10 +44,11 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
       type = parseTagName(getCharacter);
       state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
-      // TODO: Apply attribute parser here
-      break;
+      const [k, v] = parseAttribute(getCharacter);
 
-      const attribute = parseAttribute(getCharacter);
+      attributes[k] = v;
+
+      break;
 
       // TODO: Take a peek at the last character and figure out what to do next
       const c = getCharacter.next({ previous: true });
@@ -70,7 +72,7 @@ function parseTag(getCharacter: CharacterGenerator): Tag[] {
     }
   }
 
-  return [{ type, children: [content] }];
+  return [{ type, attributes, children: content ? [content] : null }];
 }
 
 // TODO

@@ -1,4 +1,4 @@
-import type { Attributes, CharacterGenerator } from "./types.ts";
+import type { CharacterGenerator } from "./types.ts";
 
 const STATES = {
   PARSE_ATTRIBUTE_NAME: "parse attribute name",
@@ -8,7 +8,7 @@ const STATES = {
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
-): Attributes {
+): [string, string | null] {
   let state = STATES.PARSE_ATTRIBUTE_NAME;
   let attributeName = "";
   let attributeValue = null;
@@ -23,7 +23,7 @@ function parseAttribute(
     }
   }
 
-  return { [attributeName]: attributeValue };
+  return [attributeName, attributeValue];
 }
 
 function parseAttributeName(getCharacter: CharacterGenerator) {

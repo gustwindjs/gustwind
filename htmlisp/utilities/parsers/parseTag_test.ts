@@ -5,35 +5,43 @@ import { asGenerator } from "./utils.ts";
 Deno.test("content", () => {
   assertEquals(
     parseTag(asGenerator(`foobar`)()),
-    [{ type: "", children: ["foobar"] }],
+    [{ type: "", attributes: {}, children: ["foobar"] }],
   );
 });
 
 Deno.test("self-closing tag", () => {
   assertEquals(
     parseTag(asGenerator(`<a />`)()),
-    [{ type: "a", children: [""] }],
+    [{ type: "a", attributes: {}, children: null }],
   );
 });
 
 Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" />`)()),
-    [{ type: "a", attributes: { href: "test" } }],
+    [{ type: "a", attributes: { href: "test" }, children: null }],
   );
 });
 
 Deno.test("self-closing tag with attributes", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar" />`)()),
-    [{ type: "a", attributes: { href: "test", title: "foobar" } }],
+    [{
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+      children: null,
+    }],
   );
 });
 
 Deno.test("parse tag", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
-    [{ type: "a", attributes: { href: "test", title: "foobar" } }],
+    [{
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+      children: null,
+    }],
   );
 });
 
