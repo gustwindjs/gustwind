@@ -77,6 +77,7 @@ Deno.test("parse tag with another tag", () => {
       attributes: { href: "test", title: "foobar" },
       children: [{
         type: "span",
+        attributes: {},
         children: ["barfoo"],
       }],
     }],
