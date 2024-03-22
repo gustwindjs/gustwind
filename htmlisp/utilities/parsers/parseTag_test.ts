@@ -16,6 +16,17 @@ Deno.test("self-closing tag", () => {
   );
 });
 
+Deno.test("multiple self-closing tags", () => {
+  assertEquals(
+    parseTag(asGenerator(`<a /><a />`)()),
+    [{ type: "a", attributes: {}, children: [] }, {
+      type: "a",
+      attributes: {},
+      children: [],
+    }],
+  );
+});
+
 Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" />`)()),
