@@ -67,7 +67,7 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
   while (c) {
     c = getCharacter.next();
 
-    if (c === "=" || c === "/" || c === "?" || c === " ") {
+    if (c === "=" || c === "/" || c === "?" || c === " " || c === ">") {
       getCharacter.previous();
 
       return attributeName;
