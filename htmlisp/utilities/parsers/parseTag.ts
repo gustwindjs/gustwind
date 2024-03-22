@@ -19,11 +19,9 @@ type Tag = {
 
 function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let state = STATES.IDLE;
-  // TODO: Refactor this as capturedTags to allow supporting siblings
-  let type = "";
+  let currentTag: Tag = { type: "", attributes: {}, children: [] };
+  const capturedTags: (string | Tag)[] = [];
   let content = "";
-  let children: (string | Tag)[] = [];
-  let attributes: Attributes = {};
 
   while (true) {
     if (state === STATES.IDLE) {
@@ -33,6 +31,9 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         // No-op
       } else if (c === "<") {
         state = STATES.PARSE_TAG_NAME;
+
+        currentTag = { type: "", attributes: {}, children: [] };
+        capturedTags.push(currentTag);
       } // Self-closing case
       else if (c === ">") {
         // No-op
@@ -47,19 +48,23 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         break;
       }
     } else if (state === STATES.PARSE_TAG_NAME) {
-      if (type) {
+      if (currentTag.type) {
         getCharacter.previous();
-        children = children.concat(parseTag(getCharacter));
+
+        currentTag.children = currentTag.children.concat(
+          parseTag(getCharacter),
+        );
+
         // TODO: This should be used instead
         // state = STATES.PARSE_END_TAG;
         state = STATES.IDLE;
       } else {
-        type = parseTagName(getCharacter);
+        currentTag.type = parseTagName(getCharacter);
         state = STATES.PARSE_TAG_ATTRIBUTES;
       }
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       getCharacter.previous();
-      attributes = parseAttributes(getCharacter);
+      currentTag.attributes = parseAttributes(getCharacter);
       getCharacter.next();
       state = STATES.IDLE;
     } else if (state === STATES.PARSE_CHILDREN) {
@@ -82,10 +87,10 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   }
 
   if (content) {
-    children.push(content);
+    currentTag.children.push(content);
   }
 
-  return [type ? { type, attributes, children } : content];
+  return currentTag.type ? capturedTags : [content];
 }
 
 function parseTagName(getCharacter: CharacterGenerator) {
