@@ -5,7 +5,7 @@ import { asGenerator } from "./utils.ts";
 Deno.test("content", () => {
   assertEquals(
     parseTag(asGenerator(`foobar`)()),
-    [{ type: "", attributes: {}, children: ["foobar"] }],
+    ["foobar"],
   );
 });
 
@@ -51,7 +51,7 @@ Deno.test("parse tag with content", () => {
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
-      children: [{ type: "", attributes: {}, children: ["barfoo"] }],
+      children: ["barfoo"],
     }],
   );
 });
@@ -66,7 +66,7 @@ Deno.test("parse tag with another tag", () => {
       attributes: { href: "test", title: "foobar" },
       children: [{
         type: "span",
-        children: [{ type: "", attributes: {}, children: ["barfoo"] }],
+        children: ["barfoo"],
       }],
     }],
   );
