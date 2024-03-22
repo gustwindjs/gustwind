@@ -83,7 +83,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
     children.push(content);
   }
 
-  return [{ type, attributes, children }];
+  return [type ? { type, attributes, children } : content];
 }
 
 // TODO
