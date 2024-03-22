@@ -24,12 +24,10 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let content = "";
 
   while (true) {
-    // console.log({ state, currentTag });
-
     if (state === STATES.IDLE) {
       const c = getCharacter.next();
 
-      if (c === " ") {
+      if (c === " " || c === "\n") {
         // No-op
       } else if (c === "<") {
         // Closing case - i.e., </
@@ -47,7 +45,12 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       else if (c === "/") {
         getCharacter.next();
       } else if (c === ">") {
-        state = STATES.PARSE_CHILDREN;
+        // DOCTYPE cannot have children so keep on parsing
+        if (currentTag.closesWith === "") {
+          state = STATES.IDLE;
+        } else {
+          state = STATES.PARSE_CHILDREN;
+        }
       } // <?xml ... ?>
       else if (getCharacter.current() === ">") {
         currentTag.closesWith = c;
