@@ -33,7 +33,7 @@ function parseAttribute(
         break;
       }
     } else if (state === STATES.FIND_EQUALS) {
-      const c = getCharacter.current();
+      const c = getCharacter.get();
 
       if (c === " ") {
         // Keep searching
@@ -58,7 +58,7 @@ function parseAttribute(
 
 function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
-  let c = getCharacter.current();
+  let c = getCharacter.get();
 
   if (c === "/" || c === "<" || c === ">") {
     return attributeName;

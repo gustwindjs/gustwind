@@ -31,7 +31,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         // No-op
       } else if (c === "<") {
         // Closing case - i.e., </
-        if (getCharacter.current() === "/") {
+        if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
         } else {
           state = STATES.PARSE_TAG_TYPE;
@@ -52,7 +52,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
           state = STATES.PARSE_CHILDREN;
         }
       } // <?xml ... ?>
-      else if (getCharacter.current() === ">") {
+      else if (getCharacter.get() === ">") {
         currentTag.closesWith = c;
       } // Found content
       else if (c) {
@@ -66,7 +66,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       }
     } else if (state === STATES.PARSE_TAG_TYPE) {
       // <!DOCTYPE> case
-      if (getCharacter.current() === "!") {
+      if (getCharacter.get() === "!") {
         currentTag.closesWith = "";
       }
 
@@ -80,7 +80,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       const c = getCharacter.next();
 
       if (c === "<") {
-        if (getCharacter.current() === "/") {
+        if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
         } else if (currentTag.type) {
           getCharacter.previous();
