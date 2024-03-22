@@ -18,7 +18,7 @@ type Tag = {
   closesWith?: string;
 };
 
-function parseTag(getCharacter: CharacterGenerator): Tag[] {
+function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let state = STATES.IDLE;
   // TODO: Maybe this needs to become a Tag directly
   let type = "";
