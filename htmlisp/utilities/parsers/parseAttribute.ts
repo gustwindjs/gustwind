@@ -2,6 +2,7 @@ import type { CharacterGenerator } from "./types.ts";
 
 const STATES = {
   FIND_ATTRIBUTE_NAME: "find attribute name",
+  FIND_EQUALS: "find equals",
   PARSE_ATTRIBUTE_NAME: "parse attribute name",
   PARSE_ATTRIBUTE_VALUE: "parse attribute value",
   CAPTURE_ATTRIBUTE: "capture attribute",
@@ -27,9 +28,23 @@ function parseAttribute(
       attributeName = parseAttributeName(getCharacter);
 
       if (attributeName) {
-        state = STATES.PARSE_ATTRIBUTE_VALUE;
+        state = STATES.FIND_EQUALS;
       } else {
         break;
+      }
+    } else if (state === STATES.FIND_EQUALS) {
+      const c = getCharacter.current();
+
+      if (c === " ") {
+        // Keep searching
+        getCharacter.next();
+      } else if (c === "=") {
+        getCharacter.next();
+
+        state = STATES.PARSE_ATTRIBUTE_VALUE;
+      } else {
+        // Only name, no value
+        return [attributeName, attributeValue];
       }
     } else if (state === STATES.PARSE_ATTRIBUTE_VALUE) {
       attributeValue = parseAttributeValue(getCharacter) || null;
@@ -53,6 +68,8 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
     c = getCharacter.next();
 
     if (c === "=" || c === "/" || c === "?" || c === " ") {
+      getCharacter.previous();
+
       return attributeName;
     }
 
