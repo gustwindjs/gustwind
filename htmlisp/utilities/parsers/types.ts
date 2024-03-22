@@ -1,6 +1,6 @@
 type Attributes = Record<string, string | null>;
 type CharacterGenerator = {
-  current: () => string | null;
+  current: (offset?: number) => string | null;
   next: () => string | null;
   previous: () => string | null;
 };

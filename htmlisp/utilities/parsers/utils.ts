@@ -14,9 +14,10 @@ function asGenerator(s: string) {
     let i = 0;
 
     return {
-      current() {
-        if (s.length > i) {
-          return s[i];
+      // TODO: Rename as get()
+      current(offset = 0) {
+        if (s.length > i + offset) {
+          return s[i + offset];
         }
 
         return null;
