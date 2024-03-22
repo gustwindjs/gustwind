@@ -62,6 +62,11 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         break;
       }
     } else if (state === STATES.PARSE_TAG_TYPE) {
+      // <!DOCTYPE> case
+      if (getCharacter.current() === "!") {
+        currentTag.closesWith = "";
+      }
+
       currentTag.type = parseTagName(getCharacter);
       state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
