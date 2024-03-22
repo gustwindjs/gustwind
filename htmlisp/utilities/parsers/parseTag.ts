@@ -49,7 +49,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       attributes = parseAttributes(getCharacter);
-      state = STATES.PARSE_END_TAG;
+      getCharacter.next();
+      state = STATES.IDLE;
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
