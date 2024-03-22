@@ -14,7 +14,7 @@ type Tag = {
   type: string;
   attributes?: Attributes;
   children: (string | Tag)[];
-  closesWith?: string;
+  closesWith?: string | null;
 };
 
 function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
@@ -48,6 +48,9 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         getCharacter.next();
       } else if (c === ">") {
         state = STATES.PARSE_CHILDREN;
+      } // <?xml ... ?>
+      else if (getCharacter.current() === ">") {
+        currentTag.closesWith = c;
       } // Found content
       else if (c) {
         getCharacter.previous();
