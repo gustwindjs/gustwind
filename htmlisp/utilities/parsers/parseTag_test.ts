@@ -147,7 +147,19 @@ Deno.test("sibling tags", () => {
   );
 });
 
-Deno.test("doctype", () => {
+Deno.test("simple doctype", () => {
+  assertEquals(
+    parseTag(asGenerator(`<!DOCTYPE html>`)()),
+    [{
+      type: "!DOCTYPE",
+      attributes: { html: null },
+      closesWith: "",
+      children: [],
+    }],
+  );
+});
+
+Deno.test("full doctype", () => {
   assertEquals(
     parseTag(
       asGenerator(
