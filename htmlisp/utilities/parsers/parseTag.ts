@@ -55,9 +55,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
           parseTag(getCharacter),
         );
 
-        // TODO: This should be used instead
-        // state = STATES.PARSE_END_TAG;
         state = STATES.IDLE;
+        // state = STATES.PARSE_END_TAG;
       } else {
         currentTag.type = parseTagName(getCharacter);
         state = STATES.PARSE_TAG_ATTRIBUTES;
@@ -66,7 +65,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       getCharacter.previous();
       currentTag.attributes = parseAttributes(getCharacter);
       getCharacter.next();
-      state = STATES.IDLE;
+      state = STATES.PARSE_CHILDREN;
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
