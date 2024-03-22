@@ -4,7 +4,7 @@ import type { Attributes, CharacterGenerator } from "./types.ts";
 const STATES = {
   IDLE: "idle",
   PARSE_END_TAG: "parse end tag",
-  PARSE_TAG_NAME: "parse tag name",
+  PARSE_TAG_TYPE: "parse tag type",
   PARSE_TAG_ATTRIBUTES: "parse tag attributes",
   PARSE_CHILDREN: "parse children",
 };
@@ -24,16 +24,23 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let content = "";
 
   while (true) {
+    // console.log({ state, currentTag });
+
     if (state === STATES.IDLE) {
       const c = getCharacter.next();
 
       if (c === " ") {
         // No-op
       } else if (c === "<") {
-        state = STATES.PARSE_TAG_NAME;
+        // Closing case - i.e., </
+        if (getCharacter.current() === "/") {
+          state = STATES.PARSE_END_TAG;
+        } else {
+          state = STATES.PARSE_TAG_TYPE;
 
-        currentTag = { type: "", attributes: {}, children: [] };
-        capturedTags.push(currentTag);
+          currentTag = { type: "", attributes: {}, children: [] };
+          capturedTags.push(currentTag);
+        }
       } // Self-closing case
       else if (c === "/") {
         getCharacter.next();
@@ -49,19 +56,9 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       if (!c) {
         break;
       }
-    } else if (state === STATES.PARSE_TAG_NAME) {
-      if (currentTag.type) {
-        getCharacter.previous();
-
-        currentTag.children = currentTag.children.concat(
-          parseTag(getCharacter),
-        );
-
-        state = STATES.IDLE;
-      } else {
-        currentTag.type = parseTagName(getCharacter);
-        state = STATES.PARSE_TAG_ATTRIBUTES;
-      }
+    } else if (state === STATES.PARSE_TAG_TYPE) {
+      currentTag.type = parseTagName(getCharacter);
+      state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       getCharacter.previous();
       currentTag.attributes = parseAttributes(getCharacter);
@@ -70,7 +67,17 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       const c = getCharacter.next();
 
       if (c === "<") {
-        state = STATES.PARSE_END_TAG;
+        if (getCharacter.current() === "/") {
+          state = STATES.PARSE_END_TAG;
+        } else if (currentTag.type) {
+          getCharacter.previous();
+
+          currentTag.children = currentTag.children.concat(
+            parseTag(getCharacter),
+          );
+
+          state = STATES.IDLE;
+        }
       } else if (c) {
         content += c;
       } else {
