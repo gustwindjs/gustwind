@@ -12,6 +12,10 @@ function parseAttributes(getCharacter: CharacterGenerator) {
     } else {
       break;
     }
+
+    if (getCharacter.current() === null) {
+      break;
+    }
   }
 
   return attributes;

@@ -1,6 +1,7 @@
 import type { CharacterGenerator } from "./types.ts";
 
 const STATES = {
+  FIND_ATTRIBUTE_NAME: "find attribute name",
   PARSE_ATTRIBUTE_NAME: "parse attribute name",
   PARSE_ATTRIBUTE_VALUE: "parse attribute value",
   CAPTURE_ATTRIBUTE: "capture attribute",
@@ -9,29 +10,30 @@ const STATES = {
 function parseAttribute(
   getCharacter: CharacterGenerator,
 ): [string, string | null] {
-  let state = STATES.PARSE_ATTRIBUTE_NAME;
+  let state = STATES.FIND_ATTRIBUTE_NAME;
   let attributeName = "";
   let attributeValue = null;
 
   while (true) {
-    if (state === STATES.PARSE_ATTRIBUTE_NAME) {
+    if (state === STATES.FIND_ATTRIBUTE_NAME) {
+      const c = getCharacter.next();
+
+      if (c !== " ") {
+        getCharacter.previous();
+
+        state = STATES.PARSE_ATTRIBUTE_NAME;
+      }
+    } else if (state === STATES.PARSE_ATTRIBUTE_NAME) {
       attributeName = parseAttributeName(getCharacter);
 
       if (attributeName) {
-        const c = getCharacter.current();
-
-        if (c === " ") {
-          break;
-        } else {
-          getCharacter.next();
-
-          state = STATES.PARSE_ATTRIBUTE_VALUE;
-        }
+        state = STATES.PARSE_ATTRIBUTE_VALUE;
       } else {
         break;
       }
     } else if (state === STATES.PARSE_ATTRIBUTE_VALUE) {
       attributeValue = parseAttributeValue(getCharacter) || null;
+
       break;
     }
   }
@@ -41,22 +43,20 @@ function parseAttribute(
 
 function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
-  let c = getCharacter.next();
+  let c = getCharacter.current();
 
   if (c === "/" || c === "<" || c === ">") {
     return attributeName;
   }
 
   while (c) {
-    if (c === "=" || c === "/" || c === "?") {
-      getCharacter.previous();
+    c = getCharacter.next();
 
+    if (c === "=" || c === "/" || c === "?" || c === " ") {
       return attributeName;
-    } else if (c !== " ") {
-      attributeName += c;
     }
 
-    c = getCharacter.next();
+    attributeName += c;
   }
 
   return attributeName;
@@ -66,8 +66,8 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
   let attributeValue = "";
-
   let c = getCharacter.next();
+
   while (c) {
     if (c === '"') {
       if (singleQuotesFound > 0) {

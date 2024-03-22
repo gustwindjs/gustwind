@@ -15,7 +15,11 @@ function asGenerator(s: string) {
 
     return {
       current() {
-        return s[i];
+        if (s.length > i) {
+          return s[i];
+        }
+
+        return null;
       },
       next() {
         if (i > s.length - 1) {
