@@ -35,8 +35,10 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         currentTag = { type: "", attributes: {}, children: [] };
         capturedTags.push(currentTag);
       } // Self-closing case
-      else if (c === ">") {
-        // No-op
+      else if (c === "/") {
+        getCharacter.next();
+      } else if (c === ">") {
+        state = STATES.PARSE_CHILDREN;
       } // Found content
       else if (c) {
         getCharacter.previous();
@@ -64,8 +66,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       getCharacter.previous();
       currentTag.attributes = parseAttributes(getCharacter);
-      getCharacter.next();
-      state = STATES.PARSE_CHILDREN;
+      state = STATES.IDLE;
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
