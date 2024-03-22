@@ -36,6 +36,17 @@ Deno.test("self-closing tag with attributes", () => {
 
 Deno.test("parse tag", () => {
   assertEquals(
+    parseTag(asGenerator(`<span>foobar</span>`)()),
+    [{
+      type: "span",
+      children: ["foobar"],
+      attributes: {},
+    }],
+  );
+});
+
+Deno.test("parse tag with attributes", () => {
+  assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
     [{
       type: "a",

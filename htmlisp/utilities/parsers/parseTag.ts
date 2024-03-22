@@ -23,7 +23,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   // TODO: Maybe this needs to become a Tag directly
   let type = "";
   let content = "";
-  const children: (string | Tag)[] = [];
+  let children: (string | Tag)[] = [];
   let attributes: Attributes = {};
 
   while (true) {
@@ -45,8 +45,14 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         break;
       }
     } else if (state === STATES.PARSE_TAG_NAME) {
-      type = parseTagName(getCharacter);
-      state = STATES.PARSE_TAG_ATTRIBUTES;
+      if (type) {
+        getCharacter.previous();
+        children = children.concat(parseTag(getCharacter));
+        state = STATES.IDLE;
+      } else {
+        type = parseTagName(getCharacter);
+        state = STATES.PARSE_TAG_ATTRIBUTES;
+      }
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       attributes = parseAttributes(getCharacter);
       getCharacter.next();
