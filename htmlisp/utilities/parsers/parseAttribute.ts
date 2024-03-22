@@ -43,18 +43,18 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
   let c = getCharacter.next();
 
-  if (c === "/" || c === "<") {
+  if (c === "/" || c === "<" || c === ">") {
     return attributeName;
   }
 
   while (c) {
-    if (c === "=" || c === "/" || c === "?" || c === " ") {
+    if (c === "=" || c === "/" || c === "?") {
       getCharacter.previous();
 
       return attributeName;
+    } else if (c !== " ") {
+      attributeName += c;
     }
-
-    attributeName += c;
 
     c = getCharacter.next();
   }

@@ -12,12 +12,6 @@ function parseAttributes(getCharacter: CharacterGenerator) {
     } else {
       break;
     }
-
-    const current = getCharacter.next();
-
-    if (!current) {
-      break;
-    }
   }
 
   return attributes;
