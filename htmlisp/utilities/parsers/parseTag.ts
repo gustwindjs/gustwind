@@ -38,6 +38,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         } else {
           state = STATES.PARSE_TAG_TYPE;
 
+          content && currentTag.children.push(content);
+          content = "";
           currentTag = { type: "", attributes: {}, children: [] };
           capturedTags.push(currentTag);
         }
@@ -87,7 +89,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       const c = getCharacter.next();
 
       if (c === ">") {
-        break;
+        state = STATES.IDLE;
       }
     }
   }
