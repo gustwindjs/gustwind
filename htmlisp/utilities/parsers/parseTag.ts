@@ -3,10 +3,9 @@ import type { Attributes, CharacterGenerator } from "./types.ts";
 
 const STATES = {
   IDLE: "idle",
-  PARSE_TAG_END: "parse tag end",
+  PARSE_END_TAG: "parse end tag",
   PARSE_TAG_NAME: "parse tag name",
   PARSE_TAG_ATTRIBUTES: "parse tag attributes",
-  PARSE_END_TAG: "parse end tag",
   PARSE_CHILDREN: "parse children",
 };
 
@@ -20,7 +19,7 @@ type Tag = {
 
 function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let state = STATES.IDLE;
-  // TODO: Maybe this needs to become a Tag directly
+  // TODO: Refactor this as capturedTags to allow supporting siblings
   let type = "";
   let content = "";
   let children: (string | Tag)[] = [];
@@ -51,6 +50,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       if (type) {
         getCharacter.previous();
         children = children.concat(parseTag(getCharacter));
+        // TODO: This should be used instead
+        // state = STATES.PARSE_END_TAG;
         state = STATES.IDLE;
       } else {
         type = parseTagName(getCharacter);
@@ -65,28 +66,18 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       const c = getCharacter.next();
 
       if (c === "<") {
-        state = STATES.PARSE_TAG_END;
+        state = STATES.PARSE_END_TAG;
       } else if (c) {
         content += c;
       } else {
         break;
       }
-    } else if (state === STATES.PARSE_TAG_END) {
-      const c = getCharacter.next();
-
-      if (c === ">") {
-        break;
-      }
     } else if (state === STATES.PARSE_END_TAG) {
-      // TODO: Figure out what to do in this case
-      break;
-      /*
       const c = getCharacter.next();
 
       if (c === ">") {
         break;
       }
-      */
     }
   }
 
