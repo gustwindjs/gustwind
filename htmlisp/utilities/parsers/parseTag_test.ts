@@ -45,7 +45,7 @@ Deno.test("self-closing tag with attributes", () => {
   );
 });
 
-Deno.test("parse tag", () => {
+Deno.test("simple tag", () => {
   assertEquals(
     parseTag(asGenerator(`<span>foobar</span>`)()),
     [{
@@ -56,7 +56,7 @@ Deno.test("parse tag", () => {
   );
 });
 
-Deno.test("parse tag with attributes", () => {
+Deno.test("simple tag with attributes", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
     [{
@@ -67,7 +67,7 @@ Deno.test("parse tag with attributes", () => {
   );
 });
 
-Deno.test("parse tag with content", () => {
+Deno.test("simple tag with content", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar">barfoo</a>`)()),
     [{
@@ -78,7 +78,7 @@ Deno.test("parse tag with content", () => {
   );
 });
 
-Deno.test("parse tag with another tag", () => {
+Deno.test("simple tag with another tag", () => {
   assertEquals(
     parseTag(
       asGenerator(`<a href="test" title="foobar"><span>barfoo</span></a>`)(),
