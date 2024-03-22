@@ -58,7 +58,6 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         );
 
         state = STATES.IDLE;
-        // state = STATES.PARSE_END_TAG;
       } else {
         currentTag.type = parseTagName(getCharacter);
         state = STATES.PARSE_TAG_ATTRIBUTES;
