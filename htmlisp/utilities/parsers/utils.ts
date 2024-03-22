@@ -14,8 +14,7 @@ function asGenerator(s: string) {
     let i = 0;
 
     return {
-      // TODO: Rename as get()
-      current(offset = 0) {
+      get(offset = 0) {
         if (s.length > i + offset) {
           return s[i + offset];
         }

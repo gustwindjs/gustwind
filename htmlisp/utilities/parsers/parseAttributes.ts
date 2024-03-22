@@ -13,7 +13,7 @@ function parseAttributes(getCharacter: CharacterGenerator) {
       break;
     }
 
-    if (getCharacter.current() === null) {
+    if (getCharacter.get() === null) {
       break;
     }
   }
