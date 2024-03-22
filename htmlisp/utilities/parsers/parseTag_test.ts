@@ -56,6 +56,17 @@ Deno.test("simple tag", () => {
   );
 });
 
+Deno.test("simple tag with an attribute at the end", () => {
+  assertEquals(
+    parseTag(asGenerator(`<span title>foobar</span>`)()),
+    [{
+      type: "span",
+      children: ["foobar"],
+      attributes: { title: null },
+    }],
+  );
+});
+
 Deno.test("simple tag with attributes", () => {
   assertEquals(
     parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
