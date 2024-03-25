@@ -337,9 +337,9 @@ Deno.test("integration", () => {
     <meta
       property="og:image"
       &content="(concat
-        foobar/
-        (get context meta.title)
-      )"
+  foobar/
+  (get context meta.title)
+)"
     />
   </head>
   <body>
@@ -376,7 +376,11 @@ Deno.test("integration", () => {
             {
               type: "meta",
               attributes: {
-                "&content": "(concat foobar/ (get context meta.title))",
+                property: "og:image",
+                "&content": `(concat
+  foobar/
+  (get context meta.title)
+)`,
               },
               children: [],
             },
