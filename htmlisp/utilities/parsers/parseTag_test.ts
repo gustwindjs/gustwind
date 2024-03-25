@@ -1,24 +1,24 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseTag } from "./parseTag.ts";
-import { asGenerator } from "./utils.ts";
+import { characterGenerator } from "./characterGenerator.ts";
 
 Deno.test("content", () => {
   assertEquals(
-    parseTag(asGenerator(`foobar`)()),
+    parseTag(characterGenerator(`foobar`)),
     ["foobar"],
   );
 });
 
 Deno.test("self-closing tag", () => {
   assertEquals(
-    parseTag(asGenerator(`<a />`)()),
+    parseTag(characterGenerator(`<a />`)),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
 Deno.test("multiple self-closing tags", () => {
   assertEquals(
-    parseTag(asGenerator(`<a /><a />`)()),
+    parseTag(characterGenerator(`<a /><a />`)),
     [{ type: "a", attributes: {}, children: [] }, {
       type: "a",
       attributes: {},
@@ -29,14 +29,14 @@ Deno.test("multiple self-closing tags", () => {
 
 Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
-    parseTag(asGenerator(`<a href="test" />`)()),
+    parseTag(characterGenerator(`<a href="test" />`)),
     [{ type: "a", attributes: { href: "test" }, children: [] }],
   );
 });
 
 Deno.test("self-closing tag with attributes", () => {
   assertEquals(
-    parseTag(asGenerator(`<a href="test" title="foobar" />`)()),
+    parseTag(characterGenerator(`<a href="test" title="foobar" />`)),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -47,7 +47,7 @@ Deno.test("self-closing tag with attributes", () => {
 
 Deno.test("simple tag", () => {
   assertEquals(
-    parseTag(asGenerator(`<span>foobar</span>`)()),
+    parseTag(characterGenerator(`<span>foobar</span>`)),
     [{
       type: "span",
       children: ["foobar"],
@@ -58,7 +58,7 @@ Deno.test("simple tag", () => {
 
 Deno.test("simple tag with an attribute at the end", () => {
   assertEquals(
-    parseTag(asGenerator(`<span title>foobar</span>`)()),
+    parseTag(characterGenerator(`<span title>foobar</span>`)),
     [{
       type: "span",
       children: ["foobar"],
@@ -69,7 +69,7 @@ Deno.test("simple tag with an attribute at the end", () => {
 
 Deno.test("simple tag with attributes", () => {
   assertEquals(
-    parseTag(asGenerator(`<a href="test" title="foobar"></a>`)()),
+    parseTag(characterGenerator(`<a href="test" title="foobar"></a>`)),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -80,7 +80,7 @@ Deno.test("simple tag with attributes", () => {
 
 Deno.test("simple tag with content", () => {
   assertEquals(
-    parseTag(asGenerator(`<a href="test" title="foobar">barfoo</a>`)()),
+    parseTag(characterGenerator(`<a href="test" title="foobar">barfoo</a>`)),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -92,7 +92,9 @@ Deno.test("simple tag with content", () => {
 Deno.test("simple tag with another tag", () => {
   assertEquals(
     parseTag(
-      asGenerator(`<a href="test" title="foobar"><span>barfoo</span></a>`)(),
+      characterGenerator(
+        `<a href="test" title="foobar"><span>barfoo</span></a>`,
+      ),
     ),
     [{
       type: "a",
@@ -109,9 +111,9 @@ Deno.test("simple tag with another tag", () => {
 Deno.test("self-closing siblings", () => {
   assertEquals(
     parseTag(
-      asGenerator(
+      characterGenerator(
         `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
-      )(),
+      ),
     ),
     [
       {
@@ -131,9 +133,9 @@ Deno.test("self-closing siblings", () => {
 Deno.test("sibling tags", () => {
   assertEquals(
     parseTag(
-      asGenerator(
+      characterGenerator(
         `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
-      )(),
+      ),
     ),
     [{
       type: "a",
@@ -149,7 +151,7 @@ Deno.test("sibling tags", () => {
 
 Deno.test("simple doctype", () => {
   assertEquals(
-    parseTag(asGenerator(`<!DOCTYPE html>`)()),
+    parseTag(characterGenerator(`<!DOCTYPE html>`)),
     [{
       type: "!DOCTYPE",
       attributes: { html: null },
@@ -162,10 +164,10 @@ Deno.test("simple doctype", () => {
 Deno.test("full doctype", () => {
   assertEquals(
     parseTag(
-      asGenerator(
+      characterGenerator(
         `<!DOCTYPE html>
         <a href="test" title="foobar" /><a href="test" title="foobar" />`,
-      )(),
+      ),
     ),
     [{
       type: "!DOCTYPE",
@@ -187,9 +189,9 @@ Deno.test("full doctype", () => {
 Deno.test("xml", () => {
   assertEquals(
     parseTag(
-      asGenerator(
+      characterGenerator(
         `<?xml version="1.0" encoding="utf-8" ?>`,
-      )(),
+      ),
     ),
     [{
       type: "?xml",
