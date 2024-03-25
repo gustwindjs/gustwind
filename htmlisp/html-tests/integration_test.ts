@@ -28,7 +28,7 @@ Deno.test("head integration", async () => {
 `,
       context: { meta: { language: "en", title: "demo" } },
     }),
-    `<!DOCTYPE html><html lang="en"><head><link rel="icon" href="demo"/><link rel="preload" href="demo" as="style"/><meta property="og:image" content="foobar/demo"/></head></html>`,
+    `<!DOCTYPE html><html lang="en"><head><link rel="icon" href="demo"></link><link rel="preload" href="demo" as="style"></link><meta property="og:image" content="foobar/demo"></meta></head></html>`,
   );
 });
 
@@ -72,6 +72,6 @@ Deno.test("full integration", async () => {
         content: "<div>foobar</div>",
       },
     }),
-    `<!DOCTYPE html><html lang="en"><head><link rel="icon" href="demo"/><link rel="preload" href="demo" as="style"/><meta property="og:image" content="foobar/demo"/></head><body><div>nav</div><aside></aside><main><div>foobar</div></main><div>footer</div></body></html>`,
+    `<!DOCTYPE html><html lang="en"><head><link rel="icon" href="demo"></link><link rel="preload" href="demo" as="style"></link><meta property="og:image" content="foobar/demo"></meta></head><body><div>nav</div><aside></aside><main><div>foobar</div></main><div>footer</div></body></html>`,
   );
 });

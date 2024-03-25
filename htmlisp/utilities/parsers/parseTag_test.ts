@@ -307,7 +307,6 @@ Deno.test("complex newlines", () => {
     [{
       type: "BaseLayout",
       attributes: {},
-
       children: [{
         type: "slot",
         attributes: { name: "content" },
@@ -317,6 +316,99 @@ Deno.test("complex newlines", () => {
           children: ["hello"],
         }],
       }],
+    }],
+  );
+});
+
+Deno.test("integration", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<!DOCTYPE html>
+<html &lang="(get context meta.language)">
+  <head>
+    <link
+      rel="icon"
+      href="demo"
+    />
+    <link
+      rel="preload"
+      href="demo"
+      as="style"
+    />
+    <meta
+      property="og:image"
+      &content="(concat
+        foobar/
+        (get context meta.title)
+      )"
+    />
+  </head>
+  <body>
+    <MainNavigation />
+    <aside &children="(render (get props aside))"></aside>
+    <main &children="(render (get props content))"></main>
+    <MainFooter />
+  </body>
+</html>
+`)),
+    [{
+      type: "!DOCTYPE",
+      attributes: { html: null },
+      children: [],
+      closesWith: "",
+    }, {
+      type: "html",
+      attributes: { "&lang": "(get context meta.language)" },
+      children: [
+        {
+          type: "head",
+          attributes: {},
+          children: [
+            {
+              type: "link",
+              attributes: { rel: "icon", href: "demo" },
+              children: [],
+            },
+            {
+              type: "link",
+              attributes: { rel: "preload", href: "demo", as: "style" },
+              children: [],
+            },
+            {
+              type: "meta",
+              attributes: {
+                "&content": "(concat foobar/ (get context meta.title))",
+              },
+              children: [],
+            },
+          ],
+        },
+        {
+          type: "body",
+          attributes: {},
+          children: [
+            {
+              type: "MainNavigation",
+              attributes: {},
+              children: [],
+            },
+            {
+              type: "aside",
+              attributes: { "&children": "(render (get props aside))" },
+              children: [],
+            },
+            {
+              type: "main",
+              attributes: { "&children": "(render (get props content))" },
+              children: [],
+            },
+            {
+              type: "MainFooter",
+              attributes: {},
+              children: [],
+            },
+          ],
+        },
+      ],
     }],
   );
 });
