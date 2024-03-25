@@ -10,7 +10,7 @@ Deno.test("element with custom utilities", async () => {
       utilities: { urlJoin },
       context: { href: "foo", suffix: "bar" },
     }),
-    `<a href="foo/bar"/>`,
+    `<a href="foo/bar"></a>`,
   );
 });
 
@@ -25,6 +25,6 @@ Deno.test("element with component utilities", async () => {
         SiteLink: '<a &href="(get props href)" />',
       },
     }),
-    `<a href="foo/bar"/>`,
+    `<a href="foo/bar"></a>`,
   );
 });
