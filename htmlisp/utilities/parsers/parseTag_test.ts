@@ -9,7 +9,14 @@ Deno.test("content", () => {
   );
 });
 
-Deno.test("self-closing tag", () => {
+Deno.test("self-closing tag 1", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<a/>`)),
+    [{ type: "a", attributes: {}, children: [] }],
+  );
+});
+
+Deno.test("self-closing tag 2", () => {
   assertEquals(
     parseTag(characterGenerator(`<a />`)),
     [{ type: "a", attributes: {}, children: [] }],
