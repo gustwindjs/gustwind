@@ -30,6 +30,27 @@ Deno.test(`attribute with '`, () => {
   );
 });
 
+Deno.test(`attribute with 's and quotes`, () => {
+  assertEquals(
+    parseAttributes(asGenerator(`href='te"st'`)()),
+    { href: 'te"st' },
+  );
+});
+
+Deno.test(`attribute with backticks`, () => {
+  assertEquals(
+    parseAttributes(asGenerator("href=`test` title=`foo`")()),
+    { href: "test", title: "foo" },
+  );
+});
+
+Deno.test(`attribute with backticks and quotes`, () => {
+  assertEquals(
+    parseAttributes(asGenerator('href=`te"st`')()),
+    { href: 'te"st' },
+  );
+});
+
 Deno.test(`attribute without a value`, () => {
   assertEquals(
     parseAttributes(asGenerator(`href title="foo"`)()),
