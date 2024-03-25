@@ -320,7 +320,52 @@ Deno.test("complex newlines", () => {
   );
 });
 
-Deno.test("integration", () => {
+Deno.test("integration 1", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<html &lang="(get context meta.language)">
+  <head>
+    <link
+      rel="icon"
+      href="demo"
+    />
+  </head>
+  <body>
+    <MainNavigation />
+  </body>
+</html>
+`)),
+    [{
+      type: "html",
+      attributes: { "&lang": "(get context meta.language)" },
+      children: [
+        {
+          type: "head",
+          attributes: {},
+          children: [
+            {
+              type: "link",
+              attributes: { rel: "icon", href: "demo" },
+              children: [],
+            },
+          ],
+        },
+        {
+          type: "body",
+          attributes: {},
+          children: [
+            {
+              type: "MainNavigation",
+              attributes: {},
+              children: [],
+            },
+          ],
+        },
+      ],
+    }],
+  );
+});
+
+Deno.test("integration 2", () => {
   assertEquals(
     parseTag(characterGenerator(`<!DOCTYPE html>
 <html &lang="(get context meta.language)">
