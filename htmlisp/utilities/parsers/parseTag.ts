@@ -111,9 +111,9 @@ function parseTagType(getCharacter: CharacterGenerator) {
   while (c) {
     if (c === " " || c === "/" || c === ">") {
       return tagType;
+    } else if (c !== "\n") {
+      tagType += c;
     }
-
-    tagType += c;
 
     c = getCharacter.next();
   }

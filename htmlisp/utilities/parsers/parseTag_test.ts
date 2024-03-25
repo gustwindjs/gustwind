@@ -100,6 +100,19 @@ Deno.test("simple tag with attributes", () => {
   );
 });
 
+Deno.test("simple tag with attributes and newlines in between", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<a
+  href="test"
+  title="foobar"></a>`)),
+    [{
+      type: "a",
+      attributes: { href: "test", title: "foobar" },
+      children: [],
+    }],
+  );
+});
+
 Deno.test("simple tag with content", () => {
   assertEquals(
     parseTag(characterGenerator(`<a href="test" title="foobar">barfoo</a>`)),
