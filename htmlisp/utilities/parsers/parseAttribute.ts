@@ -82,13 +82,14 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
 function parseAttributeValue(getCharacter: CharacterGenerator) {
   let singleQuotesFound = 0;
   let doubleQuotesFound = 0;
+  let backtickQuotesFound = 0;
   let attributeValue = "";
   let c = getCharacter.next();
 
   while (c) {
     if (c === '"') {
-      if (singleQuotesFound > 0) {
-        // Escape "'s in single quote mode
+      // Escape "'s in single and backtick quote modes
+      if (singleQuotesFound > 0 || backtickQuotesFound > 0) {
         attributeValue += `\"`;
       } else {
         doubleQuotesFound++;
@@ -98,14 +99,16 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
         }
       }
     } else if (c === "'") {
-      if (doubleQuotesFound === 0) {
-        singleQuotesFound++;
+      singleQuotesFound++;
 
-        if (singleQuotesFound === 2) {
-          return attributeValue;
-        }
-      } else {
-        attributeValue += c;
+      if (singleQuotesFound === 2) {
+        return attributeValue;
+      }
+    } else if (c === "`") {
+      backtickQuotesFound++;
+
+      if (backtickQuotesFound === 2) {
+        return attributeValue;
       }
     } else {
       attributeValue += c;
