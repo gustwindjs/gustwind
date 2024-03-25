@@ -37,8 +37,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       else if (c === "/") {
         getCharacter.next();
       } else if (c === ">") {
-        // DOCTYPE cannot have children so keep on parsing
-        if (currentTag.closesWith === "") {
+        // DOCTYPE cannot have children so keep on parsing. Same for xml
+        if (currentTag.closesWith === "" || currentTag.closesWith === "?") {
           state = STATES.IDLE;
         } else {
           state = STATES.PARSE_CHILDREN;
