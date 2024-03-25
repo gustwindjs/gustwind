@@ -62,7 +62,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         currentTag.closesWith = "";
       }
 
-      currentTag.type = parseTagName(getCharacter);
+      currentTag.type = parseTagType(getCharacter);
       state = STATES.PARSE_TAG_ATTRIBUTES;
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
       getCharacter.previous();
@@ -104,21 +104,21 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   return currentTag.type ? capturedTags : [content];
 }
 
-function parseTagName(getCharacter: CharacterGenerator) {
-  let tagName = "";
+function parseTagType(getCharacter: CharacterGenerator) {
+  let tagType = "";
 
   let c = getCharacter.next();
   while (c) {
-    if (c === " " || c === ">") {
-      return tagName;
+    if (c === " " || c === "/" || c === ">") {
+      return tagType;
     }
 
-    tagName += c;
+    tagType += c;
 
     c = getCharacter.next();
   }
 
-  return tagName;
+  return tagType;
 }
 
 export { parseTag };
