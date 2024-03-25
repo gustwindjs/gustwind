@@ -48,7 +48,7 @@ Deno.test("self-closing siblings", async () => {
 </head>
 `,
     }),
-    `<head><link rel="icon"/><link rel="preload"/></head>`,
+    `<head><link rel="icon"></link><link rel="preload"></link></head>`,
   );
 });
 
