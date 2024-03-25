@@ -100,6 +100,17 @@ Deno.test("simple tag with attributes", () => {
   );
 });
 
+Deno.test("tag with single quotes in an attribute", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<a href="t'e's't"</a>`)),
+    [{
+      type: "a",
+      attributes: { href: "t'e's't" },
+      children: [],
+    }],
+  );
+});
+
 Deno.test("simple tag with attributes and newlines in between", () => {
   assertEquals(
     parseTag(characterGenerator(`<a
