@@ -97,7 +97,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
     }
   }
 
-  if (content) {
+  if (content.trim()) {
     currentTag.children.push(content);
   }
 
