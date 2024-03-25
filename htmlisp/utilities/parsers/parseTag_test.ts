@@ -56,6 +56,21 @@ Deno.test("simple tag", () => {
   );
 });
 
+Deno.test("two tags with a newline in between", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<span>foobar</span>\n<span>foobar</span>`)),
+    [{
+      type: "span",
+      children: ["foobar"],
+      attributes: {},
+    }, {
+      type: "span",
+      children: ["foobar"],
+      attributes: {},
+    }],
+  );
+});
+
 Deno.test("simple tag with an attribute at the end", () => {
   assertEquals(
     parseTag(characterGenerator(`<span title>foobar</span>`)),
@@ -198,6 +213,31 @@ Deno.test("xml", () => {
       attributes: { version: "1.0", encoding: "utf-8" },
       closesWith: "?",
       children: [],
+    }],
+  );
+});
+
+Deno.test("complex newlines", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<BaseLayout>
+    <slot name="content">
+      <div>hello</div>
+    </slot>
+  </BaseLayout>
+`)),
+    [{
+      type: "BaseLayout",
+      attributes: {},
+
+      children: [{
+        type: "slot",
+        attributes: { name: "content" },
+        children: [{
+          type: "div",
+          attributes: {},
+          children: ["hello"],
+        }],
+      }],
     }],
   );
 });
