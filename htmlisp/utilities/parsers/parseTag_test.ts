@@ -248,6 +248,27 @@ Deno.test("xml", () => {
   );
 });
 
+Deno.test("xml with a newline", () => {
+  assertEquals(
+    parseTag(
+      characterGenerator(
+        `<?xml version="1.0" encoding="utf-8" ?>
+<div>foo</div>`,
+      ),
+    ),
+    [{
+      type: "?xml",
+      attributes: { version: "1.0", encoding: "utf-8" },
+      closesWith: "?",
+      children: [],
+    }, {
+      type: "div",
+      attributes: {},
+      children: ["foo"],
+    }],
+  );
+});
+
 Deno.test("complex newlines", () => {
   assertEquals(
     parseTag(characterGenerator(`<BaseLayout>
