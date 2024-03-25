@@ -30,13 +30,14 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
           state = STATES.PARSE_TAG_TYPE;
 
           depth++;
-          content && currentTag.children.push(content);
+          content.trim() && currentTag.children.push(content);
           content = "";
           currentTag = { type: "", attributes: {}, children: [] };
           capturedTags.push(currentTag);
         }
       } // Self-closing case
       else if (c === "/") {
+        depth--;
         getCharacter.next();
       } else if (c === ">") {
         // DOCTYPE cannot have children so keep on parsing. Same for xml
