@@ -19,7 +19,7 @@ function parseAttribute(
     if (state === STATES.FIND_ATTRIBUTE_NAME) {
       const c = getCharacter.next();
 
-      if (c !== " ") {
+      if (c !== " " && c !== "\n") {
         getCharacter.previous();
 
         state = STATES.PARSE_ATTRIBUTE_NAME;
@@ -71,9 +71,9 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
       getCharacter.previous();
 
       return attributeName;
+    } else if (c !== "\n") {
+      attributeName += c;
     }
-
-    attributeName += c;
   }
 
   return attributeName;
