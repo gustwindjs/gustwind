@@ -195,6 +195,33 @@ Deno.test("sibling tags", () => {
   );
 });
 
+Deno.test("siblings with only children", () => {
+  assertEquals(
+    parseTag(
+      characterGenerator(
+        `<div><span>foo</span></div><div><span>foo</span></div>`,
+      ),
+    ),
+    [{
+      type: "div",
+      attributes: {},
+      children: [{
+        type: "span",
+        attributes: {},
+        children: ["foo"],
+      }],
+    }, {
+      type: "div",
+      attributes: {},
+      children: [{
+        type: "span",
+        attributes: {},
+        children: ["foo"],
+      }],
+    }],
+  );
+});
+
 Deno.test("simple doctype", () => {
   assertEquals(
     parseTag(characterGenerator(`<!DOCTYPE html>`)),
