@@ -16,6 +16,20 @@ Deno.test(`attribute with '`, () => {
   );
 });
 
+Deno.test(`attribute with backticks`, () => {
+  assertEquals(
+    parseAttribute(characterGenerator("title=`foo` ")),
+    ["title", "foo"],
+  );
+});
+
+Deno.test(`attribute singlequotes within backticks`, () => {
+  assertEquals(
+    parseAttribute(characterGenerator("title=`f'o'o` ")),
+    ["title", "f'o'o"],
+  );
+});
+
 Deno.test(`attribute with single quotes in value`, () => {
   assertEquals(
     parseAttribute(characterGenerator(`title="f'o'o" `)),

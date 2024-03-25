@@ -104,7 +104,7 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
       if (singleQuotesFound === 2) {
         return attributeValue;
       }
-    } else if (c === "`" && !doubleQuotesFound && !backtickQuotesFound) {
+    } else if (c === "`" && !doubleQuotesFound) {
       backtickQuotesFound++;
 
       if (backtickQuotesFound === 2) {
