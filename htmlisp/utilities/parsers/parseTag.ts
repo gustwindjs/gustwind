@@ -14,6 +14,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let currentTag: Tag = { type: "", attributes: {}, children: [] };
   const capturedTags: (string | Tag)[] = [];
   let content = "";
+  let depth = 0;
 
   while (true) {
     if (state === STATES.IDLE) {
@@ -28,6 +29,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         } else {
           state = STATES.PARSE_TAG_TYPE;
 
+          depth++;
           content && currentTag.children.push(content);
           content = "";
           currentTag = { type: "", attributes: {}, children: [] };
@@ -92,6 +94,13 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       const c = getCharacter.next();
 
       if (c === ">") {
+        depth--;
+
+        // Escape once the current tree has been parsed
+        if (depth === -1) {
+          break;
+        }
+
         state = STATES.IDLE;
       }
     }
