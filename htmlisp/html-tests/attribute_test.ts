@@ -35,21 +35,21 @@ Deno.test("element with a self-closing attribute at the end", async () => {
 Deno.test("self-closing element with an attribute", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<div title="bar" />` }),
-    `<div title="bar"/>`,
+    `<div title="bar"></div>`,
   );
 });
 
 Deno.test("self-closing element with a self-closing attribute", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<div demo title="bar" />` }),
-    `<div demo title="bar"/>`,
+    `<div demo title="bar"></div>`,
   );
 });
 
 Deno.test("self-closing element with a self-closing attribute at the end", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<div title="bar" demo />` }),
-    `<div title="bar" demo/>`,
+    `<div title="bar" demo></div>`,
   );
 });
 
