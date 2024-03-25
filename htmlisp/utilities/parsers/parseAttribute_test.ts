@@ -16,6 +16,20 @@ Deno.test(`attribute with '`, () => {
   );
 });
 
+Deno.test(`attribute with single quotes in value`, () => {
+  assertEquals(
+    parseAttribute(characterGenerator(`title="f'o'o" `)),
+    ["title", "f'o'o"],
+  );
+});
+
+Deno.test(`attribute with single backticks in value`, () => {
+  assertEquals(
+    parseAttribute(characterGenerator('title="f`o`o" ')),
+    ["title", "f`o`o"],
+  );
+});
+
 Deno.test(`attribute without a value`, () => {
   assertEquals(
     parseAttribute(characterGenerator(`href `)),

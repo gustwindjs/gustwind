@@ -98,13 +98,13 @@ function parseAttributeValue(getCharacter: CharacterGenerator) {
           return attributeValue;
         }
       }
-    } else if (c === "'") {
+    } else if (c === "'" && !doubleQuotesFound && !backtickQuotesFound) {
       singleQuotesFound++;
 
       if (singleQuotesFound === 2) {
         return attributeValue;
       }
-    } else if (c === "`") {
+    } else if (c === "`" && !doubleQuotesFound && !backtickQuotesFound) {
       backtickQuotesFound++;
 
       if (backtickQuotesFound === 2) {
