@@ -1,6 +1,7 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
-import { parseHtmlisp } from "./utilities/parseHtmlisp.ts";
+import { characterGenerator } from "./utilities/parsers/characterGenerator.ts";
+import { parseTag } from "./utilities/parsers/parseTag.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
@@ -17,7 +18,7 @@ function htmlispToHTML(
   }
 
   return astToHtml(
-    parseHtmlisp(htmlInput),
+    parseTag(characterGenerator(htmlInput)),
     htmlispToHTML,
     context,
     props,

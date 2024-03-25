@@ -1,6 +1,6 @@
 import { parseExpressions } from "./parseExpressions.ts";
 import { getAttributeBindings } from "./getAttributeBindings.ts";
-import type { Tag } from "./parseHtmlisp.ts";
+import type { Tag } from "./parsers/types.ts";
 import type {
   Components,
   Context,
@@ -91,30 +91,29 @@ async function astToHtml(
         const foundComponent = components[type];
 
         // @ts-expect-error Filter breaks the type here
-        const slots: { name: string | null; value: string | null }[] =
-          await Promise.all(
-            children.filter((o) => typeof o !== "string" && o.type === "slot")
-              .map(
-                async (o) =>
-                  typeof o !== "string" &&
-                  ({
-                    name: o.attributes[0].value,
-                    value: await astToHtml(
-                      o.children,
-                      htmlispToHTML,
-                      context,
-                      props,
-                      utilities,
-                      componentUtilities,
-                      components,
-                      // Pass original ast to help with debugging
-                      ast,
-                    ),
-                  }),
-              ).filter(Boolean),
-          );
+        const slots: [string | null, string | null][] = await Promise.all(
+          children.filter((o) => typeof o !== "string" && o.type === "slot")
+            .map(
+              async (o) =>
+                typeof o !== "string" &&
+                [
+                  o.attributes?.name,
+                  await astToHtml(
+                    o.children,
+                    htmlispToHTML,
+                    context,
+                    props,
+                    utilities,
+                    componentUtilities,
+                    components,
+                    // Pass original ast to help with debugging
+                    ast,
+                  ),
+                ],
+            ).filter(Boolean),
+        );
 
-        if (!slots.every((s) => s.name)) {
+        if (!slots.every((s) => s[0])) {
           throw new Error(`Slot is missing a name!`);
         }
 
@@ -125,11 +124,8 @@ async function astToHtml(
             context,
             props: {
               children: renderedChildren,
-              ...Object.fromEntries(
-                slots.concat(attributes).map((
-                  { name, value },
-                ) => [name, value]),
-              ),
+              ...Object.fromEntries(slots),
+              ...attributes,
               ...parsedExpressions,
               props,
             },

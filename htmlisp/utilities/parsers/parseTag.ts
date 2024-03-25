@@ -1,5 +1,5 @@
 import { parseAttributes } from "./parseAttributes.ts";
-import type { Attributes, CharacterGenerator } from "./types.ts";
+import type { CharacterGenerator, Tag } from "./types.ts";
 
 const STATES = {
   IDLE: "idle",
@@ -7,14 +7,6 @@ const STATES = {
   PARSE_TAG_TYPE: "parse tag type",
   PARSE_TAG_ATTRIBUTES: "parse tag attributes",
   PARSE_CHILDREN: "parse children",
-};
-
-// TODO: Use the same type here as for the earlier parser
-type Tag = {
-  type: string;
-  attributes?: Attributes;
-  children: (string | Tag)[];
-  closesWith?: string | null;
 };
 
 function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
