@@ -326,6 +326,17 @@ Deno.test("content after element", () => {
   );
 });
 
+Deno.test("content after element 2", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<div>foo</div>bar`)),
+    [{
+      type: "div",
+      attributes: {},
+      children: ["foo"],
+    }, "bar"],
+  );
+});
+
 Deno.test("complex newlines", () => {
   assertEquals(
     parseTag(characterGenerator(`<BaseLayout>
