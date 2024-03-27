@@ -9,9 +9,12 @@ const STATES = {
   PARSE_CHILDREN: "parse children",
 };
 
-function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
+function parseTag(
+  getCharacter: CharacterGenerator,
+  parsingChildren?: boolean,
+): (Tag | string)[] {
   let state = STATES.IDLE;
-  let currentTag: Tag = { type: "", attributes: {}, children: [] };
+  let currentTag: Tag | null = null;
   const capturedTags: (string | Tag)[] = [];
   let content = "";
   let depth = 0;
@@ -30,7 +33,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
           state = STATES.PARSE_TAG_TYPE;
 
           depth++;
-          content.trim() && currentTag.children.push(content);
+          content.trim() && currentTag?.children.push(content);
           content = "";
           currentTag = { type: "", attributes: {}, children: [] };
           capturedTags.push(currentTag);
@@ -41,14 +44,17 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         getCharacter.next();
       } else if (c === ">") {
         // DOCTYPE cannot have children so keep on parsing. Same for xml
-        if (currentTag.closesWith === "" || currentTag.closesWith === "?") {
+        if (currentTag?.closesWith === "" || currentTag?.closesWith === "?") {
           state = STATES.IDLE;
         } else {
           state = STATES.PARSE_CHILDREN;
         }
       } // <?xml ... ?>
       else if (getCharacter.get() === ">") {
-        currentTag.closesWith = c;
+        if (currentTag) {
+          depth--;
+          currentTag.closesWith = c;
+        }
       } // Found content
       else if (c) {
         getCharacter.previous();
@@ -60,24 +66,32 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         break;
       }
     } else if (state === STATES.PARSE_TAG_TYPE) {
-      // <!DOCTYPE> case
-      if (getCharacter.get() === "!") {
-        currentTag.closesWith = "";
-      }
+      if (currentTag) {
+        // <!DOCTYPE> case
+        if (getCharacter.get() === "!") {
+          currentTag.closesWith = "";
+        }
 
-      currentTag.type = parseTagType(getCharacter);
-      state = STATES.PARSE_TAG_ATTRIBUTES;
+        currentTag.type = parseTagType(getCharacter);
+        state = STATES.PARSE_TAG_ATTRIBUTES;
+      } else {
+        throw new Error("No tag to parse for tag type");
+      }
     } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
-      getCharacter.previous();
-      currentTag.attributes = parseAttributes(getCharacter);
-      state = STATES.IDLE;
+      if (currentTag) {
+        getCharacter.previous();
+        currentTag.attributes = parseAttributes(getCharacter);
+        state = STATES.IDLE;
+      } else {
+        throw new Error("No tag to parse for attributes");
+      }
     } else if (state === STATES.PARSE_CHILDREN) {
       const c = getCharacter.next();
 
       if (c === "<") {
         if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
-        } else if (currentTag.type) {
+        } else if (currentTag?.type) {
           if (content.trim()) {
             currentTag.children.push(content.trim());
             content = "";
@@ -86,7 +100,7 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
           getCharacter.previous();
 
           currentTag.children = currentTag.children.concat(
-            parseTag(getCharacter),
+            parseTag(getCharacter, true),
           );
 
           state = STATES.IDLE;
@@ -103,8 +117,17 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         depth--;
 
         // Escape once the current tree has been parsed
-        if (depth === -1) {
-          break;
+        if (depth === 0) {
+          content.trim() && currentTag?.children.push(content.trim());
+          content = "";
+
+          // TODO: Can parsingChildren flag be dropped as it doesn't feel right?
+          // Maybe recursion has to be removed (not good with siblings + content)-
+          if (parsingChildren) {
+            break;
+          } else {
+            currentTag = null;
+          }
         }
 
         state = STATES.IDLE;
@@ -113,10 +136,10 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   }
 
   if (content.trim()) {
-    currentTag.children.push(content);
+    return capturedTags.concat(content.trim());
   }
 
-  return currentTag.type ? capturedTags : [content];
+  return capturedTags.length ? capturedTags : [content];
 }
 
 function parseTagType(getCharacter: CharacterGenerator) {
