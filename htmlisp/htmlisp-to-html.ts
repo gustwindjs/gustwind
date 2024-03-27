@@ -5,6 +5,9 @@ import { parseTag } from "./utilities/parsers/parseTag.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
+// TODO: Potentially the cache could exist on fs even (needs to be benchmarked)
+const CACHE = new Map();
+
 function htmlispToHTML(
   { htmlInput, components, context, props, utilities, componentUtilities }:
     HtmllispToHTMLParameters,
@@ -17,8 +20,16 @@ function htmlispToHTML(
     throw new Error("convert - html input was not a string");
   }
 
+  let cachedAst = CACHE.get(htmlInput);
+
+  if (!cachedAst) {
+    cachedAst = parseTag(characterGenerator(htmlInput));
+
+    CACHE.set(htmlInput, cachedAst);
+  }
+
   return astToHtml(
-    parseTag(characterGenerator(htmlInput)),
+    cachedAst,
     htmlispToHTML,
     context,
     props,
