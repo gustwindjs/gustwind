@@ -298,15 +298,11 @@ Deno.test("xml with a newline", () => {
 
 Deno.test("content before element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<div>
-    bar
-    <span>foo</span>
-  </div>
-`)),
-    ["bar", {
+    parseTag(characterGenerator(`<div>bar<span>foo</span></div>`)),
+    [{
       type: "div",
       attributes: {},
-      children: [{
+      children: ["bar", {
         type: "span",
         attributes: {},
         children: ["foo"],
@@ -317,11 +313,7 @@ Deno.test("content before element", () => {
 
 Deno.test("content after element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<div>
-    <span>foo</span>
-    bar
-  </div>
-`)),
+    parseTag(characterGenerator(`<div><span>foo</span>bar</div>`)),
     [{
       type: "div",
       attributes: {},
@@ -329,8 +321,8 @@ Deno.test("content after element", () => {
         type: "span",
         attributes: {},
         children: ["foo"],
-      }],
-    }, "bar"],
+      }, "bar"],
+    }],
   );
 });
 
