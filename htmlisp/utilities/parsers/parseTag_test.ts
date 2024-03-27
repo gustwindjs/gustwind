@@ -296,6 +296,25 @@ Deno.test("xml with a newline", () => {
   );
 });
 
+Deno.test("content before element", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<div>
+    bar
+    <span>foo</span>
+  </div>
+`)),
+    ["bar", {
+      type: "div",
+      attributes: {},
+      children: [{
+        type: "span",
+        attributes: {},
+        children: ["foo"],
+      }],
+    }],
+  );
+});
+
 Deno.test("content after element", () => {
   assertEquals(
     parseTag(characterGenerator(`<div>
