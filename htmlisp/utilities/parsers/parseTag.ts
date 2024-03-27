@@ -78,8 +78,8 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
         } else if (currentTag.type) {
-          if (content) {
-            currentTag.children.push(content);
+          if (content.trim()) {
+            currentTag.children.push(content.trim());
             content = "";
           }
 
