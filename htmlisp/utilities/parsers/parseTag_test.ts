@@ -176,6 +176,34 @@ Deno.test("self-closing siblings", () => {
   );
 });
 
+Deno.test("multiple siblings", () => {
+  assertEquals(
+    parseTag(
+      characterGenerator(
+        `<Button><div>foo</div><div>bar</div></Button>`,
+      ),
+    ),
+    [
+      {
+        type: "Button",
+        attributes: {},
+        children: [
+          {
+            type: "div",
+            attributes: {},
+            children: ["foo"],
+          },
+          {
+            type: "div",
+            attributes: {},
+            children: ["bar"],
+          },
+        ],
+      },
+    ],
+  );
+});
+
 Deno.test("sibling tags", () => {
   assertEquals(
     parseTag(
