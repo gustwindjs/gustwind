@@ -234,6 +234,34 @@ Deno.test("simple doctype", () => {
   );
 });
 
+Deno.test("simple doctype and content", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<!DOCTYPE html>foobar`)),
+    [{
+      type: "!DOCTYPE",
+      attributes: { html: null },
+      closesWith: "",
+      children: [],
+    }, "foobar"],
+  );
+});
+
+Deno.test("simple doctype and element", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<!DOCTYPE html><div>foobar</div>`)),
+    [{
+      type: "!DOCTYPE",
+      attributes: { html: null },
+      closesWith: "",
+      children: [],
+    }, {
+      type: "div",
+      attributes: {},
+      children: ["foobar"],
+    }],
+  );
+});
+
 Deno.test("full doctype", () => {
   assertEquals(
     parseTag(
