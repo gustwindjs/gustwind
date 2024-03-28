@@ -104,6 +104,14 @@ function parseTag(
           );
 
           state = STATES.IDLE;
+        } // No tag was found yet so we have only pure content
+        else {
+          capturedTags.push(content);
+          content = "";
+
+          getCharacter.previous();
+
+          state = STATES.IDLE;
         }
       } else if (c) {
         content += c;
