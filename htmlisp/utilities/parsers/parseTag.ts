@@ -9,10 +9,7 @@ const STATES = {
   PARSE_CHILDREN: "parse children",
 };
 
-function parseTag(
-  getCharacter: CharacterGenerator,
-  parsingChildren?: boolean,
-): (Tag | string)[] {
+function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
   let state = STATES.IDLE;
   let currentTag: Tag | null = null;
   const capturedTags: (string | Tag)[] = [];
@@ -101,7 +98,7 @@ function parseTag(
           getCharacter.previous();
 
           currentTag.children = currentTag.children.concat(
-            parseTag(getCharacter, true),
+            parseTag(getCharacter),
           );
 
           state = STATES.IDLE;
@@ -130,13 +127,9 @@ function parseTag(
           content.trim() && currentTag?.children.push(content.trim());
           content = "";
 
-          // TODO: Can parsingChildren flag be dropped as it doesn't feel right?
-          // Maybe recursion has to be removed (not good with siblings + content)-
-          if (parsingChildren) {
-            break;
-          } else {
-            currentTag = null;
-          }
+          currentTag = null;
+        } else if (depth === -1) {
+          break;
         }
 
         state = STATES.IDLE;
