@@ -69,6 +69,7 @@ function parseTag(
       if (currentTag) {
         // <!DOCTYPE> case
         if (getCharacter.get() === "!") {
+          depth--;
           currentTag.closesWith = "";
         }
 
