@@ -326,6 +326,36 @@ Deno.test("content after element", () => {
   );
 });
 
+Deno.test("content before and after element", () => {
+  assertEquals(
+    parseTag(characterGenerator(`bar<span>foo</span>bar`)),
+    ["bar", {
+      type: "span",
+      attributes: {},
+      children: ["foo"],
+    }, "bar"],
+  );
+});
+
+Deno.test("element before and after content", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<span>foo</span>bar<span>foo</span>`)),
+    [
+      {
+        type: "span",
+        attributes: {},
+        children: ["foo"],
+      },
+      "bar",
+      {
+        type: "span",
+        attributes: {},
+        children: ["foo"],
+      },
+    ],
+  );
+});
+
 Deno.test("content after element 2", () => {
   assertEquals(
     parseTag(characterGenerator(`<div>foo</div>bar`)),
