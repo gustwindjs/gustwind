@@ -204,6 +204,38 @@ Deno.test("multiple siblings", () => {
   );
 });
 
+Deno.test("siblings only with former children", () => {
+  assertEquals(
+    parseTag(
+      characterGenerator(
+        `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
+      ),
+    ),
+    [
+      {
+        type: "div",
+        attributes: {
+          class: "bar",
+        },
+        children: [
+          {
+            type: "span",
+            attributes: {},
+            children: ["foo"],
+          },
+        ],
+      },
+      {
+        type: "div",
+        attributes: {
+          class: "bar",
+        },
+        children: ["foo"],
+      },
+    ],
+  );
+});
+
 Deno.test("sibling tags", () => {
   assertEquals(
     parseTag(
