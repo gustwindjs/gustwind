@@ -30,13 +30,21 @@ function parseTag(
         if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
         } else {
-          state = STATES.PARSE_TAG_TYPE;
+          // Keep on parsing siblings if we are within a node already
+          if (depth > 0) {
+            getCharacter.previous();
 
-          depth++;
-          content.trim() && currentTag?.children.push(content);
-          content = "";
-          currentTag = { type: "", attributes: {}, children: [] };
-          capturedTags.push(currentTag);
+            state = STATES.PARSE_CHILDREN;
+          } // Otherwise construct a root node
+          else {
+            state = STATES.PARSE_TAG_TYPE;
+
+            depth++;
+            content.trim() && currentTag?.children.push(content);
+            content = "";
+            currentTag = { type: "", attributes: {}, children: [] };
+            capturedTags.push(currentTag);
+          }
         }
       } // Self-closing case
       else if (c === "/") {
