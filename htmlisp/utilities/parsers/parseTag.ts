@@ -113,7 +113,6 @@ function parseTag(
 
           getCharacter.previous();
 
-          // TODO: What if there are more siblings left to parse?
           currentTag.children = currentTag.children.concat(
             parseTag(getCharacter, true),
           );
