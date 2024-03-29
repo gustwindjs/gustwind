@@ -1,8 +1,8 @@
 import process from "node:process";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
-import { applyUtilities } from "../../breezewind/applyUtility.ts";
-import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
-import type { Context, Utilities, Utility } from "../../breezewind/types.ts";
+import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
+import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
+import type { Context, Utilities, Utility } from "../../types.ts";
 import {
   getComponentUtilities,
   getGlobalUtilities,

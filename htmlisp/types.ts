@@ -1,8 +1,7 @@
-import type { Utilities } from "../breezewind/types.ts";
+import type { Context, Utilities } from "../types.ts";
 
 type Attributes = Record<string, string> | null;
 type Components = Record<string, string>;
-type Context = Record<string, unknown>;
 
 type HtmllispToHTMLParameters = {
   htmlInput?: string;

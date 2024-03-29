@@ -1,5 +1,5 @@
 import { parseAttributes } from "./parseAttributes.ts";
-import type { CharacterGenerator, Tag } from "./types.ts";
+import type { CharacterGenerator, Element } from "./types.ts";
 
 enum STATES {
   IDLE,
@@ -12,10 +12,10 @@ enum STATES {
 function parseTag(
   getCharacter: CharacterGenerator,
   isChild?: boolean,
-): (Tag | string)[] {
+): (Element | string)[] {
   let state = STATES.IDLE;
-  let currentTag: Tag | null = null;
-  const capturedTags: (string | Tag)[] = [];
+  let currentTag: Element | null = null;
+  const capturedTags: (string | Element)[] = [];
   let content = "";
   let depth = 0;
 

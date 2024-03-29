@@ -1,5 +1,24 @@
-// TODO: Too specific
-import type { Component, Utilities } from "./breezewind/types.ts";
+// TODO: Move to htmlisp/types.ts?
+import type { Element } from "./htmlisp/utilities/parsers/types.ts";
+
+// TODO: Restore _onRenderStart/_onRenderEnd at rendering logic
+type Utilities =
+  & Record<
+    string,
+    (
+      this: { context?: Context },
+      // deno-lint-ignore no-explicit-any
+      ...args: any
+    ) => unknown | Promise<unknown> | void
+  >
+  & {
+    _onRenderStart?: (context: Context) => void;
+    _onRenderEnd?: (context: Context) => void;
+  };
+type Utility = {
+  utility: string;
+  parameters?: (string | Utility)[];
+};
 
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
@@ -180,7 +199,7 @@ type SendMessageEvent =
   | { type: "getStyleSetupPath"; payload: undefined }
   | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
-  | { type: "updateComponents"; payload: Record<string, Component> }
+  | { type: "updateComponents"; payload: Record<string, Element> }
   | { type: "getRenderer"; payload: string }
   // websocket plugin
   | { type: "reloadPage"; payload: undefined }
@@ -322,6 +341,7 @@ export type {
   DataSource,
   DataSources,
   DataSourcesModule,
+  Element,
   GlobalUtilities,
   InitLoadApi,
   LoadApi,
@@ -340,4 +360,6 @@ export type {
   Scripts,
   Send,
   Tasks,
+  Utilities,
+  Utility,
 };
