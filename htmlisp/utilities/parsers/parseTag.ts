@@ -49,6 +49,11 @@ function parseTag(
       } // Self-closing case
       else if (c === "/") {
         depth--;
+
+        if (depth === 0 && isChild) {
+          break;
+        }
+
         getCharacter.next();
       } else if (c === ">") {
         // DOCTYPE cannot have children so keep on parsing. Same for xml
