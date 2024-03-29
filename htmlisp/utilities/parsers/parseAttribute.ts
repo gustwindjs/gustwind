@@ -1,12 +1,12 @@
 import type { CharacterGenerator } from "./types.ts";
 
-const STATES = {
-  FIND_ATTRIBUTE_NAME: "find attribute name",
-  FIND_EQUALS: "find equals",
-  PARSE_ATTRIBUTE_NAME: "parse attribute name",
-  PARSE_ATTRIBUTE_VALUE: "parse attribute value",
-  CAPTURE_ATTRIBUTE: "capture attribute",
-};
+enum STATES {
+  FIND_ATTRIBUTE_NAME,
+  FIND_EQUALS,
+  PARSE_ATTRIBUTE_NAME,
+  PARSE_ATTRIBUTE_VALUE,
+  CAPTURE_ATTRIBUTE,
+}
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
