@@ -104,7 +104,7 @@ There is a commenting syntax that allows documenting and gets removed through pr
 
 ## Components
 
-Within components, `props` field is available within the context. [Check Breezewind](/breezewind) to understand this functionality better. On a high level it is comparable to how React and other libraries work so that components can encapsulate specific functionality and may be reused across projects easily.
+Within components, `props` field is available within the context. On a high level it is comparable to how React and other libraries work so that components can encapsulate specific functionality and may be reused across projects easily.
 
 ## Slots
 

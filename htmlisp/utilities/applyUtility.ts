@@ -1,4 +1,4 @@
-import type { Context, Utilities, Utility } from "./types.ts";
+import type { Context, Utilities, Utility } from "../../types.ts";
 
 async function applyUtilities<
   U extends Utility,

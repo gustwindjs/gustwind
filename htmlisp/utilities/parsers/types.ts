@@ -5,11 +5,11 @@ type CharacterGenerator = {
   next: () => string | null;
   previous: () => string | null;
 };
-type Tag = {
+type Element = {
   type: string;
   attributes?: Attributes;
-  children: (string | Tag)[];
+  children: (string | Element)[];
   closesWith?: string | null;
 };
 
-export type { Attributes, CharacterGenerator, Tag };
+export type { Attributes, CharacterGenerator, Element };

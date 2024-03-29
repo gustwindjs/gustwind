@@ -1,5 +1,5 @@
 import type { GlobalUtilities, Routes } from "../types.ts";
-import type { Utilities } from "../breezewind/types.ts";
+import type { Utilities } from "../types.ts";
 
 function getComponentUtilities(
   { componentUtilities, routes }: {

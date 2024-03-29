@@ -1,9 +1,9 @@
 import * as path from "node:path";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
-import type { Context, Utilities, Utility } from "../../breezewind/types.ts";
-import { applyUtilities } from "../../breezewind/applyUtility.ts";
+import type { Context, Utilities, Utility } from "../../types.ts";
+import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
 // import { attachIds } from "../../utilities/attachIds.ts";
-import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import {
   getComponentUtilities,

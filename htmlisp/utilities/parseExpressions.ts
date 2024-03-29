@@ -1,8 +1,8 @@
 import { parseExpression } from "./parseExpression.ts";
-import { applyUtility } from "../../breezewind/applyUtility.ts";
+import { applyUtility } from "./applyUtility.ts";
 import type { Attributes } from "./parsers/types.ts";
 import type { Context } from "../types.ts";
-import type { Utilities, Utility } from "../../breezewind/types.ts";
+import type { Utilities, Utility } from "../../types.ts";
 
 async function parseExpressions(
   attributes: Attributes | undefined,

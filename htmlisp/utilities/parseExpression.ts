@@ -1,4 +1,4 @@
-import type { Utility } from "../../breezewind/types.ts";
+import type { Utility } from "../../types.ts";
 
 const CACHE = new Map();
 

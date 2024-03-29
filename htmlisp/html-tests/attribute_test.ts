@@ -73,11 +73,11 @@ Deno.test("element with ' attributes", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<div
-    example='<a &href="(concat / breezewind)">Link goes here</a>'
+    example='<a &href="(concat / foobar)">Link goes here</a>'
   >
     <div x="compileHTML(state.code)"></div>
   </div>`,
     }),
-    `<div example="<a &href=\"(concat / breezewind)\">Link goes here</a>"><div x="compileHTML(state.code)"></div></div>`,
+    `<div example="<a &href=\"(concat / foobar)\">Link goes here</a>"><div x="compileHTML(state.code)"></div></div>`,
   );
 });

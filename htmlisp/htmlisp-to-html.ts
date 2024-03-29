@@ -1,5 +1,5 @@
 import { isString } from "../utilities/functional.ts";
-import { defaultUtilities } from "../breezewind/defaultUtilities.ts";
+import { defaultUtilities } from "./defaultUtilities.ts";
 import { characterGenerator } from "./utilities/parsers/characterGenerator.ts";
 import { parseTag } from "./utilities/parsers/parseTag.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";

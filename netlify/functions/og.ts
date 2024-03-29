@@ -1,13 +1,9 @@
 // http://localhost:8888/.netlify/functions/og
 import { Buffer } from "buffer";
 import { promises as fs } from "fs";
-import htm from "htm";
-import { getConverter } from "../../htmlisp/convert.ts";
 import sharp from "sharp";
 import type { Handler, HandlerEvent } from "@netlify/functions";
-import breezewind from "../../breezewind/mod.ts";
-
-const convert = getConverter(htm);
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 
 // These paths have to be included at netlify.toml
 const metaPath = __dirname + "/../../site/meta.json";
@@ -16,11 +12,10 @@ const layoutPath = __dirname + "/layouts/og.html";
 const handler = async (event: HandlerEvent): Handler => {
   const meta = JSON.parse(await fs.readFile(metaPath, "utf8"));
   const layoutHtml = await fs.readFile(layoutPath, "utf8");
-  const ogLayout = convert(layoutHtml);
   const qs = event.queryStringParameters;
 
-  const svg = await breezewind({
-    component: ogLayout,
+  const svg = await htmlispToHTML({
+    htmlInput: layoutHtml,
     components: {},
     context: { meta: { ...meta, ...qs } },
   });

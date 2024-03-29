@@ -1,18 +1,18 @@
 import { parseExpressions } from "./parseExpressions.ts";
 import { getAttributeBindings } from "./getAttributeBindings.ts";
-import type { Tag } from "./parsers/types.ts";
+import type { Element } from "./parsers/types.ts";
 import type {
   Components,
   Context,
   HtmllispToHTMLParameters,
 } from "../types.ts";
-import type { Utilities } from "../../breezewind/types.ts";
+import type { Utilities } from "../../types.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
 // TODO: Derive this type from HtmllispToHTMLParameters
 async function astToHtml(
-  ast: (string | Tag)[],
+  ast: (string | Element)[],
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
@@ -20,7 +20,7 @@ async function astToHtml(
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
   // Helper for debugging
-  parentAst?: (string | Tag)[],
+  parentAst?: (string | Element)[],
 ): Promise<string> {
   return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
