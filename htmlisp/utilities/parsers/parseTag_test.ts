@@ -707,3 +707,84 @@ Deno.test("integration 3", () => {
     }],
   );
 });
+
+Deno.test("simple nested children", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<BaseLayout>
+  <slot>
+    <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
+      <h2 class="text-xl md:text-4xl font-extralight">
+        Deno powered website creator
+      </h2>
+    </header>
+    <div
+      class="md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl"
+      &children="(get context readme.content)"
+    ></div>
+  </slot>
+</BaseLayout>
+`)),
+    [{
+      type: "BaseLayout",
+      attributes: {},
+      children: [
+        {
+          type: "slot",
+          attributes: {},
+          children: [{
+            type: "header",
+            attributes: {
+              class: "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
+            },
+            children: [{
+              type: "h2",
+              attributes: {
+                class: "text-xl md:text-4xl font-extralight",
+              },
+              children: ["Deno powered website creator"],
+            }],
+          }, {
+            type: "div",
+            attributes: {
+              class:
+                "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+              "&children": "(get context readme.content)",
+            },
+            children: [],
+          }],
+        },
+      ],
+    }],
+  );
+});
+
+Deno.test("complex nested children", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<header>
+  <div>
+    <h2></h2>
+  </div>
+</header>
+<div>foo</div>
+`)),
+    [{
+      type: "header",
+      attributes: {},
+      children: [{
+        type: "div",
+        attributes: {},
+        children: [
+          {
+            type: "h2",
+            attributes: {},
+            children: [],
+          },
+        ],
+      }],
+    }, {
+      type: "div",
+      attributes: {},
+      children: ["foo"],
+    }],
+  );
+});
