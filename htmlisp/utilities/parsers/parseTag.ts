@@ -107,7 +107,7 @@ function parseTag(
           state = STATES.PARSE_END_TAG;
         } else if (currentTag?.type) {
           if (content.trim()) {
-            currentTag.children.push(content.trim());
+            currentTag.children.push(content);
             content = "";
           }
 
@@ -139,7 +139,7 @@ function parseTag(
       if (c === ">") {
         depth--;
 
-        content.trim() && currentTag?.children.push(content.trim());
+        content.trim() && currentTag?.children.push(content);
         content = "";
 
         currentTag = null;
@@ -155,7 +155,7 @@ function parseTag(
   }
 
   if (content.trim()) {
-    return capturedTags.concat(content.trim());
+    return capturedTags.concat(content);
   }
 
   return capturedTags.length ? capturedTags : [content];

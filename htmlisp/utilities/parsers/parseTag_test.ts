@@ -559,7 +559,7 @@ Deno.test("siblings with content", () => {
         {
           type: "head",
           attributes: {},
-          children: ["bar"],
+          children: ["\n    bar\n  "],
         },
         {
           type: "body",
@@ -781,7 +781,11 @@ Deno.test("integration 3", () => {
                   attributes: {
                     class: "text-xl md:text-4xl font-extralight",
                   },
-                  children: ["Deno powered website creator"],
+                  children: [
+                    "\n" +
+                    "            Deno powered website creator\n" +
+                    "          ",
+                  ],
                 }],
               }],
             }],
@@ -833,7 +837,7 @@ Deno.test("simple nested children", () => {
               attributes: {
                 class: "text-xl md:text-4xl font-extralight",
               },
-              children: ["Deno powered website creator"],
+              children: ["\n        Deno powered website creator\n      "],
             }],
           }, {
             type: "div",
