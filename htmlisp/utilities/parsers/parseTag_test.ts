@@ -620,3 +620,90 @@ Deno.test("integration 2", () => {
     }],
   );
 });
+
+Deno.test("integration 3", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<BaseLayout>
+  <slot name="content">
+    <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
+      <div class="sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex">
+        <div class="flex flex-col gap-8">
+          <h1 class="text-4xl md:text-8xl">
+            <span class="whitespace-nowrap pr-4">🐳💨</span>
+            <span>Gustwind</span>
+          </h1>
+          <h2 class="text-xl md:text-4xl font-extralight">
+            Deno powered website creator
+          </h2>
+        </div>
+      </div>
+    </header>
+    <div
+      class="md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl"
+      &children="(get context readme.content)"
+    ></div>
+  </slot>
+</BaseLayout>
+`)),
+    [{
+      type: "BaseLayout",
+      attributes: {},
+      children: [
+        {
+          type: "slot",
+          attributes: { name: "content" },
+          children: [{
+            type: "header",
+            attributes: {
+              class: "bg-gradient-to-br from-purple-200 to-emerald-100 py-8",
+            },
+            children: [{
+              type: "div",
+              attributes: {
+                class: "sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex",
+              },
+              children: [{
+                type: "div",
+                attributes: {
+                  class: "flex flex-col gap-8",
+                },
+                children: [{
+                  type: "h1",
+                  attributes: {
+                    class: "text-4xl md:text-8xl",
+                  },
+                  children: [
+                    {
+                      type: "span",
+                      attributes: { class: "whitespace-nowrap pr-4" },
+                      children: ["🐳💨"],
+                    },
+                    {
+                      type: "span",
+                      attributes: {},
+                      children: ["Gustwind"],
+                    },
+                  ],
+                }, {
+                  type: "h2",
+                  attributes: {
+                    class: "text-xl md:text-4xl font-extralight",
+                  },
+                  children: ["Deno powered website creator"],
+                }],
+              }],
+            }],
+          }, {
+            type: "div",
+            attributes: {
+              class:
+                "md:mx-auto my-8 px-4 md:px-0 w-full lg:max-w-3xl prose lg:prose-xl",
+              "&children": "(get context readme.content)",
+            },
+            children: [],
+          }],
+        },
+      ],
+    }],
+  );
+});
