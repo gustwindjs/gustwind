@@ -9,7 +9,10 @@ const STATES = {
   PARSE_CHILDREN: "parse children",
 };
 
-function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
+function parseTag(
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+): (Tag | string)[] {
   let state = STATES.IDLE;
   let currentTag: Tag | null = null;
   const capturedTags: (string | Tag)[] = [];
@@ -97,8 +100,9 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
 
           getCharacter.previous();
 
+          // TODO: What if there are more siblings left to parse?
           currentTag.children = currentTag.children.concat(
-            parseTag(getCharacter),
+            parseTag(getCharacter, true),
           );
 
           state = STATES.IDLE;
@@ -122,15 +126,15 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
       if (c === ">") {
         depth--;
 
-        // Escape once the current tree has been parsed
-        if (depth === -1) {
-          break;
-        }
-
         content.trim() && currentTag?.children.push(content.trim());
         content = "";
 
         currentTag = null;
+
+        // Escape once the current element has been parsed but only if we are not at the root
+        if (depth === 0 && isChild) {
+          break;
+        }
 
         state = STATES.IDLE;
       }
