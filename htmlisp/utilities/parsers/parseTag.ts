@@ -1,13 +1,13 @@
 import { parseAttributes } from "./parseAttributes.ts";
 import type { CharacterGenerator, Tag } from "./types.ts";
 
-const STATES = {
-  IDLE: "idle",
-  PARSE_END_TAG: "parse end tag",
-  PARSE_TAG_TYPE: "parse tag type",
-  PARSE_TAG_ATTRIBUTES: "parse tag attributes",
-  PARSE_CHILDREN: "parse children",
-};
+enum STATES {
+  IDLE,
+  PARSE_END_TAG,
+  PARSE_TAG_TYPE,
+  PARSE_TAG_ATTRIBUTES,
+  PARSE_CHILDREN,
+}
 
 function parseTag(
   getCharacter: CharacterGenerator,
