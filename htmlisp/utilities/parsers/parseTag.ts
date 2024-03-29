@@ -123,14 +123,14 @@ function parseTag(getCharacter: CharacterGenerator): (Tag | string)[] {
         depth--;
 
         // Escape once the current tree has been parsed
-        if (depth === 0) {
-          content.trim() && currentTag?.children.push(content.trim());
-          content = "";
-
-          currentTag = null;
-        } else if (depth === -1) {
+        if (depth === -1) {
           break;
         }
+
+        content.trim() && currentTag?.children.push(content.trim());
+        content = "";
+
+        currentTag = null;
 
         state = STATES.IDLE;
       }
