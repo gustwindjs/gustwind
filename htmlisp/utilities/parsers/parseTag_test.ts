@@ -479,6 +479,98 @@ Deno.test("complex newlines", () => {
   );
 });
 
+Deno.test("siblings with a self-closing element 1", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<html>
+  <head>
+    <a />
+  </head>
+  <body>foo</body>
+</html>
+`)),
+    [{
+      type: "html",
+      attributes: {},
+      children: [
+        {
+          type: "head",
+          attributes: {},
+          children: [{
+            type: "a",
+            attributes: {},
+            children: [],
+          }],
+        },
+        {
+          type: "body",
+          attributes: {},
+          children: ["foo"],
+        },
+      ],
+    }],
+  );
+});
+
+Deno.test("siblings with an element", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<html>
+  <head>
+    <a></a>
+  </head>
+  <body>foo</body>
+</html>
+`)),
+    [{
+      type: "html",
+      attributes: {},
+      children: [
+        {
+          type: "head",
+          attributes: {},
+          children: [{
+            type: "a",
+            attributes: {},
+            children: [],
+          }],
+        },
+        {
+          type: "body",
+          attributes: {},
+          children: ["foo"],
+        },
+      ],
+    }],
+  );
+});
+
+Deno.test("siblings with content", () => {
+  assertEquals(
+    parseTag(characterGenerator(`<html>
+  <head>
+    bar
+  </head>
+  <body>foo</body>
+</html>
+`)),
+    [{
+      type: "html",
+      attributes: {},
+      children: [
+        {
+          type: "head",
+          attributes: {},
+          children: ["bar"],
+        },
+        {
+          type: "body",
+          attributes: {},
+          children: ["foo"],
+        },
+      ],
+    }],
+  );
+});
+
 Deno.test("integration 1", () => {
   assertEquals(
     parseTag(characterGenerator(`<html &lang="(get context meta.language)">
