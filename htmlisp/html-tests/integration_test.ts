@@ -57,8 +57,8 @@ Deno.test("full integration 1", async () => {
   </head>
   <body>
     <MainNavigation />
-    <aside &children="(render (get props aside))"></aside>
-    <main &children="(render (get props content))"></main>
+    <aside &children="(get props aside)"></aside>
+    <main &children="(get props content)"></main>
     <MainFooter />
   </body>
 </html>
@@ -104,8 +104,8 @@ Deno.test("full integration 2", async () => {
           </head>
           <body>
             <MainNavigation />
-            <aside &children="(render (get props aside))"></aside>
-            <main &children="(render (get props content))"></main>
+            <aside &children="(get props aside)"></aside>
+            <main &children="(get props content)"></main>
             <MainFooter />
           </body>
         </html>`,
@@ -146,8 +146,8 @@ Deno.test("full integration 3", async () => {
           </head>
           <body>
             <MainNavigation />
-            <aside &children="(render (get props aside))"></aside>
-            <main &children="(render (get props content))"></main>
+            <aside &children="(get props aside)"></aside>
+            <main &children="(get props content)"></main>
             <MainFooter />
           </body>
         </html>`,
@@ -192,8 +192,8 @@ Deno.test("full integration 4", async () => {
           </head>
           <body>
             <MainNavigation />
-            <aside &children="(render (get props aside))"></aside>
-            <main &children="(render (get props content))"></main>
+            <aside &children="(get props aside)"></aside>
+            <main &children="(get props content)"></main>
             <MainFooter />
           </body>
         </html>`,
