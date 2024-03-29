@@ -58,7 +58,7 @@ Given there are times when you might want to remove a part of the DOM structure 
   >
     <TableOfContents />
   </aside>
-  <main &children="(render (get props content))"></main>
+  <main &children="(get props content)"></main>
   <MainFooter />
   <Scripts />
 </body>

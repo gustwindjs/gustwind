@@ -640,8 +640,8 @@ Deno.test("integration 2", () => {
   </head>
   <body>
     <MainNavigation />
-    <aside &children="(render (get props aside))"></aside>
-    <main &children="(render (get props content))"></main>
+    <aside &children="(get props aside)"></aside>
+    <main &children="(get props content)"></main>
     <MainFooter />
   </body>
 </html>
@@ -693,12 +693,12 @@ Deno.test("integration 2", () => {
             },
             {
               type: "aside",
-              attributes: { "&children": "(render (get props aside))" },
+              attributes: { "&children": "(get props aside)" },
               children: [],
             },
             {
               type: "main",
-              attributes: { "&children": "(render (get props content))" },
+              attributes: { "&children": "(get props content)" },
               children: [],
             },
             {
