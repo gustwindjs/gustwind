@@ -1,5 +1,4 @@
-// TODO: Move to htmlisp/types.ts?
-import type { Element } from "./htmlisp/utilities/parsers/types.ts";
+import type { Element } from "./htmlisp/types.ts";
 
 // TODO: Restore _onRenderStart/_onRenderEnd at rendering logic
 type Utilities =
@@ -341,7 +340,6 @@ export type {
   DataSource,
   DataSources,
   DataSourcesModule,
-  Element,
   GlobalUtilities,
   InitLoadApi,
   LoadApi,

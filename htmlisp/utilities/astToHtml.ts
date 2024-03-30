@@ -1,9 +1,10 @@
 import { parseExpressions } from "./parseExpressions.ts";
 import { getAttributeBindings } from "./getAttributeBindings.ts";
-import type { Element } from "./parsers/types.ts";
+// import type { Element } from "./parsers/types.ts";
 import type {
   Components,
   Context,
+  Element,
   HtmllispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";

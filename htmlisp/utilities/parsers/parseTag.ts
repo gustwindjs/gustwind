@@ -1,5 +1,6 @@
 import { parseAttributes } from "./parseAttributes.ts";
-import type { CharacterGenerator, Element } from "./types.ts";
+import type { CharacterGenerator } from "./types.ts";
+import type { Element } from "../../types.ts";
 
 enum STATES {
   IDLE,
