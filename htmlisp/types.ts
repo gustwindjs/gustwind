@@ -1,7 +1,14 @@
 import type { Context, Utilities } from "../types.ts";
 
-type Attributes = Record<string, string> | null;
+type Attributes = Record<string, string | null>;
 type Components = Record<string, string>;
+
+type Element = {
+  type: string;
+  attributes?: Attributes;
+  children: (string | Element)[];
+  closesWith?: string | null;
+};
 
 type HtmllispToHTMLParameters = {
   htmlInput?: string;
@@ -12,4 +19,10 @@ type HtmllispToHTMLParameters = {
   componentUtilities?: Record<string, Utilities>;
 };
 
-export type { Attributes, Components, Context, HtmllispToHTMLParameters };
+export type {
+  Attributes,
+  Components,
+  Context,
+  Element,
+  HtmllispToHTMLParameters,
+};
