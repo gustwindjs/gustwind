@@ -1,11 +1,10 @@
 import type { Element } from "./htmlisp/types.ts";
 
-// TODO: Restore _onRenderStart/_onRenderEnd at rendering logic
 type Utilities =
   & Record<
     string,
     (
-      this: { context?: Context },
+      this: { context: Context },
       // deno-lint-ignore no-explicit-any
       ...args: any
     ) => unknown | Promise<unknown> | void
