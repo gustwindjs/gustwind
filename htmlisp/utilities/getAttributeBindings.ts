@@ -4,9 +4,8 @@ import { parseExpressions } from "./parseExpressions.ts";
 function getAttributeBindings(
   parsedExpressions: Awaited<ReturnType<typeof parseExpressions>>,
 ) {
-  // TODO: Clean up omit usage
   const ret = Object.entries(
-    omit(omit(omit(parsedExpressions, "children"), "type"), "visibleIf"),
+    omit(omit(parsedExpressions, "children"), "visibleIf"),
   )
     .map((
       [k, v],

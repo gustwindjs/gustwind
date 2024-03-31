@@ -142,11 +142,10 @@ async function astToHtml(
       }
     }
 
-    const attrs = getAttributeBindings(parsedExpressions);
     const parsedChildren = parsedExpressions.children;
 
     if (type !== "noop" && !parsedChildren && typeof closesWith === "string") {
-      return `<${type}${attrs}${closesWith}>`;
+      return `<${type}${getAttributeBindings(parsedExpressions)}${closesWith}>`;
     }
 
     const content = parsedChildren
@@ -157,10 +156,16 @@ async function astToHtml(
       return content;
     }
 
-    const t = parsedExpressions.type || type;
+    const t = type === "noop" && parsedExpressions.type || type;
 
     if (t) {
-      return `<${t}${attrs}>${content}</${t}>`;
+      if (type === "noop") {
+        delete parsedExpressions.type;
+      }
+
+      return `<${t}${
+        getAttributeBindings(parsedExpressions)
+      }>${content}</${t}>`;
     }
 
     return content;
