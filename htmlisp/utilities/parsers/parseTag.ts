@@ -12,7 +12,7 @@ enum STATES {
   PARSE_CHILDREN,
 }
 
-const memo = getMemo(new Map());
+const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
 function cachedParseTag(input: string) {
   return memo(parseTag, characterGenerator(input));
 }
