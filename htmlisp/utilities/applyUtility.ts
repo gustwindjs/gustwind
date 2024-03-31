@@ -6,8 +6,8 @@ async function applyUtilities<
   C extends Context,
 >(
   props: Record<string, U> | null,
-  utilities?: US,
-  context?: C,
+  utilities: US,
+  context: C,
 ): Promise<Record<string, unknown>> {
   if (!props) {
     return {};
@@ -34,9 +34,9 @@ async function applyUtility<
   US extends Utilities,
   C extends Context,
 >(
-  value?: U,
-  utilities?: US,
-  context?: C,
+  value: U,
+  utilities: US,
+  context: C,
   // deno-lint-ignore no-explicit-any
 ): Promise<any> {
   if (!utilities) {
@@ -72,7 +72,7 @@ async function applyUtility<
       : [],
   );
 
-  return foundUtility.apply({ context: context || {} }, parameters);
+  return foundUtility.apply({ context }, parameters);
 }
 
 export { applyUtilities, applyUtility };

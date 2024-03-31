@@ -42,7 +42,6 @@ async function astToHtml(
     const parsedExpressions = await parseExpressions(
       attributes,
       context || {},
-      props || {},
       isComponent
         ? { ...utilities, ...componentUtilities?.[type] }
         : utilities
