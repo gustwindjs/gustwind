@@ -121,7 +121,7 @@ Internally slots map to `props`. The main benefit is that they allow expression 
 
 ## Playground
 
-Use the playground below to experiment with the syntax and see how it converts to Breezewind:
+Use the playground below to experiment with the syntax and see how it converts to HTML:
 
 :TemplatingPlayground:
 
