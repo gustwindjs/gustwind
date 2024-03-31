@@ -8,6 +8,40 @@ Deno.test("content", async () => {
   );
 });
 
+Deno.test("partial tag", async () => {
+  assertEquals(
+    await parseTag(`<div>foo`),
+    [{ type: "div", attributes: {}, children: [] }, "foo"],
+  );
+});
+
+Deno.test("partial tag 2", async () => {
+  assertEquals(
+    await parseTag(`<div>foo<`),
+    [{
+      type: "div",
+      attributes: {},
+      children: ["foo", { type: "", attributes: {}, children: [] }],
+    }],
+  );
+});
+
+Deno.test("partial tag 3", async () => {
+  assertEquals(
+    await parseTag(`<div>foo<f`),
+    [{
+      type: "div",
+      attributes: {},
+      children: ["foo", {
+        type: "f",
+        // TODO: This is weird
+        attributes: { fnull: null },
+        children: [],
+      }],
+    }],
+  );
+});
+
 Deno.test("self-closing tag 1", async () => {
   assertEquals(
     await parseTag(`<a/>`),

@@ -129,6 +129,10 @@ function parseTag(
           state = STATES.IDLE;
         } // No tag was found yet so we have only pure content
         else {
+          if (getCharacter.get(1) === null) {
+            break;
+          }
+
           capturedTags.push(content);
           content = "";
 
@@ -158,6 +162,8 @@ function parseTag(
         }
 
         state = STATES.IDLE;
+      } else if (c === null) {
+        break;
       }
     }
   }
