@@ -4,7 +4,7 @@ type Utilities =
   & Record<
     string,
     (
-      this: { context: Context },
+      this: { context: Context; props: Context },
       // deno-lint-ignore no-explicit-any
       ...args: any
     ) => unknown | Promise<unknown> | void

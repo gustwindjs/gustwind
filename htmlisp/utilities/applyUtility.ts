@@ -72,7 +72,9 @@ async function applyUtility<
       : [],
   );
 
-  return foundUtility.apply({ context }, parameters);
+  // @ts-expect-error This is fine for now.
+  // TODO: Figure out a nice way to resolve context mismatch
+  return foundUtility.apply(context, parameters);
 }
 
 export { applyUtilities, applyUtility };
