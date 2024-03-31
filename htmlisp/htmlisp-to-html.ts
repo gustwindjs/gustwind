@@ -20,6 +20,8 @@ function htmlispToHTML(
     throw new Error("convert - html input was not a string");
   }
 
+  utilities?._onRenderStart && utilities?._onRenderStart(context || {});
+
   let cachedAst = CACHE.get(htmlInput);
 
   if (!cachedAst) {
@@ -28,7 +30,7 @@ function htmlispToHTML(
     CACHE.set(htmlInput, cachedAst);
   }
 
-  return astToHtml(
+  const ret = astToHtml(
     cachedAst,
     htmlispToHTML,
     context,
@@ -52,6 +54,10 @@ function htmlispToHTML(
     components || {},
     [],
   );
+
+  utilities?._onRenderEnd && utilities?._onRenderEnd(context || {});
+
+  return ret;
 }
 
 export { htmlispToHTML };
