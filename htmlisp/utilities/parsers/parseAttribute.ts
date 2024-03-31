@@ -7,6 +7,7 @@ enum STATES {
   PARSE_ATTRIBUTE_VALUE,
   CAPTURE_ATTRIBUTE,
 }
+const LIMIT = 100000;
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
@@ -15,7 +16,7 @@ function parseAttribute(
   let attributeName = "";
   let attributeValue = null;
 
-  while (true) {
+  for (let i = 0; i < LIMIT; i++) {
     if (state === STATES.FIND_ATTRIBUTE_NAME) {
       const c = getCharacter.next();
 

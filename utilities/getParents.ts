@@ -1,3 +1,5 @@
+const LIMIT = 100000;
+
 // Adapted from Sidewind
 function getParents(
   element: Element,
@@ -6,7 +8,7 @@ function getParents(
   const ret = [];
   let parent = element.parentElement;
 
-  while (true) {
+  for (let i = 0; i < LIMIT; i++) {
     if (!parent) {
       break;
     }
