@@ -24,7 +24,7 @@ async function parseExpressions(
 
         // Check bindings
         if (name.startsWith("&") && value !== null) {
-          const parsedExpression = parseExpression(value);
+          const parsedExpression = await parseExpression(value);
 
           if (!parsedExpression) {
             throw new Error(`Failed to parse ${value} for attribute ${name}!`);

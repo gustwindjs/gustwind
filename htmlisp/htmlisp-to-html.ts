@@ -4,10 +4,10 @@ import { parseTag } from "./utilities/parsers/parseTag.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
-function htmlispToHTML(
+async function htmlispToHTML(
   { htmlInput, components, context, props, utilities, componentUtilities }:
     HtmllispToHTMLParameters,
-): Promise<string> | string {
+): Promise<string> {
   if (!htmlInput) {
     throw new Error("convert - Missing html input");
   }
@@ -19,7 +19,7 @@ function htmlispToHTML(
   utilities?._onRenderStart && utilities?._onRenderStart(context || {});
 
   const ret = astToHtml(
-    parseTag(htmlInput),
+    await parseTag(htmlInput),
     htmlispToHTML,
     context,
     props,

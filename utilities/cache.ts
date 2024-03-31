@@ -5,8 +5,8 @@ function getMemo<I, R>(
   },
 ) {
   // This supports only a single argument for now
-  return function run(fn: (input: I) => R, input: I) {
-    const cachedValue = cache.get(input);
+  return async function run(fn: (input: I) => R, input: I) {
+    const cachedValue = await cache.get(input);
 
     if (cachedValue) {
       return cachedValue;
