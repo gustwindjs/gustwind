@@ -57,7 +57,7 @@ Deno.test("component utilities have access to context through this", async () =>
       },
       context: { demo: "bar" },
       components: {
-        Demo: '<div &children="(test)" />`',
+        Demo: '<div &children="(test)" />',
       },
     }),
     `<div>bar</div>`,
