@@ -18,11 +18,10 @@ const defaultUtilities = {
     key: string,
     defaultValue?: unknown,
   ) {
-    const { context } = this;
-    const ctx = get(context, c);
+    const ctx = get(this, c);
 
     if (!isObject(ctx)) {
-      console.error("get - context", context, "context key", c);
+      console.error("get - context", this, "context key", c);
       throw new Error("get - Found context is not an object");
     }
 
