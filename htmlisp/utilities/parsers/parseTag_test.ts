@@ -1,31 +1,30 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseTag } from "./parseTag.ts";
-import { characterGenerator } from "./characterGenerator.ts";
 
 Deno.test("content", () => {
   assertEquals(
-    parseTag(characterGenerator(`foobar`)),
+    parseTag(`foobar`),
     ["foobar"],
   );
 });
 
 Deno.test("self-closing tag 1", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a/>`)),
+    parseTag(`<a/>`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
 Deno.test("self-closing tag 2", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a />`)),
+    parseTag(`<a />`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
 Deno.test("multiple self-closing tags", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a /><a />`)),
+    parseTag(`<a /><a />`),
     [{ type: "a", attributes: {}, children: [] }, {
       type: "a",
       attributes: {},
@@ -36,14 +35,14 @@ Deno.test("multiple self-closing tags", () => {
 
 Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a href="test" />`)),
+    parseTag(`<a href="test" />`),
     [{ type: "a", attributes: { href: "test" }, children: [] }],
   );
 });
 
 Deno.test("self-closing tag with attributes", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a href="test" title="foobar" />`)),
+    parseTag(`<a href="test" title="foobar" />`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -54,7 +53,7 @@ Deno.test("self-closing tag with attributes", () => {
 
 Deno.test("simple tag", () => {
   assertEquals(
-    parseTag(characterGenerator(`<span>foobar</span>`)),
+    parseTag(`<span>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -65,7 +64,7 @@ Deno.test("simple tag", () => {
 
 Deno.test("two tags with a newline in between", () => {
   assertEquals(
-    parseTag(characterGenerator(`<span>foobar</span>\n<span>foobar</span>`)),
+    parseTag(`<span>foobar</span>\n<span>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -80,7 +79,7 @@ Deno.test("two tags with a newline in between", () => {
 
 Deno.test("simple tag with an attribute at the end", () => {
   assertEquals(
-    parseTag(characterGenerator(`<span title>foobar</span>`)),
+    parseTag(`<span title>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -91,7 +90,7 @@ Deno.test("simple tag with an attribute at the end", () => {
 
 Deno.test("simple tag with attributes", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a href="test" title="foobar"></a>`)),
+    parseTag(`<a href="test" title="foobar"></a>`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -102,7 +101,7 @@ Deno.test("simple tag with attributes", () => {
 
 Deno.test("tag with single quotes in an attribute", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a href="t'e's't"</a>`)),
+    parseTag(`<a href="t'e's't"</a>`),
     [{
       type: "a",
       attributes: { href: "t'e's't" },
@@ -113,9 +112,9 @@ Deno.test("tag with single quotes in an attribute", () => {
 
 Deno.test("simple tag with attributes and newlines in between", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a
+    parseTag(`<a
   href="test"
-  title="foobar"></a>`)),
+  title="foobar"></a>`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -126,7 +125,7 @@ Deno.test("simple tag with attributes and newlines in between", () => {
 
 Deno.test("simple tag with content", () => {
   assertEquals(
-    parseTag(characterGenerator(`<a href="test" title="foobar">barfoo</a>`)),
+    parseTag(`<a href="test" title="foobar">barfoo</a>`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -138,9 +137,7 @@ Deno.test("simple tag with content", () => {
 Deno.test("simple tag with another tag", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<a href="test" title="foobar"><span>barfoo</span></a>`,
-      ),
+      `<a href="test" title="foobar"><span>barfoo</span></a>`,
     ),
     [{
       type: "a",
@@ -157,9 +154,7 @@ Deno.test("simple tag with another tag", () => {
 Deno.test("self-closing siblings", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
-      ),
+      `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
     ),
     [
       {
@@ -179,9 +174,7 @@ Deno.test("self-closing siblings", () => {
 Deno.test("multiple siblings", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<Button><div>foo</div><div>bar</div></Button>`,
-      ),
+      `<Button><div>foo</div><div>bar</div></Button>`,
     ),
     [
       {
@@ -207,9 +200,7 @@ Deno.test("multiple siblings", () => {
 Deno.test("siblings only with former children", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
-      ),
+      `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
     ),
     [
       {
@@ -239,9 +230,7 @@ Deno.test("siblings only with former children", () => {
 Deno.test("sibling tags", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
-      ),
+      `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
     ),
     [{
       type: "a",
@@ -258,9 +247,7 @@ Deno.test("sibling tags", () => {
 Deno.test("siblings with only children", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<div><span>foo</span></div><div><span>foo</span></div>`,
-      ),
+      `<div><span>foo</span></div><div><span>foo</span></div>`,
     ),
     [{
       type: "div",
@@ -284,7 +271,7 @@ Deno.test("siblings with only children", () => {
 
 Deno.test("simple doctype", () => {
   assertEquals(
-    parseTag(characterGenerator(`<!DOCTYPE html>`)),
+    parseTag(`<!DOCTYPE html>`),
     [{
       type: "!DOCTYPE",
       attributes: { html: null },
@@ -296,7 +283,7 @@ Deno.test("simple doctype", () => {
 
 Deno.test("simple doctype and content", () => {
   assertEquals(
-    parseTag(characterGenerator(`<!DOCTYPE html>foobar`)),
+    parseTag(`<!DOCTYPE html>foobar`),
     [{
       type: "!DOCTYPE",
       attributes: { html: null },
@@ -308,7 +295,7 @@ Deno.test("simple doctype and content", () => {
 
 Deno.test("simple doctype and element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<!DOCTYPE html><div>foobar</div>`)),
+    parseTag(`<!DOCTYPE html><div>foobar</div>`),
     [{
       type: "!DOCTYPE",
       attributes: { html: null },
@@ -325,10 +312,8 @@ Deno.test("simple doctype and element", () => {
 Deno.test("full doctype", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<!DOCTYPE html>
+      `<!DOCTYPE html>
         <a href="test" title="foobar" /><a href="test" title="foobar" />`,
-      ),
     ),
     [{
       type: "!DOCTYPE",
@@ -350,9 +335,7 @@ Deno.test("full doctype", () => {
 Deno.test("xml", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<?xml version="1.0" encoding="utf-8" ?>`,
-      ),
+      `<?xml version="1.0" encoding="utf-8" ?>`,
     ),
     [{
       type: "?xml",
@@ -366,10 +349,8 @@ Deno.test("xml", () => {
 Deno.test("xml with a newline", () => {
   assertEquals(
     parseTag(
-      characterGenerator(
-        `<?xml version="1.0" encoding="utf-8" ?>
+      `<?xml version="1.0" encoding="utf-8" ?>
 <div>foo</div>`,
-      ),
     ),
     [{
       type: "?xml",
@@ -386,7 +367,7 @@ Deno.test("xml with a newline", () => {
 
 Deno.test("content before element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<div>bar<span>foo</span></div>`)),
+    parseTag(`<div>bar<span>foo</span></div>`),
     [{
       type: "div",
       attributes: {},
@@ -401,7 +382,7 @@ Deno.test("content before element", () => {
 
 Deno.test("content after element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<div><span>foo</span>bar</div>`)),
+    parseTag(`<div><span>foo</span>bar</div>`),
     [{
       type: "div",
       attributes: {},
@@ -416,7 +397,7 @@ Deno.test("content after element", () => {
 
 Deno.test("content before and after element", () => {
   assertEquals(
-    parseTag(characterGenerator(`bar<span>foo</span>bar`)),
+    parseTag(`bar<span>foo</span>bar`),
     ["bar", {
       type: "span",
       attributes: {},
@@ -427,7 +408,7 @@ Deno.test("content before and after element", () => {
 
 Deno.test("element before and after content", () => {
   assertEquals(
-    parseTag(characterGenerator(`<span>foo</span>bar<span>foo</span>`)),
+    parseTag(`<span>foo</span>bar<span>foo</span>`),
     [
       {
         type: "span",
@@ -446,7 +427,7 @@ Deno.test("element before and after content", () => {
 
 Deno.test("content after element 2", () => {
   assertEquals(
-    parseTag(characterGenerator(`<div>foo</div>bar`)),
+    parseTag(`<div>foo</div>bar`),
     [{
       type: "div",
       attributes: {},
@@ -457,12 +438,12 @@ Deno.test("content after element 2", () => {
 
 Deno.test("complex newlines", () => {
   assertEquals(
-    parseTag(characterGenerator(`<BaseLayout>
+    parseTag(`<BaseLayout>
     <slot name="content">
       <div>hello</div>
     </slot>
   </BaseLayout>
-`)),
+`),
     [{
       type: "BaseLayout",
       attributes: {},
@@ -481,13 +462,13 @@ Deno.test("complex newlines", () => {
 
 Deno.test("siblings with a self-closing element 1", () => {
   assertEquals(
-    parseTag(characterGenerator(`<html>
+    parseTag(`<html>
   <head>
     <a />
   </head>
   <body>foo</body>
 </html>
-`)),
+`),
     [{
       type: "html",
       attributes: {},
@@ -513,13 +494,13 @@ Deno.test("siblings with a self-closing element 1", () => {
 
 Deno.test("siblings with an element", () => {
   assertEquals(
-    parseTag(characterGenerator(`<html>
+    parseTag(`<html>
   <head>
     <a></a>
   </head>
   <body>foo</body>
 </html>
-`)),
+`),
     [{
       type: "html",
       attributes: {},
@@ -545,13 +526,13 @@ Deno.test("siblings with an element", () => {
 
 Deno.test("siblings with content", () => {
   assertEquals(
-    parseTag(characterGenerator(`<html>
+    parseTag(`<html>
   <head>
     bar
   </head>
   <body>foo</body>
 </html>
-`)),
+`),
     [{
       type: "html",
       attributes: {},
@@ -573,7 +554,7 @@ Deno.test("siblings with content", () => {
 
 Deno.test("integration 1", () => {
   assertEquals(
-    parseTag(characterGenerator(`<html &lang="(get context meta.language)">
+    parseTag(`<html &lang="(get context meta.language)">
   <head>
     <link
       rel="icon"
@@ -584,7 +565,7 @@ Deno.test("integration 1", () => {
     <MainNavigation />
   </body>
 </html>
-`)),
+`),
     [{
       type: "html",
       attributes: { "&lang": "(get context meta.language)" },
@@ -618,7 +599,7 @@ Deno.test("integration 1", () => {
 
 Deno.test("integration 2", () => {
   assertEquals(
-    parseTag(characterGenerator(`<!DOCTYPE html>
+    parseTag(`<!DOCTYPE html>
 <html &lang="(get context meta.language)">
   <head>
     <link
@@ -645,7 +626,7 @@ Deno.test("integration 2", () => {
     <MainFooter />
   </body>
 </html>
-`)),
+`),
     [{
       type: "!DOCTYPE",
       attributes: { html: null },
@@ -715,7 +696,7 @@ Deno.test("integration 2", () => {
 
 Deno.test("integration 3", () => {
   assertEquals(
-    parseTag(characterGenerator(`<BaseLayout>
+    parseTag(`<BaseLayout>
   <slot name="content">
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
       <div class="sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex">
@@ -736,7 +717,7 @@ Deno.test("integration 3", () => {
     ></div>
   </slot>
 </BaseLayout>
-`)),
+`),
     [{
       type: "BaseLayout",
       attributes: {},
@@ -806,7 +787,7 @@ Deno.test("integration 3", () => {
 
 Deno.test("simple nested children", () => {
   assertEquals(
-    parseTag(characterGenerator(`<BaseLayout>
+    parseTag(`<BaseLayout>
   <slot>
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
       <h2 class="text-xl md:text-4xl font-extralight">
@@ -819,7 +800,7 @@ Deno.test("simple nested children", () => {
     ></div>
   </slot>
 </BaseLayout>
-`)),
+`),
     [{
       type: "BaseLayout",
       attributes: {},
@@ -856,13 +837,13 @@ Deno.test("simple nested children", () => {
 
 Deno.test("complex nested children", () => {
   assertEquals(
-    parseTag(characterGenerator(`<header>
+    parseTag(`<header>
   <div>
     <h2></h2>
   </div>
 </header>
 <div>foo</div>
-`)),
+`),
     [{
       type: "header",
       attributes: {},

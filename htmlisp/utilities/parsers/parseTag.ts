@@ -1,4 +1,6 @@
 import { parseAttributes } from "./parseAttributes.ts";
+import { getMemo } from "../../../utilities/cache.ts";
+import { characterGenerator } from "./characterGenerator.ts";
 import type { CharacterGenerator } from "./types.ts";
 import type { Element } from "../../types.ts";
 
@@ -8,6 +10,11 @@ enum STATES {
   PARSE_TAG_TYPE,
   PARSE_TAG_ATTRIBUTES,
   PARSE_CHILDREN,
+}
+
+const memo = getMemo(new Map());
+function cachedParseTag(input: string) {
+  return memo(parseTag, characterGenerator(input));
 }
 
 function parseTag(
@@ -178,4 +185,4 @@ function parseTagType(getCharacter: CharacterGenerator) {
   return tagType;
 }
 
-export { parseTag };
+export { cachedParseTag as parseTag };

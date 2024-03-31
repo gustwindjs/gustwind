@@ -1,12 +1,8 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
-import { characterGenerator } from "./utilities/parsers/characterGenerator.ts";
 import { parseTag } from "./utilities/parsers/parseTag.ts";
 import { astToHtml } from "./utilities/astToHtml.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
-
-// TODO: Potentially the cache could exist on fs even (needs to be benchmarked)
-const CACHE = new Map();
 
 function htmlispToHTML(
   { htmlInput, components, context, props, utilities, componentUtilities }:
@@ -22,16 +18,8 @@ function htmlispToHTML(
 
   utilities?._onRenderStart && utilities?._onRenderStart(context || {});
 
-  let cachedAst = CACHE.get(htmlInput);
-
-  if (!cachedAst) {
-    cachedAst = parseTag(characterGenerator(htmlInput));
-
-    CACHE.set(htmlInput, cachedAst);
-  }
-
   const ret = astToHtml(
-    cachedAst,
+    parseTag(htmlInput),
     htmlispToHTML,
     context,
     props,

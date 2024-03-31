@@ -1,14 +1,12 @@
+import { getMemo } from "../../utilities/cache.ts";
 import type { Utility } from "../../types.ts";
 
-const CACHE = new Map();
+const memo = getMemo(new Map());
+function cachedParseExpression(input: string) {
+  return memo(parseExpression, input);
+}
 
 function parseExpression(s: string) {
-  const cachedResult = CACHE.get(s);
-
-  if (cachedResult) {
-    return cachedResult;
-  }
-
   // TODO: Test \n case
   const characters = s.replaceAll("\n", "").split("");
   let ret: Utility | undefined;
@@ -82,10 +80,7 @@ function parseExpression(s: string) {
       segment = "";
     }
   });
-
-  CACHE.set(s, ret);
-
   return ret;
 }
 
-export { parseExpression };
+export { cachedParseExpression as parseExpression };
