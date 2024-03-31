@@ -11,6 +11,7 @@ enum STATES {
   PARSE_TAG_ATTRIBUTES,
   PARSE_CHILDREN,
 }
+const LIMIT = 100000;
 
 const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
 function cachedParseTag(input: string) {
@@ -27,7 +28,7 @@ function parseTag(
   let content = "";
   let depth = 0;
 
-  while (true) {
+  for (let i = 0; i < LIMIT; i++) {
     if (state === STATES.IDLE) {
       const c = getCharacter.next();
 
