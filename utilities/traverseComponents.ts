@@ -1,31 +1,32 @@
-import type { Component } from "../breezewind/types.ts";
-
-type Layout = Component | Component[];
+import type { Element } from "../types.ts";
 
 function traverseComponents(
-  components: Layout,
-  operation: (c: Component, index: number) => void,
+  components: Element,
+  operation: (c: Element, index: number) => void,
 ) {
   let i = 0;
 
   function recurse(
-    components: Component | Component[],
-    operation: (c: Component, index: number) => void,
+    element: Element,
+    operation: (c: Element, index: number) => void,
   ) {
-    if (Array.isArray(components)) {
-      components.forEach((p) => recurse(p, operation));
+    if (Array.isArray(element)) {
+      element.forEach((p) => recurse(p, operation));
     } else {
-      operation(components, i);
+      operation(element, i);
       i++;
 
-      if (Array.isArray(components.children)) {
-        recurse(components.children, operation);
+      // TODO: Restore if needed
+      /*
+      if (Array.isArray(element.children)) {
+        recurse(element.children, operation);
       }
 
-      if (components.props) {
+      if (element.props) {
         // @ts-ignore TODO: Figure out a better type for this
-        recurse(Object.values(components.props), operation);
+        recurse(Object.values(element.props), operation);
       }
+      */
     }
   }
 

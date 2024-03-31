@@ -58,7 +58,7 @@ Given there are times when you might want to remove a part of the DOM structure 
   >
     <TableOfContents />
   </aside>
-  <main &children="(render (get props content))"></main>
+  <main &children="(get props content)"></main>
   <MainFooter />
   <Scripts />
 </body>
@@ -104,7 +104,7 @@ There is a commenting syntax that allows documenting and gets removed through pr
 
 ## Components
 
-Within components, `props` field is available within the context. [Check Breezewind](/breezewind) to understand this functionality better. On a high level it is comparable to how React and other libraries work so that components can encapsulate specific functionality and may be reused across projects easily.
+Within components, `props` field is available within the context. On a high level it is comparable to how React and other libraries work so that components can encapsulate specific functionality and may be reused across projects easily.
 
 ## Slots
 
@@ -121,7 +121,7 @@ Internally slots map to `props`. The main benefit is that they allow expression 
 
 ## Playground
 
-Use the playground below to experiment with the syntax and see how it converts to Breezewind:
+Use the playground below to experiment with the syntax and see how it converts to HTML:
 
 :TemplatingPlayground:
 

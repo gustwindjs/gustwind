@@ -1,6 +1,14 @@
-import type { Utility } from "../../breezewind/types.ts";
+import type { Utility } from "../../types.ts";
+
+const CACHE = new Map();
 
 function parseExpression(s: string) {
+  const cachedResult = CACHE.get(s);
+
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   // TODO: Test \n case
   const characters = s.replaceAll("\n", "").split("");
   let ret: Utility | undefined;
@@ -74,6 +82,8 @@ function parseExpression(s: string) {
       segment = "";
     }
   });
+
+  CACHE.set(s, ret);
 
   return ret;
 }

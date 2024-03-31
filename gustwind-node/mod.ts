@@ -1,41 +1,62 @@
-import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
-import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
-import type { InitLoadApi, PluginsDefinition } from "../types.ts";
+import {
+  applyPlugins,
+  importPlugin,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
+import type { InitLoadApi, Plugin } from "../types.ts";
 
-async function build(
-  cwd: string,
+async function initRender(
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
-  pluginsDefinition: PluginsDefinition,
-  url: string,
+  initialPlugins: [Plugin, Record<string, unknown>][],
 ) {
-  const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
+  const initialImportedPlugins = await Promise.all(
+    initialPlugins.map(([plugin, options]) =>
+      importPlugin({
+        cwd: "",
+        pluginModule: plugin,
+        options,
+        outputDirectory: "",
+        initLoadApi,
+        mode: "production",
+      })
+    ),
+  );
+
   const { plugins, router } = await importPlugins({
-    cwd,
-    pluginDefinitions,
+    cwd: "",
+    initialImportedPlugins,
+    pluginDefinitions: [],
     initLoadApi,
     outputDirectory: "",
     mode: "production",
   });
   const { routes, tasks: initialTasks } = await router.getAllRoutes();
-  const route = routes[url];
 
-  if (!route) {
-    throw new Error(`Matching route was not found for ${url}!`);
-  }
+  return async function render(
+    pathname: string,
+    initialContext: Record<string, unknown>,
+  ) {
+    const matched = await router.matchRoute(routes, pathname);
 
-  const { markup, tasks: routeTasks } = await applyPlugins({
-    plugins,
-    url,
-    routes,
-    route,
-  });
+    if (matched && matched.route) {
+      const { markup, tasks: routeTasks } = await applyPlugins({
+        plugins,
+        url: pathname,
+        routes,
+        route: matched.route,
+        initialContext,
+      });
 
-  // Both markup and tasks are returned. The idea is that the consumer can
-  // decide what to do with either. For example on edge you might want to
-  // handle the tasks dynamically by writing task results to KV and then
-  // map to the database through a router on demand.
-  return { markup, tasks: initialTasks.concat(routeTasks) };
+      // Both markup and tasks are returned. The idea is that the consumer can
+      // decide what to do with either. For example on edge you might want to
+      // handle the tasks dynamically by writing task results to KV and then
+      // map to the database through a router on demand.
+      return { markup, tasks: initialTasks.concat(routeTasks) };
+    }
+
+    throw new Error(`Failed to render ${pathname}`);
+  };
 }
 
 export type * from "../types.ts";
-export { build };
+export { initRender };

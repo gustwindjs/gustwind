@@ -7,17 +7,22 @@ async function buildForNpm(name: string, version: string) {
 
     return;
   }
+
+  // TODO: Ideally plugins would be published standalone behind a namespace
   // TODO: Generate plugin entry points automatically based on the file system
   const pluginNames = [
-    "breezewind-renderer",
-    "config-router",
+    "htmlisp-edge-renderer",
+    // Skip config-router for now as it doesn't make sense on the edge
+    // "config-router",
     "copy",
+    "edge-router",
     // editor is experimental so don't expose it
     // "editor",
     // It doesn't make sense to expose file-watcher for Node
     // "file-watcher",
     "meta",
-    "og",
+    // sharp is a difficult dependency for the edge so skip for now
+    // "og",
     "pagefind",
     // Omit script plugin for now
     // "script",
@@ -38,9 +43,9 @@ async function buildForNpm(name: string, version: string) {
     entryPoints: [
       path.join(entryDir, "mod.ts"),
     ].concat(
-      // @ts-expect-error This is fine, there's some type mismatch that doesn't matter
+      // @ts-expect-error This is fine
       pluginNames.map((name) => ({
-        name: `./plugins/${name}/mod.ts`,
+        name: `./plugins/${name}`,
         path: `plugins/${name}/mod.ts`,
       })),
     ),

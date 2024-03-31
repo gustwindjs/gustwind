@@ -9,7 +9,7 @@ const plugin: Plugin = {
     name: "gustwind-editor-plugin",
     description: "${name} implements a live editor.",
     dependsOn: [
-      "breezewind-renderer-plugin",
+      "htmlisp-renderer-plugin",
       "gustwind-twind-plugin",
       "gustwind-script-plugin",
     ],
@@ -22,7 +22,7 @@ const plugin: Plugin = {
         const lookup = {
           context,
           layout: await send(
-            "breezewind-renderer-plugin",
+            "htmlisp-renderer-plugin",
             { type: "getRenderer", payload: route.layout },
           ),
           route,
@@ -94,7 +94,7 @@ const plugin: Plugin = {
         });
       },
       prepareBuild: async ({ send }) => {
-        const components = await send("breezewind-renderer-plugin", {
+        const components = await send("htmlisp-renderer-plugin", {
           type: "getComponents",
           payload: undefined,
         });

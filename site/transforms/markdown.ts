@@ -1,15 +1,13 @@
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://unpkg.com/marked@9.1.5/lib/marked.esm.js";
-import { renderHTML } from "../../plugins/breezewind-renderer/mod.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import { dir } from "../../utilities/fs.ts";
-import type { Component } from "../../breezewind/types.ts";
 import type { LoadApi } from "../../types.ts";
-import { type Components, initLoaders } from "../../utilities/loaders.ts";
+import { initLoader } from "../../utilities/htmlLoader.ts";
+import * as globalUtilities from "../globalUtilities.ts";
 import {
   getComponentUtilities,
-  getGlobalUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import * as globalUtilities from "../globalUtilities.ts";
 import highlight from "https://unpkg.com/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
 import highlightBash from "https://unpkg.com/highlight.js@11.9.0/es/languages/bash.js";
 import highlightJS from "https://unpkg.com/highlight.js@11.9.0/es/languages/javascript.js";
@@ -45,7 +43,7 @@ marked.setOptions({
 // @ts-expect-error This is fine
 install(twindSetup);
 
-const loaders = initLoaders({
+const htmlLoader = initLoader({
   cwd: Deno.cwd(),
   loadDir: dir,
   loadModule: (path) => import(path),
@@ -91,20 +89,20 @@ function getTransformMarkdown(load: LoadApi) {
       // @ts-ignore How to type this?
       async walkTokens(token) {
         if (token.type === "importComponent") {
-          const components = await loaders.html("./site/components");
+          const { components, componentUtilities } = await htmlLoader(
+            "./site/components",
+          );
           const matchedComponent = components[token.component];
 
           if (matchedComponent) {
-            token.html = await renderHTML({
-              component: matchedComponent.component,
-              components: getComponents(components),
-              globalUtilities: getGlobalUtilities(
-                globalUtilities,
-                components,
-                {},
-                "",
-              ),
-              componentUtilities: getComponentUtilities(components, {}),
+            token.html = await htmlispToHTML({
+              htmlInput: matchedComponent,
+              components,
+              utilities: globalUtilities.init(),
+              componentUtilities: getComponentUtilities({
+                componentUtilities,
+                routes: {},
+              }),
             });
           } else {
             throw new Error(
@@ -215,15 +213,6 @@ function getTransformMarkdown(load: LoadApi) {
 
     return { content: await marked(input), tableOfContents };
   };
-}
-
-// TODO: Same as for breezewind-renderer -> push to utilities
-function getComponents(
-  components: Components,
-): Record<string, Component> {
-  return Object.fromEntries(
-    Object.entries(components).map(([k, v]) => [k, v.component]),
-  );
 }
 
 function slugify(idBase: string) {

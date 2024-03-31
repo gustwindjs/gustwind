@@ -3,9 +3,9 @@ import process from "node:process";
 import type {
   Context,
   InitLoadApi,
+  LoadedPlugin,
   Mode,
   Plugin,
-  PluginApi,
   PluginOptions,
   Route,
   Routes,
@@ -15,10 +15,6 @@ import type {
 
 const DEBUG = process.env.DEBUG === "1";
 
-export type LoadedPlugin = {
-  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
-  tasks: Tasks;
-};
 export type PluginDefinition = LoadedPlugin["plugin"];
 
 async function importPlugins(
@@ -213,20 +209,25 @@ async function applyPlugins(
     url,
     routes,
     route,
+    initialContext,
   }: {
     routes: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
+    initialContext?: Context;
   },
 ) {
   const send = getSend(plugins);
-  const context = await applyPrepareContext({
-    plugins,
-    send,
-    route,
-    url,
-  });
+  const context = {
+    ...initialContext,
+    ...(await applyPrepareContext({
+      plugins,
+      send,
+      route,
+      url,
+    })),
+  };
 
   const { tasks } = await applyBeforeEachRenders({
     context,

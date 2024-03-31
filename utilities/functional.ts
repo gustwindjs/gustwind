@@ -10,6 +10,10 @@ function isNull(str?: unknown) {
   return str === null;
 }
 
+function isString(str?: string) {
+  return typeof str === "string";
+}
+
 function isUndefined(str?: unknown) {
   return typeof str == "undefined";
 }
@@ -24,12 +28,17 @@ function get<O = Record<string, unknown>>(
   defaultValue?: unknown,
 ): unknown {
   if (!isObject(dataContext)) {
-    console.error(dataContext);
+    console.error("context", dataContext);
     throw new Error("get - data context is not an object!");
   }
 
   if (!key) {
     return defaultValue;
+  }
+
+  if (!isString(key)) {
+    console.error("key", key);
+    throw new Error("get - key is not a string");
   }
 
   let value = dataContext;
@@ -76,4 +85,4 @@ function omit<V = unknown>(o: Record<string, V> | undefined, k: string) {
   return ret;
 }
 
-export { get, isBoolean, isObject, isUndefined, last, omit };
+export { get, isBoolean, isObject, isString, isUndefined, last, omit };

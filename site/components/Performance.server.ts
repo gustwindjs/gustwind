@@ -1,4 +1,4 @@
-import type { Context } from "../../breezewind/types.ts";
+import type { Context } from "../../types.ts";
 
 function init() {
   let renderStart: number;

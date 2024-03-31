@@ -1,6 +1,7 @@
 import * as _path from "node:path";
-import { applyUtilities } from "../../breezewind/applyUtility.ts";
-import { defaultUtilities } from "../../breezewind/defaultUtilities.ts";
+import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
+import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
+import type { Context, Utilities, Utility } from "../../types.ts";
 import { get } from "../../utilities/functional.ts";
 import type { DataSources, Route } from "../../types.ts";
 
@@ -110,10 +111,10 @@ async function expandRoute(
         const { meta, layout, scripts } = route.expand;
 
         expandedRoutes[url] = {
-          // @ts-expect-error This is ok
-          meta: await applyUtilities(
+          // @ts-expect-error This is fine
+          meta: await applyUtilities<Utility, Utilities, Context>(
             meta,
-            // @ts-expect-error This is ok
+            // @ts-expect-error This is fine
             defaultUtilities,
             { context },
           ),

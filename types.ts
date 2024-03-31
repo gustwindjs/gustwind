@@ -1,5 +1,22 @@
-// TODO: Too specific
-import type { Component, Utilities } from "./breezewind/types.ts";
+import type { Element } from "./htmlisp/types.ts";
+
+type Utilities =
+  & Record<
+    string,
+    (
+      this: { context: Context; props: Context },
+      // deno-lint-ignore no-explicit-any
+      ...args: any
+    ) => unknown | Promise<unknown> | void
+  >
+  & {
+    _onRenderStart?: (context: Context) => void;
+    _onRenderEnd?: (context: Context) => void;
+  };
+type Utility = {
+  utility: string;
+  parameters?: (string | Utility)[];
+};
 
 type Props = Record<string, string | undefined>;
 // deno-lint-ignore no-explicit-any
@@ -15,6 +32,10 @@ type DataSourcesModule = {
 type DataSource = { operation: string; name?: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
+type LoadedPlugin = {
+  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
+  tasks: Tasks;
+};
 type PluginsDefinition = {
   env: Record<string, string>;
   plugins: PluginOptions[];
@@ -37,6 +58,7 @@ type Mode = "development" | "production";
 // This is the context used when rendering a page
 type Context = Record<string, unknown>;
 
+// TODO: Rename as PluginModule for clarity
 type Plugin<O = Record<string, unknown>, C = Context> = {
   meta: {
     name: string;
@@ -69,6 +91,7 @@ type LoadApi = {
 };
 
 type PluginApi<C = Context> = {
+  // Set up initial plugin context during plugin initialization phase.
   initPluginContext?(): C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
@@ -174,7 +197,7 @@ type SendMessageEvent =
   | { type: "getStyleSetupPath"; payload: undefined }
   | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
-  | { type: "updateComponents"; payload: Record<string, Component> }
+  | { type: "updateComponents"; payload: Record<string, Element> }
   | { type: "getRenderer"; payload: string }
   // websocket plugin
   | { type: "reloadPage"; payload: undefined }
@@ -182,7 +205,16 @@ type SendMessageEvent =
     type: "fileChanged";
     payload: {
       path: string;
-      event: Deno.FsEvent;
+      // Duplicated from Deno type to avoid shimming with dnt
+      // event: Deno.FsEvent;
+      event: {
+        /** The kind/type of the file system event. */
+        kind: "any" | "access" | "create" | "modify" | "remove" | "other";
+        /** An array of paths that are associated with the file system event. */
+        paths: string[];
+        /** Any additional flags associated with the event. */
+        flag?: "rescan";
+      };
       extension: string;
       name: string;
       type: string;
@@ -310,6 +342,7 @@ export type {
   GlobalUtilities,
   InitLoadApi,
   LoadApi,
+  LoadedPlugin,
   Meta,
   Mode,
   ParentCategory,
@@ -324,4 +357,6 @@ export type {
   Scripts,
   Send,
   Tasks,
+  Utilities,
+  Utility,
 };

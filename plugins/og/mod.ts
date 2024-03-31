@@ -1,8 +1,7 @@
 import * as path from "node:path";
 // Note that this depends on --allow-ffi
 import sharp from "npm:sharp@0.33.0";
-import { htmlToBreezewind } from "../../htmlisp/mod.ts";
-import breezewind from "../../breezewind/mod.ts";
+import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import type { Plugin } from "../../types.ts";
 
 const encoder = new TextEncoder();
@@ -13,12 +12,12 @@ const plugin: Plugin<{
   meta: {
     name: "gustwind-og-plugin",
     description: "${name} allows generating OpenGraph images for a website.",
-    dependsOn: ["breezewind-renderer-plugin", "gustwind-meta-plugin"],
+    dependsOn: ["htmlisp-renderer-plugin", "gustwind-meta-plugin"],
   },
   init: async (
     { options: { layout }, load, outputDirectory },
   ) => {
-    const ogLayout = htmlToBreezewind(await load.textFile(layout));
+    const ogLayout = await load.textFile(layout);
 
     return {
       beforeEachRender: async ({ url, route, send }) => {
@@ -27,15 +26,13 @@ const plugin: Plugin<{
             type: "getMeta",
             payload: undefined,
           });
-          const components = await send("breezewind-renderer-plugin", {
+          const components = await send("htmlisp-renderer-plugin", {
             type: "getComponents",
             payload: undefined,
           });
 
-          // TODO: Add a strict mode to breezewind to disallow empty fields
-          // as that helps catching svg issues
-          const svg = await breezewind({
-            component: ogLayout,
+          const svg = await htmlispToHTML({
+            htmlInput: ogLayout,
             // @ts-expect-error It would be better to type this somehow but this will do
             components,
             context: {

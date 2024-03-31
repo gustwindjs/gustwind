@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import { trim } from "../../utilities/string.ts";
+import { matchRoute } from "../../utilities/matchRoute.ts";
 import type {
   DataSources,
   DataSourcesModule,
@@ -71,6 +71,7 @@ const plugin: Plugin<{
           return { route, tasks: [], allRoutes };
         }
 
+        // This can happen for dynamically generated routes, for example pagefind
         return { route: undefined, tasks: [], allRoutes };
       },
       onMessage: async ({ message }) => {
@@ -127,24 +128,6 @@ async function getAllRoutes(routes: Routes, dataSources: DataSources) {
   });
 
   return { allRoutes: flattenRoutes(allRoutes), allParameters };
-}
-
-function matchRoute(
-  routes: Record<string, Route>,
-  url: string,
-): Route | undefined {
-  if (!routes) {
-    return;
-  }
-
-  const parts = trim(url, "/").split("/");
-  const match = routes[url] || routes[parts[0]];
-
-  if (match && match.routes && parts.length > 1) {
-    return matchRoute(match.routes, parts.slice(1).join("/"));
-  }
-
-  return match;
 }
 
 export { plugin };

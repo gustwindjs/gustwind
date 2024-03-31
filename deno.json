@@ -12,7 +12,6 @@
     "netlify:build": "DEBUG=1 deno run --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",
     "update:build:lock": "deno run --lock=deno.build.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "watch:build": "deno run --lock=deno.build.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
-    "build:breezewind-for-npm": "deno run -A build_breeze_for_npm.ts",
     "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts",
     "build:htmlisp-for-npm": "deno run -A build_htmlisp_for_npm.ts"
   }

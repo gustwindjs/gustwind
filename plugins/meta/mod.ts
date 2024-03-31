@@ -2,7 +2,9 @@ import * as path from "node:path";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
-  inputPath: string;
+  // TODO: Type this so that either has to be defined
+  inputPath?: string;
+  meta?: Record<string, unknown>;
 }, {
   meta: Record<string, unknown>;
 }> = {
@@ -11,7 +13,7 @@ const plugin: Plugin<{
     description:
       "${name} allows loading meta information from a given JSON file to be used by other plugins.",
   },
-  init({ cwd, options: { inputPath }, load }) {
+  init({ cwd, options, load }) {
     return {
       initPluginContext: async () => {
         const meta = await loadMeta();
@@ -43,9 +45,13 @@ const plugin: Plugin<{
     };
 
     function loadMeta() {
-      return inputPath
+      if (options.meta) {
+        return options.meta;
+      }
+
+      return options.inputPath
         ? load.json<Record<string, unknown>>({
-          path: path.join(cwd, inputPath),
+          path: path.join(cwd, options.inputPath),
           type: "meta",
         })
         : Promise.resolve({});
