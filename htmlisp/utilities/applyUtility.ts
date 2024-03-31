@@ -72,7 +72,7 @@ async function applyUtility<
       : [],
   );
 
-  return foundUtility.apply({ context }, parameters);
+  return foundUtility.apply({ context: context || {} }, parameters);
 }
 
 export { applyUtilities, applyUtility };

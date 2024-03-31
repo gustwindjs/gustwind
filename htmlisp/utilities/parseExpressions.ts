@@ -38,7 +38,7 @@ async function parseExpressions(
             >(
               parsedExpression,
               utilities,
-              { context, props },
+              context,
             ),
           ];
         }
