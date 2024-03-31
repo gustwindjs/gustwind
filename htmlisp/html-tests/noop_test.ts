@@ -81,3 +81,9 @@ Deno.test("should not override element type for non-noop", async () => {
     `<script type="module" src="demo.js"></script>`,
   );
 });
+
+// TODO: There's an interesting corner case - what if you want to
+// use <noop &type="(get props type)" ...> and set both element
+// type and attribute named type simultaneously. Maybe some other
+// way (different naming?) is needed to cover this although it
+// feels like a niche case that is safe to ignore for now.
