@@ -1227,6 +1227,8 @@
     "https://cdn.skypack.dev/-/nanoid@v5.0.2-eGHVIwCh9rwRCSCapNiP/dist=es2019,mode=imports,min/optimized/nanoid.js": "0672928b21f8391e39f8d8ce04a610ef0d31ff5afaf1e15872169e4902190329",
     "https://cdn.skypack.dev/nanoid@4.0.0?min": "6df8d1088889cfc344d4d0775106363ad79e5a1dffc27a1516eb027407203d9b",
     "https://cdn.skypack.dev/nanoid@5.0.2?min": "09d4f9add3bcba07c8d7600ad39a385a47924400e66f494a6715b67ec98e73c9",
+    "https://deno.land/std@0.119.0/encoding/hex.ts": "5bc7df19af498c315cdaba69e2fce1b2aef5fc57344e8c21c08991aa8505a260",
+    "https://deno.land/std@0.119.0/hash/md5.ts": "957791b9052b40cfa211eeb755a76ad6ad12177387ba84b47c4bc8be4edd60c8",
     "https://deno.land/std@0.134.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
     "https://deno.land/std@0.134.0/bytes/bytes_list.ts": "67eb118e0b7891d2f389dad4add35856f4ad5faab46318ff99653456c23b025d",
     "https://deno.land/std@0.134.0/bytes/equals.ts": "a60ef9f01fb6e06a4e0343fc44d53d39d12dd66bc3f09ac8e6eb9cc1a6335e48",
