@@ -42,7 +42,13 @@
     {
       "path": "./plugins/script/mod.ts",
       "options": {
-        "scriptsPath": ["./site/scripts"]
+        "scriptsPath": ["./site/scripts"],
+        "scripts": [
+          {
+            "type": "",
+            "src": "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
+          }
+        ]
       }
     },
     {
