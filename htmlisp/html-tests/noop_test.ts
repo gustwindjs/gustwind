@@ -67,3 +67,17 @@ Deno.test("nested noops", async () => {
     `<h2 class="demo"><div>foobar</div><a href="#foo">🔗</a></h2>`,
   );
 });
+
+Deno.test("should not override element type for non-noop", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput:
+        `<script &type="(get props type)" &src="(get props src)"></script>`,
+      props: {
+        type: "module",
+        src: "demo.js",
+      },
+    }),
+    `<script type="module" src="demo.js"></script>`,
+  );
+});
