@@ -1,4 +1,4 @@
-import { getMemo } from "../../utilities/cache.ts";
+import { getMemo } from "../../utilities/getMemo.ts";
 import type { Utility } from "../../types.ts";
 
 const memo = getMemo(new Map());

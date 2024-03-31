@@ -4,7 +4,7 @@ import {
 } from "https://deno.land/std@0.207.0/front_matter/yaml.ts";
 import { parse } from "https://deno.land/std@0.207.0/yaml/parse.ts";
 import getMarkdown from "./transforms/markdown.ts";
-import { getMemo } from "../utilities/cache.ts";
+import { getMemo } from "../utilities/getMemo.ts";
 import type { LoadApi } from "../types.ts";
 
 type MarkdownWithFrontmatter = {
