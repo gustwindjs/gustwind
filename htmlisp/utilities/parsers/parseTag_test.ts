@@ -34,8 +34,7 @@ Deno.test("partial tag 3", async () => {
       attributes: {},
       children: ["foo", {
         type: "f",
-        // TODO: This is weird
-        attributes: { fnull: null },
+        attributes: {},
         children: [],
       }],
     }],

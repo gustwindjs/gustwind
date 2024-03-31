@@ -97,6 +97,10 @@ function parseTag(
 
         currentTag.type = parseTagType(getCharacter);
         state = STATES.PARSE_TAG_ATTRIBUTES;
+
+        if (getCharacter.get(1) === null) {
+          break;
+        }
       } else {
         throw new Error("No tag to parse for tag type");
       }
