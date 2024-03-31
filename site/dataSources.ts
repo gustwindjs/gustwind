@@ -1,11 +1,10 @@
-import * as path from "node:path";
 import {
   extract,
   test,
 } from "https://deno.land/std@0.207.0/front_matter/yaml.ts";
 import { parse } from "https://deno.land/std@0.207.0/yaml/parse.ts";
 import getMarkdown from "./transforms/markdown.ts";
-import { fsCache, getMemo } from "../utilities/cache.ts";
+import { getMemo } from "../utilities/cache.ts";
 import type { LoadApi } from "../types.ts";
 
 type MarkdownWithFrontmatter = {
@@ -67,8 +66,10 @@ async function init({ load }: { load: LoadApi }) {
     throw new Error(`path ${path} did not contain a headmatter`);
   }
 
-  const fs = await fsCache(path.join(Deno.cwd(), ".gustwind"));
-  const memo = getMemo(fs);
+  // Interestingly enough caching to fs doesn't result in a speedup
+  // TODO: Investigate why not
+  // const fs = await fsCache(path.join(Deno.cwd(), ".gustwind"));
+  const memo = getMemo(new Map());
   function parseMarkdown(lines: string, o?: { skipFirstLine: boolean }) {
     const input = o?.skipFirstLine
       ? lines.split("\n").slice(1).join("\n")
