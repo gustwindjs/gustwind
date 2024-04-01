@@ -66,7 +66,7 @@ async function astToHtml(
             htmlispToHTML,
             context,
             // @ts-expect-error This is fine
-            { ...p, item: p },
+            { ...p, value: p },
             utilities,
             componentUtilities,
             components,

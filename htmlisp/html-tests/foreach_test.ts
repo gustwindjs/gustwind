@@ -52,7 +52,7 @@ Deno.test("foreach with an array of values", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
-        <li class="inline" &children="(get props item)"></li>
+        <li class="inline" &children="(get props value)"></li>
       </ul>
     `,
       context: {

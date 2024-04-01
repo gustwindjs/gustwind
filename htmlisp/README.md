@@ -43,7 +43,7 @@ To allow iteration over data, there is a specific `&foreach` syntax as shown bel
 </ul>
 ```
 
-The idea is that the expression given to `&foreach` generates an array that is then iterated through.
+The idea is that the expression given to `&foreach` generates an array that is then iterated through. In case the array contains pure values (i.e., strings, numbers etc.), those are exposed through `value` property that you can access through `(get props value)` within the `&foreach` block.
 
 ## Visibility
 
