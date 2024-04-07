@@ -26,6 +26,22 @@ Deno.test("partial tag 2", async () => {
   );
 });
 
+Deno.test("empty ending tag", async () => {
+  assertEquals(
+    await parseTag(`<div>foo</>`),
+    [{ type: "div", attributes: {}, children: ["foo"] }],
+  );
+});
+
+// Note that we don't validate end tags right now.
+// Another option would be to throw an error in this case.
+Deno.test("wrong ending tag", async () => {
+  assertEquals(
+    await parseTag(`<div>foo</span>`),
+    [{ type: "div", attributes: {}, children: ["foo"] }],
+  );
+});
+
 Deno.test("partial tag 3", async () => {
   assertEquals(
     await parseTag(`<div>foo<f`),
