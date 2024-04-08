@@ -6,16 +6,16 @@ import { produce } from "https://cdn.skypack.dev/immer@9.0.16?min";
 import { getParents } from "../../../utilities/getParents.ts";
 import { changeTag } from "../../../utilities/changeTag.ts";
 import { traverseComponents } from "../../../utilities/traverseComponents.ts";
-import breezewind from "../../../breezewind/mod.ts";
-import * as breezeExtensions from "../../../breezewind/extensions.ts";
+// import breezewind from "../../../breezewind/mod.ts";
+// import * as breezeExtensions from "../../../breezewind/extensions.ts";
 // import { getUrl } from "../../../utilities/getUrl.ts";
 import type { DataContext, Route } from "../../../types.ts";
-import type {
+/* import type {
   Component,
   Components,
   ComponentUtilities,
   Utilities,
-} from "../../../breezewind/types.ts";
+} from "../../../breezewind/types.ts"; */
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
