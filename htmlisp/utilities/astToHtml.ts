@@ -1,6 +1,6 @@
 import { parseExpressions } from "./parseExpressions.ts";
 import { getAttributeBindings } from "./getAttributeBindings.ts";
-// import type { Element } from "./parsers/types.ts";
+import { isString } from "../../utilities/functional.ts";
 import type {
   Components,
   Context,
@@ -148,7 +148,8 @@ async function astToHtml(
       return `<${type}${getAttributeBindings(parsedExpressions)}${closesWith}>`;
     }
 
-    const content = parsedChildren
+    // TODO: Should there be a more strict check against parsed children?
+    const content = isString(parsedChildren)
       ? parsedChildren.concat(renderedChildren)
       : renderedChildren;
 
