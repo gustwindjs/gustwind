@@ -50,7 +50,10 @@ async function astToHtml(
         : {},
     );
 
-    if (parsedExpressions.visibleIf === false) {
+    if (
+      parsedExpressions.visibleIf === false ||
+      parsedExpressions.visibleIf.length === 0
+    ) {
       return "";
     }
 

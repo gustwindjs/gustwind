@@ -38,3 +38,31 @@ Deno.test("element with a complex visibleIf", async () => {
     "",
   );
 });
+
+Deno.test("component with visibleIf 1", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<li &visibleIf="(get props website)">
+  <a &href="(get props website)">Website</a>
+</li>`,
+      props: {
+        website: false,
+      },
+    }),
+    "",
+  );
+});
+
+Deno.test("component with visibleIf 2", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<li &visibleIf="(get props website)">
+  <a &href="(get props website)">Website</a>
+</li>`,
+      props: {
+        website: "",
+      },
+    }),
+    "",
+  );
+});
