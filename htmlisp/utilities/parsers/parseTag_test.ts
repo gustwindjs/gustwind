@@ -8,6 +8,28 @@ Deno.test("content", async () => {
   );
 });
 
+Deno.test("/ as tag content", async () => {
+  assertEquals(
+    await parseTag(`<div>/</div>`),
+    [{
+      type: "div",
+      attributes: {},
+      children: ["/"],
+    }],
+  );
+});
+
+Deno.test("/ as tag content 2", async () => {
+  assertEquals(
+    await parseTag(`<SiteLink href="/">/</SiteLink>`),
+    [{
+      type: "SiteLink",
+      attributes: { href: "/" },
+      children: ["/"],
+    }],
+  );
+});
+
 Deno.test("partial tag", async () => {
   assertEquals(
     await parseTag(`<div>foo`),
