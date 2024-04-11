@@ -77,3 +77,47 @@ Deno.test("foreach without a type", async () => {
     `<div class="inline">bar</div>`,
   );
 });
+
+Deno.test("foreach with nested children", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &foreach="(get context blogPosts)">
+  <a
+    &href="(get props slug)"
+  >
+    <div &children="(get props content)" />
+  </a>
+</div>
+    `,
+      context: {
+        blogPosts: [{ slug: "foo", content: "bar" }],
+      },
+    }),
+    `<div><a href="foo"><div>bar</div></a></div>`,
+  );
+});
+
+Deno.test("foreach with nested children and a component", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<div &foreach="(get context blogPosts)">
+  <a
+    &href="(get props slug)"
+  >
+    <Card &title="(get props title)" />
+  </a>
+</div>
+    `,
+      context: {
+        blogPosts: [{ slug: "foo", title: "bar" }],
+      },
+      components: {
+        Card: `<div>
+  <Heading &children="(get props title)" />
+</div>`,
+        Heading: `<h1 &children="(get props children)" />`,
+      },
+    }),
+    `<div><a href="foo"><div><h1>bar</h1></div></a></div>`,
+  );
+});
