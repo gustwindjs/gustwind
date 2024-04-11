@@ -39,7 +39,7 @@ Deno.test("element with a complex visibleIf", async () => {
   );
 });
 
-Deno.test("component with visibleIf 1", async () => {
+Deno.test("component with visibleIf and boolean", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<li &visibleIf="(get props website)">
@@ -53,7 +53,7 @@ Deno.test("component with visibleIf 1", async () => {
   );
 });
 
-Deno.test("component with visibleIf 2", async () => {
+Deno.test("component with visibleIf and string", async () => {
   assertEquals(
     await htmlispToHTML({
       htmlInput: `<li &visibleIf="(get props website)">
@@ -61,6 +61,20 @@ Deno.test("component with visibleIf 2", async () => {
 </li>`,
       props: {
         website: "",
+      },
+    }),
+    "",
+  );
+});
+
+Deno.test("component with visibleIf and undefined", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<li &visibleIf="(get props website)">
+  <a &href="(get props website)">Website</a>
+</li>`,
+      props: {
+        website: undefined,
       },
     }),
     "",

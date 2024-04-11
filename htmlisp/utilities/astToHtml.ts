@@ -51,8 +51,12 @@ async function astToHtml(
     );
 
     if (
-      parsedExpressions.visibleIf === false ||
-      parsedExpressions.visibleIf.length === 0
+      Object.hasOwn(parsedExpressions, "visibleIf") &&
+      (
+        parsedExpressions.visibleIf === false ||
+        parsedExpressions.visibleIf === undefined ||
+        parsedExpressions.visibleIf?.length === 0
+      )
     ) {
       return "";
     }
