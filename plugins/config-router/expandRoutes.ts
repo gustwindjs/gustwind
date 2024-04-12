@@ -155,7 +155,7 @@ async function expandRoute(
 
     ret = {
       ...route,
-      routes: expandedRouteRoutes.allRoutes,
+      routes: { ...ret.routes, ...expandedRouteRoutes.allRoutes },
     };
   }
 

@@ -99,6 +99,16 @@
           "parameters": ["context", "document.data.description"]
         }
       }
+    },
+    "routes": {
+      "more": {
+        "layout": "buttonsPage",
+        "meta": {
+          "title": "More Gustwind buttons",
+          "description": "Another secret buttons page"
+        },
+        "scripts": [{ "name": "hello" }]
+      }
     }
   },
   "buttons": {
