@@ -8,7 +8,7 @@ import * as globalUtilities from "../globalUtilities.ts";
 import {
   getComponentUtilities,
 } from "../../gustwind-utilities/getUtilities.ts";
-import highlight from "https://cdn.jsdelivr.net/npm//@highlightjs/cdn-assets@11.9.0/es/core.min.js";
+import highlight from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
 import highlightBash from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/bash.js";
 import highlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.js";
 import highlightJSON from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/json.js";
