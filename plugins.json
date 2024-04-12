@@ -46,7 +46,7 @@
         "scripts": [
           {
             "type": "",
-            "src": "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
+            "src": "https://cdn.jsdelivr.net/npm/sidewind@7.6.0/dist/sidewind.umd.production.min.js"
           }
         ]
       }

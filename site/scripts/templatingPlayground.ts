@@ -1,7 +1,7 @@
 import { install, tw } from "https://cdn.skypack.dev/@twind/core@1.1.1?min";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
-import HighlightJS from "https://unpkg.com/@highlightjs/cdn-assets@11.7.0/es/core.min.js";
-import highlightXML from "https://unpkg.com/highlight.js@11.7.0/es/languages/xml.js";
+import HighlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/core.min.js";
+import highlightXML from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/xml.js";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
 
 install({ presets: [presetTailwind()], hash: false });

@@ -18,6 +18,7 @@
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "deno.suggest.imports.hosts": {
+    "https://cdn.jsdelivr.net": false,
     "https://unpkg.com": false,
     "https://esm.sh": false,
     "https://deno.land": false

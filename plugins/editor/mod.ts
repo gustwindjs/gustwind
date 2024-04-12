@@ -89,7 +89,7 @@ const plugin: Plugin = {
           payload: [{
             type: "",
             src:
-              "https://unpkg.com/sidewind@7.6.0/dist/sidewind.umd.production.min.js",
+              "https://cdn.jsdelivr.net/npm/sidewind@7.6.0/dist/sidewind.umd.production.min.js",
           }],
         });
       },
