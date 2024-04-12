@@ -114,7 +114,6 @@ async function expandRoute(
           // @ts-expect-error This is fine
           meta: await applyUtilities<Utility, Utilities, Context>(
             meta,
-            // @ts-expect-error This is fine
             defaultUtilities,
             { context },
           ),
