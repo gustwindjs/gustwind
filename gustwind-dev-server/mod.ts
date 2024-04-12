@@ -92,7 +92,10 @@ async function gustwindDevServer({
         }
       }
 
-      return respond(404, "No matching route");
+      return respond(
+        404,
+        `No matching route in ${Object.keys(routes).join(", ")}.`,
+      );
     });
 
     return { routes, plugins };
