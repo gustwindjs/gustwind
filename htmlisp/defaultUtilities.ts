@@ -12,6 +12,7 @@ const defaultUtilities = {
   or: (...parts: unknown[]) => parts.some((p) => !!p),
   and: (...parts: unknown[]) => parts.every((p) => !!p),
   concat: (...parts: string[]) => parts.join(""),
+  not: (b: boolean) => !b,
   get: function getUtility(
     this: { context?: Context },
     c: string,
