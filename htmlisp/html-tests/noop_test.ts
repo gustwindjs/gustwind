@@ -20,6 +20,28 @@ Deno.test("element children with noop", async () => {
   );
 });
 
+Deno.test("noop with a local binding", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: `<noop id="foo"><div &children="(get local id)"></div></noop>`,
+    }),
+    "<div>foo</div>",
+  );
+});
+
+Deno.test("noop with an evaluated local binding", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput:
+        `<noop &id="(foobar)"><div &children="(get local id)"></div></noop>`,
+      utilities: {
+        foobar: () => "foobar",
+      },
+    }),
+    "<div>foobar</div>",
+  );
+});
+
 Deno.test("component with noop and siblings", async () => {
   assertEquals(
     await htmlispToHTML({

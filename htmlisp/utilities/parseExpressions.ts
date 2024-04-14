@@ -7,7 +7,6 @@ import type { Utilities, Utility } from "../../types.ts";
 async function parseExpressions(
   attributes: Attributes | undefined,
   context: Context,
-  props: Context,
   utilities: Utilities,
 ) {
   if (!attributes) {
@@ -39,7 +38,7 @@ async function parseExpressions(
             >(
               parsedExpression,
               utilities,
-              { context, props },
+              context,
             ),
           ];
         }

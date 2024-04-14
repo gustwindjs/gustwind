@@ -17,6 +17,7 @@ async function astToHtml(
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
+  initialLocal?: Context,
   utilities?: Utilities,
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
@@ -38,11 +39,11 @@ async function astToHtml(
       components &&
       type[0]?.toUpperCase() === typeFirstLetter &&
       !type.split("").every((t) => t.toUpperCase() === t);
+    let local = initialLocal;
 
-    const parsedExpressions = await parseExpressions(
+    const parsedAttributes = await parseExpressions(
       attributes,
-      context || {},
-      props || {},
+      { context: context || {}, props: props || {}, local },
       isComponent
         ? { ...utilities, ...componentUtilities?.[type] }
         : utilities
@@ -50,21 +51,25 @@ async function astToHtml(
         : {},
     );
 
+    if (type === "noop") {
+      local = parsedAttributes;
+    }
+
     if (
-      Object.hasOwn(parsedExpressions, "visibleIf") &&
+      Object.hasOwn(parsedAttributes, "visibleIf") &&
       (
-        parsedExpressions.visibleIf === false ||
-        parsedExpressions.visibleIf === undefined ||
-        parsedExpressions.visibleIf?.length === 0
+        parsedAttributes.visibleIf === false ||
+        parsedAttributes.visibleIf === undefined ||
+        parsedAttributes.visibleIf?.length === 0
       )
     ) {
       return "";
     }
 
-    if (parsedExpressions.foreach) {
-      const items = parsedExpressions.foreach as unknown[];
+    if (parsedAttributes.foreach) {
+      const items = parsedAttributes.foreach as unknown[];
 
-      delete parsedExpressions.foreach;
+      delete parsedAttributes.foreach;
 
       renderedChildren = (await Promise.all(
         items.map((p) =>
@@ -74,6 +79,7 @@ async function astToHtml(
             context,
             // @ts-expect-error This is fine
             { ...p, value: p },
+            local,
             utilities,
             componentUtilities,
             components,
@@ -90,6 +96,7 @@ async function astToHtml(
         htmlispToHTML,
         context,
         props,
+        local,
         utilities,
         componentUtilities,
         components,
@@ -113,6 +120,7 @@ async function astToHtml(
                     htmlispToHTML,
                     context,
                     props,
+                    local,
                     utilities,
                     componentUtilities,
                     components,
@@ -136,7 +144,7 @@ async function astToHtml(
               children: renderedChildren,
               ...Object.fromEntries(slots),
               ...attributes,
-              ...parsedExpressions,
+              ...parsedAttributes,
               props,
             },
             utilities: { ...utilities, ...componentUtilities?.[type] },
@@ -149,10 +157,10 @@ async function astToHtml(
       }
     }
 
-    const parsedChildren = parsedExpressions.children;
+    const parsedChildren = parsedAttributes.children;
 
     if (type !== "noop" && !parsedChildren && typeof closesWith === "string") {
-      return `<${type}${getAttributeBindings(parsedExpressions)}${closesWith}>`;
+      return `<${type}${getAttributeBindings(parsedAttributes)}${closesWith}>`;
     }
 
     // TODO: Should there be a more strict check against parsed children?
@@ -160,20 +168,18 @@ async function astToHtml(
       ? parsedChildren.concat(renderedChildren)
       : renderedChildren;
 
-    if (type === "noop" && !parsedExpressions.type) {
+    if (type === "noop" && !parsedAttributes.type) {
       return content;
     }
 
-    const t = type === "noop" && parsedExpressions.type || type;
+    const t = type === "noop" && parsedAttributes.type || type;
 
     if (t) {
       if (type === "noop") {
-        delete parsedExpressions.type;
+        delete parsedAttributes.type;
       }
 
-      return `<${t}${
-        getAttributeBindings(parsedExpressions)
-      }>${content}</${t}>`;
+      return `<${t}${getAttributeBindings(parsedAttributes)}>${content}</${t}>`;
     }
 
     return content;

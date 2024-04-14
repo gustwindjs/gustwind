@@ -2,11 +2,13 @@
   class="fixed top-16 left-2 max-w-sm max-h-full overflow-auto rounded filter drop-shadow"
 >
   <header class="cursor-move">
-    <h2 class="p-4 font-bold bg-gray-800 text-white">Page editor</h2>
+    <Heading level="2" class="p-4 font-bold bg-gray-800 text-white"
+      >Page editor</Heading
+    >
   </header>
   <section class="p-4 gap-4 flex flex-col bg-white filter bg-opacity-90">
     <div>
-      <h2 class="font-bold">Meta</h2>
+      <Heading level="2" class="font-bold">Meta</Heading>
       <DynamicList
         class="flex flex-col gap-2"
         props="{
@@ -20,7 +22,7 @@
       todo="The data source portion has been disabled for now"
     >
       <div>
-        <h2 class="font-bold">Data sources</h2>
+        <Heading level="2" class="font-bold">Data sources</Heading>
         <div x-each="editor.dataSources">
           <DynamicList
             props="{
@@ -31,7 +33,7 @@
       </div>
     </div>
     <div>
-      <h2 class="font-bold mb-2">Layout</h2>
+      <Heading level="2" class="font-bold mb-2">Layout</Heading>
       <div &visibleIf="()" x="'Selection id: ' + editor.selectionId"></div>
       <ul
         x-each="Array.isArray(editor.layout) ? editor.layout : [editor.layout]"
@@ -47,15 +49,15 @@
             x="'id: ' + state.value.attributes['data-id']"
           ></div>
           <div class="flex flex-row gap-2" x-if="state.value.type">
-            <h2 class="font-bold">Type</h2>
+            <Heading level="2" class="font-bold">Type</Heading>
             <span x="state.value.type"></span>
           </div>
           <div class="flex flex-row gap-2" x-if="state.value.class">
-            <h2 class="font-bold">Class</h2>
+            <Heading level="2" class="font-bold">Class</Heading>
             <span x="state.value.class"></span>
           </div>
           <div x-if="state.value.props">
-            <h2 class="font-bold">Props</h2>
+            <Heading level="2" class="font-bold">Props</Heading>
             <ul x-each="Object.entries(state.value.props)">
               <li x-template>
                 <span x="state.value[0]"></span>
@@ -66,7 +68,7 @@
             </ul>
           </div>
           <div x-if="state.value.children">
-            <h2 class="font-bold">Children</h2>
+            <Heading level="2" class="font-bold">Children</Heading>
             <div
               x-recurse="Array.isArray(state.value.children) ? state.value.children : [{ type: state.value.children }]"
             ></div>

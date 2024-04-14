@@ -23,6 +23,7 @@ async function htmlispToHTML(
     htmlispToHTML,
     context,
     props,
+    {},
     {
       render: (htmlInput: string) =>
         htmlInput
