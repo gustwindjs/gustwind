@@ -16,6 +16,19 @@ Deno.test("basic component", async () => {
   );
 });
 
+Deno.test("component with a flag", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: "<Button showButton>foo</Button>",
+      components: {
+        Button:
+          '<button &visibleIf="(get props showButton)" &children="(get props children)"></button>',
+      },
+    }),
+    "<button>foo</button>",
+  );
+});
+
 Deno.test("basic component 2", async () => {
   assertEquals(
     await htmlispToHTML({

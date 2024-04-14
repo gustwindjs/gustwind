@@ -47,21 +47,21 @@ Deno.test(`attribute with single backticks in value`, () => {
 Deno.test(`attribute without a value`, () => {
   assertEquals(
     parseAttribute(characterGenerator(`href `)),
-    ["href", null],
+    ["href", true],
   );
 });
 
 Deno.test(`attribute without a value at the end`, () => {
   assertEquals(
     parseAttribute(characterGenerator(`href/`)),
-    ["href", null],
+    ["href", true],
   );
 });
 
 Deno.test(`attribute without a value at the end 2`, () => {
   assertEquals(
     parseAttribute(characterGenerator(`href?`)),
-    ["href", null],
+    ["href", true],
   );
 });
 
@@ -82,6 +82,6 @@ Deno.test(`attribute at the end of a tag`, () => {
 Deno.test(`tag end`, () => {
   assertEquals(
     parseAttribute(characterGenerator(` />`)),
-    ["", null],
+    ["", true],
   );
 });

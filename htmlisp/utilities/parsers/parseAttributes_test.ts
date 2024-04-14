@@ -19,7 +19,7 @@ Deno.test(`attributes with " 2`, () => {
 Deno.test(`self-closing attribute at the end`, () => {
   assertEquals(
     parseAttributes(characterGenerator(`href="test" title>`)),
-    { href: "test", title: null },
+    { href: "test", title: true },
   );
 });
 
@@ -54,21 +54,21 @@ Deno.test(`attribute with backticks and quotes`, () => {
 Deno.test(`attribute without a value`, () => {
   assertEquals(
     parseAttributes(characterGenerator(`href title="foo"`)),
-    { href: null, title: "foo" },
+    { href: true, title: "foo" },
   );
 });
 
 Deno.test(`attribute without a value at the end`, () => {
   assertEquals(
     parseAttributes(characterGenerator(`bar href/`)),
-    { bar: null, href: null },
+    { bar: true, href: true },
   );
 });
 
 Deno.test(`attribute without a value at the end 2`, () => {
   assertEquals(
     parseAttributes(characterGenerator(`href?`)),
-    { href: null },
+    { href: true },
   );
 });
 

@@ -18,6 +18,13 @@ Deno.test("element with an attribute", async () => {
   );
 });
 
+Deno.test("element with an attribute flag", async () => {
+  assertEquals(
+    await htmlispToHTML({ htmlInput: `<div title>foo</div>` }),
+    `<div title>foo</div>`,
+  );
+});
+
 Deno.test("element with a self-closing attribute", async () => {
   assertEquals(
     await htmlispToHTML({ htmlInput: `<div demo title="bar">foo</div>` }),

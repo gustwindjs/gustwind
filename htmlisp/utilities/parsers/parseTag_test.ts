@@ -154,7 +154,7 @@ Deno.test("simple tag with an attribute at the end", async () => {
     [{
       type: "span",
       children: ["foobar"],
-      attributes: { title: null },
+      attributes: { title: true },
     }],
   );
 });
@@ -345,7 +345,7 @@ Deno.test("simple doctype", async () => {
     await parseTag(`<!DOCTYPE html>`),
     [{
       type: "!DOCTYPE",
-      attributes: { html: null },
+      attributes: { html: true },
       closesWith: "",
       children: [],
     }],
@@ -357,7 +357,7 @@ Deno.test("simple doctype and content", async () => {
     await parseTag(`<!DOCTYPE html>foobar`),
     [{
       type: "!DOCTYPE",
-      attributes: { html: null },
+      attributes: { html: true },
       closesWith: "",
       children: [],
     }, "foobar"],
@@ -369,7 +369,7 @@ Deno.test("simple doctype and element", async () => {
     await parseTag(`<!DOCTYPE html><div>foobar</div>`),
     [{
       type: "!DOCTYPE",
-      attributes: { html: null },
+      attributes: { html: true },
       closesWith: "",
       children: [],
     }, {
@@ -388,7 +388,7 @@ Deno.test("full doctype", async () => {
     ),
     [{
       type: "!DOCTYPE",
-      attributes: { html: null },
+      attributes: { html: true },
       closesWith: "",
       children: [],
     }, {
@@ -700,7 +700,7 @@ Deno.test("integration 2", async () => {
 `),
     [{
       type: "!DOCTYPE",
-      attributes: { html: null },
+      attributes: { html: true },
       children: [],
       closesWith: "",
     }, {

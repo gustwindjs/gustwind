@@ -1,6 +1,6 @@
 import type { Context, Utilities } from "../types.ts";
 
-type Attributes = Record<string, string | null>;
+type Attributes = Record<string, string | boolean | null>;
 type Components = Record<string, string>;
 
 type Element = {

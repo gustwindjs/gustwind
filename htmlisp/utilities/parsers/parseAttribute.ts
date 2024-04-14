@@ -11,10 +11,10 @@ const LIMIT = 100000;
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
-): [string, string | null] {
+): [string, string | boolean | null] {
   let state = STATES.FIND_ATTRIBUTE_NAME;
   let attributeName = "";
-  let attributeValue = null;
+  let attributeValue: string | boolean | null = true;
 
   for (let i = 0; i < LIMIT; i++) {
     if (state === STATES.FIND_ATTRIBUTE_NAME) {
