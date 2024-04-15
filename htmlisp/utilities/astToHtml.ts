@@ -71,6 +71,12 @@ async function astToHtml(
 
       delete parsedAttributes.foreach;
 
+      // TODO: Test this case
+      if (!Array.isArray(items)) {
+        console.error(items);
+        throw new Error("foreach - Tried to iterate a non-array!");
+      }
+
       renderedChildren = (await Promise.all(
         items.map((p) =>
           astToHtml(
