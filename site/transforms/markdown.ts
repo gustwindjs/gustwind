@@ -1,13 +1,6 @@
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@9.1.5/lib/marked.esm.js";
-import { htmlispToHTML } from "../../htmlisp/mod.ts";
-import { dir } from "../../utilities/fs.ts";
-import type { LoadApi } from "../../types.ts";
-import { initLoader } from "../../utilities/htmlLoader.ts";
-import * as globalUtilities from "../globalUtilities.ts";
-import {
-  getComponentUtilities,
-} from "../../gustwind-utilities/getUtilities.ts";
+import type { DataSourcesApi } from "../../types.ts";
 import highlight from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
 import highlightBash from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/bash.js";
 import highlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.js";
@@ -43,13 +36,7 @@ marked.setOptions({
 // @ts-expect-error This is fine
 install(twindSetup);
 
-const htmlLoader = initLoader({
-  cwd: Deno.cwd(),
-  loadDir: dir,
-  loadModule: (path) => import(path),
-});
-
-function getTransformMarkdown(load: LoadApi) {
+function getTransformMarkdown({ load, render }: DataSourcesApi) {
   return async function transformMarkdown(input: string) {
     if (typeof input !== "string") {
       console.error("input", input);
@@ -89,26 +76,7 @@ function getTransformMarkdown(load: LoadApi) {
       // @ts-ignore How to type this?
       async walkTokens(token) {
         if (token.type === "importComponent") {
-          const { components, componentUtilities } = await htmlLoader(
-            "./site/components",
-          );
-          const matchedComponent = components[token.component];
-
-          if (matchedComponent) {
-            token.html = await htmlispToHTML({
-              htmlInput: matchedComponent,
-              components,
-              utilities: globalUtilities.init(),
-              componentUtilities: getComponentUtilities({
-                componentUtilities,
-                routes: {},
-              }),
-            });
-          } else {
-            throw new Error(
-              `Failed to find a matching component for ${token.component}`,
-            );
-          }
+          token.html = await render({ componentName: token.component });
         }
       },
     });

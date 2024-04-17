@@ -453,6 +453,7 @@
   "remote": {
     "https://bundle.deno.dev/https://deno.land/x/url_join@1.0.0/mod.ts": "a1eb7b5984fccc94bab744ede34b9cad4e9c70ff96e5c681e519c507c7d8dd2d",
     "https://cdn.jsdelivr.net/npm//@highlightjs/cdn-assets@11.9.0/es/core.min.js": "9977f355c10aee299435c55e6c495c22e2de75c3972216e56a9a0938fcc635d8",
+    "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/es/core.min.js": "9977f355c10aee299435c55e6c495c22e2de75c3972216e56a9a0938fcc635d8",
     "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/bash.js": "b4b6d8c9da1946cf50627e9ad8caa691e10f7ed24754d17201ef998ff73ae7ea",
     "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.js": "1d3289d5c11b2295ad4dfc428baef31d6874fda5dc3b4cc7c132f38627849427",
     "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/json.js": "956764a89028c8d53b34b0c0b9a41d501f2e4aa934ee5d06c6270586974d78c1",

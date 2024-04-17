@@ -27,8 +27,16 @@ type DataContext = Record<string, unknown> | Record<string, unknown>[];
 type ParentCategory = { title: string; children: Category[] };
 
 type DataSourcesModule = {
-  init({ load }: { load: LoadApi }): DataSources;
+  init(o: DataSourcesApi): DataSources;
 };
+type DataSourcesApi = {
+  load: LoadApi;
+  render: Render;
+};
+type Render = (
+  o: { componentName?: string; htmlInput?: string; context?: Context },
+) => Promise<string>;
+
 type DataSource = { operation: string; name?: string; parameters?: unknown[] };
 type DataSources = Record<string, () => unknown[]>;
 
@@ -71,6 +79,7 @@ type Plugin<O = Record<string, unknown>, C = Context> = {
 type PluginParameters<O = Record<string, unknown>> = {
   cwd: string;
   load: LoadApi;
+  renderComponent: Render;
   mode: Mode;
   outputDirectory: string;
   options: O;
@@ -111,34 +120,30 @@ type PluginApi<C = Context> = {
     { routes, pluginContext }: { routes: Routes; pluginContext: C },
   ): void;
   // Run setup before context is resolved or add something to it
-  prepareContext?(
-    { send, route, url, pluginContext }: {
-      send: Send;
-      route: Route;
-      url: string;
-      pluginContext: C;
-    },
-  ):
+  prepareContext?(o: {
+    send: Send;
+    route: Route;
+    url: string;
+    pluginContext: C;
+  }):
     | Promise<{ context: Record<string, unknown> } | void>
     | {
       context: Record<string, unknown>;
     }
     | void;
-  beforeEachRender?(
-    { context, send, route, url, pluginContext }: {
-      context: Context;
-      send: Send;
-      route: Route;
-      url: string;
-      pluginContext: C;
-    },
-  ):
+  beforeEachRender?(o: {
+    context: Context;
+    send: Send;
+    route: Route;
+    url: string;
+    pluginContext: C;
+  }):
     | Promise<
       Tasks | void
     >
     | Tasks
     | void;
-  render?({ routes, route, context, send, url, pluginContext }: {
+  renderLayout?(o: {
     routes: Routes;
     route: Route;
     context: Context;
@@ -146,7 +151,14 @@ type PluginApi<C = Context> = {
     url: string;
     pluginContext: C;
   }): Promise<string> | string;
-  afterEachRender?({ markup, context, route, send, url, pluginContext }: {
+  renderComponent?(o: {
+    routes: Routes;
+    componentName?: string;
+    htmlInput?: string;
+    context: Context;
+    pluginContext: C;
+  }): Promise<string> | string;
+  afterEachRender?(o: {
     markup: string;
     context: Context;
     route: Route;
@@ -326,7 +338,9 @@ type BuildWorkerEvent =
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
 type GlobalUtilities = {
-  init: ({ routes }: { routes: Routes }) => Utilities;
+  init: (
+    { load, render, routes }: { load: LoadApi; render: Render; routes: Routes },
+  ) => Utilities;
 };
 
 export type {
@@ -338,6 +352,7 @@ export type {
   DataContext,
   DataSource,
   DataSources,
+  DataSourcesApi,
   DataSourcesModule,
   GlobalUtilities,
   InitLoadApi,
@@ -352,6 +367,7 @@ export type {
   PluginParameters,
   PluginsDefinition,
   Props,
+  Render,
   Route,
   Routes,
   Scripts,

@@ -7,6 +7,7 @@ import type {
   Mode,
   Plugin,
   PluginOptions,
+  Render,
   Route,
   Routes,
   Send,
@@ -44,6 +45,24 @@ async function importPlugins(
     });
   }
 
+  const renderComponent: Render = function (
+    { componentName, htmlInput, context },
+  ) {
+    return applyRenderComponents({
+      componentName,
+      htmlInput,
+      context,
+      plugins: loadedPluginDefinitions,
+      // TODO: Figure out how to avoid a cyclic dependency
+      // between data loading and routing as now they depend
+      // on each other. Some logic has to be decoupled somewhere.
+      //
+      // For now, route information is not available to
+      // component rendering API
+      routes: {}, // (await router.getAllRoutes()).routes,
+    });
+  };
+
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
@@ -58,6 +77,7 @@ async function importPlugins(
         .then(({ plugin }) => plugin),
       options: pluginDefinition.options,
       outputDirectory,
+      renderComponent,
       initLoadApi,
       mode,
     });
@@ -104,11 +124,20 @@ async function importPlugins(
 }
 
 async function importPlugin(
-  { cwd, pluginModule, options, outputDirectory, initLoadApi, mode }: {
+  {
+    cwd,
+    pluginModule,
+    options,
+    outputDirectory,
+    renderComponent,
+    initLoadApi,
+    mode,
+  }: {
     cwd: string;
     pluginModule: Plugin;
     options: Record<string, unknown>;
     outputDirectory: string;
+    renderComponent?: Render;
     initLoadApi: InitLoadApi;
     mode: Mode;
   },
@@ -119,6 +148,7 @@ async function importPlugin(
     mode,
     options,
     outputDirectory,
+    renderComponent: renderComponent || (() => Promise.resolve("")),
     load: initLoadApi(tasks),
   });
 
@@ -238,7 +268,7 @@ async function applyPlugins(
   });
   await applyOnTasksRegistered({ plugins, tasks });
 
-  const markup = await applyRenders({
+  const markup = await applyRenderLayouts({
     context,
     plugins,
     routes,
@@ -263,19 +293,17 @@ async function applyPlugins(
 async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
   const getAllRoutes = plugins.map((
     { api, context },
-  ) => [api.getAllRoutes, context])
+  ) => api.getAllRoutes && [api.getAllRoutes, context])
     .filter(Boolean);
   let allRoutes: Record<string, Route> = {};
   let allTasks: Tasks = [];
 
+  // @ts-expect-error Figure out the right type for this
   for await (const [routeGetter, pluginContext] of getAllRoutes) {
-    if (routeGetter) {
-      // @ts-expect-error It's not clear how to type context
-      const { routes, tasks } = await routeGetter({ pluginContext });
+    const { routes, tasks } = await routeGetter({ pluginContext });
 
-      allRoutes = { ...allRoutes, ...routes };
-      allTasks = allTasks.concat(tasks);
-    }
+    allRoutes = { ...allRoutes, ...routes };
+    allTasks = allTasks.concat(tasks);
   }
 
   return { routes: allRoutes, tasks: allTasks };
@@ -290,12 +318,12 @@ async function applyMatchRoutes(
 ) {
   const matchRoutes = plugins.map((
     { api, context },
-  ) => [api.matchRoute, context])
+  ) => api.matchRoute && [api.matchRoute, context])
     .filter(Boolean);
 
+  // @ts-expect-error Figure out the right type for this
   for await (const [matchRoute, pluginContext] of matchRoutes) {
     const matchedRoute = matchRoute &&
-      // @ts-expect-error It's not clear how to type context
       matchRoute(allRoutes, url, pluginContext);
 
     if (matchedRoute) {
@@ -317,17 +345,15 @@ async function applyPrepareContext(
   let context = {};
   const prepareContexts = plugins.map((
     { api, context },
-  ) => [api.prepareContext, context])
+  ) => api.prepareContext && [api.prepareContext, context])
     .filter(Boolean);
 
+  // @ts-expect-error Figure out the right type for this
   for await (const [prepareContext, pluginContext] of prepareContexts) {
-    if (prepareContext) {
-      // @ts-expect-error It's not clear how to type context
-      const ret = await prepareContext({ send, route, url, pluginContext });
+    const ret = await prepareContext({ send, route, url, pluginContext });
 
-      if (ret?.context) {
-        context = { ...context, ...ret.context };
-      }
+    if (ret?.context) {
+      context = { ...context, ...ret.context };
     }
   }
 
@@ -360,7 +386,37 @@ async function applyBeforeEachRenders(
   return { tasks };
 }
 
-async function applyRenders(
+async function applyRenderComponents(
+  { componentName, htmlInput, context, plugins, routes }: {
+    componentName?: string;
+    htmlInput?: string;
+    context?: Context;
+    plugins: PluginDefinition[];
+    routes: Routes;
+  },
+) {
+  const renders = plugins.map((
+    { api, context },
+  ) => api.renderComponent && [api.renderComponent, context]).filter(Boolean);
+  let markup = "";
+
+  // In the current design, we pick only the markup of the last renderer.
+  // TODO: Does it even make sense to have multiple renderers in the system?
+  // @ts-expect-error Figure out the right type for this
+  for await (const [renderComponent, pluginContext] of renders) {
+    markup = await renderComponent({
+      componentName,
+      htmlInput,
+      context,
+      routes,
+      pluginContext,
+    });
+  }
+
+  return markup;
+}
+
+async function applyRenderLayouts(
   { context, plugins, route, routes, send, url }: {
     context: Context;
     plugins: PluginDefinition[];
@@ -370,17 +426,23 @@ async function applyRenders(
     url: string;
   },
 ) {
-  const renders = plugins.map(({ api, context }) => [api.render, context]);
+  const renders = plugins.map((
+    { api, context },
+  ) => api.renderLayout && [api.renderLayout, context]).filter(Boolean);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
   // TODO: Does it even make sense to have multiple renderers in the system?
-  for await (const [render, pluginContext] of renders) {
-    if (render) {
-      markup =
-        // @ts-expect-error We know render should be defined by now
-        await render({ context, route, routes, send, url, pluginContext });
-    }
+  // @ts-expect-error Figure out the right type for this
+  for await (const [renderLayout, pluginContext] of renders) {
+    markup = await renderLayout({
+      context,
+      route,
+      routes,
+      send,
+      url,
+      pluginContext,
+    });
   }
 
   return markup;
@@ -525,7 +587,7 @@ export {
   applyOnTasksRegistered,
   applyPlugins,
   applyPrepareContext,
-  applyRenders,
+  applyRenderLayouts,
   cleanUpPlugins,
   finishPlugins,
   importPlugin,

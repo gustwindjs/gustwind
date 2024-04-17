@@ -5,10 +5,6 @@ import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
 // import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
-import {
-  getComponentUtilities,
-  getGlobalUtilities,
-} from "../../gustwind-utilities/getUtilities.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
@@ -31,6 +27,7 @@ const plugin: Plugin<{
     cwd,
     options,
     load,
+    renderComponent,
     mode,
   }) {
     const { components, globalUtilitiesPath } = options;
@@ -134,7 +131,7 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ routes, route, context, url, pluginContext }) => {
+      renderLayout: ({ routes, route, context, url, pluginContext }) => {
         const { components, componentUtilities, globalUtilities } =
           pluginContext;
 
@@ -169,17 +166,55 @@ const plugin: Plugin<{
           htmlInput: layout,
           components,
           context,
-          utilities: getGlobalUtilities({
-            globalUtilities,
-            layoutUtilities: layoutUtilities
-              ? layoutUtilities.init({ routes })
-              : {},
+          utilities: {
+            ...globalUtilities.init({ load, render: renderComponent, routes }),
+            ...(layoutUtilities
+              ? layoutUtilities.init({ load, render: renderComponent, routes })
+              : {}),
+          },
+          componentUtilities: Object.fromEntries(
+            Object.entries(componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v ? v.init({ load, render: renderComponent, routes }) : {},
+            ]),
+          ),
+        });
+      },
+      renderComponent: (
+        { routes, componentName, htmlInput, context, pluginContext },
+      ) => {
+        const { components, componentUtilities, globalUtilities } =
+          pluginContext;
+
+        if (componentName) {
+          htmlInput = components[componentName];
+
+          if (!htmlInput) {
+            throw new Error(
+              `Component ${componentName} was not found to render`,
+            );
+          }
+        }
+
+        return htmlispToHTML({
+          htmlInput,
+          components,
+          context,
+          utilities: globalUtilities.init({
+            load,
+            render: renderComponent,
             routes,
           }),
-          componentUtilities: getComponentUtilities({
-            componentUtilities,
-            routes,
-          }),
+          componentUtilities: Object.fromEntries(
+            Object.entries(componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v ? v.init({ load, render: renderComponent, routes }) : {},
+            ]),
+          ),
         });
       },
       onMessage: async ({ message, pluginContext }) => {

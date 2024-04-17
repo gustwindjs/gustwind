@@ -3,10 +3,6 @@ import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
-import {
-  getComponentUtilities,
-  getGlobalUtilities,
-} from "../../gustwind-utilities/getUtilities.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
 
 // For edge renderer components are directly strings
@@ -29,7 +25,7 @@ const plugin: Plugin<{
       "${name} implements an edge-compatible way to render through HTMLisp templating language.",
     dependsOn: ["gustwind-meta-plugin"],
   },
-  init({ options, mode }) {
+  init({ options, mode, load, renderComponent }) {
     // TODO: Push this style check to the plugin system core
     if (!options.globalUtilities) {
       throw new Error(
@@ -74,7 +70,7 @@ const plugin: Plugin<{
           },
         };
       },
-      render: ({ routes, route, context, pluginContext }) => {
+      renderLayout: ({ routes, route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
         const layout = components[route.layout];
 
@@ -90,17 +86,54 @@ const plugin: Plugin<{
           htmlInput: layout,
           components,
           context,
-          utilities: getGlobalUtilities({
-            globalUtilities,
-            layoutUtilities: layoutUtilities
-              ? layoutUtilities.init({ routes })
-              : {},
+          utilities: {
+            ...globalUtilities.init({ load, render: renderComponent, routes }),
+            ...(layoutUtilities
+              ? layoutUtilities.init({ load, render: renderComponent, routes })
+              : {}),
+          },
+          componentUtilities: Object.fromEntries(
+            Object.entries(options.componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v ? v.init({ load, render: renderComponent, routes }) : {},
+            ]),
+          ),
+        });
+      },
+      renderComponent: (
+        { routes, componentName, htmlInput, context, pluginContext },
+      ) => {
+        const { components, globalUtilities } = pluginContext;
+
+        if (componentName) {
+          htmlInput = components[componentName];
+
+          if (!htmlInput) {
+            throw new Error(
+              `Component ${componentName} was not found to render`,
+            );
+          }
+        }
+
+        return htmlispToHTML({
+          htmlInput,
+          components,
+          context,
+          utilities: globalUtilities.init({
+            load,
+            render: renderComponent,
             routes,
           }),
-          componentUtilities: getComponentUtilities({
-            componentUtilities: options.componentUtilities,
-            routes,
-          }),
+          componentUtilities: Object.fromEntries(
+            Object.entries(options.componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v ? v.init({ load, render: renderComponent, routes }) : {},
+            ]),
+          ),
         });
       },
       onMessage: ({ message, pluginContext }) => {
