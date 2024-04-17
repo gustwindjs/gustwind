@@ -17,7 +17,7 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-async function init({ load }: { load: LoadApi }) {
+function init({ load }: { load: LoadApi }) {
   const markdown = getMarkdown(load);
 
   async function indexMarkdown(
