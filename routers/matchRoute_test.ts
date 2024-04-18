@@ -112,5 +112,58 @@ Deno.test("matches a two-order recursive route", () => {
   );
 });
 
-// TODO: Test / + expand
-// TODO: Test expanded section (i.e., blog + expansion)
+Deno.test("matches an expanded route", () => {
+  // TODO: Figure out how to pass indexing logic here
+  // Likely matchRoute needs access to dataSources through a parameter
+  const route = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        layout: "barPage",
+        dataSources: [],
+        slug: "data.slug",
+      },
+    },
+  };
+
+  assertEquals(matchRoute({ "blog": route }, "blog/foo"), {
+    layout: "barPage",
+    meta: {},
+    context: {},
+  });
+});
+
+Deno.test("matches an expanded route behind a slash", () => {
+  // TODO: Figure out how to pass indexing logic here
+  const route = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        layout: "barPage",
+        dataSources: [],
+        slug: "data.slug",
+      },
+    },
+  };
+
+  assertEquals(matchRoute({ "/": route }, "foo"), {
+    layout: "barPage",
+    meta: {},
+    context: {},
+  });
+});
+
+// TODO: Test different cases when there's no match
+// Likely then an exception should be thrown
