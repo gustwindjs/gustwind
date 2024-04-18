@@ -1,4 +1,5 @@
 import {
+  applyMatchRoutes,
   applyPlugins,
   importPlugin,
   importPlugins,
@@ -36,7 +37,7 @@ async function initRender(
     pathname: string,
     initialContext: Record<string, unknown>,
   ) {
-    const matched = await router.matchRoute(routes, pathname);
+    const matched = await router.matchRoute(pathname);
 
     if (matched && matched.route) {
       const { markup, tasks: routeTasks } = await applyPlugins({
@@ -45,6 +46,9 @@ async function initRender(
         routes,
         route: matched.route,
         initialContext,
+        matchRoute(url: string) {
+          return applyMatchRoutes({ plugins, url });
+        },
       });
 
       // Both markup and tasks are returned. The idea is that the consumer can

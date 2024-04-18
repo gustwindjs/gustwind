@@ -1,7 +1,6 @@
 import { trim } from "../utilities/string.ts";
 import type { Route } from "../types.ts";
 
-// TODO: Make this support recursion
 function matchRoute(
   routes: Record<string, Route>,
   url: string,

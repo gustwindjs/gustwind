@@ -4,6 +4,7 @@ import type {
   Context,
   InitLoadApi,
   LoadedPlugin,
+  MatchRoute,
   Mode,
   Plugin,
   PluginOptions,
@@ -61,6 +62,7 @@ async function importPlugins(
       // For now, route information is not available to
       // component rendering API
       routes: {}, // (await router.getAllRoutes()).routes,
+      matchRoute: router.matchRoute,
     });
   };
 
@@ -237,12 +239,14 @@ async function applyPlugins(
     routes,
     route,
     initialContext,
+    matchRoute,
   }: {
     routes: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
     initialContext?: Context;
+    matchRoute: MatchRoute;
   },
 ) {
   const send = getSend(plugins);
@@ -272,6 +276,7 @@ async function applyPlugins(
     route,
     send,
     url,
+    matchRoute,
   });
 
   return {
@@ -383,13 +388,14 @@ async function applyBeforeEachRenders(
 }
 
 async function applyRenderComponents(
-  { componentName, htmlInput, props, context, plugins, routes }: {
+  { componentName, htmlInput, props, context, plugins, routes, matchRoute }: {
     componentName?: string;
     htmlInput?: string;
     context?: Context;
     props?: Context;
     plugins: PluginDefinition[];
     routes: Routes;
+    matchRoute: MatchRoute;
   },
 ) {
   const renders = plugins.map((
@@ -407,6 +413,7 @@ async function applyRenderComponents(
       context,
       props,
       routes,
+      matchRoute,
       pluginContext,
     });
   }
@@ -415,13 +422,14 @@ async function applyRenderComponents(
 }
 
 async function applyRenderLayouts(
-  { context, plugins, route, routes, send, url }: {
+  { context, plugins, route, routes, send, url, matchRoute }: {
     context: Context;
     plugins: PluginDefinition[];
     route: Route;
     routes: Routes;
     send: Send;
     url: string;
+    matchRoute: MatchRoute;
   },
 ) {
   const renders = plugins.map((
@@ -439,6 +447,7 @@ async function applyRenderLayouts(
       routes,
       send,
       url,
+      matchRoute,
       pluginContext,
     });
   }
@@ -582,6 +591,7 @@ function getSend(plugins: PluginDefinition[]): Send {
 export {
   applyAfterEachRenders,
   applyBeforeEachRenders,
+  applyMatchRoutes,
   applyOnTasksRegistered,
   applyPlugins,
   applyPrepareContext,

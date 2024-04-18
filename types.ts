@@ -150,6 +150,7 @@ type PluginApi<C = Context> = {
     | void;
   renderLayout?(o: {
     routes: Routes;
+    matchRoute: MatchRoute;
     route: Route;
     context: Context;
     send: Send;
@@ -158,6 +159,7 @@ type PluginApi<C = Context> = {
   }): Promise<string> | string;
   renderComponent?(o: {
     routes: Routes;
+    matchRoute: MatchRoute;
     componentName?: string;
     htmlInput?: string;
     context: Context;
@@ -339,10 +341,14 @@ type BuildWorkerEvent =
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
 type GlobalUtilities = {
-  init: (
-    { load, render, routes }: { load: LoadApi; render: Render; routes: Routes },
-  ) => Utilities;
+  init: (o: {
+    load: LoadApi;
+    render: Render;
+    matchRoute: MatchRoute;
+  }) => Utilities;
 };
+
+type MatchRoute = (url: string) => Promise<Route | undefined>;
 
 export type {
   Attributes,
@@ -359,6 +365,7 @@ export type {
   InitLoadApi,
   LoadApi,
   LoadedPlugin,
+  MatchRoute,
   Meta,
   Mode,
   ParentCategory,

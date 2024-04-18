@@ -1,14 +1,14 @@
-import type { Routes } from "../../types.ts";
+import type { GlobalUtilities } from "../../types.ts";
 
-function init({ routes }: { routes: Routes }) {
-  function validateUrl(url: string) {
+const init: GlobalUtilities["init"] = function init({ matchRoute }) {
+  async function validateUrl(url: string) {
     if (!url) {
       return;
     }
 
     const [urlRoot, anchor] = url.split("#");
 
-    if (Object.keys(routes).includes(urlRoot)) {
+    if (await matchRoute(urlRoot)) {
       return urlRoot === "/"
         ? url
         : `/${urlRoot}${anchor ? "#" + anchor : "/"}`;
@@ -22,13 +22,11 @@ function init({ routes }: { routes: Routes }) {
     }
 
     throw new Error(
-      `Failed to find matching url for "${url}" from ${
-        Object.keys(routes).join(", ")
-      }`,
+      `Failed to find matching url for "${url}"`,
     );
   }
 
   return { validateUrl };
-}
+};
 
 export { init };

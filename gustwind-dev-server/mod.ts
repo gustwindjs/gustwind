@@ -3,6 +3,7 @@ import { contentType } from "https://deno.land/std@0.207.0/media_types/mod.ts";
 import { initLoadApi } from "../load-adapters/deno.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
+  applyMatchRoutes,
   applyOnTasksRegistered,
   applyPlugins,
   finishPlugins,
@@ -50,6 +51,9 @@ async function gustwindDevServer({
           url: pathname,
           routes: matched.allRoutes,
           route: matched.route,
+          matchRoute(url: string) {
+            return applyMatchRoutes({ plugins, url });
+          },
         });
 
         // Connect tasks that came from the router with plugins that are interested
