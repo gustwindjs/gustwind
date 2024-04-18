@@ -59,6 +59,14 @@ async function matchRoute(
     return;
   }
 
+  if (routes["/"]?.routes) {
+    return matchRoute(
+      routes["/"].routes,
+      url,
+      dataSources,
+    );
+  }
+
   return match;
 }
 
