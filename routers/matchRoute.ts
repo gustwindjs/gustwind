@@ -39,6 +39,10 @@ async function matchRoute(
     }
   }
 
+  if (match) {
+    return match;
+  }
+
   // Root / is a special case. Ideally it could be folded to the code above
   if (routes["/"]) {
     if (url === "/") {
