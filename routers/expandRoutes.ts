@@ -101,12 +101,14 @@ async function expandRoute(
         }
 
         const { context, capturedParameters } = await getDataSourceContext(
-          matchByDataSources.map((dataSource) => ({
-            ...dataSource,
-            parameters: [match].concat(
-              dataSource.parameters,
-            ),
-          })),
+          Array.isArray(matchByDataSources)
+            ? matchByDataSources.map((dataSource) => ({
+              ...dataSource,
+              parameters: [match].concat(
+                dataSource.parameters,
+              ),
+            }))
+            : [],
           dataSources,
         );
 
@@ -129,6 +131,8 @@ async function expandRoute(
           context,
           url,
         };
+
+        ret = { ...route, routes: expandedRoutes };
       }));
     } else {
       console.warn("data source results are not an array");
@@ -145,10 +149,7 @@ async function expandRoute(
 
       ret = {
         ...route,
-        routes: {
-          ...expandedRouteRoutes.allRoutes,
-          ...expandedRoutes,
-        },
+        routes: { ...ret.routes, ...expandedRoutes },
       };
     }
   }
