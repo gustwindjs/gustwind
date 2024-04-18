@@ -103,7 +103,7 @@ const plugin: Plugin<{
         });
       },
       renderComponent: (
-        { routes, componentName, htmlInput, context, pluginContext },
+        { routes, componentName, htmlInput, context, props, pluginContext },
       ) => {
         const { components, globalUtilities } = pluginContext;
 
@@ -121,6 +121,7 @@ const plugin: Plugin<{
           htmlInput,
           components,
           context,
+          props,
           utilities: globalUtilities.init({
             load,
             render: renderComponent,

@@ -46,11 +46,12 @@ async function importPlugins(
   }
 
   const renderComponent: Render = function (
-    { componentName, htmlInput, context },
+    { componentName, htmlInput, context, props },
   ) {
     return applyRenderComponents({
       componentName,
       htmlInput,
+      props,
       context,
       plugins: loadedPluginDefinitions,
       // TODO: Figure out how to avoid a cyclic dependency
@@ -387,10 +388,11 @@ async function applyBeforeEachRenders(
 }
 
 async function applyRenderComponents(
-  { componentName, htmlInput, context, plugins, routes }: {
+  { componentName, htmlInput, props, context, plugins, routes }: {
     componentName?: string;
     htmlInput?: string;
     context?: Context;
+    props?: Context;
     plugins: PluginDefinition[];
     routes: Routes;
   },
@@ -408,6 +410,7 @@ async function applyRenderComponents(
       componentName,
       htmlInput,
       context,
+      props,
       routes,
       pluginContext,
     });

@@ -34,7 +34,12 @@ type DataSourcesApi = {
   render: Render;
 };
 type Render = (
-  o: { componentName?: string; htmlInput?: string; context?: Context },
+  o: {
+    componentName?: string;
+    htmlInput?: string;
+    context?: Context;
+    props?: Context;
+  },
 ) => Promise<string>;
 
 type DataSource = { operation: string; name?: string; parameters?: unknown[] };
@@ -156,6 +161,7 @@ type PluginApi<C = Context> = {
     componentName?: string;
     htmlInput?: string;
     context: Context;
+    props: Context;
     pluginContext: C;
   }): Promise<string> | string;
   afterEachRender?(o: {
