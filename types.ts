@@ -258,7 +258,7 @@ type SendMessageEvent =
 type Routes = Record<string, Route>;
 type Route = {
   context: DataContext;
-  url: string;
+  url?: string;
   // TODO: This should come as an extension from the renderer plugin
   // if it is enabled
   layout: string;
