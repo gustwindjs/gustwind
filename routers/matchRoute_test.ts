@@ -79,6 +79,22 @@ Deno.test("matches a recursive route with a slash suffix", async () => {
   assertEquals(await matchRoute({ foo: route1 }, "foo/bar/", {}), route2);
 });
 
+Deno.test("matches a recursive route behind /", async () => {
+  const route2 = {
+    layout: "barIndex",
+    meta: {},
+    context: {},
+  };
+  const route1 = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+    routes: { bar: route2 },
+  };
+
+  assertEquals(await matchRoute({ "/": route1 }, "bar", {}), route2);
+});
+
 Deno.test("matches a two-order recursive route", async () => {
   const route3 = {
     layout: "bazIndex",
