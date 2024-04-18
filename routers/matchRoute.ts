@@ -8,7 +8,7 @@ async function matchRoute(
   dataSources: DataSources,
 ): Promise<Route | undefined> {
   if (!routes) {
-    return;
+    throw new Error("No routes were provided!");
   }
 
   const parts = trim(url, "/").split("/");
