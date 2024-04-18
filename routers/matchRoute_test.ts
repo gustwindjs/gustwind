@@ -1,37 +1,37 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { matchRoute } from "./matchRoute.ts";
 
-Deno.test("matches a basic route", () => {
+Deno.test("matches a basic route", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(matchRoute({ foo: route }, "foo"), route);
+  assertEquals(await matchRoute({ foo: route }, "foo", {}), route);
 });
 
-Deno.test("matches a basic route with a slash prefix", () => {
+Deno.test("matches a basic route with a slash prefix", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(matchRoute({ foo: route }, "/foo"), route);
+  assertEquals(await matchRoute({ foo: route }, "/foo", {}), route);
 });
 
-Deno.test("matches a basic route with a slash suffix", () => {
+Deno.test("matches a basic route with a slash suffix", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(matchRoute({ foo: route }, "foo/"), route);
+  assertEquals(await matchRoute({ foo: route }, "foo/", {}), route);
 });
 
-Deno.test("matches a recursive route", () => {
+Deno.test("matches a recursive route", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -44,13 +44,10 @@ Deno.test("matches a recursive route", () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(
-    matchRoute({ foo: route1 }, "foo/bar"),
-    route2,
-  );
+  assertEquals(await matchRoute({ foo: route1 }, "foo/bar", {}), route2);
 });
 
-Deno.test("matches a recursive route with a slash prefix", () => {
+Deno.test("matches a recursive route with a slash prefix", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -63,13 +60,10 @@ Deno.test("matches a recursive route with a slash prefix", () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(
-    matchRoute({ foo: route1 }, "/foo/bar"),
-    route2,
-  );
+  assertEquals(await matchRoute({ foo: route1 }, "/foo/bar", {}), route2);
 });
 
-Deno.test("matches a recursive route with a slash suffix", () => {
+Deno.test("matches a recursive route with a slash suffix", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -82,13 +76,10 @@ Deno.test("matches a recursive route with a slash suffix", () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(
-    matchRoute({ foo: route1 }, "foo/bar/"),
-    route2,
-  );
+  assertEquals(await matchRoute({ foo: route1 }, "foo/bar/", {}), route2);
 });
 
-Deno.test("matches a two-order recursive route", () => {
+Deno.test("matches a two-order recursive route", async () => {
   const route3 = {
     layout: "bazIndex",
     meta: {},
@@ -106,15 +97,40 @@ Deno.test("matches a two-order recursive route", () => {
     routes: { bar: route2 },
   };
 
+  assertEquals(await matchRoute({ foo: route1 }, "foo/bar/baz", {}), route2);
+});
+
+Deno.test("matches an expanded route", async () => {
+  const route = {
+    layout: "blogIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        layout: "blogPage",
+        dataSources: [],
+        slug: "slug",
+      },
+    },
+  };
+
   assertEquals(
-    matchRoute({ foo: route1 }, "foo/bar/baz"),
-    route2,
+    await matchRoute({ "blog": route }, "blog/foo", {
+      index: () => [{ slug: "foo" }],
+    }),
+    {
+      layout: "blogPage",
+      meta: {},
+      context: {},
+    },
   );
 });
 
-Deno.test("matches an expanded route", () => {
-  // TODO: Figure out how to pass indexing logic here
-  // Likely matchRoute needs access to dataSources through a parameter
+Deno.test("matches an expanded route behind a slash", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
@@ -127,42 +143,19 @@ Deno.test("matches an expanded route", () => {
         },
         layout: "barPage",
         dataSources: [],
-        slug: "data.slug",
+        slug: "slug",
       },
     },
   };
 
-  assertEquals(matchRoute({ "blog": route }, "blog/foo"), {
-    layout: "barPage",
-    meta: {},
-    context: {},
-  });
-});
-
-Deno.test("matches an expanded route behind a slash", () => {
-  // TODO: Figure out how to pass indexing logic here
-  const route = {
-    layout: "fooIndex",
-    meta: {},
-    context: {},
-    expand: {
-      matchBy: {
-        indexer: {
-          operation: "index",
-          parameters: [],
-        },
-        layout: "barPage",
-        dataSources: [],
-        slug: "data.slug",
-      },
+  assertEquals(
+    await matchRoute({ "/": route }, "foo", { index: () => [{ slug: "foo" }] }),
+    {
+      layout: "barPage",
+      meta: {},
+      context: {},
     },
-  };
-
-  assertEquals(matchRoute({ "/": route }, "foo"), {
-    layout: "barPage",
-    meta: {},
-    context: {},
-  });
+  );
 });
 
 // TODO: Test different cases when there's no match
