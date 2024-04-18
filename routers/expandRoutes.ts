@@ -27,6 +27,7 @@ async function expandRoutes({ routes, dataSources }: {
       url,
       route,
       dataSources,
+      recurse: true,
     });
 
     allRoutes[expandedUrl] = expandedRoute;
@@ -50,10 +51,11 @@ async function expandRoutes({ routes, dataSources }: {
 }
 
 async function expandRoute(
-  { url, route, dataSources }: {
+  { url, route, dataSources, recurse }: {
     url: string;
     route: Route;
     dataSources: DataSources;
+    recurse: boolean;
   },
 ): Promise<[string, Route, string[]]> {
   let ret = { ...route };
@@ -134,24 +136,26 @@ async function expandRoute(
 
     // Take care to expand routes since they might have data source related logic etc.
     // to execute.
-    const expandedRouteRoutes = await expandRoutes({
-      routes: route.routes || {},
-      dataSources,
-    });
-    allParameters = allParameters.concat(expandedRouteRoutes.allParameters);
+    if (recurse) {
+      const expandedRouteRoutes = await expandRoutes({
+        routes: route.routes || {},
+        dataSources,
+      });
+      allParameters = allParameters.concat(expandedRouteRoutes.allParameters);
 
-    ret = {
-      ...route,
-      routes: {
-        ...expandedRouteRoutes.allRoutes,
-        ...expandedRoutes,
-      },
-    };
+      ret = {
+        ...route,
+        routes: {
+          ...expandedRouteRoutes.allRoutes,
+          ...expandedRoutes,
+        },
+      };
+    }
   }
 
   // Take care to expand routes since they might have data source related logic etc.
   // to execute.
-  if (route.routes) {
+  if (recurse && route.routes) {
     const expandedRouteRoutes = await expandRoutes({
       routes: route.routes || {},
       dataSources,
