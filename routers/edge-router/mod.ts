@@ -21,15 +21,15 @@ const plugin: Plugin<{
           tasks: [],
         };
       },
-      matchRoute: (allRoutes: Routes, url: string) => {
-        const matchedRoute = matchRoute(allRoutes, url);
+      matchRoute: (url: string) => {
+        const matchedRoute = matchRoute(routes, url);
 
         if (matchedRoute) {
-          return { route: allRoutes[url], tasks: [], allRoutes };
+          return { route: routes[url], tasks: [] };
         }
 
         // This can happen for dynamically generated routes, for example pagefind
-        return { route: undefined, tasks: [], allRoutes };
+        return { route: undefined, tasks: [] };
       },
     };
   },

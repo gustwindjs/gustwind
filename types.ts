@@ -192,14 +192,9 @@ type PluginApi<C = Context> = {
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
-    allRoutes: Routes,
     url: string,
     pluginContext: C,
-  ): Promise<{ route?: Route; tasks: Tasks; allRoutes: Routes }> | {
-    route?: Route;
-    tasks: Tasks;
-    allRoutes: Routes;
-  };
+  ): Promise<{ route?: Route; tasks: Tasks }> | { route?: Route; tasks: Tasks };
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 

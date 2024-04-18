@@ -42,7 +42,7 @@ async function gustwindDevServer({
 
     await Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
-      const matched = await router.matchRoute(routes, pathname);
+      const matched = await router.matchRoute(pathname);
 
       if (matched && matched.route) {
         const { markup, tasks } = await applyPlugins({
