@@ -1,4 +1,7 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertRejects,
+} from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { matchRoute } from "./matchRoute.ts";
 
 Deno.test("matches a basic route", async () => {
@@ -178,5 +181,16 @@ Deno.test("matches an expanded route behind a slash", async () => {
   );
 });
 
-// TODO: Test different cases when there's no match
-// Likely then an exception should be thrown
+Deno.test("fails to match", () => {
+  const route = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+  };
+
+  assertRejects(
+    () => matchRoute({ foo: route }, "bar", {}),
+    Error,
+    `Route "bar" was not found!`,
+  );
+});
