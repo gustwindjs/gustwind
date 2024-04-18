@@ -19,7 +19,7 @@
       }
     },
     {
-      "path": "./plugins/htmlisp-renderer/mod.ts",
+      "path": "./renderers/htmlisp-renderer/mod.ts",
       "options": {
         "components": [
           { "path": "./site/components" },
