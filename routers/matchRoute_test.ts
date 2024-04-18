@@ -14,6 +14,16 @@ Deno.test("matches a basic route", async () => {
   assertEquals(await matchRoute({ foo: route }, "foo", {}), route);
 });
 
+Deno.test("matches root route", async () => {
+  const route = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+  };
+
+  assertEquals(await matchRoute({ "/": route }, "/", {}), route);
+});
+
 Deno.test("matches a basic route with a slash prefix", async () => {
   const route = {
     layout: "fooIndex",
