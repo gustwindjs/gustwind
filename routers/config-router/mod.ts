@@ -61,11 +61,17 @@ const plugin: Plugin<{
         };
       },
       matchRoute: async (url: string, pluginContext) => {
-        const route = await matchRoute(
-          pluginContext.routes,
-          url,
-          pluginContext.dataSources,
-        );
+        let route;
+
+        try {
+          route = await matchRoute(
+            pluginContext.routes,
+            url,
+            pluginContext.dataSources,
+          );
+        } catch (_error) {
+          // This is fine since some routes are dynamic
+        }
 
         return { route, tasks: [] };
       },
