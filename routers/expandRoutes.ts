@@ -1,9 +1,14 @@
 import * as _path from "node:path";
-import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
-import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
-import type { Context, Utilities, Utility } from "../../types.ts";
-import { get } from "../../utilities/functional.ts";
-import type { DataSources, Route } from "../../types.ts";
+import { applyUtilities } from "../htmlisp/utilities/applyUtility.ts";
+import { defaultUtilities } from "../htmlisp/defaultUtilities.ts";
+import { get } from "../utilities/functional.ts";
+import type {
+  Context,
+  DataSources,
+  Route,
+  Utilities,
+  Utility,
+} from "../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {
   routes: Record<string, Route>;
