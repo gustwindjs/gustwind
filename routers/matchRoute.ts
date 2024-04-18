@@ -67,6 +67,10 @@ async function matchRoute(
     );
   }
 
+  if (!match) {
+    throw new Error(`Route "${url}" was not found!`);
+  }
+
   return match;
 }
 

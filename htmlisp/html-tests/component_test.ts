@@ -45,7 +45,7 @@ Deno.test("basic component 2", async () => {
 
 Deno.test("throws if a component is not found", () => {
   assertRejects(
-    async () => await htmlispToHTML({ htmlInput: "<Button>foo</Button>" }),
+    () => htmlispToHTML({ htmlInput: "<Button>foo</Button>" }),
     Error,
     `Component "Button" was not found!`,
   );
