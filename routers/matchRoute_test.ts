@@ -134,7 +134,7 @@ Deno.test("matches an expanded route", async () => {
 
 Deno.test("matches an expanded route behind a slash", async () => {
   const route = {
-    layout: "fooIndex",
+    layout: "blogIndex",
     meta: {},
     context: {},
     expand: {
@@ -143,19 +143,21 @@ Deno.test("matches an expanded route behind a slash", async () => {
           operation: "index",
           parameters: [],
         },
-        layout: "barPage",
         dataSources: [],
         slug: "slug",
       },
+      layout: "blogPage",
     },
   };
 
   assertEquals(
     await matchRoute({ "/": route }, "foo", { index: () => [{ slug: "foo" }] }),
     {
-      layout: "barPage",
+      layout: "blogPage",
       meta: {},
       context: {},
+      scripts: undefined,
+      url: "foo",
     },
   );
 });
