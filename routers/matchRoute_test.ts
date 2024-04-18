@@ -161,6 +161,32 @@ Deno.test("matches an expanded route", async () => {
   );
 });
 
+Deno.test("matches index of an expanded route", async () => {
+  const route = {
+    layout: "blogIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        dataSources: [],
+        slug: "slug",
+      },
+      layout: "blogPage",
+    },
+  };
+
+  assertEquals(
+    await matchRoute({ blog: route }, "blog", {
+      index: () => [{ slug: "foo" }],
+    }),
+    route,
+  );
+});
+
 Deno.test("matches an expanded route behind a slash", async () => {
   const route = {
     layout: "blogIndex",
@@ -188,6 +214,30 @@ Deno.test("matches an expanded route behind a slash", async () => {
       scripts: undefined,
       url: "foo",
     },
+  );
+});
+
+Deno.test("matches an expanded route of an expanded slash", async () => {
+  const route = {
+    layout: "blogIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        dataSources: [],
+        slug: "slug",
+      },
+      layout: "blogPage",
+    },
+  };
+
+  assertEquals(
+    await matchRoute({ "/": route }, "/", { index: () => [{ slug: "foo" }] }),
+    route,
   );
 });
 
