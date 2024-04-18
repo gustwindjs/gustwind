@@ -70,7 +70,7 @@ const plugin: Plugin<{
           },
         };
       },
-      renderLayout: ({ routes, route, context, pluginContext }) => {
+      renderLayout: ({ matchRoute, route, context, pluginContext }) => {
         const { components, globalUtilities } = pluginContext;
         const layout = components[route.layout];
 
@@ -87,9 +87,17 @@ const plugin: Plugin<{
           components,
           context,
           utilities: {
-            ...globalUtilities.init({ load, render: renderComponent, routes }),
+            ...globalUtilities.init({
+              load,
+              render: renderComponent,
+              matchRoute,
+            }),
             ...(layoutUtilities
-              ? layoutUtilities.init({ load, render: renderComponent, routes })
+              ? layoutUtilities.init({
+                load,
+                render: renderComponent,
+                matchRoute,
+              })
               : {}),
           },
           componentUtilities: Object.fromEntries(
@@ -97,13 +105,13 @@ const plugin: Plugin<{
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, routes }) : {},
+              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
             ]),
           ),
         });
       },
       renderComponent: (
-        { routes, componentName, htmlInput, context, props, pluginContext },
+        { matchRoute, componentName, htmlInput, context, props, pluginContext },
       ) => {
         const { components, globalUtilities } = pluginContext;
 
@@ -125,14 +133,14 @@ const plugin: Plugin<{
           utilities: globalUtilities.init({
             load,
             render: renderComponent,
-            routes,
+            matchRoute,
           }),
           componentUtilities: Object.fromEntries(
             Object.entries(options.componentUtilities).map((
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, routes }) : {},
+              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
             ]),
           ),
         });

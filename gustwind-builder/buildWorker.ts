@@ -3,7 +3,11 @@
 import * as path from "node:path";
 import * as fs from "https://deno.land/std@0.207.0/fs/mod.ts";
 import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
-import { applyPlugins, importPlugins } from "../gustwind-utilities/plugins.ts";
+import {
+  applyMatchRoutes,
+  applyPlugins,
+  importPlugins,
+} from "../gustwind-utilities/plugins.ts";
 import { initLoadApi } from "../load-adapters/deno.ts";
 import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
 import type { BuildWorkerEvent } from "../types.ts";
@@ -44,6 +48,9 @@ self.onmessage = async (e) => {
       url,
       routes,
       route,
+      matchRoute(url: string) {
+        return applyMatchRoutes({ plugins, url });
+      },
     });
 
     self.postMessage({
