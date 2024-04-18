@@ -39,6 +39,26 @@ async function matchRoute(
     }
   }
 
+  // Root / is a special case. Ideally it could be folded to the code above
+  if (routes["/"]?.expand) {
+    const [_expandedUrl, expandedRoute] = await expandRoute({
+      url,
+      route: routes["/"],
+      dataSources,
+      recurse: false,
+    });
+
+    if (expandedRoute.routes) {
+      return matchRoute(
+        expandedRoute.routes,
+        url,
+        dataSources,
+      );
+    }
+
+    return;
+  }
+
   return match;
 }
 
