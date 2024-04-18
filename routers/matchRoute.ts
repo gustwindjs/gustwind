@@ -1,4 +1,5 @@
 import { trim } from "../utilities/string.ts";
+import { expandRoute } from "./expandRoutes.ts";
 import type { DataSources, Route } from "../types.ts";
 
 async function matchRoute(
@@ -14,15 +15,27 @@ async function matchRoute(
   const match = routes[url] || routes[parts[0]];
 
   if (match && parts.length > 1) {
-    if (match.routes) {
-      return matchRoute(match.routes, parts.slice(1).join("/"), dataSources);
-    }
-
     if (match.expand) {
-      // TODO: Use expandRoute here
-      console.log("expand now");
+      const [_expandedUrl, expandedRoute] = await expandRoute({
+        url,
+        route: match,
+        dataSources,
+        recurse: false,
+      });
+
+      if (expandedRoute.routes) {
+        return matchRoute(
+          expandedRoute.routes,
+          parts.slice(1).join("/"),
+          dataSources,
+        );
+      }
 
       return;
+    }
+
+    if (match.routes) {
+      return matchRoute(match.routes, parts.slice(1).join("/"), dataSources);
     }
   }
 

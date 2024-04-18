@@ -111,21 +111,23 @@ Deno.test("matches an expanded route", async () => {
           operation: "index",
           parameters: [],
         },
-        layout: "blogPage",
         dataSources: [],
         slug: "slug",
       },
+      layout: "blogPage",
     },
   };
 
   assertEquals(
-    await matchRoute({ "blog": route }, "blog/foo", {
+    await matchRoute({ blog: route }, "blog/foo", {
       index: () => [{ slug: "foo" }],
     }),
     {
       layout: "blogPage",
       meta: {},
       context: {},
+      scripts: undefined,
+      url: "foo",
     },
   );
 });
