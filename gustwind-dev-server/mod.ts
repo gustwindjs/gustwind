@@ -68,9 +68,7 @@ async function gustwindDevServer({
         return respond(
           200,
           markup,
-          matched.route.url.endsWith(".xml")
-            ? "text/xml"
-            : "text/html; charset=utf-8",
+          url.endsWith(".xml") ? "text/xml" : "text/html; charset=utf-8",
         );
       }
 

@@ -2,6 +2,8 @@ import { trim } from "../utilities/string.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import type { DataSources, Route } from "../types.ts";
 
+const DEBUG = Deno.env.get("DEBUG") === "1";
+
 async function matchRoute(
   routes: Record<string, Route>,
   url: string,
@@ -78,7 +80,7 @@ async function matchRoute(
   }
 
   if (!match) {
-    console.error(routes, url);
+    DEBUG && console.error(routes, url);
     throw new Error(`Route "${url}" was not found!`);
   }
 

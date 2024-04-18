@@ -22,7 +22,13 @@ const plugin: Plugin<{
         };
       },
       matchRoute: async (url: string) => {
-        const route = await matchRoute(routes, url, {});
+        let route;
+
+        try {
+          route = await matchRoute(routes, url, {});
+        } catch (_error) {
+          // This is fine since some routes are dynamic
+        }
 
         return { route, tasks: [] };
       },
