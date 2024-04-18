@@ -1,4 +1,4 @@
-import { trim } from "./string.ts";
+import { trim } from "../utilities/string.ts";
 import type { Route } from "../types.ts";
 
 function matchRoute(

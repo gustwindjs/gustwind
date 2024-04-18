@@ -1,4 +1,4 @@
-import { matchRoute } from "../../utilities/matchRoute.ts";
+import { matchRoute } from "../matchRoute.ts";
 import type { Plugin, Route } from "../../types.ts";
 
 type Routes = Record<string, Route>;

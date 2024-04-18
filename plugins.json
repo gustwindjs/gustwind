@@ -1,11 +1,11 @@
 {
   "env": {
     "DEMO": "This value is available for plugin paths through ${DEMO} syntax.",
-    "GUSTWIND_VERSION": "./plugins"
+    "PLUGINS_PATH": "./plugins"
   },
   "plugins": [
     {
-      "path": "${GUSTWIND_VERSION}/config-router/mod.ts",
+      "path": "./routers/config-router/mod.ts",
       "options": {
         "dataSourcesPath": "./site/dataSources.ts",
         "routesPath": "./site/routes.json",
@@ -13,7 +13,7 @@
       }
     },
     {
-      "path": "./plugins/meta/mod.ts",
+      "path": "${PLUGINS_PATH}/meta/mod.ts",
       "options": {
         "inputPath": "./site/meta.json"
       }

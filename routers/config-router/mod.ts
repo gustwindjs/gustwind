@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { expandRoute, expandRoutes } from "./expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
-import { matchRoute } from "../../utilities/matchRoute.ts";
+import { matchRoute } from "../matchRoute.ts";
 import type {
   DataSources,
   DataSourcesModule,
