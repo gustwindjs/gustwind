@@ -112,12 +112,8 @@ async function importPlugins(
       return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
     },
     // First match wins
-    matchRoute(allRoutes: Routes, url: string) {
-      return applyMatchRoutes({
-        allRoutes,
-        plugins: loadedPluginDefinitions,
-        url,
-      });
+    matchRoute(url: string) {
+      return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
     },
   };
 
@@ -311,8 +307,7 @@ async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
 }
 
 async function applyMatchRoutes(
-  { allRoutes, plugins, url }: {
-    allRoutes: Routes;
+  { plugins, url }: {
     plugins: PluginDefinition[];
     url: string;
   },
@@ -325,7 +320,7 @@ async function applyMatchRoutes(
   // @ts-expect-error Figure out the right type for this
   for await (const [matchRoute, pluginContext] of matchRoutes) {
     const matchedRoute = matchRoute &&
-      matchRoute(allRoutes, url, pluginContext);
+      matchRoute(url, pluginContext);
 
     if (matchedRoute) {
       return matchedRoute;

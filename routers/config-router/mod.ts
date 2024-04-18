@@ -60,8 +60,8 @@ const plugin: Plugin<{
             : [],
         };
       },
-      matchRoute: async (allRoutes: Routes, url: string, pluginContext) => {
-        const matchedRoute = matchRoute(allRoutes, url);
+      matchRoute: async (url: string, pluginContext) => {
+        const matchedRoute = matchRoute(pluginContext.routes, url);
 
         if (matchedRoute) {
           const [_, route] = await expandRoute({
@@ -70,11 +70,11 @@ const plugin: Plugin<{
             dataSources: pluginContext.dataSources,
           });
 
-          return { route, tasks: [], allRoutes };
+          return { route, tasks: [] };
         }
 
         // This can happen for dynamically generated routes, for example pagefind
-        return { route: undefined, tasks: [], allRoutes };
+        return { route: undefined, tasks: [] };
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
