@@ -41,20 +41,20 @@ const plugin: Plugin<{
         return { routes, dataSources };
       },
       getAllRoutes: async ({ pluginContext }) => {
-        const { allRoutes } = await getAllRoutes(
+        const routes = await getAllRoutes(
           pluginContext.routes,
           pluginContext.dataSources,
         );
 
         return {
-          routes: allRoutes,
+          routes,
           tasks: emitAllRoutes
             ? [{
               type: "writeTextFile",
               payload: {
                 outputDirectory,
                 file: "routes.json",
-                data: JSON.stringify(allRoutes),
+                data: JSON.stringify(routes),
               },
             }]
             : [],
@@ -123,12 +123,12 @@ const plugin: Plugin<{
 };
 
 async function getAllRoutes(routes: Routes, dataSources: DataSources) {
-  const { allRoutes, allParameters } = await expandRoutes({
+  const allRoutes = await expandRoutes({
     routes,
     dataSources,
   });
 
-  return { allRoutes: flattenRoutes(allRoutes), allParameters };
+  return flattenRoutes(allRoutes);
 }
 
 export { plugin };

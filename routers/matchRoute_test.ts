@@ -4,8 +4,6 @@ import {
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { matchRoute } from "./matchRoute.ts";
 
-// TODO: Test that / and templating style routes get expanded based on their data sources
-
 Deno.test("matches a basic route", async () => {
   const route = {
     layout: "fooIndex",
