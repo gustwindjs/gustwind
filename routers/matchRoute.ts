@@ -13,7 +13,7 @@ async function matchRoute(
     throw new Error("No routes were provided!");
   }
 
-  const parts = trim(url, "/").split("/");
+  const parts = url === "/" ? ["/"] : trim(url, "/").split("/");
   const match = routes[url] || routes[parts[0]];
 
   if (match && parts.length > 1) {
@@ -46,37 +46,24 @@ async function matchRoute(
   }
 
   // Root / is a special case. Ideally it could be folded to the code above
-  if (routes["/"]) {
-    if (url === "/") {
-      return routes["/"];
-    }
+  // The problem is that it can have expansions behind it.
+  if (routes["/"]?.expand) {
+    const [_expandedUrl, expandedRoute] = await expandRoute({
+      url,
+      route: routes["/"],
+      dataSources,
+      recurse: false,
+    });
 
-    if (routes["/"].expand) {
-      const [_expandedUrl, expandedRoute] = await expandRoute({
-        url,
-        route: routes["/"],
-        dataSources,
-        recurse: false,
-      });
-
-      if (expandedRoute.routes) {
-        return matchRoute(
-          expandedRoute.routes,
-          url,
-          dataSources,
-        );
-      }
-
-      return;
-    }
-
-    if (routes["/"].routes) {
+    if (expandedRoute.routes) {
       return matchRoute(
-        routes["/"].routes,
+        expandedRoute.routes,
         url,
         dataSources,
       );
     }
+
+    return;
   }
 
   if (!match) {

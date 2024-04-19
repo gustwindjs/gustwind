@@ -4,6 +4,8 @@ import {
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { matchRoute } from "./matchRoute.ts";
 
+// TODO: Test that / and templating style routes get expanded based on their data sources
+
 Deno.test("matches a basic route", async () => {
   const route = {
     layout: "fooIndex",
@@ -92,7 +94,9 @@ Deno.test("matches a recursive route with a slash suffix", async () => {
   assertEquals(await matchRoute({ foo: route1 }, "foo/bar/", {}), route2);
 });
 
-Deno.test("matches a recursive route behind /", async () => {
+// This feature is not supported given the same routes could be written
+// directly to configuration root
+Deno.test("does not match a recursive route behind /", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -105,7 +109,11 @@ Deno.test("matches a recursive route behind /", async () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(await matchRoute({ "/": route1 }, "bar", {}), route2);
+  assertRejects(
+    () => matchRoute({ "/": route1 }, "bar", {}),
+    Error,
+    `Route "bar" was not found!`,
+  );
 });
 
 Deno.test("matches a two-order recursive route", async () => {
