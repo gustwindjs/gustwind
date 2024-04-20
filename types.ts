@@ -43,7 +43,7 @@ type Render = (
 ) => Promise<string>;
 
 type DataSource = { operation: string; name?: string; parameters?: unknown[] };
-type DataSources = Record<string, () => unknown[]>;
+type DataSources = Record<string, (...args: any) => unknown>;
 
 type LoadedPlugin = {
   plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };

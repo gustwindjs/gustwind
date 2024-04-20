@@ -21,7 +21,6 @@ async function getDataSourceContext(
           name,
           await dataSource.apply(
             undefined,
-            // @ts-expect-error This is fine
             Array.isArray(parameters) ? parameters : [],
           ),
         ];
