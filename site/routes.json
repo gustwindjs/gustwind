@@ -18,16 +18,16 @@
           "operation": "indexMarkdown",
           "parameters": ["./documentation"]
         },
-        "dataSources": [{
-          "operation": "processMarkdown",
-          "parameters": [
-            { "parseHeadmatter": true }
-          ],
-          "name": "document"
-        }],
         "slug": "data.slug"
       },
       "layout": "documentationPage",
+      "dataSources": [{
+        "operation": "processMarkdown",
+        "parameters": [
+          { "parseHeadmatter": true }
+        ],
+        "name": "document"
+      }],
       "meta": {
         "title": {
           "utility": "get",
@@ -47,16 +47,14 @@
       "description": "Templating in Gustwind by default is done using a combination of HTML and Lisp",
       "readmePath": "htmlisp/README.md"
     },
-    "dataSources": [
-      {
-        "operation": "processMarkdown",
-        "parameters": [
-          { "path": "./htmlisp/README.md" },
-          { "skipFirstLine": false }
-        ],
-        "name": "readme"
-      }
-    ],
+    "dataSources": [{
+      "operation": "processMarkdown",
+      "parameters": [
+        { "path": "./htmlisp/README.md" },
+        { "skipFirstLine": false }
+      ],
+      "name": "readme"
+    }],
     "scripts": [{ "name": "templatingPlayground" }]
   },
   "blog": {
@@ -78,17 +76,17 @@
           "operation": "indexMarkdown",
           "parameters": ["./blogPosts"]
         },
-        "dataSources": [{
-          "operation": "processMarkdown",
-          "parameters": [
-            { "parseHeadmatter": true }
-          ],
-          "name": "document"
-        }],
         "slug": "data.slug"
       },
       "scripts": [{ "name": "hello" }],
       "layout": "documentationPage",
+      "dataSources": [{
+        "operation": "processMarkdown",
+        "parameters": [
+          { "parseHeadmatter": true }
+        ],
+        "name": "document"
+      }],
       "meta": {
         "title": {
           "utility": "get",

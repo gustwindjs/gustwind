@@ -161,6 +161,47 @@ Deno.test("matches an expanded route", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
+      dataSources: undefined,
+      scripts: undefined,
+      url: "foo",
+    },
+  );
+});
+
+Deno.test("expanded route retains data sources", async () => {
+  const dataSources = [{
+    "operation": "processMarkdown",
+    "parameters": [
+      { "parseHeadmatter": true },
+    ],
+    "name": "document",
+  }];
+  const route = {
+    layout: "blogIndex",
+    meta: {},
+    context: {},
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        slug: "slug",
+      },
+      dataSources,
+      layout: "blogPage",
+    },
+  };
+
+  assertEquals(
+    await matchRoute({ blog: route }, "blog/foo", {
+      index: () => [{ slug: "foo" }],
+    }),
+    {
+      layout: "blogPage",
+      meta: {},
+      context: {},
+      dataSources,
       scripts: undefined,
       url: "foo",
     },
@@ -178,9 +219,9 @@ Deno.test("matches index of an expanded route", async () => {
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "blogPage",
     },
   };
@@ -204,9 +245,9 @@ Deno.test("matches index of an expanded route while root route exists", async ()
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "blogPage",
     },
   };
@@ -220,9 +261,9 @@ Deno.test("matches index of an expanded route while root route exists", async ()
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "documentationPage",
     },
   };
@@ -246,9 +287,9 @@ Deno.test("matches an expanded route behind a slash", async () => {
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "blogPage",
     },
   };
@@ -259,6 +300,7 @@ Deno.test("matches an expanded route behind a slash", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
+      dataSources: [],
       scripts: undefined,
       url: "foo",
     },
