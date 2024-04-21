@@ -1,7 +1,8 @@
 import * as path from "node:path";
-import { expandRoute, expandRoutes } from "../expandRoutes.ts";
+import { expandRoutes } from "../expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { matchRoute } from "../matchRoute.ts";
+import { getDataSourceContext } from "../getDataSourceContext.ts";
 import type {
   DataSources,
   DataSourcesModule,
@@ -69,6 +70,18 @@ const plugin: Plugin<{
             url,
             pluginContext.dataSources,
           );
+
+          // TODO: Check if tasks have to be returned
+          return {
+            route: {
+              ...route,
+              context: await getDataSourceContext(
+                route.dataSources,
+                pluginContext.dataSources,
+              ),
+            },
+            tasks: [],
+          };
         } catch (_error) {
           // This is fine since some routes are dynamic
         }

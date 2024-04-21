@@ -1,8 +1,6 @@
 import { matchRoute } from "../matchRoute.ts";
 import type { Plugin, Route } from "../../types.ts";
 
-type Routes = Record<string, Route>;
-
 const plugin: Plugin<{
   // TODO: Likely Route is too broad type here but it will do for now
   routes: Record<string, Route>;
