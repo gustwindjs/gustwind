@@ -4,7 +4,6 @@ import { initLoadApi } from "../load-adapters/deno.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
   applyMatchRoutes,
-  applyOnTasksRegistered,
   applyPlugins,
   finishPlugins,
   importPlugins,
@@ -44,6 +43,8 @@ async function gustwindDevServer({
     await Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
       const matchedRoute = await router.matchRoute(pathname);
+
+      console.log("tried to match", pathname, matchedRoute);
 
       if (matchedRoute) {
         const { markup, tasks } = await applyPlugins({

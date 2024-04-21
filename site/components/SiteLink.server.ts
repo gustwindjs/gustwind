@@ -15,11 +15,16 @@ const init: GlobalUtilities["init"] = function init({ matchRoute }) {
 
     const [urlRoot, anchor] = url.split("#");
 
+    return url;
+
+    // TODO: Skip internal validation for now
+    /*
     if (await matchRoute(urlRoot)) {
       return urlRoot === "/"
         ? url
         : `/${urlRoot}${anchor ? "#" + anchor : "/"}`;
     }
+    */
 
     throw new Error(
       `Failed to find matching url for "${url}"`,

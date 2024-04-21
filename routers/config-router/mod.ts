@@ -62,27 +62,23 @@ const plugin: Plugin<{
         };
       },
       matchRoute: async (url: string, pluginContext) => {
-        let route;
-
         try {
-          route = await matchRoute(
+          const route = await matchRoute(
             pluginContext.routes,
             url,
             pluginContext.dataSources,
           );
+          const context = await getDataSourceContext(
+            route.dataSources,
+            pluginContext.dataSources,
+          );
 
-          return {
-            ...route,
-            context: await getDataSourceContext(
-              route.dataSources,
-              pluginContext.dataSources,
-            ),
-          };
+          return { ...route, context };
         } catch (_error) {
           // This is fine since some routes are dynamic
+          // TODO: Allow errors to go through by adding an
+          // internal registration mechanism for the dynamic urls
         }
-
-        return route;
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;
