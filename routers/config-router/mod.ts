@@ -71,22 +71,18 @@ const plugin: Plugin<{
             pluginContext.dataSources,
           );
 
-          // TODO: Check if tasks have to be returned
           return {
-            route: {
-              ...route,
-              context: await getDataSourceContext(
-                route.dataSources,
-                pluginContext.dataSources,
-              ),
-            },
-            tasks: [],
+            ...route,
+            context: await getDataSourceContext(
+              route.dataSources,
+              pluginContext.dataSources,
+            ),
           };
         } catch (_error) {
           // This is fine since some routes are dynamic
         }
 
-        return { route, tasks: [] };
+        return route;
       },
       onMessage: async ({ message }) => {
         const { type, payload } = message;

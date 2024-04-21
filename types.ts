@@ -149,7 +149,6 @@ type PluginApi<C = Context> = {
     | Tasks
     | void;
   renderLayout?(o: {
-    routes: Routes;
     matchRoute: MatchRoute;
     route: Route;
     context: Context;
@@ -158,7 +157,6 @@ type PluginApi<C = Context> = {
     pluginContext: C;
   }): Promise<string> | string;
   renderComponent?(o: {
-    routes: Routes;
     matchRoute: MatchRoute;
     componentName?: string;
     htmlInput?: string;
@@ -196,7 +194,7 @@ type PluginApi<C = Context> = {
   matchRoute?(
     url: string,
     pluginContext: C,
-  ): Promise<{ route?: Route; tasks: Tasks }> | { route?: Route; tasks: Tasks };
+  ): Promise<Route | undefined>;
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 
@@ -293,7 +291,6 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
-      routes: Routes;
       route: Route;
       dir: string;
       url: string;

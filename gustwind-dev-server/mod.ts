@@ -43,22 +43,15 @@ async function gustwindDevServer({
 
     await Deno.serve({ port }, async ({ url }) => {
       const { pathname } = new URL(url);
-      const matched = await router.matchRoute(pathname);
+      const matchedRoute = await router.matchRoute(pathname);
 
-      if (matched && matched.route) {
+      if (matchedRoute) {
         const { markup, tasks } = await applyPlugins({
           plugins,
           url: pathname,
-          routes: matched.allRoutes,
-          route: matched.route,
-          matchRoute(url: string) {
-            return applyMatchRoutes({ plugins, url });
-          },
+          route: matchedRoute,
+          matchRoute: (url: string) => applyMatchRoutes({ plugins, url }),
         });
-
-        // Connect tasks that came from the router with plugins that are interested
-        // in them (i.e., the file watcher).
-        await applyOnTasksRegistered({ plugins, tasks: matched.tasks });
 
         // Capture potential assets created during evaluation as these might be
         // needed later for example in the editor.

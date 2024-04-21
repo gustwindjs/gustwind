@@ -55,13 +55,6 @@ async function importPlugins(
       props,
       context,
       plugins: loadedPluginDefinitions,
-      // TODO: Figure out how to avoid a cyclic dependency
-      // between data loading and routing as now they depend
-      // on each other. Some logic has to be decoupled somewhere.
-      //
-      // For now, route information is not available to
-      // component rendering API
-      routes: {}, // (await router.getAllRoutes()).routes,
       matchRoute: router.matchRoute,
     });
   };
@@ -114,7 +107,7 @@ async function importPlugins(
       return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
     },
     // First match wins
-    matchRoute(url: string) {
+    matchRoute(url: string): Promise<Route | undefined> {
       return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
     },
   };
@@ -236,12 +229,10 @@ async function applyPlugins(
   {
     plugins,
     url,
-    routes,
     route,
     initialContext,
     matchRoute,
   }: {
-    routes: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
@@ -272,7 +263,6 @@ async function applyPlugins(
   const markup = await applyRenderLayouts({
     context,
     plugins,
-    routes,
     route,
     send,
     url,
@@ -388,13 +378,12 @@ async function applyBeforeEachRenders(
 }
 
 async function applyRenderComponents(
-  { componentName, htmlInput, props, context, plugins, routes, matchRoute }: {
+  { componentName, htmlInput, props, context, plugins, matchRoute }: {
     componentName?: string;
     htmlInput?: string;
     context?: Context;
     props?: Context;
     plugins: PluginDefinition[];
-    routes: Routes;
     matchRoute: MatchRoute;
   },
 ) {
@@ -412,7 +401,6 @@ async function applyRenderComponents(
       htmlInput,
       context,
       props,
-      routes,
       matchRoute,
       pluginContext,
     });
@@ -422,11 +410,10 @@ async function applyRenderComponents(
 }
 
 async function applyRenderLayouts(
-  { context, plugins, route, routes, send, url, matchRoute }: {
+  { context, plugins, route, send, url, matchRoute }: {
     context: Context;
     plugins: PluginDefinition[];
     route: Route;
-    routes: Routes;
     send: Send;
     url: string;
     matchRoute: MatchRoute;
@@ -444,7 +431,6 @@ async function applyRenderLayouts(
     markup = await renderLayout({
       context,
       route,
-      routes,
       send,
       url,
       matchRoute,

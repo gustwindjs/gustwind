@@ -28,7 +28,7 @@ const plugin: Plugin<{
           // This is fine since some routes are dynamic
         }
 
-        return { route, tasks: [] };
+        return route;
       },
     };
   },
