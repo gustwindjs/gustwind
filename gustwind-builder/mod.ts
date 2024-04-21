@@ -68,7 +68,6 @@ async function build(
     workerPool.addTaskToQueue({
       type: "build",
       payload: {
-        routes,
         route,
         dir: path.join(outputDirectory, url),
         url: url === "/" ? "/" : "/" + url,
