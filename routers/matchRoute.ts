@@ -8,7 +8,7 @@ async function matchRoute(
   routes: Record<string, Route>,
   url: string,
   dataSources: DataSources,
-): Promise<Route | undefined> {
+): Promise<Route> {
   if (!routes) {
     throw new Error("No routes were provided!");
   }
@@ -32,8 +32,6 @@ async function matchRoute(
           dataSources,
         );
       }
-
-      return;
     }
 
     if (match.routes) {
@@ -62,8 +60,6 @@ async function matchRoute(
         dataSources,
       );
     }
-
-    return;
   }
 
   if (!match) {
