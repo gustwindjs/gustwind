@@ -366,6 +366,45 @@ Deno.test("matches a recursive route when expansion is used on the same route", 
   );
 });
 
+Deno.test("matches an expanded route when recursive routes are used on the same route", async () => {
+  const route2 = {
+    layout: "barIndex",
+    meta: {},
+    context: {},
+  };
+  const route1 = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+    routes: { bar: route2 },
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        slug: "slug",
+      },
+      dataSources: [],
+      layout: "blogPage",
+    },
+  };
+
+  assertEquals(
+    await matchRoute({ foo: route1 }, "foo/foo", {
+      index: () => [{ slug: "foo" }],
+    }),
+    {
+      context: {},
+      dataSources: [],
+      layout: "blogPage",
+      meta: {},
+      scripts: undefined,
+      url: "foo",
+    },
+  );
+});
+
 Deno.test("fails to match", () => {
   const route = {
     layout: "fooIndex",

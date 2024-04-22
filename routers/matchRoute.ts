@@ -21,7 +21,7 @@ async function matchRoute(
 
     if (match.routes) {
       try {
-        recursiveMatch = matchRoute(
+        recursiveMatch = await matchRoute(
           match.routes,
           parts.slice(1).join("/"),
           dataSources,
