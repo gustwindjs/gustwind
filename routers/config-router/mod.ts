@@ -3,6 +3,7 @@ import { expandRoutes } from "../expandRoutes.ts";
 import { flattenRoutes } from "./flattenRoutes.ts";
 import { matchRoute } from "../matchRoute.ts";
 import { getDataSourceContext } from "../getDataSourceContext.ts";
+import { trim } from "../../utilities/string.ts";
 import type {
   DataSources,
   DataSourcesModule,
@@ -17,7 +18,12 @@ const plugin: Plugin<{
   dataSourcesPath: string;
   routesPath: string;
   emitAllRoutes: boolean;
-}, { routes: Routes; dataSources: DataSources }> = {
+}, {
+  routes: Routes;
+  dataSources: DataSources;
+  // Dynamic routes are only urls as their contents are resolved otherwise
+  dynamicRoutes: string[];
+}> = {
   meta: {
     name: "config-router-plugin",
     description: "${name} implements a configuration based router.",
@@ -39,7 +45,7 @@ const plugin: Plugin<{
           loadDataSources(renderComponent),
         ]);
 
-        return { routes, dataSources };
+        return { routes, dataSources, dynamicRoutes: [] };
       },
       getAllRoutes: async ({ pluginContext }) => {
         const routes = await getAllRoutes(
@@ -62,26 +68,32 @@ const plugin: Plugin<{
         };
       },
       matchRoute: async (url: string, pluginContext) => {
-        try {
-          const route = await matchRoute(
-            pluginContext.routes,
-            url,
-            pluginContext.dataSources,
-          );
-          const context = await getDataSourceContext(
-            route.dataSources,
-            pluginContext.dataSources,
-          );
-
-          return { ...route, context };
-        } catch (_error) {
-          // This is fine since some routes are dynamic
-          // TODO: Allow errors to go through by adding an
-          // internal registration mechanism for the dynamic urls
+        if (pluginContext.dynamicRoutes.includes(trim(url, "/"))) {
+          return;
         }
+
+        const route = await matchRoute(
+          pluginContext.routes,
+          url,
+          pluginContext.dataSources,
+        );
+        const context = await getDataSourceContext(
+          route.dataSources,
+          pluginContext.dataSources,
+        );
+
+        return { ...route, context };
       },
-      onMessage: async ({ message }) => {
+      onMessage: async ({ message, pluginContext }) => {
         const { type, payload } = message;
+
+        if (type === "addDynamicRoute") {
+          // TODO: Figure out why returning a concat doesn't patch the
+          // state correctly (lifecycle issue?)
+          pluginContext.dynamicRoutes.push(payload.path);
+
+          return;
+        }
 
         if (type === "fileChanged") {
           switch (payload.type) {

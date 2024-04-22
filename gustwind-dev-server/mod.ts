@@ -44,8 +44,6 @@ async function gustwindDevServer({
       const { pathname } = new URL(url);
       const matchedRoute = await router.matchRoute(pathname);
 
-      console.log("tried to match", pathname, matchedRoute);
-
       if (matchedRoute) {
         const { markup, tasks } = await applyPlugins({
           plugins,
