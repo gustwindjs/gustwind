@@ -148,7 +148,7 @@ Deno.test("matches an expanded route", async () => {
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -161,7 +161,7 @@ Deno.test("matches an expanded route", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
-      dataSources: [],
+      dataSources: {},
       scripts: undefined,
       url: "foo",
     },
@@ -169,13 +169,15 @@ Deno.test("matches an expanded route", async () => {
 });
 
 Deno.test("expanded route retains data sources", async () => {
-  const dataSources = [{
-    operation: "processMarkdown",
-    parameters: [
-      { parseHeadmatter: true },
-    ],
-    name: "document",
-  }];
+  const dataSources = {
+    document: {
+      operation: "processMarkdown",
+      parameters: [
+        { parseHeadmatter: true },
+      ],
+    },
+  };
+
   const route = {
     layout: "blogIndex",
     meta: {},
@@ -201,10 +203,12 @@ Deno.test("expanded route retains data sources", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
-      dataSources: [{
-        ...dataSources[0],
-        parameters: [{ slug: "foo" }, { parseHeadmatter: true }],
-      }],
+      dataSources: {
+        document: {
+          ...dataSources.document,
+          parameters: [{ slug: "foo" }, { parseHeadmatter: true }],
+        },
+      },
       scripts: undefined,
       url: "foo",
     },
@@ -224,7 +228,7 @@ Deno.test("matches index of an expanded route", async () => {
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -250,7 +254,7 @@ Deno.test("matches index of an expanded route while root route exists", async ()
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -266,7 +270,7 @@ Deno.test("matches index of an expanded route while root route exists", async ()
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "documentationPage",
     },
   };
@@ -292,7 +296,7 @@ Deno.test("matches an expanded route behind a slash", async () => {
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -303,7 +307,7 @@ Deno.test("matches an expanded route behind a slash", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
-      dataSources: [],
+      dataSources: {},
       scripts: undefined,
       url: "foo",
     },
@@ -323,7 +327,7 @@ Deno.test("matches an expanded route of an expanded slash", async () => {
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -353,7 +357,7 @@ Deno.test("matches a recursive route when expansion is used on the same route", 
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -385,7 +389,7 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
         },
         slug: "slug",
       },
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
     },
   };
@@ -396,7 +400,7 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
     }),
     {
       context: {},
-      dataSources: [],
+      dataSources: {},
       layout: "blogPage",
       meta: {},
       scripts: undefined,

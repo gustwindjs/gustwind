@@ -5,13 +5,12 @@
       "title": "Gustwind",
       "description": "Deno powered website creator"
     },
-    "dataSources": [
-      {
+    "dataSources": {
+      "readme": {
         "operation": "processMarkdown",
-        "parameters": [{ "path": "./README.md" }, { "skipFirstLine": true }],
-        "name": "readme"
+        "parameters": [{ "path": "./README.md" }, { "skipFirstLine": true }]
       }
-    ],
+    },
     "expand": {
       "matchBy": {
         "indexer": {
@@ -21,13 +20,12 @@
         "slug": "data.slug"
       },
       "layout": "documentationPage",
-      "dataSources": [{
-        "operation": "processMarkdown",
-        "parameters": [
-          { "parseHeadmatter": true }
-        ],
-        "name": "document"
-      }],
+      "dataSources": {
+        "document": {
+          "operation": "processMarkdown",
+          "parameters": [{ "parseHeadmatter": true }]
+        }
+      },
       "meta": {
         "title": {
           "utility": "get",
@@ -47,14 +45,15 @@
       "description": "Templating in Gustwind by default is done using a combination of HTML and Lisp",
       "readmePath": "htmlisp/README.md"
     },
-    "dataSources": [{
-      "operation": "processMarkdown",
-      "parameters": [
-        { "path": "./htmlisp/README.md" },
-        { "skipFirstLine": false }
-      ],
-      "name": "readme"
-    }],
+    "dataSources": {
+      "readme": {
+        "operation": "processMarkdown",
+        "parameters": [
+          { "path": "./htmlisp/README.md" },
+          { "skipFirstLine": false }
+        ]
+      }
+    },
     "scripts": [{ "name": "templatingPlayground" }]
   },
   "blog": {
@@ -63,13 +62,12 @@
       "title": "Blog",
       "description": "A blog about Gustwind"
     },
-    "dataSources": [
-      {
+    "dataSources": {
+      "blogPosts": {
         "operation": "indexMarkdown",
-        "parameters": ["./blogPosts"],
-        "name": "blogPosts"
+        "parameters": ["./blogPosts"]
       }
-    ],
+    },
     "expand": {
       "matchBy": {
         "indexer": {
@@ -80,13 +78,12 @@
       },
       "scripts": [{ "name": "hello" }],
       "layout": "documentationPage",
-      "dataSources": [{
-        "operation": "processMarkdown",
-        "parameters": [
-          { "parseHeadmatter": true }
-        ],
-        "name": "document"
-      }],
+      "dataSources": {
+        "document": {
+          "operation": "processMarkdown",
+          "parameters": [{ "parseHeadmatter": true }]
+        }
+      },
       "meta": {
         "title": {
           "utility": "get",
@@ -133,13 +130,12 @@
       "title": "Gustwind",
       "description": "Gustwind blog"
     },
-    "dataSources": [
-      {
+    "dataSources": {
+      "blogPosts": {
         "operation": "indexMarkdown",
-        "parameters": ["./blogPosts", { "parseHeadmatter": true }],
-        "name": "blogPosts"
+        "parameters": ["./blogPosts", { "parseHeadmatter": true }]
       }
-    ]
+    }
   },
   "404.html": {
     "layout": "404",

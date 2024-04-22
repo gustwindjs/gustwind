@@ -42,7 +42,7 @@ type Render = (
   },
 ) => Promise<string>;
 
-type DataSource = { operation: string; name?: string; parameters?: unknown[] };
+type DataSource = { operation: string; parameters?: unknown[] };
 type DataSources = Record<string, (...args: any) => unknown>;
 
 type LoadedPlugin = {
@@ -271,14 +271,14 @@ type Route = {
   // if it is enabled
   scripts?: { name: string }[]; // These point to scripts directory by name
   routes?: Routes;
-  dataSources?: DataSource[];
+  dataSources?: Record<string, DataSource>;
   expand?: {
     context?: DataContext;
     matchBy?: {
       indexer: DataSource;
       slug: string;
     };
-    dataSources?: DataSource[];
+    dataSources?: Record<string, DataSource>;
     layout: string;
     meta?: Meta;
   };

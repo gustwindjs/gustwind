@@ -1,5 +1,5 @@
 import { get } from "../utilities/functional.ts";
-import type { DataSources, Route } from "../types.ts";
+import type { DataSource, DataSources, Route } from "../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {
   routes: Record<string, Route>;
@@ -91,11 +91,15 @@ async function expandRoute(
           layout,
           scripts,
           context: context || {},
-          // @ts-ignore route.expand exists by now for sure
-          dataSources: route.expand.dataSources.map((d) => ({
-            ...d,
-            parameters: [match].concat(d.parameters),
-          })),
+          dataSources: Object.fromEntries(
+            // @ts-ignore route.expand exists by now for sure
+            Object.entries(route.expand.dataSources).map((
+              [k, v]: [string, DataSource],
+            ) => [k, {
+              ...v,
+              parameters: [match].concat(v.parameters),
+            }]),
+          ),
           url,
         };
 
