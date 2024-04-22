@@ -42,6 +42,7 @@ async function build(
 
   await fs.ensureDir(outputDirectory);
   await Deno.remove(outputDirectory, { recursive: true });
+  await fs.ensureDir(outputDirectory);
 
   const { plugins, router } = await importPlugins({
     cwd,
