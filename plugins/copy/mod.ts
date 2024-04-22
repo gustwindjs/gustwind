@@ -12,9 +12,25 @@ const plugin: Plugin<{
       "${name} allows copying files from a given directory within the build output. This is useful for bringing for example image assets to a website.",
   },
   init(
-    { cwd, options: { inputPath, outputPath }, outputDirectory },
+    { cwd, options: { inputPath, outputPath }, load, outputDirectory },
   ) {
     return {
+      sendMessages: async ({ send }) => {
+        const files = await load.dir({
+          path: inputPath,
+          extension: "",
+          type: "",
+        });
+
+        files.forEach((f) =>
+          // TODO: Scope this to router plugins using prefixing (router-)
+          // This needs a change at plugins.ts logic
+          send("*", {
+            type: "addDynamicRoute",
+            payload: { path: f.path },
+          })
+        );
+      },
       finishBuild: () => [{
         type: "copyFiles",
         payload: {
