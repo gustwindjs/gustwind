@@ -43,34 +43,39 @@ self.onmessage = async (e) => {
 
     DEBUG && console.log("worker - starting to build", id, route);
 
-    const { markup, tasks } = await applyPlugins({
-      plugins,
-      url,
-      route,
-      matchRoute(url: string) {
-        return applyMatchRoutes({ plugins, url });
-      },
-    });
+    try {
+      const { markup, tasks } = await applyPlugins({
+        plugins,
+        url,
+        route,
+        matchRoute(url: string) {
+          return applyMatchRoutes({ plugins, url });
+        },
+      });
 
-    self.postMessage({
-      type: "addTasks",
-      payload: tasks,
-    });
+      self.postMessage({
+        type: "addTasks",
+        payload: tasks,
+      });
 
-    // TODO: Replace this with a more generic fix somehow
-    if (
-      url.endsWith(".json") || url.endsWith(".xml") || url.endsWith(".html")
-    ) {
-      await Deno.writeTextFile(dir, markup);
-    } else {
-      await fs.ensureDir(dir);
-      await Deno.writeTextFile(
-        path.join(dir, "index.html"),
-        markup,
-      );
+      // TODO: Replace this with a more generic fix somehow
+      if (
+        url.endsWith(".json") || url.endsWith(".xml") || url.endsWith(".html")
+      ) {
+        await Deno.writeTextFile(dir, markup);
+      } else {
+        await fs.ensureDir(dir);
+        await Deno.writeTextFile(
+          path.join(dir, "index.html"),
+          markup,
+        );
+      }
+
+      DEBUG && console.log("worker - finished build", id, route);
+    } catch (error) {
+      console.error(`Failed to build ${url}`);
+      throw error;
     }
-
-    DEBUG && console.log("worker - finished build", id, route);
   }
   if (type === "writeFile") {
     const { payload: { outputDirectory, file, data } } = e.data;
