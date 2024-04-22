@@ -86,8 +86,6 @@ async function expandRoute(
         // @ts-ignore route.expand exists by now for sure
         const { meta, layout, scripts, context } = route.expand;
 
-        // TODO: Patch the first parameter to expanded data sources here
-        // based on match
         expandedRoutes[url] = {
           // TODO: Apply meta later per page
           /*
@@ -102,7 +100,10 @@ async function expandRoute(
           scripts,
           context: context || {},
           // @ts-ignore route.expand exists by now for sure
-          dataSources: route.expand.dataSources,
+          dataSources: route.expand.dataSources.map((d) => ({
+            ...d,
+            parameters: [match].concat(d.parameters),
+          })),
           url,
         };
 
