@@ -87,14 +87,6 @@ async function expandRoute(
         const { meta, layout, scripts, context } = route.expand;
 
         expandedRoutes[url] = {
-          // TODO: Apply meta later per page
-          /*
-          meta: await applyUtilities<Utility, Utilities, Context>(
-            meta,
-            defaultUtilities,
-            { context },
-          ),
-          */
           meta: meta || {},
           layout,
           scripts,
@@ -110,7 +102,7 @@ async function expandRoute(
         ret = { ...route, routes: expandedRoutes };
       }));
     } else {
-      console.warn("data source results are not an array");
+      throw new Error("Data source results are not an array");
     }
   }
 
