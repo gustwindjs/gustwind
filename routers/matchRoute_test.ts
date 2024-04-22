@@ -146,9 +146,9 @@ Deno.test("matches an expanded route", async () => {
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "blogPage",
     },
   };
@@ -161,7 +161,7 @@ Deno.test("matches an expanded route", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
-      dataSources: undefined,
+      dataSources: [],
       scripts: undefined,
       url: "foo",
     },
@@ -170,11 +170,11 @@ Deno.test("matches an expanded route", async () => {
 
 Deno.test("expanded route retains data sources", async () => {
   const dataSources = [{
-    "operation": "processMarkdown",
-    "parameters": [
-      { "parseHeadmatter": true },
+    operation: "processMarkdown",
+    parameters: [
+      { parseHeadmatter: true },
     ],
-    "name": "document",
+    name: "document",
   }];
   const route = {
     layout: "blogIndex",
@@ -201,7 +201,10 @@ Deno.test("expanded route retains data sources", async () => {
       layout: "blogPage",
       meta: {},
       context: {},
-      dataSources,
+      dataSources: [{
+        ...dataSources[0],
+        parameters: [{ slug: "foo" }, { parseHeadmatter: true }],
+      }],
       scripts: undefined,
       url: "foo",
     },
@@ -318,9 +321,9 @@ Deno.test("matches an expanded route of an expanded slash", async () => {
           operation: "index",
           parameters: [],
         },
-        dataSources: [],
         slug: "slug",
       },
+      dataSources: [],
       layout: "blogPage",
     },
   };
@@ -328,6 +331,38 @@ Deno.test("matches an expanded route of an expanded slash", async () => {
   assertEquals(
     await matchRoute({ "/": route }, "/", { index: () => [{ slug: "foo" }] }),
     route,
+  );
+});
+
+Deno.test("matches a recursive route when expansion is used on the same route", async () => {
+  const route2 = {
+    layout: "barIndex",
+    meta: {},
+    context: {},
+  };
+  const route1 = {
+    layout: "fooIndex",
+    meta: {},
+    context: {},
+    routes: { bar: route2 },
+    expand: {
+      matchBy: {
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        slug: "slug",
+      },
+      dataSources: [],
+      layout: "blogPage",
+    },
+  };
+
+  assertEquals(
+    await matchRoute({ foo: route1 }, "foo/bar", {
+      index: () => [{ slug: "foo" }],
+    }),
+    route2,
   );
 });
 
