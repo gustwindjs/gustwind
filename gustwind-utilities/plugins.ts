@@ -484,8 +484,8 @@ async function applyAfterEachRenders(
   return markup;
 }
 
-function getSend(plugins: PluginDefinition[]): Send {
-  return async (pluginName, message) => {
+function getSend(plugins: PluginDefinition[]) {
+  const send: Send = async (pluginName, message) => {
     if (pluginName === "*") {
       DEBUG && console.log("Send to all", message);
 
@@ -494,7 +494,11 @@ function getSend(plugins: PluginDefinition[]): Send {
           const { api, context: pluginContext } = plugin;
 
           if (api.onMessage) {
-            const payload = await api.onMessage({ message, pluginContext });
+            const payload = await api.onMessage({
+              message,
+              pluginContext,
+              send,
+            });
 
             plugin.context = {
               ...pluginContext,
@@ -552,6 +556,7 @@ function getSend(plugins: PluginDefinition[]): Send {
           const payload = await foundPlugin.api.onMessage({
             message,
             pluginContext: foundPlugin.context,
+            send,
           });
 
           foundPlugin.context = {
@@ -572,6 +577,8 @@ function getSend(plugins: PluginDefinition[]): Send {
       }
     }
   };
+
+  return send;
 }
 
 export {

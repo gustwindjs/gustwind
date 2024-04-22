@@ -2,7 +2,7 @@ import * as path from "node:path";
 import * as pagefind from "npm:pagefind@1.0.3";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin = {
+const plugin: Plugin<Record<string, never>, { files: pagefind.IndexFile[] }> = {
   meta: {
     name: "gustwind-pagefind-plugin",
     description:
@@ -12,7 +12,7 @@ const plugin: Plugin = {
     { cwd, outputDirectory },
   ) {
     return {
-      finishBuild: async () => {
+      initPluginContext: async () => {
         const { index } = await pagefind.createIndex({});
 
         if (!index) {
@@ -25,7 +25,20 @@ const plugin: Plugin = {
 
         const { files } = await index.getFiles();
 
-        return files.map(({ path: file, content: data }) => ({
+        return { files };
+      },
+      sendMessages: ({ send, pluginContext }) => {
+        pluginContext.files.forEach(({ path: file }) =>
+          // TODO: Scope this to router plugins using prefixing (router-)
+          // This needs a change at plugins.ts logic
+          send("*", {
+            type: "addDynamicRoute",
+            payload: { path: "pagefind/" + file },
+          })
+        );
+      },
+      finishBuild: ({ pluginContext }) => {
+        return pluginContext.files.map(({ path: file, content: data }) => ({
           type: "writeFile",
           payload: {
             outputDirectory,

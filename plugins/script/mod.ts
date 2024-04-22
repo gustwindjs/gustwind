@@ -107,7 +107,7 @@ const plugin: Plugin<{
           },
         };
       },
-      onMessage: async ({ message, pluginContext }) => {
+      onMessage: async ({ message, pluginContext, send }) => {
         const { type, payload } = message;
 
         if (type === "fileChanged") {
@@ -125,6 +125,11 @@ const plugin: Plugin<{
         }
 
         if (type === "addGlobalScripts") {
+          payload.forEach(({ src: path }) =>
+            // TODO: Scope to router- instead
+            send("*", { type: "addDynamicRoute", payload: { path } })
+          );
+
           return {
             pluginContext: {
               receivedGlobalScripts: pluginContext.receivedGlobalScripts.concat(
@@ -135,6 +140,11 @@ const plugin: Plugin<{
         }
 
         if (type === "addScripts") {
+          payload.forEach(({ name: path }) =>
+            // TODO: Scope to router- instead
+            send("*", { type: "addDynamicRoute", payload: { path } })
+          );
+
           return {
             pluginContext: {
               receivedScripts: pluginContext.receivedScripts.concat(payload),

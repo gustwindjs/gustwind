@@ -172,9 +172,7 @@ type PluginApi<C = Context> = {
     url: string;
     pluginContext: C;
   }): Promise<{ markup: string }> | { markup: string };
-  onMessage?(
-    { message, pluginContext }: { message: SendMessageEvent; pluginContext: C },
-  ):
+  onMessage?(o: { message: SendMessageEvent; pluginContext: C; send: Send }):
     | void
     | {
       send?: SendMessageEvent[];
@@ -188,13 +186,13 @@ type PluginApi<C = Context> = {
         result?: unknown;
       }
     >;
-  getAllRoutes?({ pluginContext }: { pluginContext: C }):
+  getAllRoutes?(o: { pluginContext: C }):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     url: string,
     pluginContext: C,
-  ): Promise<Route | undefined>;
+  ): Promise<Route | undefined> | undefined;
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
 
@@ -231,6 +229,13 @@ type SendMessageEvent =
       extension: string;
       name: string;
       type: string;
+    };
+  }
+  // router plugin
+  | {
+    type: "addDynamicRoute";
+    payload: {
+      path: string;
     };
   }
   // editor plugin
