@@ -17,6 +17,24 @@ async function matchRoute(
   const match = routes[url] || routes[parts[0]];
 
   if (match && parts.length > 1) {
+    let recursiveMatch;
+
+    if (match.routes) {
+      try {
+        recursiveMatch = matchRoute(
+          match.routes,
+          parts.slice(1).join("/"),
+          dataSources,
+        );
+      } catch (_error) {
+        // Nothing to do
+      }
+    }
+
+    if (recursiveMatch) {
+      return recursiveMatch;
+    }
+
     if (match.expand) {
       const [_expandedUrl, expandedRoute] = await expandRoute({
         url,
@@ -32,10 +50,6 @@ async function matchRoute(
           dataSources,
         );
       }
-    }
-
-    if (match.routes) {
-      return matchRoute(match.routes, parts.slice(1).join("/"), dataSources);
     }
   }
 
