@@ -9,12 +9,12 @@ import {
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi } from "../load-adapters/deno.ts";
-import type { PluginDefinition } from "../gustwind-utilities/plugins.ts";
 import type { BuildWorkerEvent } from "../types.ts";
 
 const mode = "production";
 let id: string;
-let plugins: PluginDefinition[];
+let plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"];
+let router: Awaited<ReturnType<typeof importPlugins>>["router"];
 
 const DEBUG = Deno.env.get("DEBUG") === "1";
 
@@ -35,6 +35,7 @@ self.onmessage = async (e) => {
       mode,
     });
     plugins = ret.plugins;
+    router = ret.router;
 
     DEBUG && console.log("worker - finished init", id);
   }
@@ -44,13 +45,22 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - starting to build", id, route);
 
     try {
+      // Matching the url to a route ensures the route contains context
+      // (i.e., data sources) related to it. Similar logic is in use
+      // for development server. This is a micro-optimization as it
+      // avoids work when resolving all routes and allows deferring
+      // this work to workers which run in parallel.
+      const matchedRoute = await router.matchRoute(url);
+
+      if (!matchedRoute) {
+        throw new Error(`Failed to find route ${url} while building`);
+      }
+
       const { markup, tasks } = await applyPlugins({
         plugins,
         url,
-        route,
-        matchRoute(url: string) {
-          return applyMatchRoutes({ plugins, url });
-        },
+        route: matchedRoute,
+        matchRoute: (url: string) => applyMatchRoutes({ plugins, url }),
       });
 
       self.postMessage({
