@@ -66,7 +66,7 @@ const plugin: Plugin<{
           ),
         );
       },
-      prepareContext({ route, pluginContext }) {
+      prepareContext({ route, pluginContext, send }) {
         const { foundScripts, receivedScripts, receivedGlobalScripts } =
           pluginContext;
         const routeScripts = route.scripts || [];
@@ -96,6 +96,11 @@ const plugin: Plugin<{
           ...rest,
           src: (srcPrefix || "/") + name.replace(".ts", ".js"),
         }));
+
+        scripts.forEach(({ name: path }) =>
+          // TODO: Scope to router- instead
+          send("*", { type: "addDynamicRoute", payload: { path } })
+        );
 
         // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
         // Global scripts don't need processing since they are in the right format already

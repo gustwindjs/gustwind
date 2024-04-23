@@ -88,9 +88,11 @@ const plugin: Plugin<{
         const { type, payload } = message;
 
         if (type === "addDynamicRoute") {
-          // TODO: Figure out why returning a concat doesn't patch the
-          // state correctly (lifecycle issue?)
-          pluginContext.dynamicRoutes.push(payload.path);
+          if (!pluginContext.dynamicRoutes.includes(payload.path)) {
+            // TODO: Figure out why returning a concat doesn't patch the
+            // state correctly (lifecycle issue?)
+            pluginContext.dynamicRoutes.push(payload.path);
+          }
 
           return;
         }
