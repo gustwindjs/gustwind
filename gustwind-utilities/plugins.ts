@@ -66,7 +66,7 @@ async function importPlugins(
     const { plugin, tasks } = await importPlugin({
       cwd,
       pluginModule: pluginDefinition.module || await import(
-        pluginDefinition.path.startsWith("http")
+        ["file", "http"].some((p) => pluginDefinition.path.startsWith(p))
           ? pluginDefinition.path
           : joinPath(cwd, pluginDefinition.path)
       )
