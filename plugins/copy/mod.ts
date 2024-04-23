@@ -27,7 +27,9 @@ const plugin: Plugin<{
           // This needs a change at plugins.ts logic
           send("*", {
             type: "addDynamicRoute",
-            payload: { path: f.path },
+            payload: {
+              path: path.join(outputPath, path.relative(inputPath, f.path)),
+            },
           })
         );
       },
