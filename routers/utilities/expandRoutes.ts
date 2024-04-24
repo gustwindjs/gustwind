@@ -93,7 +93,7 @@ async function expandRoute(
           context: context || {},
           dataSources: Object.fromEntries(
             // @ts-ignore route.expand exists by now for sure
-            Object.entries(route.expand.dataSources).map((
+            Object.entries(route.expand?.dataSources || {}).map((
               [k, v]: [string, DataSource],
             ) => [k, {
               ...v,
