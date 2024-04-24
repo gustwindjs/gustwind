@@ -23,7 +23,7 @@ async function expandRoutes({ routes, dataSources }: {
 
   // / is an exception. If it has an expansion, then it has to be added
   // to the root as otherwise the router won't find it later.
-  if (allRoutes["/"]) {
+  if (allRoutes["/"] && allRoutes["/"].routes) {
     return {
       ...allRoutes,
       ...allRoutes["/"].routes,
@@ -100,7 +100,6 @@ async function expandRoute(
               parameters: [match].concat(v.parameters),
             }]),
           ),
-          url,
         };
 
         ret = { ...route, routes: expandedRoutes };
@@ -124,7 +123,7 @@ async function expandRoute(
     };
   }
 
-  return [url, { ...ret, url }];
+  return [url, ret];
 }
 
 export { expandRoute, expandRoutes };
