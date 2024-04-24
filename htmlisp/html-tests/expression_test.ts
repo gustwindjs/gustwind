@@ -2,9 +2,9 @@ import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with an expression shortcut for attribute", async () => {
+Deno.test("element with an expression shortcut for attribute", () => {
   assertEquals(
-    await htmlispToHTML(
+    htmlispToHTML(
       {
         htmlInput: `<a &href="(get context href)">foobar</a>`,
         context: { href: "demo" },
@@ -14,9 +14,9 @@ Deno.test("element with an expression shortcut for attribute", async () => {
   );
 });
 
-Deno.test("element with braces inside strings", async () => {
+Deno.test("element with braces inside strings", () => {
   assertEquals(
-    await htmlispToHTML(
+    htmlispToHTML(
       {
         htmlInput: `<a &href="(concat foo '(' bar ')' )" />`,
       },
@@ -25,9 +25,9 @@ Deno.test("element with braces inside strings", async () => {
   );
 });
 
-Deno.test("element with expressions within an expression", async () => {
+Deno.test("element with expressions within an expression", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<a &href="(concat (get context demo) (get context href))" />`,
       context: { demo: "foobar", href: "demo" },
     }),
@@ -35,9 +35,9 @@ Deno.test("element with expressions within an expression", async () => {
   );
 });
 
-Deno.test("element with a string after an expression after expression", async () => {
+Deno.test("element with a string after an expression after expression", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<a &href="(get (get context href) /)" />`,
       context: { href: "context", "/": "foo/bar" },
     }),
@@ -45,9 +45,9 @@ Deno.test("element with a string after an expression after expression", async ()
   );
 });
 
-Deno.test("complex expression", async () => {
+Deno.test("complex expression", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<a
         &href="(urlJoin (get context meta.url) blog (get context data.slug))"
       ></a>`,

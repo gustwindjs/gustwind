@@ -1,16 +1,16 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("basic element", async () => {
+Deno.test("basic element", () => {
   assertEquals(
-    await htmlispToHTML({ htmlInput: `<div>foo</div>` }),
+    htmlispToHTML({ htmlInput: `<div>foo</div>` }),
     `<div>foo</div>`,
   );
 });
 
-Deno.test("basic element with a newline", async () => {
+Deno.test("basic element with a newline", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div
     >foo</div>`,
     }),
@@ -18,9 +18,9 @@ Deno.test("basic element with a newline", async () => {
   );
 });
 
-Deno.test("basic element with a single child", async () => {
+Deno.test("basic element with a single child", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div
     ><span>foo</span></div>`,
     }),
@@ -28,9 +28,9 @@ Deno.test("basic element with a single child", async () => {
   );
 });
 
-Deno.test("basic element with nested children", async () => {
+Deno.test("basic element with nested children", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div
     ><div><span>foo</span></div></div>`,
     }),
@@ -38,18 +38,18 @@ Deno.test("basic element with nested children", async () => {
   );
 });
 
-Deno.test("basic element with a child with a title", async () => {
+Deno.test("basic element with a child with a title", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div title="demo"><span title="demo">foobar</span></div>`,
     }),
     `<div title="demo"><span title="demo">foobar</span></div>`,
   );
 });
 
-Deno.test("basic element with newlines and nesting", async () => {
+Deno.test("basic element with newlines and nesting", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div
       title="demo"
     >
@@ -64,16 +64,16 @@ Deno.test("basic element with newlines and nesting", async () => {
   );
 });
 
-Deno.test("nested element", async () => {
+Deno.test("nested element", () => {
   assertEquals(
-    await htmlispToHTML({ htmlInput: `<div><span>foo</span></div>` }),
+    htmlispToHTML({ htmlInput: `<div><span>foo</span></div>` }),
     `<div><span>foo</span></div>`,
   );
 });
 
-Deno.test("element with a class", async () => {
+Deno.test("element with a class", () => {
   assertEquals(
-    await htmlispToHTML({ htmlInput: `<div class="bar">foo</div>` }),
+    htmlispToHTML({ htmlInput: `<div class="bar">foo</div>` }),
     `<div class="bar">foo</div>`,
   );
 });

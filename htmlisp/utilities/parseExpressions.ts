@@ -4,7 +4,7 @@ import { applyUtility } from "./applyUtility.ts";
 import type { Attributes, Context } from "../types.ts";
 import type { Utilities, Utility } from "../../types.ts";
 
-async function parseExpressions(
+function parseExpressions(
   attributes: Attributes | undefined,
   context: Context,
   utilities: Utilities,
@@ -13,40 +13,38 @@ async function parseExpressions(
     return {};
   }
 
-  const entries = (await Promise.all(
-    Object.entries(attributes).map(
-      async ([name, value]) => {
-        // Skip commented attributes
-        if (name.startsWith("__")) {
-          return;
+  const entries = Object.entries(attributes).map(
+    ([name, value]) => {
+      // Skip commented attributes
+      if (name.startsWith("__")) {
+        return;
+      }
+
+      // Check bindings
+      if (name.startsWith("&") && value !== null) {
+        const parsedExpression = parseExpression(value.toString());
+
+        if (!parsedExpression) {
+          throw new Error(`Failed to parse ${value} for attribute ${name}!`);
         }
 
-        // Check bindings
-        if (name.startsWith("&") && value !== null) {
-          const parsedExpression = await parseExpression(value.toString());
+        return [
+          name.slice(1),
+          applyUtility<
+            Utility,
+            Utilities,
+            Context
+          >(
+            parsedExpression,
+            utilities,
+            context,
+          ),
+        ];
+      }
 
-          if (!parsedExpression) {
-            throw new Error(`Failed to parse ${value} for attribute ${name}!`);
-          }
-
-          return [
-            name.slice(1),
-            await applyUtility<
-              Utility,
-              Utilities,
-              Context
-            >(
-              parsedExpression,
-              utilities,
-              context,
-            ),
-          ];
-        }
-
-        return [name, value];
-      },
-    ),
-  )).filter(Boolean);
+      return [name, value];
+    },
+  ).filter(Boolean);
 
   // @ts-expect-error This is fine
   return Object.fromEntries(entries);

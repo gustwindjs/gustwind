@@ -40,7 +40,7 @@ type Render = (
     context?: Context;
     props?: Context;
   },
-) => Promise<string>;
+) => string;
 
 type DataSource = { operation: string; parameters?: unknown[] };
 type DataSources = Record<string, (...args: any) => unknown>;
@@ -155,7 +155,7 @@ type PluginApi<C = Context> = {
     send: Send;
     url: string;
     pluginContext: C;
-  }): Promise<string> | string;
+  }): string;
   renderComponent?(o: {
     matchRoute: MatchRoute;
     componentName?: string;
@@ -163,7 +163,7 @@ type PluginApi<C = Context> = {
     context: Context;
     props: Context;
     pluginContext: C;
-  }): Promise<string> | string;
+  }): string;
   afterEachRender?(o: {
     markup: string;
     context: Context;

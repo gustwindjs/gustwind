@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("foreach with an array of objects", async () => {
+Deno.test("foreach with an array of objects", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
         <li class="inline" &title="(get props title)" &children="(get props content)"></li>
       </ul>
@@ -16,9 +16,9 @@ Deno.test("foreach with an array of objects", async () => {
   );
 });
 
-Deno.test("foreach with an array of objects and an attribute", async () => {
+Deno.test("foreach with an array of objects and an attribute", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)" title="demo">
         <li class="inline" &title="(get props title)" &children="(get props content)"></li>
       </ul>
@@ -31,9 +31,9 @@ Deno.test("foreach with an array of objects and an attribute", async () => {
   );
 });
 
-Deno.test("foreach with an array of objects and an evaluated attribute", async () => {
+Deno.test("foreach with an array of objects and an evaluated attribute", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<ul &foreach="(get context blogPosts)" &title="(get context demo)">
         <li class="inline" &title="(get props title)" &children="(get props content)"></li>
@@ -48,9 +48,9 @@ Deno.test("foreach with an array of objects and an evaluated attribute", async (
   );
 });
 
-Deno.test("foreach with an array of values", async () => {
+Deno.test("foreach with an array of values", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
         <li class="inline" &children="(get props value)"></li>
       </ul>
@@ -63,9 +63,9 @@ Deno.test("foreach with an array of values", async () => {
   );
 });
 
-Deno.test("foreach without a type", async () => {
+Deno.test("foreach without a type", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop &foreach="(get context blogPosts)">
         <div class="inline" &children="(get props content)"></div>
       </noop>
@@ -78,9 +78,9 @@ Deno.test("foreach without a type", async () => {
   );
 });
 
-Deno.test("foreach with nested children", async () => {
+Deno.test("foreach with nested children", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &foreach="(get context blogPosts)">
   <a
     &href="(get props slug)"
@@ -97,9 +97,9 @@ Deno.test("foreach with nested children", async () => {
   );
 });
 
-Deno.test("foreach with nested children and a component", async () => {
+Deno.test("foreach with nested children and a component", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &foreach="(get context blogPosts)">
   <a
     &href="(get props slug)"

@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("props through slots as elements", async () => {
+Deno.test("props through slots as elements", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <div>hello</div>
@@ -18,9 +18,9 @@ Deno.test("props through slots as elements", async () => {
   );
 });
 
-Deno.test("props through slots as elements including normal props", async () => {
+Deno.test("props through slots as elements including normal props", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout title="demo">
         <slot name="content">
           <div>hello</div>
@@ -36,9 +36,9 @@ Deno.test("props through slots as elements including normal props", async () => 
   );
 });
 
-Deno.test("props through slots as elements including bound props", async () => {
+Deno.test("props through slots as elements including bound props", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout &title="(get context title)">
         <slot name="content">
           <div>hello</div>
@@ -57,9 +57,9 @@ Deno.test("props through slots as elements including bound props", async () => {
   );
 });
 
-Deno.test("children binding within slots", async () => {
+Deno.test("children binding within slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <span &children="(get context title)"></span>
@@ -77,9 +77,9 @@ Deno.test("children binding within slots", async () => {
   );
 });
 
-Deno.test("attribute binding within slots", async () => {
+Deno.test("attribute binding within slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <div &title="(get context title)"></div>
@@ -97,9 +97,9 @@ Deno.test("attribute binding within slots", async () => {
   );
 });
 
-Deno.test("attribute binding to children within slots", async () => {
+Deno.test("attribute binding to children within slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <Workshops &children="(get context workshops)" />
@@ -118,9 +118,9 @@ Deno.test("attribute binding to children within slots", async () => {
   );
 });
 
-Deno.test("components through slots", async () => {
+Deno.test("components through slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <SiteLink href="modes">Modes</SiteLink>
@@ -137,9 +137,9 @@ Deno.test("components through slots", async () => {
   );
 });
 
-Deno.test("complex components through slots", async () => {
+Deno.test("complex components through slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <Navigation />
@@ -157,9 +157,9 @@ Deno.test("complex components through slots", async () => {
   );
 });
 
-Deno.test("complex components containing siblings within elements through slots", async () => {
+Deno.test("complex components containing siblings within elements through slots", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
         <slot name="content">
           <div>

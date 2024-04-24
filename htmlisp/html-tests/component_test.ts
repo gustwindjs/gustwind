@@ -1,12 +1,12 @@
 import {
   assertEquals,
-  assertRejects,
+  assertThrows,
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("basic component", async () => {
+Deno.test("basic component", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: "<Button>foo</Button>",
       components: {
         Button: '<button &children="(get props children)"></button>',
@@ -16,9 +16,9 @@ Deno.test("basic component", async () => {
   );
 });
 
-Deno.test("component with a flag", async () => {
+Deno.test("component with a flag", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: "<Button showButton>foo</Button>",
       components: {
         Button:
@@ -29,9 +29,9 @@ Deno.test("component with a flag", async () => {
   );
 });
 
-Deno.test("basic component 2", async () => {
+Deno.test("basic component 2", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<SiteLink href="modes">Modes</SiteLink>
 <SiteLink href="configuration">Configuration</SiteLink>`,
       components: {
@@ -44,16 +44,16 @@ Deno.test("basic component 2", async () => {
 });
 
 Deno.test("throws if a component is not found", () => {
-  assertRejects(
+  assertThrows(
     () => htmlispToHTML({ htmlInput: "<Button>foo</Button>" }),
     Error,
     `Component "Button" was not found!`,
   );
 });
 
-Deno.test("component with attributes", async () => {
+Deno.test("component with attributes", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Button title="demo">foobar</Button>`,
       components: {
         Button:
@@ -64,9 +64,9 @@ Deno.test("component with attributes", async () => {
   );
 });
 
-Deno.test("component with children", async () => {
+Deno.test("component with children", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Button><div>foo</div></Button>`,
       components: {
         Button: '<button &children="(get props children)"></button>',
@@ -76,9 +76,9 @@ Deno.test("component with children", async () => {
   );
 });
 
-Deno.test("component with children attributes", async () => {
+Deno.test("component with children attributes", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Button children="foo"></Button>`,
       components: {
         Button: '<button &children="(get props children)"></button>',
@@ -88,9 +88,9 @@ Deno.test("component with children attributes", async () => {
   );
 });
 
-Deno.test("component with multiple children", async () => {
+Deno.test("component with multiple children", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Button><div>foo</div><div>bar</div></Button>`,
       components: {
         Button: '<button &children="(get props children)"></button>',
@@ -100,9 +100,9 @@ Deno.test("component with multiple children", async () => {
   );
 });
 
-Deno.test("component with an expression", async () => {
+Deno.test("component with an expression", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Link &href="(get context demo)"></Link>`,
       components: {
         Link: '<a &href="(get props href)"></a>',
@@ -115,9 +115,9 @@ Deno.test("component with an expression", async () => {
   );
 });
 
-Deno.test("component with a children expression", async () => {
+Deno.test("component with a children expression", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<Markdown &children="(get context demo)"></Markdown>`,
       components: {
         Markdown: '<div &children="(get props children)"></div>',

@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with a visibleIf enabled", async () => {
+Deno.test("element with a visibleIf enabled", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &visibleIf="(get context showToc)">foo</div>`,
       context: {
         showToc: false,
@@ -13,9 +13,9 @@ Deno.test("element with a visibleIf enabled", async () => {
   );
 });
 
-Deno.test("element with a visibleIf disabled", async () => {
+Deno.test("element with a visibleIf disabled", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &visibleIf="(get context showToc)">foo</div>`,
       context: {
         showToc: true,
@@ -25,9 +25,9 @@ Deno.test("element with a visibleIf disabled", async () => {
   );
 });
 
-Deno.test("element with a complex visibleIf", async () => {
+Deno.test("element with a complex visibleIf", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<div &visibleIf="(and (get context showToc) (get context isAdmin))">foo</div>`,
       context: {
@@ -39,9 +39,9 @@ Deno.test("element with a complex visibleIf", async () => {
   );
 });
 
-Deno.test("component with visibleIf and boolean", async () => {
+Deno.test("component with visibleIf and boolean", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<li &visibleIf="(get props website)">
   <a &href="(get props website)">Website</a>
 </li>`,
@@ -53,9 +53,9 @@ Deno.test("component with visibleIf and boolean", async () => {
   );
 });
 
-Deno.test("component with visibleIf and string", async () => {
+Deno.test("component with visibleIf and string", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<li &visibleIf="(get props website)">
   <a &href="(get props website)">Website</a>
 </li>`,
@@ -67,9 +67,9 @@ Deno.test("component with visibleIf and string", async () => {
   );
 });
 
-Deno.test("component with visibleIf and undefined", async () => {
+Deno.test("component with visibleIf and undefined", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<li &visibleIf="(get props website)">
   <a &href="(get props website)">Website</a>
 </li>`,

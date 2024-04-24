@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("component with render", async () => {
+Deno.test("component with render", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &children="(render (get context button))"></div>`,
       components: {
         Button: '<button &children="(get props children)"></button>',
@@ -16,9 +16,9 @@ Deno.test("component with render", async () => {
   );
 });
 
-Deno.test("component with undefined render", async () => {
+Deno.test("component with undefined render", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &children="(render (get context button))"></div>`,
       components: {
         Button: "<div></div>",
@@ -31,9 +31,9 @@ Deno.test("component with undefined render", async () => {
   );
 });
 
-Deno.test("render within a component", async () => {
+Deno.test("render within a component", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<SiteLink href="test">Foobar</SiteLink>`,
       components: {
         SiteLink:
@@ -44,9 +44,9 @@ Deno.test("render within a component", async () => {
   );
 });
 
-Deno.test("render within a component 2", async () => {
+Deno.test("render within a component 2", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<SiteLink href="test">foobar</SiteLink>`,
       components: {
         SiteLink:

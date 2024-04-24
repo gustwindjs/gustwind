@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with a type expression for noop type", async () => {
+Deno.test("element with a type expression for noop type", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop &type="(get context type)" />`,
       context: {
         type: "div",
@@ -13,25 +13,25 @@ Deno.test("element with a type expression for noop type", async () => {
   );
 });
 
-Deno.test("element children with noop", async () => {
+Deno.test("element children with noop", () => {
   assertEquals(
-    await htmlispToHTML({ htmlInput: `<noop><div>foo</div></noop>` }),
+    htmlispToHTML({ htmlInput: `<noop><div>foo</div></noop>` }),
     "<div>foo</div>",
   );
 });
 
-Deno.test("noop with a local binding", async () => {
+Deno.test("noop with a local binding", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop id="foo"><div &children="(get local id)"></div></noop>`,
     }),
     "<div>foo</div>",
   );
 });
 
-Deno.test("noop with an evaluated local binding", async () => {
+Deno.test("noop with an evaluated local binding", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<noop &id="(foobar)"><div &children="(get local id)"></div></noop>`,
       utilities: {
@@ -42,18 +42,18 @@ Deno.test("noop with an evaluated local binding", async () => {
   );
 });
 
-Deno.test("component with noop and siblings", async () => {
+Deno.test("component with noop and siblings", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop><div>foo</div><div>bar</div></noop>`,
     }),
     "<div>foo</div><div>bar</div>",
   );
 });
 
-Deno.test("noop with children", async () => {
+Deno.test("noop with children", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop &children="(get context content)" />`,
       context: {
         content: "foobar",
@@ -63,9 +63,9 @@ Deno.test("noop with children", async () => {
   );
 });
 
-Deno.test("nested noops", async () => {
+Deno.test("nested noops", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<noop
       &visibleIf="(get context children)"
       &type="(concat h (get context level))"
@@ -90,9 +90,9 @@ Deno.test("nested noops", async () => {
   );
 });
 
-Deno.test("should not override element type for non-noop", async () => {
+Deno.test("should not override element type for non-noop", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<script &type="(get props type)" &src="(get props src)"></script>`,
       props: {

@@ -12,7 +12,7 @@ import type { Utilities } from "../../types.ts";
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
 // TODO: Derive this type from HtmllispToHTMLParameters
-async function astToHtml(
+function astToHtml(
   ast: (string | Element)[],
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
@@ -23,8 +23,8 @@ async function astToHtml(
   components?: Components,
   // Helper for debugging
   parentAst?: (string | Element)[],
-): Promise<string> {
-  return (await Promise.all(ast.map(async (tag) => {
+): string {
+  return ast.map((tag) => {
     if (typeof tag === "string") {
       return tag;
     }
@@ -41,7 +41,7 @@ async function astToHtml(
       !type.split("").every((t) => t.toUpperCase() === t);
     let local = initialLocal;
 
-    const parsedAttributes = await parseExpressions(
+    const parsedAttributes = parseExpressions(
       attributes,
       { context: context || {}, props: props || {}, local },
       isComponent
@@ -77,27 +77,23 @@ async function astToHtml(
         throw new Error("foreach - Tried to iterate a non-array!");
       }
 
-      renderedChildren = (await Promise.all(
-        items.map((p) =>
-          astToHtml(
-            children,
-            htmlispToHTML,
-            context,
-            // @ts-expect-error This is fine
-            { ...p, value: p },
-            local,
-            utilities,
-            componentUtilities,
-            components,
-            // Pass original ast to help with debugging
-            ast,
-          )
-        ),
-      )).join("");
+      renderedChildren = items.map((p) =>
+        astToHtml(
+          children,
+          htmlispToHTML,
+          context,
+          // @ts-expect-error This is fine
+          { ...p, value: p },
+          local,
+          utilities,
+          componentUtilities,
+          components,
+          // Pass original ast to help with debugging
+          ast,
+        )
+      ).join("");
     } else {
-      // TODO: Maybe children should remain children and render() should be explicit
-      // at the client
-      renderedChildren = await astToHtml(
+      renderedChildren = astToHtml(
         children,
         htmlispToHTML,
         context,
@@ -114,28 +110,28 @@ async function astToHtml(
         const foundComponent = components[type];
 
         // @ts-expect-error Filter breaks the type here
-        const slots: [string | null, string | null][] = await Promise.all(
-          children.filter((o) => typeof o !== "string" && o.type === "slot")
-            .map(
-              async (o) =>
-                typeof o !== "string" &&
-                [
-                  o.attributes?.name,
-                  await astToHtml(
-                    o.children,
-                    htmlispToHTML,
-                    context,
-                    props,
-                    local,
-                    utilities,
-                    componentUtilities,
-                    components,
-                    // Pass original ast to help with debugging
-                    ast,
-                  ),
-                ],
-            ).filter(Boolean),
-        );
+        const slots: [string | null, string | null][] = children.filter((o) =>
+          typeof o !== "string" && o.type === "slot"
+        )
+          .map(
+            (o) =>
+              typeof o !== "string" &&
+              [
+                o.attributes?.name,
+                astToHtml(
+                  o.children,
+                  htmlispToHTML,
+                  context,
+                  props,
+                  local,
+                  utilities,
+                  componentUtilities,
+                  components,
+                  // Pass original ast to help with debugging
+                  ast,
+                ),
+              ],
+          ).filter(Boolean);
 
         if (!slots.every((s) => s[0])) {
           throw new Error(`Slot is missing a name!`);
@@ -189,7 +185,7 @@ async function astToHtml(
     }
 
     return content;
-  }))).join("");
+  }).join("");
 }
 
 export { astToHtml };

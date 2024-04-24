@@ -1,16 +1,16 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseTag } from "./parseTag.ts";
 
-Deno.test("content", async () => {
+Deno.test("content", () => {
   assertEquals(
-    await parseTag(`foobar`),
+    parseTag(`foobar`),
     ["foobar"],
   );
 });
 
-Deno.test("/ as tag content", async () => {
+Deno.test("/ as tag content", () => {
   assertEquals(
-    await parseTag(`<div>/</div>`),
+    parseTag(`<div>/</div>`),
     [{
       type: "div",
       attributes: {},
@@ -19,9 +19,9 @@ Deno.test("/ as tag content", async () => {
   );
 });
 
-Deno.test("/ as tag content 2", async () => {
+Deno.test("/ as tag content 2", () => {
   assertEquals(
-    await parseTag(`<SiteLink href="/">/</SiteLink>`),
+    parseTag(`<SiteLink href="/">/</SiteLink>`),
     [{
       type: "SiteLink",
       attributes: { href: "/" },
@@ -30,16 +30,16 @@ Deno.test("/ as tag content 2", async () => {
   );
 });
 
-Deno.test("partial tag", async () => {
+Deno.test("partial tag", () => {
   assertEquals(
-    await parseTag(`<div>foo`),
+    parseTag(`<div>foo`),
     [{ type: "div", attributes: {}, children: [] }, "foo"],
   );
 });
 
-Deno.test("partial tag 2", async () => {
+Deno.test("partial tag 2", () => {
   assertEquals(
-    await parseTag(`<div>foo<`),
+    parseTag(`<div>foo<`),
     [{
       type: "div",
       attributes: {},
@@ -48,25 +48,25 @@ Deno.test("partial tag 2", async () => {
   );
 });
 
-Deno.test("empty ending tag", async () => {
+Deno.test("empty ending tag", () => {
   assertEquals(
-    await parseTag(`<div>foo</>`),
+    parseTag(`<div>foo</>`),
     [{ type: "div", attributes: {}, children: ["foo"] }],
   );
 });
 
 // Note that we don't validate end tags right now.
 // Another option would be to throw an error in this case.
-Deno.test("wrong ending tag", async () => {
+Deno.test("wrong ending tag", () => {
   assertEquals(
-    await parseTag(`<div>foo</span>`),
+    parseTag(`<div>foo</span>`),
     [{ type: "div", attributes: {}, children: ["foo"] }],
   );
 });
 
-Deno.test("partial tag 3", async () => {
+Deno.test("partial tag 3", () => {
   assertEquals(
-    await parseTag(`<div>foo<f`),
+    parseTag(`<div>foo<f`),
     [{
       type: "div",
       attributes: {},
@@ -79,23 +79,23 @@ Deno.test("partial tag 3", async () => {
   );
 });
 
-Deno.test("self-closing tag 1", async () => {
+Deno.test("self-closing tag 1", () => {
   assertEquals(
-    await parseTag(`<a/>`),
+    parseTag(`<a/>`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
-Deno.test("self-closing tag 2", async () => {
+Deno.test("self-closing tag 2", () => {
   assertEquals(
-    await parseTag(`<a />`),
+    parseTag(`<a />`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
-Deno.test("multiple self-closing tags", async () => {
+Deno.test("multiple self-closing tags", () => {
   assertEquals(
-    await parseTag(`<a /><a />`),
+    parseTag(`<a /><a />`),
     [{ type: "a", attributes: {}, children: [] }, {
       type: "a",
       attributes: {},
@@ -104,16 +104,16 @@ Deno.test("multiple self-closing tags", async () => {
   );
 });
 
-Deno.test("self-closing tag with a single attribute", async () => {
+Deno.test("self-closing tag with a single attribute", () => {
   assertEquals(
-    await parseTag(`<a href="test" />`),
+    parseTag(`<a href="test" />`),
     [{ type: "a", attributes: { href: "test" }, children: [] }],
   );
 });
 
-Deno.test("self-closing tag with attributes", async () => {
+Deno.test("self-closing tag with attributes", () => {
   assertEquals(
-    await parseTag(`<a href="test" title="foobar" />`),
+    parseTag(`<a href="test" title="foobar" />`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -122,9 +122,9 @@ Deno.test("self-closing tag with attributes", async () => {
   );
 });
 
-Deno.test("simple tag", async () => {
+Deno.test("simple tag", () => {
   assertEquals(
-    await parseTag(`<span>foobar</span>`),
+    parseTag(`<span>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -133,9 +133,9 @@ Deno.test("simple tag", async () => {
   );
 });
 
-Deno.test("two tags with a newline in between", async () => {
+Deno.test("two tags with a newline in between", () => {
   assertEquals(
-    await parseTag(`<span>foobar</span>\n<span>foobar</span>`),
+    parseTag(`<span>foobar</span>\n<span>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -148,9 +148,9 @@ Deno.test("two tags with a newline in between", async () => {
   );
 });
 
-Deno.test("simple tag with an attribute at the end", async () => {
+Deno.test("simple tag with an attribute at the end", () => {
   assertEquals(
-    await parseTag(`<span title>foobar</span>`),
+    parseTag(`<span title>foobar</span>`),
     [{
       type: "span",
       children: ["foobar"],
@@ -159,9 +159,9 @@ Deno.test("simple tag with an attribute at the end", async () => {
   );
 });
 
-Deno.test("simple tag with attributes", async () => {
+Deno.test("simple tag with attributes", () => {
   assertEquals(
-    await parseTag(`<a href="test" title="foobar"></a>`),
+    parseTag(`<a href="test" title="foobar"></a>`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -170,9 +170,9 @@ Deno.test("simple tag with attributes", async () => {
   );
 });
 
-Deno.test("tag with single quotes in an attribute", async () => {
+Deno.test("tag with single quotes in an attribute", () => {
   assertEquals(
-    await parseTag(`<a href="t'e's't"</a>`),
+    parseTag(`<a href="t'e's't"</a>`),
     [{
       type: "a",
       attributes: { href: "t'e's't" },
@@ -181,9 +181,9 @@ Deno.test("tag with single quotes in an attribute", async () => {
   );
 });
 
-Deno.test("simple tag with attributes and newlines in between", async () => {
+Deno.test("simple tag with attributes and newlines in between", () => {
   assertEquals(
-    await parseTag(`<a
+    parseTag(`<a
   href="test"
   title="foobar"></a>`),
     [{
@@ -194,9 +194,9 @@ Deno.test("simple tag with attributes and newlines in between", async () => {
   );
 });
 
-Deno.test("simple tag with content", async () => {
+Deno.test("simple tag with content", () => {
   assertEquals(
-    await parseTag(`<a href="test" title="foobar">barfoo</a>`),
+    parseTag(`<a href="test" title="foobar">barfoo</a>`),
     [{
       type: "a",
       attributes: { href: "test", title: "foobar" },
@@ -205,9 +205,9 @@ Deno.test("simple tag with content", async () => {
   );
 });
 
-Deno.test("simple tag with another tag", async () => {
+Deno.test("simple tag with another tag", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<a href="test" title="foobar"><span>barfoo</span></a>`,
     ),
     [{
@@ -222,9 +222,9 @@ Deno.test("simple tag with another tag", async () => {
   );
 });
 
-Deno.test("self-closing siblings", async () => {
+Deno.test("self-closing siblings", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
     ),
     [
@@ -242,9 +242,9 @@ Deno.test("self-closing siblings", async () => {
   );
 });
 
-Deno.test("multiple siblings", async () => {
+Deno.test("multiple siblings", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<Button><div>foo</div><div>bar</div></Button>`,
     ),
     [
@@ -268,9 +268,9 @@ Deno.test("multiple siblings", async () => {
   );
 });
 
-Deno.test("siblings only with former children", async () => {
+Deno.test("siblings only with former children", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
     ),
     [
@@ -298,9 +298,9 @@ Deno.test("siblings only with former children", async () => {
   );
 });
 
-Deno.test("sibling tags", async () => {
+Deno.test("sibling tags", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
     ),
     [{
@@ -315,9 +315,9 @@ Deno.test("sibling tags", async () => {
   );
 });
 
-Deno.test("siblings with only children", async () => {
+Deno.test("siblings with only children", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<div><span>foo</span></div><div><span>foo</span></div>`,
     ),
     [{
@@ -340,9 +340,9 @@ Deno.test("siblings with only children", async () => {
   );
 });
 
-Deno.test("simple doctype", async () => {
+Deno.test("simple doctype", () => {
   assertEquals(
-    await parseTag(`<!DOCTYPE html>`),
+    parseTag(`<!DOCTYPE html>`),
     [{
       type: "!DOCTYPE",
       attributes: { html: true },
@@ -352,9 +352,9 @@ Deno.test("simple doctype", async () => {
   );
 });
 
-Deno.test("simple doctype and content", async () => {
+Deno.test("simple doctype and content", () => {
   assertEquals(
-    await parseTag(`<!DOCTYPE html>foobar`),
+    parseTag(`<!DOCTYPE html>foobar`),
     [{
       type: "!DOCTYPE",
       attributes: { html: true },
@@ -364,9 +364,9 @@ Deno.test("simple doctype and content", async () => {
   );
 });
 
-Deno.test("simple doctype and element", async () => {
+Deno.test("simple doctype and element", () => {
   assertEquals(
-    await parseTag(`<!DOCTYPE html><div>foobar</div>`),
+    parseTag(`<!DOCTYPE html><div>foobar</div>`),
     [{
       type: "!DOCTYPE",
       attributes: { html: true },
@@ -380,9 +380,9 @@ Deno.test("simple doctype and element", async () => {
   );
 });
 
-Deno.test("full doctype", async () => {
+Deno.test("full doctype", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<!DOCTYPE html>
         <a href="test" title="foobar" /><a href="test" title="foobar" />`,
     ),
@@ -403,9 +403,9 @@ Deno.test("full doctype", async () => {
   );
 });
 
-Deno.test("xml", async () => {
+Deno.test("xml", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<?xml version="1.0" encoding="utf-8" ?>`,
     ),
     [{
@@ -417,9 +417,9 @@ Deno.test("xml", async () => {
   );
 });
 
-Deno.test("xml with a newline", async () => {
+Deno.test("xml with a newline", () => {
   assertEquals(
-    await parseTag(
+    parseTag(
       `<?xml version="1.0" encoding="utf-8" ?>
 <div>foo</div>`,
     ),
@@ -436,9 +436,9 @@ Deno.test("xml with a newline", async () => {
   );
 });
 
-Deno.test("content before element", async () => {
+Deno.test("content before element", () => {
   assertEquals(
-    await parseTag(`<div>bar<span>foo</span></div>`),
+    parseTag(`<div>bar<span>foo</span></div>`),
     [{
       type: "div",
       attributes: {},
@@ -451,9 +451,9 @@ Deno.test("content before element", async () => {
   );
 });
 
-Deno.test("content after element", async () => {
+Deno.test("content after element", () => {
   assertEquals(
-    await parseTag(`<div><span>foo</span>bar</div>`),
+    parseTag(`<div><span>foo</span>bar</div>`),
     [{
       type: "div",
       attributes: {},
@@ -466,9 +466,9 @@ Deno.test("content after element", async () => {
   );
 });
 
-Deno.test("content before and after element", async () => {
+Deno.test("content before and after element", () => {
   assertEquals(
-    await parseTag(`bar<span>foo</span>bar`),
+    parseTag(`bar<span>foo</span>bar`),
     ["bar", {
       type: "span",
       attributes: {},
@@ -477,9 +477,9 @@ Deno.test("content before and after element", async () => {
   );
 });
 
-Deno.test("element before and after content", async () => {
+Deno.test("element before and after content", () => {
   assertEquals(
-    await parseTag(`<span>foo</span>bar<span>foo</span>`),
+    parseTag(`<span>foo</span>bar<span>foo</span>`),
     [
       {
         type: "span",
@@ -496,9 +496,9 @@ Deno.test("element before and after content", async () => {
   );
 });
 
-Deno.test("content after element 2", async () => {
+Deno.test("content after element 2", () => {
   assertEquals(
-    await parseTag(`<div>foo</div>bar`),
+    parseTag(`<div>foo</div>bar`),
     [{
       type: "div",
       attributes: {},
@@ -507,9 +507,9 @@ Deno.test("content after element 2", async () => {
   );
 });
 
-Deno.test("complex newlines", async () => {
+Deno.test("complex newlines", () => {
   assertEquals(
-    await parseTag(`<BaseLayout>
+    parseTag(`<BaseLayout>
     <slot name="content">
       <div>hello</div>
     </slot>
@@ -531,9 +531,9 @@ Deno.test("complex newlines", async () => {
   );
 });
 
-Deno.test("siblings with a self-closing element 1", async () => {
+Deno.test("siblings with a self-closing element 1", () => {
   assertEquals(
-    await parseTag(`<html>
+    parseTag(`<html>
   <head>
     <a />
   </head>
@@ -563,9 +563,9 @@ Deno.test("siblings with a self-closing element 1", async () => {
   );
 });
 
-Deno.test("siblings with an element", async () => {
+Deno.test("siblings with an element", () => {
   assertEquals(
-    await parseTag(`<html>
+    parseTag(`<html>
   <head>
     <a></a>
   </head>
@@ -595,9 +595,9 @@ Deno.test("siblings with an element", async () => {
   );
 });
 
-Deno.test("siblings with content", async () => {
+Deno.test("siblings with content", () => {
   assertEquals(
-    await parseTag(`<html>
+    parseTag(`<html>
   <head>
     bar
   </head>
@@ -623,9 +623,9 @@ Deno.test("siblings with content", async () => {
   );
 });
 
-Deno.test("integration 1", async () => {
+Deno.test("integration 1", () => {
   assertEquals(
-    await parseTag(`<html &lang="(get context meta.language)">
+    parseTag(`<html &lang="(get context meta.language)">
   <head>
     <link
       rel="icon"
@@ -668,9 +668,9 @@ Deno.test("integration 1", async () => {
   );
 });
 
-Deno.test("integration 2", async () => {
+Deno.test("integration 2", () => {
   assertEquals(
-    await parseTag(`<!DOCTYPE html>
+    parseTag(`<!DOCTYPE html>
 <html &lang="(get context meta.language)">
   <head>
     <link
@@ -765,9 +765,9 @@ Deno.test("integration 2", async () => {
   );
 });
 
-Deno.test("integration 3", async () => {
+Deno.test("integration 3", () => {
   assertEquals(
-    await parseTag(`<BaseLayout>
+    parseTag(`<BaseLayout>
   <slot name="content">
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
       <div class="sm:mx-auto px-4 py-4 sm:py-8 max-w-3xl flex">
@@ -856,9 +856,9 @@ Deno.test("integration 3", async () => {
   );
 });
 
-Deno.test("simple nested children", async () => {
+Deno.test("simple nested children", () => {
   assertEquals(
-    await parseTag(`<BaseLayout>
+    parseTag(`<BaseLayout>
   <slot>
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
       <h2 class="text-xl md:text-4xl font-extralight">
@@ -906,9 +906,9 @@ Deno.test("simple nested children", async () => {
   );
 });
 
-Deno.test("complex nested children", async () => {
+Deno.test("complex nested children", () => {
   assertEquals(
-    await parseTag(`<header>
+    parseTag(`<header>
   <div>
     <h2></h2>
   </div>

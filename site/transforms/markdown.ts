@@ -47,7 +47,6 @@ function getTransformMarkdown({ load, render }: DataSourcesApi) {
     const tableOfContents: { slug: string; level: number; text: string }[] = [];
 
     marked.use({
-      async: true,
       extensions: [{
         name: "importComponent",
         level: "block",
@@ -74,9 +73,9 @@ function getTransformMarkdown({ load, render }: DataSourcesApi) {
         },
       }],
       // @ts-ignore How to type this?
-      async walkTokens(token) {
+      walkTokens(token) {
         if (token.type === "importComponent") {
-          token.html = await render({ componentName: token.component });
+          token.html = render({ componentName: token.component });
         }
       },
     });

@@ -2,9 +2,9 @@ import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("custom utilities", async () => {
+Deno.test("custom utilities", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<a &href="(urlJoin (get context href) (get context suffix))" />`,
       utilities: { urlJoin },
@@ -14,9 +14,9 @@ Deno.test("custom utilities", async () => {
   );
 });
 
-Deno.test("component utilities", async () => {
+Deno.test("component utilities", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<SiteLink &href="(urlJoin (get context href) (get context suffix))" />`,
       componentUtilities: { SiteLink: { urlJoin } },
@@ -29,9 +29,9 @@ Deno.test("component utilities", async () => {
   );
 });
 
-Deno.test("utilities have access to context through this", async () => {
+Deno.test("utilities have access to context through this", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<div &children="(test)" />`,
       utilities: {
         test: function () {
@@ -44,9 +44,9 @@ Deno.test("utilities have access to context through this", async () => {
   );
 });
 
-Deno.test("component utilities have access to context through this", async () => {
+Deno.test("component utilities have access to context through this", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: "<Demo />",
       componentUtilities: {
         Demo: {
@@ -64,12 +64,12 @@ Deno.test("component utilities have access to context through this", async () =>
   );
 });
 
-Deno.test("trigger _onRenderStart", async () => {
+Deno.test("trigger _onRenderStart", () => {
   const context = { test: 123 };
   let receivedContext;
 
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: '<div &children="(hello)" />',
       context,
       utilities: {
@@ -85,12 +85,12 @@ Deno.test("trigger _onRenderStart", async () => {
   assertEquals(receivedContext, context);
 });
 
-Deno.test("trigger _onRenderEnd", async () => {
+Deno.test("trigger _onRenderEnd", () => {
   const context = { test: 123 };
   let receivedContext;
 
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: '<div &children="(hello)" />',
       context,
       utilities: {

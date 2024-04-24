@@ -29,7 +29,7 @@ async function applyUtilities<
   );
 }
 
-async function applyUtility<
+function applyUtility<
   U extends Utility,
   US extends Utilities,
   C extends Context,
@@ -38,7 +38,7 @@ async function applyUtility<
   utilities: US,
   context: C,
   // deno-lint-ignore no-explicit-any
-): Promise<any> {
+): any {
   if (!utilities) {
     throw new Error("applyUtility - No utilities were provided");
   }
@@ -58,19 +58,17 @@ async function applyUtility<
     throw new Error("applyUtility - Matching utility was not found");
   }
 
-  const parameters = await Promise.all(
-    Array.isArray(value.parameters)
-      ? value.parameters.map((p) => {
-        if (typeof p === "string") {
-          // Nothing to do
-        } else if (p.utility && p.parameters) {
-          return applyUtility(p, utilities, context);
-        }
+  const parameters = Array.isArray(value.parameters)
+    ? value.parameters.map((p) => {
+      if (typeof p === "string") {
+        // Nothing to do
+      } else if (p.utility && p.parameters) {
+        return applyUtility(p, utilities, context);
+      }
 
-        return p;
-      })
-      : [],
-  );
+      return p;
+    })
+    : [];
 
   // @ts-expect-error This is fine for now.
   // TODO: Figure out a nice way to resolve context mismatch

@@ -140,7 +140,7 @@ async function importPlugin(
     mode,
     options,
     outputDirectory,
-    renderComponent: renderComponent || (() => Promise.resolve("")),
+    renderComponent: renderComponent || (() => ""),
     load: initLoadApi(tasks),
   });
 
@@ -377,7 +377,7 @@ async function applyBeforeEachRenders(
   return { tasks };
 }
 
-async function applyRenderComponents(
+function applyRenderComponents(
   { componentName, htmlInput, props, context, plugins, matchRoute }: {
     componentName?: string;
     htmlInput?: string;
@@ -390,23 +390,23 @@ async function applyRenderComponents(
   const renders = plugins.map((
     { api, context },
   ) => api.renderComponent && [api.renderComponent, context]).filter(Boolean);
-  let markup = "";
 
-  // In the current design, we pick only the markup of the last renderer.
-  // TODO: Does it even make sense to have multiple renderers in the system?
-  // @ts-expect-error Figure out the right type for this
-  for await (const [renderComponent, pluginContext] of renders) {
-    markup = await renderComponent({
-      componentName,
-      htmlInput,
-      context,
-      props,
-      matchRoute,
-      pluginContext,
-    });
+  // Pick the first renderer as multiple aren't supported at the moment
+  const renderer = renders[0];
+
+  if (!renderer) {
+    throw new Error("Missing a renderer");
   }
 
-  return markup;
+  // @ts-expect-error Figure out the right type for this
+  return renderer[0]({
+    componentName,
+    htmlInput,
+    context,
+    props,
+    matchRoute,
+    pluginContext: renderer[1],
+  });
 }
 
 async function applyRenderLayouts(

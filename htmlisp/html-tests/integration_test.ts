@@ -1,9 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("head integration", async () => {
+Deno.test("head integration", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<!DOCTYPE html>
 <html &lang="(get context meta.language)">
   <head>
@@ -32,9 +32,9 @@ Deno.test("head integration", async () => {
   );
 });
 
-Deno.test("full integration 1", async () => {
+Deno.test("full integration 1", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<!DOCTYPE html>
 <html &lang="(get context meta.language)">
   <head>
@@ -76,9 +76,9 @@ Deno.test("full integration 1", async () => {
   );
 });
 
-Deno.test("full integration 2", async () => {
+Deno.test("full integration 2", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout content="<div>foobar</div>" />`,
       context: { meta: { language: "en", title: "demo" } },
       components: {
@@ -117,9 +117,9 @@ Deno.test("full integration 2", async () => {
   );
 });
 
-Deno.test("full integration 3", async () => {
+Deno.test("full integration 3", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput:
         `<BaseLayout><slot name="content"><div>foobar</div></slot></BaseLayout>`,
       context: { meta: { language: "en", title: "demo" } },
@@ -159,9 +159,9 @@ Deno.test("full integration 3", async () => {
   );
 });
 
-Deno.test("full integration 4", async () => {
+Deno.test("full integration 4", () => {
   assertEquals(
-    await htmlispToHTML({
+    htmlispToHTML({
       htmlInput: `<BaseLayout>
           <slot name="content">
             <div><span>foobar</span></div>
