@@ -95,8 +95,6 @@ async function astToHtml(
         ),
       )).join("");
     } else {
-      // TODO: Maybe children should remain children and render() should be explicit
-      // at the client
       renderedChildren = await astToHtml(
         children,
         htmlispToHTML,
