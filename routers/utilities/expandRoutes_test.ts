@@ -26,7 +26,17 @@ Deno.test("does not expand a simple route", async () => {
   );
 });
 
-Deno.test("indexer is not found", async () => {
+Deno.test("does not expand routes within routes", async () => {
+  const route = { layout: "siteIndex" };
+  const routes = { blog: { ...route, routes: { more: route } } };
+
+  assertEquals(
+    await expandRoutes({ routes, dataSources: {} }),
+    routes,
+  );
+});
+
+Deno.test("indexer is not found", () => {
   const routes = {
     blog: {
       layout: "siteIndex",
@@ -83,5 +93,48 @@ Deno.test("expand a route", async () => {
   );
 });
 
-// TODO: Test routes within routes case
-// TODO: Test nested expand case
+Deno.test("expands a route within routes", async () => {
+  const routes = {
+    blog: {
+      layout: "blogIndex",
+      routes: {
+        more: {
+          layout: "blogPage",
+          expand: {
+            matchBy: {
+              indexer: { operation: "indexMarkdown" },
+              slug: "slug",
+            },
+            layout: "documentationPage",
+          },
+        },
+      },
+    },
+  };
+
+  assertEquals(
+    await expandRoutes({
+      routes,
+      dataSources: { indexMarkdown: () => [{ slug: "foo" }] },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          more: {
+            ...routes.blog.routes.more,
+            routes: {
+              foo: {
+                context: {},
+                dataSources: {},
+                layout: "documentationPage",
+                meta: {},
+                scripts: undefined,
+              },
+            },
+          },
+        },
+      },
+    },
+  );
+});
