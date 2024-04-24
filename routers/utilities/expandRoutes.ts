@@ -1,5 +1,5 @@
-import { get } from "../utilities/functional.ts";
-import type { DataSource, DataSources, Route } from "../types.ts";
+import { get } from "../../utilities/functional.ts";
+import type { DataSource, DataSources, Route } from "../../types.ts";
 
 async function expandRoutes({ routes, dataSources }: {
   routes: Record<string, Route>;

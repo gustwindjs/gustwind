@@ -1,4 +1,4 @@
-import { matchRoute } from "../matchRoute.ts";
+import { matchRoute } from "../utilities/matchRoute.ts";
 import { trim } from "../../utilities/string.ts";
 import type { Plugin, Route } from "../../types.ts";
 

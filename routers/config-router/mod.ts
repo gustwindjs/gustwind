@@ -1,8 +1,8 @@
 import * as path from "node:path";
-import { expandRoutes } from "../expandRoutes.ts";
-import { flattenRoutes } from "./flattenRoutes.ts";
-import { matchRoute } from "../matchRoute.ts";
-import { getDataSourceContext } from "../getDataSourceContext.ts";
+import { expandRoutes } from "../utilities/expandRoutes.ts";
+import { flattenRoutes } from "../utilities/flattenRoutes.ts";
+import { matchRoute } from "../utilities/matchRoute.ts";
+import { getDataSourceContext } from "../utilities/getDataSourceContext.ts";
 import { trim } from "../../utilities/string.ts";
 import type {
   DataSources,
