@@ -10,7 +10,9 @@ function flattenRoutes(
     Object.entries(routes).flatMap(([url, route]) => {
       if (route.routes) {
         return [[prefix ? prefix + "/" + url : url, route]].concat(
-          Object.entries(flattenRoutes(route.routes, url)),
+          Object.entries(
+            flattenRoutes(route.routes, prefix ? `${prefix}/${url}` : url),
+          ),
         );
       }
 
