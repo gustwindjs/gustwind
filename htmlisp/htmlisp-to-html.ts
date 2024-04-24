@@ -18,8 +18,11 @@ async function htmlispToHTML(
 
   utilities?._onRenderStart && utilities?._onRenderStart(context || {});
 
-  const ret = astToHtml(
-    await parseTag(htmlInput),
+  // astToHtml is async because utilities can be async.
+  // If that dependency was lifted, then the whole implementation could
+  // become sync.
+  const ret = await astToHtml(
+    parseTag(htmlInput),
     htmlispToHTML,
     context,
     props,
