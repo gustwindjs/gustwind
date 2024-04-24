@@ -1,5 +1,7 @@
 import type { Route } from "../../types.ts";
 
+// This function takes a recursive, already expanded route definition
+// and converts it into a flat one (a single object)
 function flattenRoutes(
   routes: Record<string, Route>,
   prefix?: string,
