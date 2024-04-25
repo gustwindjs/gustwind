@@ -30,7 +30,7 @@ async function astToHtml(
     }
 
     const { type, attributes, children, closesWith } = tag;
-    let renderedChildren = "";
+    let renderedChildren = Promise.resolve("");
 
     // Components begin with an uppercase letter always but not with ! or ?
     // Component names aren't also fully in uppercase
@@ -77,7 +77,7 @@ async function astToHtml(
         throw new Error("foreach - Tried to iterate a non-array!");
       }
 
-      renderedChildren = (await Promise.all(
+      renderedChildren = Promise.all(
         items.map((p) =>
           astToHtml(
             children,
@@ -93,9 +93,9 @@ async function astToHtml(
             ast,
           )
         ),
-      )).join("");
+      ).then((a) => a.join(""));
     } else {
-      renderedChildren = await astToHtml(
+      renderedChildren = astToHtml(
         children,
         htmlispToHTML,
         context,
@@ -145,7 +145,7 @@ async function astToHtml(
             components,
             context,
             props: {
-              children: renderedChildren,
+              children: await renderedChildren,
               ...Object.fromEntries(slots),
               ...attributes,
               ...parsedAttributes,
@@ -169,8 +169,8 @@ async function astToHtml(
 
     // TODO: Should there be a more strict check against parsed children?
     const content = isString(parsedChildren)
-      ? parsedChildren.concat(renderedChildren)
-      : renderedChildren;
+      ? parsedChildren.concat(await renderedChildren)
+      : await renderedChildren;
 
     if (type === "noop" && !parsedAttributes.type) {
       return content;
