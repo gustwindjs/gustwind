@@ -30,7 +30,6 @@ async function astToHtml(
     }
 
     const { type, attributes, children } = tag;
-    let renderedChildren = Promise.resolve("");
 
     // Components begin with an uppercase letter always but not with ! or ?
     // Component names aren't also fully in uppercase
@@ -66,6 +65,7 @@ async function astToHtml(
       return "";
     }
 
+    let renderedChildren = Promise.resolve("");
     if (parsedAttributes.foreach) {
       const items = parsedAttributes.foreach as unknown[];
 
@@ -111,58 +111,90 @@ async function astToHtml(
       if (isComponent) {
         const foundComponent = components[type];
 
-        // @ts-expect-error Filter breaks the type here
-        const slots: [string | null, string | null][] = await Promise.all(
-          children.filter((o) => typeof o !== "string" && o.type === "slot")
-            .map(
-              async (o) =>
-                typeof o !== "string" &&
-                [
-                  o.attributes?.name,
-                  await astToHtml(
-                    o.children,
-                    htmlispToHTML,
-                    context,
-                    props,
-                    local,
-                    utilities,
-                    componentUtilities,
-                    components,
-                    // Pass original ast to help with debugging
-                    ast,
-                  ),
-                ],
-            ).filter(Boolean),
+        if (!foundComponent) {
+          console.error({ parentAst, ast });
+          throw new Error(`Component "${type}" was not found!`);
+        }
+
+        return renderComponent(
+          ast,
+          foundComponent,
+          tag,
+          parsedAttributes,
+          renderedChildren,
+          htmlispToHTML,
+          context,
+          props,
+          local,
+          utilities,
+          componentUtilities,
+          components,
         );
-
-        if (!slots.every((s) => s[0])) {
-          throw new Error(`Slot is missing a name!`);
-        }
-
-        if (foundComponent) {
-          return htmlispToHTML({
-            htmlInput: foundComponent,
-            components,
-            context,
-            props: {
-              children: await renderedChildren,
-              ...Object.fromEntries(slots),
-              ...attributes,
-              ...parsedAttributes,
-              props,
-            },
-            utilities: { ...utilities, ...componentUtilities?.[type] },
-            componentUtilities,
-          });
-        }
-
-        console.error({ parentAst, ast });
-        throw new Error(`Component "${type}" was not found!`);
       }
     }
 
     return renderElement(parsedAttributes, tag, await renderedChildren);
   }))).join("");
+}
+
+async function renderComponent(
+  ast: (string | Element)[],
+  foundComponent: string,
+  tag: Element,
+  parsedAttributes: Record<string, unknown>,
+  renderedChildren: Promise<string>,
+  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
+  context?: Context,
+  props?: Context,
+  local?: Context,
+  utilities?: Utilities,
+  componentUtilities?: Record<string, Utilities>,
+  components?: Components,
+) {
+  const { type, attributes, children } = tag;
+
+  // @ts-expect-error Filter breaks the type here
+  const slots: [string | null, string | null][] = await Promise.all(
+    children.filter((o) => typeof o !== "string" && o.type === "slot")
+      .map(
+        async (o) =>
+          typeof o !== "string" &&
+          [
+            o.attributes?.name,
+            await astToHtml(
+              o.children,
+              htmlispToHTML,
+              context,
+              props,
+              local,
+              utilities,
+              componentUtilities,
+              components,
+              // Pass original ast to help with debugging
+              ast,
+            ),
+          ],
+      ).filter(Boolean),
+  );
+
+  if (!slots.every((s) => s[0])) {
+    throw new Error(`Slot is missing a name!`);
+  }
+
+  return htmlispToHTML({
+    htmlInput: foundComponent,
+    components,
+    context,
+    props: {
+      children: await renderedChildren,
+      ...Object.fromEntries(slots),
+      ...attributes,
+      ...parsedAttributes,
+      props,
+    },
+    utilities: { ...utilities, ...componentUtilities?.[type] },
+    componentUtilities,
+  });
 }
 
 function renderElement(
