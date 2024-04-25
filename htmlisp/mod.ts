@@ -1,3 +1,3 @@
-import { htmlispToHTML } from "./htmlisp-to-html.ts";
+import { htmlispToHTML } from "./htmlispToHTML.ts";
 
 export { htmlispToHTML };
