@@ -1,10 +1,10 @@
 import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { htmlispToHTML } from "../mod.ts";
+import { htmlispToHTMLSync } from "../mod.ts";
 
 Deno.test("custom utilities", async () => {
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput:
         `<a &href="(urlJoin (get context href) (get context suffix))" />`,
       utilities: { urlJoin },
@@ -16,7 +16,7 @@ Deno.test("custom utilities", async () => {
 
 Deno.test("component utilities", async () => {
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput:
         `<SiteLink &href="(urlJoin (get context href) (get context suffix))" />`,
       componentUtilities: { SiteLink: { urlJoin } },
@@ -31,7 +31,7 @@ Deno.test("component utilities", async () => {
 
 Deno.test("utilities have access to context through this", async () => {
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput: `<div &children="(test)" />`,
       utilities: {
         test: function (): string {
@@ -47,7 +47,7 @@ Deno.test("utilities have access to context through this", async () => {
 
 Deno.test("component utilities have access to context through this", async () => {
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput: "<Demo />",
       componentUtilities: {
         Demo: {
@@ -71,7 +71,7 @@ Deno.test("trigger _onRenderStart", async () => {
   let receivedContext;
 
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput: '<div &children="(hello)" />',
       context,
       utilities: {
@@ -92,7 +92,7 @@ Deno.test("trigger _onRenderEnd", async () => {
   let receivedContext;
 
   assertEquals(
-    await htmlispToHTML({
+    await htmlispToHTMLSync({
       htmlInput: '<div &children="(hello)" />',
       context,
       utilities: {
