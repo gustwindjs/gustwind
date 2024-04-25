@@ -1,6 +1,6 @@
 import type { Context, Utilities, Utility } from "../../types.ts";
 
-async function applyUtilities<
+function applyUtilitiesSync<
   U extends Utility,
   US extends Utilities,
   C extends Context,
@@ -8,28 +8,26 @@ async function applyUtilities<
   props: Record<string, U> | null,
   utilities: US,
   context: C,
-): Promise<Record<string, unknown>> {
+): Record<string, unknown> {
   if (!props) {
     return {};
   }
 
   return Object.fromEntries(
-    await Promise.all(
-      Object.entries(props).map(async (
-        [k, v],
-      ) => [
-        k,
-        typeof v === "string" ? v : await applyUtility<U, US, C>(
-          v,
-          utilities,
-          context,
-        ),
-      ]),
-    ),
+    Object.entries(props).map((
+      [k, v],
+    ) => [
+      k,
+      typeof v === "string" ? v : applyUtilitySync<U, US, C>(
+        v,
+        utilities,
+        context,
+      ),
+    ]),
   );
 }
 
-async function applyUtility<
+function applyUtilitySync<
   U extends Utility,
   US extends Utilities,
   C extends Context,
@@ -37,8 +35,7 @@ async function applyUtility<
   value: U,
   utilities: US,
   context: C,
-  // deno-lint-ignore no-explicit-any
-): Promise<any> {
+): any {
   if (!utilities) {
     throw new Error("applyUtility - No utilities were provided");
   }
@@ -58,23 +55,21 @@ async function applyUtility<
     throw new Error("applyUtility - Matching utility was not found");
   }
 
-  const parameters = await Promise.all(
-    Array.isArray(value.parameters)
-      ? value.parameters.map((p) => {
-        if (typeof p === "string") {
-          // Nothing to do
-        } else if (p.utility && p.parameters) {
-          return applyUtility(p, utilities, context);
-        }
+  const parameters = Array.isArray(value.parameters)
+    ? value.parameters.map((p) => {
+      if (typeof p === "string") {
+        // Nothing to do
+      } else if (p.utility && p.parameters) {
+        return applyUtilitySync(p, utilities, context);
+      }
 
-        return p;
-      })
-      : [],
-  );
+      return p;
+    })
+    : [];
 
   // @ts-expect-error This is fine for now.
   // TODO: Figure out a nice way to resolve context mismatch
   return foundUtility.apply(context, parameters);
 }
 
-export { applyUtilities, applyUtility };
+export { applyUtilitiesSync, applyUtilitySync };
