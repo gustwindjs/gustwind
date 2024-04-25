@@ -116,20 +116,33 @@ async function astToHtml(
           throw new Error(`Component "${type}" was not found!`);
         }
 
-        return renderComponent(
-          ast,
-          foundComponent,
-          tag,
-          parsedAttributes,
-          await renderedChildren,
-          htmlispToHTML,
-          context,
-          props,
-          local,
-          utilities,
-          componentUtilities,
+        return htmlispToHTML({
+          htmlInput: foundComponent,
           components,
-        );
+          context,
+          props: {
+            children: renderedChildren,
+            ...attributes,
+            ...parsedAttributes,
+            ...await slotsToProps(
+              ast,
+              tag,
+              htmlispToHTML,
+              context,
+              props,
+              local,
+              utilities,
+              componentUtilities,
+              components,
+            ),
+            props,
+            utilities,
+            componentUtilities,
+            components,
+          },
+          utilities: { ...utilities, ...componentUtilities?.[type] },
+          componentUtilities,
+        });
       }
     }
 
@@ -137,12 +150,9 @@ async function astToHtml(
   }))).join("");
 }
 
-async function renderComponent(
+async function slotsToProps(
   ast: (string | Element)[],
-  foundComponent: string,
   tag: Element,
-  parsedAttributes: Record<string, unknown>,
-  renderedChildren: string,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
@@ -151,7 +161,7 @@ async function renderComponent(
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
 ) {
-  const { type, attributes, children } = tag;
+  const { children } = tag;
 
   // @ts-expect-error Filter breaks the type here
   const slots: [string | null, string | null][] = await Promise.all(
@@ -181,20 +191,7 @@ async function renderComponent(
     throw new Error(`Slot is missing a name!`);
   }
 
-  return htmlispToHTML({
-    htmlInput: foundComponent,
-    components,
-    context,
-    props: {
-      children: renderedChildren,
-      ...Object.fromEntries(slots),
-      ...attributes,
-      ...parsedAttributes,
-      props,
-    },
-    utilities: { ...utilities, ...componentUtilities?.[type] },
-    componentUtilities,
-  });
+  return Object.fromEntries(slots);
 }
 
 function renderElement(
