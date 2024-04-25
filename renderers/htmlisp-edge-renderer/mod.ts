@@ -70,7 +70,7 @@ const plugin: Plugin<{
           },
         };
       },
-      renderLayout: ({ matchRoute, route, context, pluginContext }) => {
+      renderLayout: ({ matchRoute, route, context, pluginContext, url }) => {
         const { components, globalUtilities } = pluginContext;
         const layout = components[route.layout];
 
@@ -92,6 +92,7 @@ const plugin: Plugin<{
               render: renderComponent,
               renderSync: renderComponentSync,
               matchRoute,
+              url,
             }),
             ...(layoutUtilities
               ? layoutUtilities.init({
@@ -99,6 +100,7 @@ const plugin: Plugin<{
                 render: renderComponent,
                 renderSync: renderComponentSync,
                 matchRoute,
+                url,
               })
               : {}),
           },
@@ -113,6 +115,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url,
                 })
                 : {},
             ]),
@@ -144,6 +147,7 @@ const plugin: Plugin<{
             render: renderComponent,
             renderSync: renderComponentSync,
             matchRoute,
+            url: "",
           }),
           componentUtilities: Object.fromEntries(
             Object.entries(options.componentUtilities).map((
@@ -156,6 +160,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url: "",
                 })
                 : {},
             ]),
@@ -187,6 +192,7 @@ const plugin: Plugin<{
             render: renderComponent,
             renderSync: renderComponentSync,
             matchRoute,
+            url: "",
           }),
           componentUtilities: Object.fromEntries(
             Object.entries(options.componentUtilities).map((
@@ -199,6 +205,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url: "",
                 })
                 : {},
             ]),

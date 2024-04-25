@@ -173,6 +173,7 @@ const plugin: Plugin<{
               render: renderComponent,
               renderSync: renderComponentSync,
               matchRoute,
+              url,
             }),
             ...(layoutUtilities
               ? layoutUtilities.init({
@@ -180,6 +181,7 @@ const plugin: Plugin<{
                 render: renderComponent,
                 renderSync: renderComponentSync,
                 matchRoute,
+                url,
               })
               : {}),
           },
@@ -194,6 +196,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url,
                 })
                 : {},
             ]),
@@ -226,6 +229,7 @@ const plugin: Plugin<{
             render: renderComponent,
             renderSync: renderComponentSync,
             matchRoute,
+            url: "",
           }),
           componentUtilities: Object.fromEntries(
             Object.entries(componentUtilities).map((
@@ -238,6 +242,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url: "",
                 })
                 : {},
             ]),
@@ -270,6 +275,7 @@ const plugin: Plugin<{
             render: renderComponent,
             renderSync: renderComponentSync,
             matchRoute,
+            url: "",
           }),
           componentUtilities: Object.fromEntries(
             Object.entries(componentUtilities).map((
@@ -282,6 +288,7 @@ const plugin: Plugin<{
                   render: renderComponent,
                   renderSync: renderComponentSync,
                   matchRoute,
+                  url: "",
                 })
                 : {},
             ]),

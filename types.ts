@@ -368,6 +368,7 @@ type GlobalUtilities = {
     render: Render;
     renderSync: RenderSync;
     matchRoute: MatchRoute;
+    url: string;
   }) => Utilities;
 };
 
