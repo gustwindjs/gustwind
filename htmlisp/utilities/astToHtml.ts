@@ -29,7 +29,7 @@ async function astToHtml(
       return tag;
     }
 
-    const { type, attributes, children, closesWith } = tag;
+    const { type, attributes, children } = tag;
     let renderedChildren = Promise.resolve("");
 
     // Components begin with an uppercase letter always but not with ! or ?
