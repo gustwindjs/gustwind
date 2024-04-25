@@ -9,6 +9,7 @@ import type {
   DataSourcesModule,
   Plugin,
   Render,
+  RenderSync,
   Route,
 } from "../../types.ts";
 
@@ -36,13 +37,14 @@ const plugin: Plugin<{
       options: { dataSourcesPath, routesPath, emitAllRoutes },
       load,
       renderComponent,
+      renderComponentSync,
     },
   ) {
     return {
       initPluginContext: async () => {
         const [routes, dataSources] = await Promise.all([
           loadRoutes(),
-          loadDataSources(renderComponent),
+          loadDataSources(renderComponent, renderComponentSync),
         ]);
 
         return { routes, dataSources, dynamicRoutes: [] };
@@ -108,7 +110,10 @@ const plugin: Plugin<{
               };
             }
             case "dataSources": {
-              const dataSources = await loadDataSources(renderComponent);
+              const dataSources = await loadDataSources(
+                renderComponent,
+                renderComponentSync,
+              );
 
               return {
                 send: [{ type: "reloadPage", payload: undefined }],
@@ -130,12 +135,12 @@ const plugin: Plugin<{
       });
     }
 
-    async function loadDataSources(render: Render) {
+    async function loadDataSources(render: Render, renderSync: RenderSync) {
       return dataSourcesPath
         ? (await load.module<DataSourcesModule>({
           path: path.join(cwd, dataSourcesPath),
           type: "dataSources",
-        })).init({ load, render })
+        })).init({ load, render, renderSync })
         : {};
     }
   },

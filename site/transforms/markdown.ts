@@ -36,7 +36,7 @@ marked.setOptions({
 // @ts-expect-error This is fine
 install(twindSetup);
 
-function getTransformMarkdown({ load, render }: DataSourcesApi) {
+function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
   return async function transformMarkdown(input: string) {
     if (typeof input !== "string") {
       console.error("input", input);
@@ -46,8 +46,10 @@ function getTransformMarkdown({ load, render }: DataSourcesApi) {
     // https://github.com/markedjs/marked/issues/545
     const tableOfContents: { slug: string; level: number; text: string }[] = [];
 
+    // If you want to use async rendering here, set `async: true` at `marked.use`
+    // and use regular render() instead. In that case walktTokens has to be
+    // set `async walkTokens`.
     marked.use({
-      async: true,
       extensions: [{
         name: "importComponent",
         level: "block",
@@ -74,9 +76,9 @@ function getTransformMarkdown({ load, render }: DataSourcesApi) {
         },
       }],
       // @ts-ignore How to type this?
-      async walkTokens(token) {
+      walkTokens(token) {
         if (token.type === "importComponent") {
-          token.html = await render({ componentName: token.component });
+          token.html = renderSync({ componentName: token.component });
         }
       },
     });

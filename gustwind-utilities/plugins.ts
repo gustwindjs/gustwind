@@ -9,6 +9,7 @@ import type {
   Plugin,
   PluginOptions,
   Render,
+  RenderSync,
   Route,
   Routes,
   Send,
@@ -59,6 +60,19 @@ async function importPlugins(
     });
   };
 
+  const renderComponentSync: RenderSync = function (
+    { componentName, htmlInput, context, props },
+  ) {
+    return applyRenderComponentsSync({
+      componentName,
+      htmlInput,
+      props,
+      context,
+      plugins: loadedPluginDefinitions,
+      matchRoute: router.matchRoute,
+    });
+  };
+
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
@@ -74,6 +88,7 @@ async function importPlugins(
       options: pluginDefinition.options,
       outputDirectory,
       renderComponent,
+      renderComponentSync,
       initLoadApi,
       mode,
     });
@@ -122,6 +137,7 @@ async function importPlugin(
     options,
     outputDirectory,
     renderComponent,
+    renderComponentSync,
     initLoadApi,
     mode,
   }: {
@@ -130,6 +146,7 @@ async function importPlugin(
     options: Record<string, unknown>;
     outputDirectory: string;
     renderComponent?: Render;
+    renderComponentSync?: RenderSync;
     initLoadApi: InitLoadApi;
     mode: Mode;
   },
@@ -141,6 +158,7 @@ async function importPlugin(
     options,
     outputDirectory,
     renderComponent: renderComponent || (() => Promise.resolve("")),
+    renderComponentSync: renderComponentSync || (() => ""),
     load: initLoadApi(tasks),
   });
 
@@ -397,6 +415,37 @@ async function applyRenderComponents(
   // @ts-expect-error Figure out the right type for this
   for await (const [renderComponent, pluginContext] of renders) {
     markup = await renderComponent({
+      componentName,
+      htmlInput,
+      context,
+      props,
+      matchRoute,
+      pluginContext,
+    });
+  }
+
+  return markup;
+}
+
+function applyRenderComponentsSync(
+  { componentName, htmlInput, props, context, plugins, matchRoute }: {
+    componentName?: string;
+    htmlInput?: string;
+    context?: Context;
+    props?: Context;
+    plugins: PluginDefinition[];
+    matchRoute: MatchRoute;
+  },
+) {
+  const renders = plugins.map((
+    { api, context },
+  ) => api.renderComponent && [api.renderComponent, context]).filter(Boolean);
+  let markup = "";
+
+  // In the current design, we pick only the markup of the last renderer.
+  // TODO: Does it even make sense to have multiple renderers in the system?
+  for (const [renderComponent, pluginContext] of renders) {
+    markup = renderComponent({
       componentName,
       htmlInput,
       context,

@@ -1,5 +1,5 @@
 import process from "node:process";
-import { htmlispToHTML } from "../../htmlisp/mod.ts";
+import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
@@ -25,7 +25,7 @@ const plugin: Plugin<{
       "${name} implements an edge-compatible way to render through HTMLisp templating language.",
     dependsOn: ["gustwind-meta-plugin"],
   },
-  init({ options, mode, load, renderComponent }) {
+  init({ options, mode, load, renderComponent, renderComponentSync }) {
     // TODO: Push this style check to the plugin system core
     if (!options.globalUtilities) {
       throw new Error(
@@ -90,12 +90,14 @@ const plugin: Plugin<{
             ...globalUtilities.init({
               load,
               render: renderComponent,
+              renderSync: renderComponentSync,
               matchRoute,
             }),
             ...(layoutUtilities
               ? layoutUtilities.init({
                 load,
                 render: renderComponent,
+                renderSync: renderComponentSync,
                 matchRoute,
               })
               : {}),
@@ -105,7 +107,14 @@ const plugin: Plugin<{
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
             ]),
           ),
         });
@@ -133,6 +142,7 @@ const plugin: Plugin<{
           utilities: globalUtilities.init({
             load,
             render: renderComponent,
+            renderSync: renderComponentSync,
             matchRoute,
           }),
           componentUtilities: Object.fromEntries(
@@ -140,7 +150,57 @@ const plugin: Plugin<{
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
+            ]),
+          ),
+        });
+      },
+      renderComponentSync: (
+        { matchRoute, componentName, htmlInput, context, props, pluginContext },
+      ) => {
+        const { components, globalUtilities } = pluginContext;
+
+        if (componentName) {
+          htmlInput = components[componentName];
+
+          if (!htmlInput) {
+            throw new Error(
+              `Component ${componentName} was not found to render`,
+            );
+          }
+        }
+
+        return htmlispToHTMLSync({
+          htmlInput,
+          components,
+          context,
+          props,
+          utilities: globalUtilities.init({
+            load,
+            render: renderComponent,
+            renderSync: renderComponentSync,
+            matchRoute,
+          }),
+          componentUtilities: Object.fromEntries(
+            Object.entries(options.componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
             ]),
           ),
         });

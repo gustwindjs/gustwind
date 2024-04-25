@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { htmlispToHTML } from "../../htmlisp/mod.ts";
+import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
 // import { attachIds } from "../../utilities/attachIds.ts";
@@ -28,6 +28,7 @@ const plugin: Plugin<{
     options,
     load,
     renderComponent,
+    renderComponentSync,
     mode,
   }) {
     const { components, globalUtilitiesPath } = options;
@@ -170,12 +171,14 @@ const plugin: Plugin<{
             ...globalUtilities.init({
               load,
               render: renderComponent,
+              renderSync: renderComponentSync,
               matchRoute,
             }),
             ...(layoutUtilities
               ? layoutUtilities.init({
                 load,
                 render: renderComponent,
+                renderSync: renderComponentSync,
                 matchRoute,
               })
               : {}),
@@ -185,7 +188,14 @@ const plugin: Plugin<{
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
             ]),
           ),
         });
@@ -214,6 +224,7 @@ const plugin: Plugin<{
           utilities: globalUtilities.init({
             load,
             render: renderComponent,
+            renderSync: renderComponentSync,
             matchRoute,
           }),
           componentUtilities: Object.fromEntries(
@@ -221,7 +232,58 @@ const plugin: Plugin<{
               [k, v],
             ) => [
               k,
-              v ? v.init({ load, render: renderComponent, matchRoute }) : {},
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
+            ]),
+          ),
+        });
+      },
+      renderComponentSync: (
+        { matchRoute, componentName, htmlInput, context, props, pluginContext },
+      ) => {
+        const { components, componentUtilities, globalUtilities } =
+          pluginContext;
+
+        if (componentName) {
+          htmlInput = components[componentName];
+
+          if (!htmlInput) {
+            throw new Error(
+              `Component ${componentName} was not found to render`,
+            );
+          }
+        }
+
+        return htmlispToHTMLSync({
+          htmlInput,
+          components,
+          context,
+          props,
+          utilities: globalUtilities.init({
+            load,
+            render: renderComponent,
+            renderSync: renderComponentSync,
+            matchRoute,
+          }),
+          componentUtilities: Object.fromEntries(
+            Object.entries(componentUtilities).map((
+              [k, v],
+            ) => [
+              k,
+              v
+                ? v.init({
+                  load,
+                  render: renderComponent,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                })
+                : {},
             ]),
           ),
         });

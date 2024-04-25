@@ -32,6 +32,7 @@ type DataSourcesModule = {
 type DataSourcesApi = {
   load: LoadApi;
   render: Render;
+  renderSync: RenderSync;
 };
 type Render = (
   o: {
@@ -41,6 +42,14 @@ type Render = (
     props?: Context;
   },
 ) => Promise<string>;
+type RenderSync = (
+  o: {
+    componentName?: string;
+    htmlInput?: string;
+    context?: Context;
+    props?: Context;
+  },
+) => string;
 
 type DataSource = { operation: string; parameters?: unknown[] };
 type DataSources = Record<string, (...args: any) => unknown>;
@@ -85,6 +94,7 @@ type PluginParameters<O = Record<string, unknown>> = {
   cwd: string;
   load: LoadApi;
   renderComponent: Render;
+  renderComponentSync: RenderSync;
   mode: Mode;
   outputDirectory: string;
   options: O;
@@ -163,7 +173,15 @@ type PluginApi<C = Context> = {
     context: Context;
     props: Context;
     pluginContext: C;
-  }): Promise<string> | string;
+  }): Promise<string>;
+  renderComponentSync?(o: {
+    matchRoute: MatchRoute;
+    componentName?: string;
+    htmlInput?: string;
+    context: Context;
+    props: Context;
+    pluginContext: C;
+  }): string;
   afterEachRender?(o: {
     markup: string;
     context: Context;
@@ -348,6 +366,7 @@ type GlobalUtilities = {
   init: (o: {
     load: LoadApi;
     render: Render;
+    renderSync: RenderSync;
     matchRoute: MatchRoute;
   }) => Utilities;
 };
@@ -380,6 +399,7 @@ export type {
   PluginsDefinition,
   Props,
   Render,
+  RenderSync,
   Route,
   Routes,
   Scripts,
