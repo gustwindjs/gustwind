@@ -439,11 +439,14 @@ function applyRenderComponentsSync(
 ) {
   const renders = plugins.map((
     { api, context },
-  ) => api.renderComponent && [api.renderComponent, context]).filter(Boolean);
+  ) => api.renderComponent && [api.renderComponentSync, context]).filter(
+    Boolean,
+  );
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
   // TODO: Does it even make sense to have multiple renderers in the system?
+  // @ts-expect-error Figure out the right type for this
   for (const [renderComponent, pluginContext] of renders) {
     markup = renderComponent({
       componentName,
