@@ -16,6 +16,58 @@ Deno.test("basic component", async () => {
   );
 });
 
+Deno.test("basic component with simple html input", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: "<Button><span>foo</span></Button>",
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
+    }),
+    "<button><span>foo</span></button>",
+  );
+});
+
+Deno.test("basic component with complex html input", async () => {
+  const input =
+    `<a class="#1utjbpi" href="http://cssinjs.org/plugins">Plugin API</a>`;
+
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<Button>${input}</Button>`,
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
+    }),
+    `<button>${input}</button>`,
+  );
+});
+
+Deno.test("complex component with complex html input", async () => {
+  const input =
+    `<a class="#1utjbpi" href="http://cssinjs.org/plugins">Plugin API</a>`;
+  const HeadingWithAnchor = `<noop
+  &visibleIf="(get props children)"
+  &type="(concat h (get props level))"
+  &id="(get props anchor)"
+>
+  <div class="inline" &children="(get props children)" />
+  <a &href="(concat # (get props anchor))">🔗</a>
+</noop>
+`;
+
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput:
+        `<HeadingWithAnchor level="3" anchor="test">${input}</HeadingWithAnchor>`,
+      components: {
+        HeadingWithAnchor,
+      },
+    }),
+    `<h3 id="test"><div class="inline">${input}</div><a href="#test">🔗</a></h3>`,
+  );
+});
+
 Deno.test("component with a flag", async () => {
   assertEquals(
     await htmlispToHTMLSync({
