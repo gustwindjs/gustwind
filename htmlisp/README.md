@@ -24,7 +24,7 @@ If you understand how Lisp evaluation works, then you understand how Gustwind te
 </div>
 ```
 
-That `(get props title)` expression should be read as `get('props', 'title'` call. Note the `&` before the attribute name as that signifies an expression binding.
+That `(get props title)` expression should be read as `get('props', 'title')` call. Note the `&` before the attribute name as that signifies an expression binding.
 
 The latter binding illustrates how expressions can be nested and `(concat blog / (get props slug))` can be read as `concat('blog', '/' , get('props', 'slug'))`.
 
