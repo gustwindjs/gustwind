@@ -32,7 +32,7 @@ function parseTag(
     if (state === STATES.IDLE) {
       const c = getCharacter.next();
 
-      if (c === " " || c === "\n") {
+      if (c === "\n") {
         // No-op
       } else if (c === "<") {
         // Closing case - i.e., </
@@ -119,16 +119,20 @@ function parseTag(
         if (getCharacter.get() === "/") {
           state = STATES.PARSE_END_TAG;
         } else if (currentTag?.type) {
-          if (content.trim()) {
-            currentTag.children.push(content);
-            content = "";
+          if (currentTag?.closesWith === "" || currentTag?.closesWith === "?") {
+            getCharacter.previous();
+          } else {
+            if (content.trim()) {
+              currentTag.children.push(content);
+              content = "";
+            }
+
+            getCharacter.previous();
+
+            currentTag.children = currentTag.children.concat(
+              parseTag(getCharacter, true),
+            );
           }
-
-          getCharacter.previous();
-
-          currentTag.children = currentTag.children.concat(
-            parseTag(getCharacter, true),
-          );
 
           state = STATES.IDLE;
         } // No tag was found yet so we have only pure content

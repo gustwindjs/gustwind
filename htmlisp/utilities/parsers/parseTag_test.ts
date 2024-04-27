@@ -30,6 +30,23 @@ Deno.test("/ as tag content 2", () => {
   );
 });
 
+Deno.test("retain whitespace in between", () => {
+  assertEquals(
+    parseTag(`<Button>foo <span>foo</span> foo</Button>`),
+    [
+      {
+        type: "Button",
+        attributes: {},
+        children: [
+          "foo ",
+          { type: "span", attributes: {}, children: ["foo"] },
+          " foo",
+        ],
+      },
+    ],
+  );
+});
+
 Deno.test("partial tag", () => {
   assertEquals(
     parseTag(`<div>foo`),

@@ -28,6 +28,18 @@ Deno.test("basic component with simple html input", async () => {
   );
 });
 
+Deno.test("basic component with html input in between with whitespaces", async () => {
+  assertEquals(
+    await htmlispToHTML({
+      htmlInput: "<Button>foo <span>foo</span> foo</Button>",
+      components: {
+        Button: '<button &children="(get props children)"></button>',
+      },
+    }),
+    "<button>foo <span>foo</span> foo</button>",
+  );
+});
+
 Deno.test("basic component with complex html input", async () => {
   const input =
     `<a class="#1utjbpi" href="http://cssinjs.org/plugins">Plugin API</a>`;
