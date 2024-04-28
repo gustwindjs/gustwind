@@ -1,5 +1,6 @@
 import { parseExpression } from "./parseExpression.ts";
 import { applyUtility } from "./applyUtility.ts";
+import { isUndefined } from "../../utilities/functional.ts";
 import type { Attributes, Context } from "../types.ts";
 import type { Utilities, Utility } from "../../types.ts";
 
@@ -28,18 +29,22 @@ async function parseExpressions(
             throw new Error(`Failed to parse ${value} for attribute ${name}!`);
           }
 
-          return [
-            name.slice(1),
-            await applyUtility<
-              Utility,
-              Utilities,
-              Context
-            >(
-              parsedExpression,
-              utilities,
-              context,
-            ),
-          ];
+          const evaluatedValue = await applyUtility<
+            Utility,
+            Utilities,
+            Context
+          >(
+            parsedExpression,
+            utilities,
+            context,
+          );
+
+          // Filter out attributes with an undefined value
+          if (name !== "&visibleIf" && isUndefined(evaluatedValue)) {
+            return;
+          }
+
+          return [name.slice(1), evaluatedValue];
         }
 
         return [name, value];

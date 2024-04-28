@@ -193,3 +193,29 @@ Deno.test("component with a children expression", async () => {
     `<div>foobar</div>`,
   );
 });
+
+Deno.test("passed attributes do not get removed", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: "<Button title>foo</Button>",
+      components: {
+        Button:
+          '<button &children="(get props children)" &title=(get props title)></button>',
+      },
+    }),
+    "<button title>foo</button>",
+  );
+});
+
+Deno.test("attributes receiving null get removed", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: "<Button>foo</Button>",
+      components: {
+        Button:
+          '<button &children="(get props children)" &title=(get props title)></button>',
+      },
+    }),
+    "<button>foo</button>",
+  );
+});
