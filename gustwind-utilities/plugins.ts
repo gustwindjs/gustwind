@@ -155,7 +155,7 @@ async function importPlugin(
   const api = await pluginModule.init({
     cwd,
     mode,
-    options,
+    options: options || {},
     outputDirectory,
     renderComponent: renderComponent || (() => Promise.resolve("")),
     renderComponentSync: renderComponentSync || (() => ""),
