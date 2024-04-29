@@ -3,7 +3,7 @@ import * as pagefind from "npm:pagefind@1.1.0";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<
-  { language?: string },
+  Record<string, never>,
   { files: pagefind.IndexFile[] }
 > = {
   meta: {
@@ -12,27 +12,15 @@ const plugin: Plugin<
       "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
   init(
-    { cwd, options: { language }, outputDirectory },
+    { cwd, outputDirectory, mode },
   ) {
     return {
       initPluginContext: async () => {
-        const { index } = await pagefind.createIndex({
-          forceLanguage: language || "en",
-        });
-
-        if (!index) {
-          throw new Error("pagefind failed to create an index");
+        if (mode === "development") {
+          return { files: await indexBuild() };
         }
 
-        await index.addDirectory({
-          path: path.join(cwd, outputDirectory),
-        });
-
-        const { files } = await index.getFiles();
-
-        await pagefind.close();
-
-        return { files };
+        return { files: [] };
       },
       sendMessages: ({ send, pluginContext }) => {
         pluginContext.files.forEach(({ path: file }) =>
@@ -44,8 +32,10 @@ const plugin: Plugin<
           })
         );
       },
-      finishBuild: ({ pluginContext }) => {
-        return pluginContext.files.map(({ path: file, content: data }) => ({
+      finishBuild: async () => {
+        const files = await indexBuild();
+
+        return files.map(({ path: file, content: data }) => ({
           type: "writeFile",
           payload: {
             outputDirectory,
@@ -55,6 +45,22 @@ const plugin: Plugin<
         }));
       },
     };
+
+    async function indexBuild() {
+      const { index } = await pagefind.createIndex({});
+
+      if (!index) {
+        throw new Error("pagefind failed to create an index");
+      }
+
+      await index.addDirectory({
+        path: path.join(cwd, outputDirectory),
+      });
+
+      const { files } = await index.getFiles();
+
+      return files;
+    }
   },
 };
 
