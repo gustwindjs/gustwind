@@ -3,7 +3,7 @@ import * as pagefind from "npm:pagefind@1.1.0";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<
-  Record<string, never>,
+  { indexInDev: boolean },
   { files: pagefind.IndexFile[] }
 > = {
   meta: {
@@ -12,11 +12,11 @@ const plugin: Plugin<
       "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
   init(
-    { cwd, outputDirectory, mode },
+    { cwd, options: { indexInDev }, outputDirectory, mode },
   ) {
     return {
       initPluginContext: async () => {
-        if (mode === "development") {
+        if (mode === "development" && indexInDev) {
           return { files: await indexBuild() };
         }
 
