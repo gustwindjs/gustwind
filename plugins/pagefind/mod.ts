@@ -1,19 +1,24 @@
 import * as path from "node:path";
-import * as pagefind from "npm:pagefind@1.0.3";
+import * as pagefind from "npm:pagefind@1.1.0";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin<Record<string, never>, { files: pagefind.IndexFile[] }> = {
+const plugin: Plugin<
+  { language?: string },
+  { files: pagefind.IndexFile[] }
+> = {
   meta: {
     name: "gustwind-pagefind-plugin",
     description:
       "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
   init(
-    { cwd, outputDirectory },
+    { cwd, options: { language }, outputDirectory },
   ) {
     return {
       initPluginContext: async () => {
-        const { index } = await pagefind.createIndex({});
+        const { index } = await pagefind.createIndex({
+          forceLanguage: language || "en",
+        });
 
         if (!index) {
           throw new Error("pagefind failed to create an index");
@@ -24,6 +29,8 @@ const plugin: Plugin<Record<string, never>, { files: pagefind.IndexFile[] }> = {
         });
 
         const { files } = await index.getFiles();
+
+        await pagefind.close();
 
         return { files };
       },
