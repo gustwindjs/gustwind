@@ -16,8 +16,10 @@ const plugin: Plugin<
   ) {
     return {
       initPluginContext: async () => {
-        if (mode === "development" && indexInDev) {
-          return { files: await indexBuild() };
+        if (mode === "development") {
+          return {
+            files: indexInDev ? await indexBuild() : await indexEmpty(),
+          };
         }
 
         return { files: [] };
@@ -45,6 +47,18 @@ const plugin: Plugin<
         }));
       },
     };
+
+    async function indexEmpty() {
+      const { index } = await pagefind.createIndex({});
+
+      if (!index) {
+        throw new Error("pagefind failed to create an index");
+      }
+
+      const { files } = await index.getFiles();
+
+      return files;
+    }
 
     async function indexBuild() {
       const { index } = await pagefind.createIndex({});
