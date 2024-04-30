@@ -2,30 +2,26 @@ import * as path from "node:path";
 import * as pagefind from "npm:pagefind@1.1.0";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin<
-  { indexInDev: boolean },
-  { files: pagefind.IndexFile[] }
-> = {
+const plugin: Plugin<{ indexInDev: boolean }> = {
   meta: {
     name: "gustwind-pagefind-plugin",
     description:
       "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
-  init(
+  async init(
     { cwd, options: { indexInDev }, outputDirectory, mode },
   ) {
-    return {
-      initPluginContext: async () => {
-        if (mode === "development") {
-          return {
-            files: indexInDev ? await indexBuild() : await indexEmpty(),
-          };
-        }
+    let files: pagefind.IndexFile[] = [];
 
-        return { files: [] };
-      },
-      sendMessages: ({ send, pluginContext }) => {
-        pluginContext.files.forEach(({ path: file }) =>
+    // It is enough to generate an index once in development mode since it
+    // doesn't have to be completely accurate.
+    if (mode === "development") {
+      files = indexInDev ? await indexBuild() : await indexEmpty();
+    }
+
+    return {
+      sendMessages: ({ send }) => {
+        files.forEach(({ path: file }) =>
           // TODO: Scope this to router plugins using prefixing (router-)
           // This needs a change at plugins.ts logic
           send("*", {
@@ -34,6 +30,7 @@ const plugin: Plugin<
           })
         );
       },
+      // This triggers only in production and then a full index is needed no matter what
       finishBuild: async () => {
         const files = await indexBuild();
 
