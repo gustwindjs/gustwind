@@ -82,7 +82,7 @@ function astToHtmlSync(
           htmlispToHTML,
           context,
           // @ts-expect-error This is fine
-          { ...p, value: p },
+          { ...props, ...p, value: p },
           local,
           utilities,
           componentUtilities,

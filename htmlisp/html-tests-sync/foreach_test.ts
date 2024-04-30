@@ -121,3 +121,19 @@ Deno.test("foreach with nested children and a component", async () => {
     `<div><a href="foo"><div><h1>bar</h1></div></a></div>`,
   );
 });
+
+Deno.test("foreach with access to component props", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<Posts prefix="demo" &items="(get context blogPosts)" />`,
+      context: {
+        blogPosts: [{ slug: "foo", title: "bar" }],
+      },
+      components: {
+        Posts:
+          `<ul &foreach="(get props items)"><li &title="(get props prefix)" &children="(get props slug)" /></ul>`,
+      },
+    }),
+    `<ul><li title="demo">foo</li></ul>`,
+  );
+});
