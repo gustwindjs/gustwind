@@ -71,7 +71,7 @@ async function build(
       payload: {
         route,
         dir: path.join(outputDirectory, url),
-        url: url === "/" ? "/" : "/" + url,
+        url: url === "/" ? "/" : "/" + url + "/",
       },
     });
   });
