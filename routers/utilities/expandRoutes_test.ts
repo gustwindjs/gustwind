@@ -138,3 +138,50 @@ Deno.test("expands a route within routes", async () => {
     },
   );
 });
+
+Deno.test("child routes inherit data sources", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      dataSources: { chapters: { operation: "getChapters" } },
+      expand: {
+        matchBy: {
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        layout: "documentationPage",
+      },
+    },
+  };
+
+  assertEquals(
+    await expandRoutes({
+      routes,
+      dataSources: {
+        getChapters: () => "foo",
+        indexBlog: () => [{ slug: "foo" }, { slug: "bar" }],
+      },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          bar: {
+            context: {},
+            dataSources: {},
+            layout: "documentationPage",
+            meta: {},
+            scripts: undefined,
+          },
+          foo: {
+            context: {},
+            dataSources: {},
+            layout: "documentationPage",
+            meta: {},
+            scripts: undefined,
+          },
+        },
+      },
+    },
+  );
+});
