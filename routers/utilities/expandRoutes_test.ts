@@ -140,10 +140,11 @@ Deno.test("expands a route within routes", async () => {
 });
 
 Deno.test("child routes inherit data sources", async () => {
+  const dataSources = { chapters: { operation: "getChapters" } };
   const routes = {
     blog: {
       layout: "siteIndex",
-      dataSources: { chapters: { operation: "getChapters" } },
+      dataSources,
       expand: {
         matchBy: {
           indexer: { operation: "indexBlog" },
@@ -168,14 +169,14 @@ Deno.test("child routes inherit data sources", async () => {
         routes: {
           bar: {
             context: {},
-            dataSources: {},
+            dataSources,
             layout: "documentationPage",
             meta: {},
             scripts: undefined,
           },
           foo: {
             context: {},
-            dataSources: {},
+            dataSources,
             layout: "documentationPage",
             meta: {},
             scripts: undefined,

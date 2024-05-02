@@ -163,7 +163,6 @@ Deno.test("matches an expanded route", async () => {
       context: {},
       dataSources: {},
       scripts: undefined,
-      url: "foo",
     },
   );
 });
@@ -210,7 +209,6 @@ Deno.test("expanded route retains data sources", async () => {
         },
       },
       scripts: undefined,
-      url: "foo",
     },
   );
 });
@@ -309,7 +307,6 @@ Deno.test("matches an expanded route behind a slash", async () => {
       context: {},
       dataSources: {},
       scripts: undefined,
-      url: "foo",
     },
   );
 });
@@ -404,7 +401,6 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
       layout: "blogPage",
       meta: {},
       scripts: undefined,
-      url: "foo",
     },
   );
 });

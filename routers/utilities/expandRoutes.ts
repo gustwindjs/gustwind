@@ -91,15 +91,18 @@ async function expandRoute(
           layout,
           scripts,
           context: context || {},
-          dataSources: Object.fromEntries(
-            // @ts-ignore route.expand exists by now for sure
-            Object.entries(route.expand?.dataSources || {}).map((
-              [k, v]: [string, DataSource],
-            ) => [k, {
-              ...v,
-              parameters: [match].concat(v.parameters),
-            }]),
-          ),
+          dataSources: {
+            ...route.dataSources,
+            ...Object.fromEntries(
+              // @ts-ignore route.expand exists by now for sure
+              Object.entries(route.expand?.dataSources || {}).map((
+                [k, v]: [string, DataSource],
+              ) => [k, {
+                ...v,
+                parameters: [match].concat(v.parameters),
+              }]),
+            ),
+          },
         };
 
         ret = { ...route, routes: expandedRoutes };
