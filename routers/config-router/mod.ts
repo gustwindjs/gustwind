@@ -79,6 +79,7 @@ const plugin: Plugin<{
           url,
           pluginContext.dataSources,
         );
+        // TODO: Pass meta here so it can be bound to "this"
         const context = await getDataSourceContext(
           route.dataSources,
           pluginContext.dataSources,

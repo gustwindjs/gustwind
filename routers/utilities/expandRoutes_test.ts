@@ -42,6 +42,7 @@ Deno.test("indexer is not found", () => {
       layout: "siteIndex",
       expand: {
         matchBy: {
+          name: "documentationPages",
           indexer: { operation: "indexMarkdown" },
           slug: "slug",
         },
@@ -63,6 +64,7 @@ Deno.test("expand a route", async () => {
       layout: "siteIndex",
       expand: {
         matchBy: {
+          name: "documentationPages",
           indexer: { operation: "indexMarkdown" },
           slug: "slug",
         },
@@ -86,6 +88,9 @@ Deno.test("expand a route", async () => {
             layout: "documentationPage",
             meta: {},
             scripts: undefined,
+            parentDataSources: {
+              documentationPages: [{ slug: "foo" }],
+            },
           },
         },
       },
@@ -102,6 +107,7 @@ Deno.test("expands a route within routes", async () => {
           layout: "blogPage",
           expand: {
             matchBy: {
+              name: "blogPages",
               indexer: { operation: "indexMarkdown" },
               slug: "slug",
             },
@@ -129,6 +135,9 @@ Deno.test("expands a route within routes", async () => {
                 dataSources: {},
                 layout: "documentationPage",
                 meta: {},
+                parentDataSources: {
+                  blogPages: [{ slug: "foo" }],
+                },
                 scripts: undefined,
               },
             },
@@ -147,6 +156,7 @@ Deno.test("child routes inherit data sources", async () => {
       dataSources,
       expand: {
         matchBy: {
+          name: "documentationPages",
           indexer: { operation: "indexBlog" },
           slug: "slug",
         },
@@ -169,16 +179,22 @@ Deno.test("child routes inherit data sources", async () => {
         routes: {
           bar: {
             context: {},
-            dataSources,
+            dataSources: {},
             layout: "documentationPage",
             meta: {},
+            parentDataSources: {
+              documentationPages: [{ slug: "foo" }, { slug: "bar" }],
+            },
             scripts: undefined,
           },
           foo: {
             context: {},
-            dataSources,
+            dataSources: {},
             layout: "documentationPage",
             meta: {},
+            parentDataSources: {
+              documentationPages: [{ slug: "foo" }, { slug: "bar" }],
+            },
             scripts: undefined,
           },
         },

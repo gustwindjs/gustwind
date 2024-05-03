@@ -14,6 +14,7 @@
     "expand": {
       "matchBy": {
         "indexer": {
+          "name": "documentationPages",
           "operation": "indexMarkdown",
           "parameters": ["./documentation"]
         },
@@ -71,6 +72,7 @@
     "expand": {
       "matchBy": {
         "indexer": {
+          "name": "blogPosts",
           "operation": "indexMarkdown",
           "parameters": ["./blogPosts"]
         },

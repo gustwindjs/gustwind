@@ -91,8 +91,8 @@ async function expandRoute(
           layout,
           scripts,
           context: context || {},
+          parentDataSources: { [matchBy.name]: indexResults },
           dataSources: {
-            ...route.dataSources,
             ...Object.fromEntries(
               // @ts-ignore route.expand exists by now for sure
               Object.entries(route.expand?.dataSources || {}).map((

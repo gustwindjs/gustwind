@@ -287,12 +287,14 @@ type Route = {
   // if it is enabled
   scripts?: { name: string }[]; // These point to scripts directory by name
   routes?: Routes;
+  parentDataSources?: Record<string, unknown>;
   dataSources?: Record<string, DataSource>;
   expand?: {
     context?: DataContext;
     matchBy?: {
       indexer: DataSource;
       slug: string;
+      name: string;
     };
     dataSources?: Record<string, DataSource>;
     layout: string;
