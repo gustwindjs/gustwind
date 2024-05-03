@@ -2,6 +2,7 @@ import { isObject } from "../../utilities/functional.ts";
 import type { DataSources, Route } from "../../types.ts";
 
 async function getDataSourceContext(
+  parentDataSources?: Route["parentDataSources"],
   dataSourceIds?: Route["dataSources"],
   dataSources?: DataSources,
 ) {
@@ -26,7 +27,7 @@ async function getDataSourceContext(
           return [
             name,
             await dataSource.apply(
-              undefined,
+              { parentDataSources },
               Array.isArray(parameters) ? parameters : [],
             ),
           ];

@@ -80,6 +80,7 @@ const plugin: Plugin<{
           pluginContext.dataSources,
         );
         const context = await getDataSourceContext(
+          route.parentDataSources,
           route.dataSources,
           pluginContext.dataSources,
         );
