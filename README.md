@@ -30,6 +30,7 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 * [sidewind.js.org](https://sidewind.js.org/) - [Source](https://github.com/survivejs/sidewind)
 * [dragjs](http://bebraw.github.io/dragjs/) - [Source](https://github.com/bebraw/dragjs)
 * [Future Frontend](https://futurefrontend.com/) - [Source](https://github.com/ReactFinland/future-frontend-site)
+* [SurviveJS](https://survivejs.com) - [Source](https://github.com/survivejs/website-v3)
 
 ## Earlier related work
 
