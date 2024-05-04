@@ -1,4 +1,3 @@
-import * as path from "node:path";
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
 
@@ -26,16 +25,20 @@ async function evaluateTasks(tasks: Tasks) {
           };
         break;
       case "copyFiles": {
-        const outputBasename = path.basename(payload.outputPath);
         const files = await dir({
           path: payload.inputDirectory,
           recursive: true,
         });
-        // ./ output is an exception as then output directory
         // doesn't need to show up in the url
-        const outputPrefix = outputBasename === "."
-          ? "/"
-          : `/${outputBasename}/`;
+        // This logic has been only tested with ./foo style path.
+        // The rest might be incorrect.
+        let outputPrefix = payload.outputPath[0] === "."
+          ? payload.outputPath.slice(1)
+          : payload.outputPath;
+
+        if (outputPrefix.length > 1) {
+          outputPrefix += "/";
+        }
 
         files.forEach((file) => {
           ret[`${outputPrefix}${file.name}`] = {
