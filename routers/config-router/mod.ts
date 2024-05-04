@@ -49,6 +49,15 @@ const plugin: Plugin<{
 
         return { routes, dataSources, dynamicRoutes: [] };
       },
+      preparePluginContext: async ({ routes }) => {
+        return {
+          dataSources: await loadDataSources(
+            renderComponent,
+            renderComponentSync,
+            routes,
+          ),
+        };
+      },
       getAllRoutes: async ({ pluginContext }) => {
         const routes = await getAllRoutes(
           pluginContext.routes,
@@ -69,13 +78,15 @@ const plugin: Plugin<{
             : [],
         };
       },
-      matchRoute: async (url: string, pluginContext) => {
+      matchRoute: async (url, pluginContext, allRoutes) => {
         if (pluginContext.dynamicRoutes.includes(trim(url, "/"))) {
           return;
         }
 
+        console.log("all routes", Object.keys(allRoutes || {}).length, url);
+
         const route = await matchRoute(
-          pluginContext.routes,
+          allRoutes || pluginContext.routes,
           url,
           pluginContext.dataSources,
         );
@@ -139,12 +150,16 @@ const plugin: Plugin<{
       });
     }
 
-    async function loadDataSources(render: Render, renderSync: RenderSync) {
+    async function loadDataSources(
+      render: Render,
+      renderSync: RenderSync,
+      routes?: Routes,
+    ) {
       return dataSourcesPath
         ? (await load.module<DataSourcesModule>({
           path: path.join(cwd, dataSourcesPath),
           type: "dataSources",
-        })).init({ load, render, renderSync })
+        })).init({ load, render, renderSync, routes })
         : {};
     }
   },

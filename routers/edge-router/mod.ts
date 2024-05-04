@@ -24,7 +24,7 @@ const plugin: Plugin<{
           tasks: [],
         };
       },
-      matchRoute: (url: string, pluginContext) => {
+      matchRoute: (url, pluginContext) => {
         if (pluginContext.dynamicRoutes.includes(trim(url, "/"))) {
           return;
         }

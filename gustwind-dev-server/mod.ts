@@ -38,6 +38,8 @@ async function gustwindDevServer({
   });
 
   return async () => {
+    // TODO: It might be a good idea to defer this work and check only
+    // when a request arrives or push this process to a background worker (or both)
     const { routes } = await router.getAllRoutes();
 
     await Deno.serve({ port }, async ({ url }) => {

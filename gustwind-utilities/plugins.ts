@@ -122,8 +122,12 @@ async function importPlugins(
       return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
     },
     // First match wins
-    matchRoute(url: string): Promise<Route | undefined> {
-      return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
+    matchRoute(url: string, routes?: Routes): Promise<Route | undefined> {
+      return applyMatchRoutes({
+        routes,
+        plugins: loadedPluginDefinitions,
+        url,
+      });
     },
   };
 
@@ -245,12 +249,14 @@ async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
 
 async function applyPlugins(
   {
+    routes,
     plugins,
     url,
     route,
     initialContext,
     matchRoute,
   }: {
+    routes?: Routes;
     route: Route;
     plugins: PluginDefinition[];
     url: string;
@@ -258,10 +264,12 @@ async function applyPlugins(
     matchRoute: MatchRoute;
   },
 ) {
+  const pluginContext = await applyPreparePluginContext({ plugins, routes });
   const send = getSend(plugins);
   const context = {
     ...initialContext,
     ...(await applyPrepareContext({
+      pluginContext,
       plugins,
       send,
       route,
@@ -279,6 +287,7 @@ async function applyPlugins(
   await applyOnTasksRegistered({ plugins, tasks });
 
   const markup = await applyRenderLayouts({
+    pluginContext,
     context,
     plugins,
     route,
@@ -320,7 +329,8 @@ async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
 }
 
 async function applyMatchRoutes(
-  { plugins, url }: {
+  { routes, plugins, url }: {
+    routes?: Routes;
     plugins: PluginDefinition[];
     url: string;
   },
@@ -332,8 +342,7 @@ async function applyMatchRoutes(
 
   // @ts-expect-error Figure out the right type for this
   for await (const [matchRoute, pluginContext] of matchRoutes) {
-    const matchedRoute = matchRoute &&
-      matchRoute(url, pluginContext);
+    const matchedRoute = matchRoute && matchRoute(url, pluginContext, routes);
 
     if (matchedRoute) {
       return matchedRoute;
@@ -343,8 +352,33 @@ async function applyMatchRoutes(
   return false;
 }
 
+async function applyPreparePluginContext(
+  { plugins, routes }: {
+    plugins: PluginDefinition[];
+    routes?: Routes;
+  },
+) {
+  let context = {};
+  const preparePluginContexts = plugins.map((
+    { api, context },
+  ) => api.preparePluginContext && [api.preparePluginContext, context])
+    .filter(Boolean);
+
+  // @ts-expect-error Figure out the right type for this
+  for await (const [preparePluginContext] of preparePluginContexts) {
+    const ret = await preparePluginContext({ routes });
+
+    if (ret?.context) {
+      context = { ...context, ...ret.context };
+    }
+  }
+
+  return context;
+}
+
 async function applyPrepareContext(
-  { plugins, route, send, url }: {
+  { pluginContext, plugins, route, send, url }: {
+    pluginContext: Context;
     plugins: PluginDefinition[];
     route: Route;
     send: Send;
@@ -354,7 +388,9 @@ async function applyPrepareContext(
   let context = {};
   const prepareContexts = plugins.map((
     { api, context },
-  ) => api.prepareContext && [api.prepareContext, context])
+  ) =>
+    api.prepareContext && [api.prepareContext, { ...pluginContext, ...context }]
+  )
     .filter(Boolean);
 
   // @ts-expect-error Figure out the right type for this
@@ -462,7 +498,8 @@ function applyRenderComponentsSync(
 }
 
 async function applyRenderLayouts(
-  { context, plugins, route, send, url, matchRoute }: {
+  { pluginContext, context, plugins, route, send, url, matchRoute }: {
+    pluginContext: Context;
     context: Context;
     plugins: PluginDefinition[];
     route: Route;
@@ -473,7 +510,8 @@ async function applyRenderLayouts(
 ) {
   const renders = plugins.map((
     { api, context },
-  ) => api.renderLayout && [api.renderLayout, context]).filter(Boolean);
+  ) => api.renderLayout && [api.renderLayout, { ...pluginContext, ...context }])
+    .filter(Boolean);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.

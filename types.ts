@@ -33,6 +33,7 @@ type DataSourcesApi = {
   load: LoadApi;
   render: Render;
   renderSync: RenderSync;
+  routes?: Routes;
 };
 type Render = (
   o: {
@@ -117,6 +118,10 @@ type LoadApi = {
 type PluginApi<C = Context> = {
   // Set up initial plugin context during plugin initialization phase.
   initPluginContext?(): C | Promise<C>;
+  // Prepare plugin context per plugin application.
+  preparePluginContext?(
+    o: { routes: Routes },
+  ): Record<string, unknown> | Promise<Record<string, unknown>>; // C | Promise<C>;
   // Send messages to other plugins before other hooks are applied. This
   // is useful for giving specific instructions on what to do.
   sendMessages?(
@@ -137,6 +142,7 @@ type PluginApi<C = Context> = {
   // Run setup before context is resolved or add something to it
   prepareContext?(o: {
     send: Send;
+    routes: Routes;
     route: Route;
     url: string;
     pluginContext: C;
@@ -210,6 +216,7 @@ type PluginApi<C = Context> = {
   matchRoute?(
     url: string,
     pluginContext: C,
+    routes?: Routes,
   ): Promise<Route | undefined> | undefined;
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
@@ -317,6 +324,7 @@ type BuildWorkerEvent =
   | {
     type: "build";
     payload: {
+      routes: Routes;
       route: Route;
       dir: string;
       url: string;

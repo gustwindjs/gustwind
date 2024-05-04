@@ -40,9 +40,9 @@ self.onmessage = async (e) => {
     DEBUG && console.log("worker - finished init", id);
   }
   if (type === "build") {
-    const { payload: { route, dir, url } } = e.data;
+    const { payload: { routes, route, dir, url } } = e.data;
 
-    DEBUG && console.log("worker - starting to build", id, route);
+    DEBUG && console.log("worker - starting to build", { id, route, routes });
 
     try {
       // Matching the url to a route ensures the route contains context
@@ -50,13 +50,14 @@ self.onmessage = async (e) => {
       // for development server. This is a micro-optimization as it
       // avoids work when resolving all routes and allows deferring
       // this work to workers which run in parallel.
-      const matchedRoute = await router.matchRoute(url);
+      const matchedRoute = await router.matchRoute(url, routes);
 
       if (!matchedRoute) {
         throw new Error(`Failed to find route ${url} while building`);
       }
 
       const { markup, tasks } = await applyPlugins({
+        routes,
         plugins,
         url,
         route: matchedRoute,
