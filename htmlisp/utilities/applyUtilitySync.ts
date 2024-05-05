@@ -45,7 +45,7 @@ function applyUtilitySync<
   }
 
   if (typeof value.utility !== "string") {
-    return;
+    return value;
   }
 
   const foundUtility = utilities[value.utility];

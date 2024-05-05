@@ -48,7 +48,7 @@ async function applyUtility<
   }
 
   if (typeof value.utility !== "string") {
-    return;
+    return value;
   }
 
   const foundUtility = utilities[value.utility];
