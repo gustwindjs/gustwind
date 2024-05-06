@@ -4,7 +4,7 @@ Gustwind is a [Deno](https://deno.land/)-powered website creator that allows com
 
 * **Development mode** lets you preview the site and modify page definitions to commit later
 * **Production mode** generates pure static HTML with CSS inlined to the files
-* **HTMLisp** is the default option for [templating]{/templating/} and component definitions
+* **HTMLisp** is the default option for [templating](/templating/) and component definitions
 * **Data sources** define how information is brought to a site
 * **Route definition** binds it all together and allows connecting data sources to specific routes
 * **Plugin system** allows replacing any part of the system to fit custom requirements
