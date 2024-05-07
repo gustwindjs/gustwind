@@ -282,7 +282,6 @@ type Route = {
   // TODO: This should come as an extension from the renderer plugin
   // if it is enabled
   layout: string;
-  meta?: Meta;
   // TODO: This should come as an extension from the script plugin
   // if it is enabled
   scripts?: { name: string }[]; // These point to scripts directory by name
@@ -298,7 +297,6 @@ type Route = {
     };
     dataSources?: Record<string, DataSource>;
     layout: string;
-    meta?: Meta;
   };
 };
 type Scripts = Script[];

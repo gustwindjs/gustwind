@@ -87,7 +87,7 @@ const plugin: Plugin<{
 
         return {
           ...route,
-          context: { ...route.parentDataSources, ...context },
+          context: { ...route.parentDataSources, ...route.context, ...context },
         };
       },
       onMessage: async ({ message, pluginContext }) => {

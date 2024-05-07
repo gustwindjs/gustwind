@@ -86,7 +86,6 @@ Deno.test("expand a route", async () => {
             context: {},
             dataSources: {},
             layout: "documentationPage",
-            meta: {},
             scripts: undefined,
             parentDataSources: {
               documentationPages: [{ slug: "foo" }],
@@ -134,7 +133,6 @@ Deno.test("expands a route within routes", async () => {
                 context: {},
                 dataSources: {},
                 layout: "documentationPage",
-                meta: {},
                 parentDataSources: {
                   blogPages: [{ slug: "foo" }],
                 },
@@ -181,7 +179,6 @@ Deno.test("child routes inherit data sources", async () => {
             context: {},
             dataSources: {},
             layout: "documentationPage",
-            meta: {},
             parentDataSources: {
               documentationPages: [{ slug: "foo" }, { slug: "bar" }],
             },
@@ -191,7 +188,6 @@ Deno.test("child routes inherit data sources", async () => {
             context: {},
             dataSources: {},
             layout: "documentationPage",
-            meta: {},
             parentDataSources: {
               documentationPages: [{ slug: "foo" }, { slug: "bar" }],
             },

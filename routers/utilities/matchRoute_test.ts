@@ -138,7 +138,6 @@ Deno.test("matches a two-order recursive route", async () => {
 Deno.test("matches an expanded route", async () => {
   const route = {
     layout: "blogIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -160,7 +159,6 @@ Deno.test("matches an expanded route", async () => {
     }),
     {
       layout: "blogPage",
-      meta: {},
       context: {},
       dataSources: {},
       parentDataSources: { blogPosts: [{ slug: "foo" }] },
@@ -203,7 +201,6 @@ Deno.test("expanded route retains data sources", async () => {
     }),
     {
       layout: "blogPage",
-      meta: {},
       context: {},
       parentDataSources: { blogPosts: [{ slug: "foo" }] },
       dataSources: {
@@ -220,7 +217,6 @@ Deno.test("expanded route retains data sources", async () => {
 Deno.test("matches index of an expanded route", async () => {
   const route = {
     layout: "blogIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -247,7 +243,6 @@ Deno.test("matches index of an expanded route", async () => {
 Deno.test("matches index of an expanded route while root route exists", async () => {
   const blogRoute = {
     layout: "blogIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -264,7 +259,6 @@ Deno.test("matches index of an expanded route while root route exists", async ()
   };
   const indexRoute = {
     layout: "siteIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -291,7 +285,6 @@ Deno.test("matches index of an expanded route while root route exists", async ()
 Deno.test("matches an expanded route behind a slash", async () => {
   const route = {
     layout: "blogIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -311,7 +304,6 @@ Deno.test("matches an expanded route behind a slash", async () => {
     await matchRoute({ "/": route }, "foo", { index: () => [{ slug: "foo" }] }),
     {
       layout: "blogPage",
-      meta: {},
       context: {},
       parentDataSources: { blogPosts: [{ slug: "foo" }] },
       dataSources: {},
@@ -323,7 +315,6 @@ Deno.test("matches an expanded route behind a slash", async () => {
 Deno.test("matches an expanded route of an expanded slash", async () => {
   const route = {
     layout: "blogIndex",
-    meta: {},
     context: {},
     expand: {
       matchBy: {
@@ -348,12 +339,10 @@ Deno.test("matches an expanded route of an expanded slash", async () => {
 Deno.test("matches a recursive route when expansion is used on the same route", async () => {
   const route2 = {
     layout: "barIndex",
-    meta: {},
     context: {},
   };
   const route1 = {
     layout: "fooIndex",
-    meta: {},
     context: {},
     routes: { bar: route2 },
     expand: {
@@ -381,12 +370,10 @@ Deno.test("matches a recursive route when expansion is used on the same route", 
 Deno.test("matches an expanded route when recursive routes are used on the same route", async () => {
   const route2 = {
     layout: "barIndex",
-    meta: {},
     context: {},
   };
   const route1 = {
     layout: "fooIndex",
-    meta: {},
     context: {},
     routes: { bar: route2 },
     expand: {
@@ -411,7 +398,6 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
       context: {},
       dataSources: {},
       layout: "blogPage",
-      meta: {},
       parentDataSources: { blogPosts: [{ slug: "foo" }] },
       scripts: undefined,
     },
@@ -421,7 +407,6 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
 Deno.test("fails to match", () => {
   const route = {
     layout: "fooIndex",
-    meta: {},
     context: {},
   };
 

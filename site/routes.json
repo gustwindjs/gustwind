@@ -1,9 +1,11 @@
 {
   "/": {
     "layout": "siteIndex",
-    "meta": {
-      "title": "Gustwind",
-      "description": "Deno powered website creator"
+    "context": {
+      "meta": {
+        "title": "Gustwind",
+        "description": "Deno powered website creator"
+      }
     },
     "dataSources": {
       "readme": {
@@ -13,8 +15,8 @@
     },
     "expand": {
       "matchBy": {
+        "name": "documentationPages",
         "indexer": {
-          "name": "documentationPages",
           "operation": "indexMarkdown",
           "parameters": ["./documentation"]
         },
@@ -27,24 +29,28 @@
           "parameters": [{ "parseHeadmatter": true }]
         }
       },
-      "meta": {
-        "title": {
-          "utility": "get",
-          "parameters": ["context", "document.data.title"]
-        },
-        "description": {
-          "utility": "get",
-          "parameters": ["context", "document.data.description"]
+      "context": {
+        "meta": {
+          "title": {
+            "utility": "get",
+            "parameters": ["context", "document.data.title"]
+          },
+          "description": {
+            "utility": "get",
+            "parameters": ["context", "document.data.description"]
+          }
         }
       }
     }
   },
   "templating": {
     "layout": "readmeIndex",
-    "meta": {
-      "title": "HTMLisp",
-      "description": "Templating in Gustwind by default is done using a combination of HTML and Lisp",
-      "readmePath": "htmlisp/README.md"
+    "context": {
+      "meta": {
+        "title": "HTMLisp",
+        "description": "Templating in Gustwind by default is done using a combination of HTML and Lisp",
+        "readmePath": "htmlisp/README.md"
+      }
     },
     "dataSources": {
       "readme": {
@@ -59,9 +65,11 @@
   },
   "blog": {
     "layout": "blogIndex",
-    "meta": {
-      "title": "Blog",
-      "description": "A blog about Gustwind"
+    "context": {
+      "meta": {
+        "title": "Blog",
+        "description": "A blog about Gustwind"
+      }
     },
     "dataSources": {
       "blogPosts": {
@@ -71,8 +79,8 @@
     },
     "expand": {
       "matchBy": {
+        "name": "blogPosts",
         "indexer": {
-          "name": "blogPosts",
           "operation": "indexMarkdown",
           "parameters": ["./blogPosts"]
         },
@@ -86,23 +94,27 @@
           "parameters": [{ "parseHeadmatter": true }]
         }
       },
-      "meta": {
-        "title": {
-          "utility": "get",
-          "parameters": ["context", "document.data.title"]
-        },
-        "description": {
-          "utility": "get",
-          "parameters": ["context", "document.data.description"]
+      "context": {
+        "meta": {
+          "title": {
+            "utility": "get",
+            "parameters": ["context", "document.data.title"]
+          },
+          "description": {
+            "utility": "get",
+            "parameters": ["context", "document.data.description"]
+          }
         }
       }
     },
     "routes": {
       "more": {
         "layout": "buttonsPage",
-        "meta": {
-          "title": "More Gustwind buttons",
-          "description": "Another secret buttons page"
+        "context": {
+          "meta": {
+            "title": "More Gustwind buttons",
+            "description": "Another secret buttons page"
+          }
         },
         "scripts": [{ "name": "hello" }]
       }
@@ -110,9 +122,11 @@
   },
   "buttons": {
     "layout": "buttonsPage",
-    "meta": {
-      "title": "Gustwind buttons",
-      "description": "Secret buttons page"
+    "context": {
+      "meta": {
+        "title": "Gustwind buttons",
+        "description": "Secret buttons page"
+      }
     },
     "scripts": [{ "name": "hello" }],
     "routes": {
@@ -128,9 +142,11 @@
   },
   "atom.xml": {
     "layout": "rssPage",
-    "meta": {
-      "title": "Gustwind",
-      "description": "Gustwind blog"
+    "context": {
+      "meta": {
+        "title": "Gustwind",
+        "description": "Gustwind blog"
+      }
     },
     "dataSources": {
       "blogPosts": {
@@ -141,9 +157,11 @@
   },
   "404.html": {
     "layout": "404",
-    "meta": {
-      "title": "Page not found",
-      "description": "This page does not exist"
+    "context": {
+      "meta": {
+        "title": "Page not found",
+        "description": "This page does not exist"
+      }
     }
   }
 }

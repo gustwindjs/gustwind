@@ -54,7 +54,6 @@ const plugin: Plugin<{
           ...runtimeMeta,
           // @ts-expect-error Figure out how to type this
           ...meta,
-          ...route.meta,
           ...route.context,
         };
 
@@ -62,7 +61,7 @@ const plugin: Plugin<{
           context: {
             ...context,
             url,
-            meta: await applyUtilities<Utility, Utilities, Context>(
+            ...await applyUtilities<Utility, Utilities, Context>(
               context,
               defaultUtilities,
               { context },

@@ -84,10 +84,13 @@ async function expandRoute(
         }
 
         // @ts-ignore route.expand exists by now for sure
-        const { meta, layout, scripts, context } = route.expand;
+        const { layout, scripts, context } = route.expand;
+
+        if (!matchBy.name) {
+          throw new Error(`Expand route ${url} is missing a name!`);
+        }
 
         expandedRoutes[url] = {
-          meta: meta || {},
           layout,
           scripts,
           context: context || {},

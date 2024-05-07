@@ -1,5 +1,6 @@
 import type { Context, Utilities, Utility } from "../../types.ts";
 
+// TODO: Move to a module of its own
 async function applyUtilities<
   U extends Utility,
   US extends Utilities,
@@ -13,6 +14,7 @@ async function applyUtilities<
     return {};
   }
 
+  // TODO: Apply this recursively
   return Object.fromEntries(
     await Promise.all(
       Object.entries(props).map(async (
