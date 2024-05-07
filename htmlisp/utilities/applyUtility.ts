@@ -1,3 +1,4 @@
+import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 
 // TODO: Move to a module of its own
@@ -50,6 +51,24 @@ async function applyUtility<
   }
 
   if (typeof value.utility !== "string") {
+    if (isObject(value)) {
+      return Object.fromEntries(
+        await Promise.all(
+          Object.entries(value).map(async (
+            [k, v],
+          ) => [
+            k,
+            await applyUtility(
+              // @ts-expect-error This is fine
+              v,
+              utilities,
+              context,
+            ),
+          ]),
+        ),
+      );
+    }
+
     return value;
   }
 
@@ -74,9 +93,13 @@ async function applyUtility<
       : [],
   );
 
-  // @ts-expect-error This is fine for now.
-  // TODO: Figure out a nice way to resolve context mismatch
-  return foundUtility.apply(context, parameters);
+  try {
+    // @ts-expect-error This is fine for now.
+    // TODO: Figure out a nice way to resolve context mismatch
+    return foundUtility.apply(context, parameters);
+  } catch (_error) {
+    console.error("Failed to apply", foundUtility, parameters);
+  }
 }
 
 export { applyUtilities, applyUtility };

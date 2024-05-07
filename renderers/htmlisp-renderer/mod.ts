@@ -114,22 +114,26 @@ const plugin: Plugin<{
 
         const context = {
           ...runtimeMeta,
-          // @ts-expect-error Figure out how to type this
-          ...meta,
           ...route.context,
+          meta: {
+            // @ts-expect-error This is fine
+            ...meta,
+            ...route.context,
+          },
         };
         const appliedContext = await applyUtilities<
           Utility,
           Utilities,
           Context
         >(
+          // @ts-expect-error This is fine (due to meta field)
           context,
           defaultUtilities,
           { context },
         );
 
         return {
-          context: { ...context, url, ...appliedContext },
+          context: { ...context, ...appliedContext, url },
         };
       },
       renderLayout: ({ matchRoute, route, context, url, pluginContext }) => {
