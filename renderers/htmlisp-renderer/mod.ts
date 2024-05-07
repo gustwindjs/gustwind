@@ -118,7 +118,8 @@ const plugin: Plugin<{
           meta: {
             // @ts-expect-error This is fine
             ...meta,
-            ...route.context,
+            // @ts-expect-error This is fine
+            ...route.context?.meta,
           },
         };
         const appliedContext = await applyUtilities<
