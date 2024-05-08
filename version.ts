@@ -1,6 +1,6 @@
 import { compilePlugins } from "./compilePluginScripts.ts";
 
-export const VERSION = "0.77.1";
+export const VERSION = "0.77.2";
 
 export async function prepublish(_version: string) {
   try {
