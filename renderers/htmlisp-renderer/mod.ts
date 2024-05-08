@@ -113,9 +113,9 @@ const plugin: Plugin<{
         }
 
         const context = {
-          ...runtimeMeta,
           ...route.context,
           meta: {
+            ...runtimeMeta,
             // @ts-expect-error This is fine
             ...meta,
             // @ts-expect-error This is fine
