@@ -70,7 +70,8 @@ self.onmessage = async (e) => {
 
       // TODO: Replace this with a more generic fix somehow
       if (
-        url.endsWith(".json") || url.endsWith(".xml") || url.endsWith(".html")
+        url.endsWith(".json/") || url.endsWith(".xml/") ||
+        url.endsWith(".html/")
       ) {
         await Deno.writeTextFile(dir, markup);
       } else {
