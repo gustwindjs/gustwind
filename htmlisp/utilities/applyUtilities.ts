@@ -6,7 +6,7 @@ async function applyUtilities<
   US extends Utilities,
   C extends Context,
 >(
-  props: Record<string, U> | null,
+  props: Record<string, U | unknown> | null,
   utilities: US,
   context: C,
 ): Promise<Record<string, unknown>> {

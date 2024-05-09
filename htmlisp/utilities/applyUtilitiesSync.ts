@@ -6,7 +6,7 @@ function applyUtilitiesSync<
   US extends Utilities,
   C extends Context,
 >(
-  props: Record<string, U> | null,
+  props: Record<string, U | unknown> | null,
   utilities: US,
   context: C,
 ): Record<string, unknown> {

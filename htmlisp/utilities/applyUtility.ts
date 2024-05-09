@@ -6,7 +6,7 @@ async function applyUtility<
   US extends Utilities,
   C extends Context,
 >(
-  value: U,
+  value: U | unknown,
   utilities: US,
   context: C,
   // deno-lint-ignore no-explicit-any
@@ -19,8 +19,9 @@ async function applyUtility<
     return;
   }
 
+  // @ts-expect-error Figure out how to type this
   if (typeof value.utility !== "string") {
-    if (isObject(value)) {
+    if (isObject(value) && !(value instanceof Date)) {
       return Object.fromEntries(
         await Promise.all(
           Object.entries(value).map(async (
@@ -28,7 +29,6 @@ async function applyUtility<
           ) => [
             k,
             await applyUtility(
-              // @ts-expect-error This is fine
               v,
               utilities,
               context,
@@ -41,6 +41,7 @@ async function applyUtility<
     return value;
   }
 
+  // @ts-expect-error Figure out how to type this
   const foundUtility = utilities[value.utility];
 
   if (!foundUtility) {
@@ -49,7 +50,9 @@ async function applyUtility<
   }
 
   const parameters = await Promise.all(
+    // @ts-expect-error Figure out how to type this
     Array.isArray(value.parameters)
+      // @ts-expect-error Figure out how to type this
       ? value.parameters.map((p) => {
         if (typeof p === "string") {
           // Nothing to do

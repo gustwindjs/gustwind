@@ -1,3 +1,4 @@
+import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 
 function applyUtilitySync<
@@ -5,7 +6,7 @@ function applyUtilitySync<
   US extends Utilities,
   C extends Context,
 >(
-  value: U,
+  value: U | unknown,
   utilities: US,
   context: C,
 ): any {
@@ -17,10 +18,27 @@ function applyUtilitySync<
     return;
   }
 
+  // @ts-expect-error Figure out how to type this
   if (typeof value.utility !== "string") {
+    if (isObject(value) && !(value instanceof Date)) {
+      return Object.fromEntries(
+        Object.entries(value).map((
+          [k, v],
+        ) => [
+          k,
+          applyUtilitySync(
+            v,
+            utilities,
+            context,
+          ),
+        ]),
+      );
+    }
+
     return value;
   }
 
+  // @ts-expect-error Figure out how to type this
   const foundUtility = utilities[value.utility];
 
   if (!foundUtility) {
@@ -28,7 +46,9 @@ function applyUtilitySync<
     throw new Error("applyUtility - Matching utility was not found");
   }
 
+  // @ts-expect-error Figure out how to type this
   const parameters = Array.isArray(value.parameters)
+    // @ts-expect-error Figure out how to type this
     ? value.parameters.map((p) => {
       if (typeof p === "string") {
         // Nothing to do
