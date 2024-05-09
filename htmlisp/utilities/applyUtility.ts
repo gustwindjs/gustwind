@@ -1,37 +1,6 @@
 import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 
-// TODO: Move to a module of its own
-async function applyUtilities<
-  U extends Utility,
-  US extends Utilities,
-  C extends Context,
->(
-  props: Record<string, U> | null,
-  utilities: US,
-  context: C,
-): Promise<Record<string, unknown>> {
-  if (!props) {
-    return {};
-  }
-
-  // TODO: Apply this recursively
-  return Object.fromEntries(
-    await Promise.all(
-      Object.entries(props).map(async (
-        [k, v],
-      ) => [
-        k,
-        typeof v === "string" ? v : await applyUtility<U, US, C>(
-          v,
-          utilities,
-          context,
-        ),
-      ]),
-    ),
-  );
-}
-
 async function applyUtility<
   U extends Utility,
   US extends Utilities,
@@ -102,4 +71,4 @@ async function applyUtility<
   }
 }
 
-export { applyUtilities, applyUtility };
+export { applyUtility };

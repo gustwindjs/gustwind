@@ -1,6 +1,6 @@
 import process from "node:process";
 import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
-import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
+import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";

@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
-import { applyUtilities } from "../../htmlisp/utilities/applyUtility.ts";
+import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 // import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
