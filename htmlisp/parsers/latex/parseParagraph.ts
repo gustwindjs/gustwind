@@ -57,7 +57,6 @@ function parseParagraph(
           stringBuffer = "";
           state = STATES.PARSE_NAMED_LINK_URL;
         } else {
-          console.log("foo", stringBuffer);
           throw new Error(`Unknown expression: ${stringBuffer}`);
         }
       } else {
