@@ -89,36 +89,20 @@ function parseParagraph(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_SIMPLE_LINK) {
-      if (c === "}") {
-        if (!currentTag) {
-          throw new Error("Missing current tag");
-        }
+      const o = parseExpression(c, currentTag, stringBuffer, "a", {
+        href: stringBuffer,
+      });
 
-        currentTag.children.push({
-          type: "a",
-          attributes: { href: stringBuffer },
-          children: [stringBuffer],
-        });
-        stringBuffer = "";
-        state = STATES.IDLE;
-      } else {
-        stringBuffer += c;
+      stringBuffer = o.stringBuffer;
+      if (o.state) {
+        state = o.state;
       }
     } else if (state === STATES.PARSE_MONOSPACE) {
-      if (c === "}") {
-        if (!currentTag) {
-          throw new Error("Missing current tag");
-        }
+      const o = parseExpression(c, currentTag, stringBuffer, "code", {});
 
-        currentTag.children.push({
-          type: "code",
-          attributes: {},
-          children: [stringBuffer],
-        });
-        stringBuffer = "";
-        state = STATES.IDLE;
-      } else {
-        stringBuffer += c;
+      stringBuffer = o.stringBuffer;
+      if (o.state) {
+        state = o.state;
       }
     }
   }
@@ -128,6 +112,31 @@ function parseParagraph(
   }
 
   return ret;
+}
+
+function parseExpression(
+  c: string,
+  currentTag: Element | null,
+  stringBuffer: string,
+  type: string,
+  attributes: Record<string, string>,
+) {
+  if (c === "}") {
+    if (!currentTag) {
+      throw new Error("Missing current tag");
+    }
+
+    currentTag.children.push({
+      type,
+      attributes,
+      children: [stringBuffer],
+    });
+    stringBuffer = "";
+
+    return { stringBuffer: "", state: STATES.IDLE };
+  }
+
+  return { stringBuffer: stringBuffer + c };
 }
 
 export { parseParagraph };
