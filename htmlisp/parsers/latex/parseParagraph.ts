@@ -8,6 +8,7 @@ enum STATES {
   PARSE_NAMED_LINK_CONTENT,
   PARSE_MONOSPACE,
   PARSE_BOLD,
+  PARSE_ITALIC,
   PARSE_SIMPLE_LINK,
 }
 const LIMIT = 100000;
@@ -49,6 +50,9 @@ function parseParagraph(
         } else if (stringBuffer === "textbf") {
           stringBuffer = "";
           state = STATES.PARSE_BOLD;
+        } else if (stringBuffer === "textit") {
+          stringBuffer = "";
+          state = STATES.PARSE_ITALIC;
         } else if (stringBuffer === "href") {
           stringBuffer = "";
           state = STATES.PARSE_NAMED_LINK_URL;
@@ -103,6 +107,13 @@ function parseParagraph(
       }
     } else if (state === STATES.PARSE_BOLD) {
       const o = parseExpression(c, currentTag, stringBuffer, "b", {});
+
+      stringBuffer = o.stringBuffer;
+      if (o.state) {
+        state = o.state;
+      }
+    } else if (state === STATES.PARSE_ITALIC) {
+      const o = parseExpression(c, currentTag, stringBuffer, "i", {});
 
       stringBuffer = o.stringBuffer;
       if (o.state) {
