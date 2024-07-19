@@ -3,7 +3,7 @@ import { parseFootnote } from "./parseFootnote.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`footnote`, () => {
-  const sentence = "\footnote{and hello again}";
+  const sentence = String.raw`\footnote{and hello again}`;
 
   assertEquals(
     parseFootnote(characterGenerator(sentence)),
@@ -32,8 +32,8 @@ Deno.test(`simple link in footnote`, () => {
 });
 
 Deno.test(`complex link in footnote`, () => {
-  const sentence =
-    "\footnote{and hello again \href{https://google.com}{Google}}";
+  const sentence = String
+    .raw`\footnote{and hello again \href{https://google.com}{Google}}`;
 
   assertEquals(
     parseFootnote(characterGenerator(sentence)),

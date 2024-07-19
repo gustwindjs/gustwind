@@ -3,7 +3,7 @@ import { parseTitle } from "./parseTitle.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`chapter title`, () => {
-  const sentence = "\chapter{hello world}";
+  const sentence = String.raw`\chapter{hello world}`;
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
@@ -17,7 +17,7 @@ Deno.test(`chapter title`, () => {
 });
 
 Deno.test(`section title`, () => {
-  const sentence = "\section{hello world}";
+  const sentence = String.raw`\section{hello world}`;
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
@@ -31,7 +31,7 @@ Deno.test(`section title`, () => {
 });
 
 Deno.test(`subsection title`, () => {
-  const sentence = "\subsection{hello world}";
+  const sentence = String.raw`\subsection{hello world}`;
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
@@ -45,7 +45,7 @@ Deno.test(`subsection title`, () => {
 });
 
 Deno.test(`subsubsection title`, () => {
-  const sentence = "\subsubsection{hello world}";
+  const sentence = String.raw`\subsubsection{hello world}`;
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
@@ -59,7 +59,7 @@ Deno.test(`subsubsection title`, () => {
 });
 
 Deno.test(`paragraph title`, () => {
-  const sentence = "\paragraph{hello world}";
+  const sentence = String.raw`\paragraph{hello world}`;
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),

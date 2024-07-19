@@ -25,6 +25,8 @@ function parseParagraph(
 
     if (state === STATES.IDLE) {
       if (c === "\\") {
+        console.log("got backslash");
+
         const tag = { type: "p", attributes: {}, children: [stringBuffer] };
         ret.push(tag);
         currentTag = tag;

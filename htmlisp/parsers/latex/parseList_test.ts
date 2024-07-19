@@ -3,7 +3,7 @@ import { parseList } from "./parseList.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`numbered list`, () => {
-  const sentence = `\begin{enumerate}
+  const sentence = String.raw`\begin{enumerate}
   \item Demo
 \end{enumerate}`;
 
@@ -19,7 +19,7 @@ Deno.test(`numbered list`, () => {
 });
 
 Deno.test(`bulleted list`, () => {
-  const sentence = `\begin{itemize}
+  const sentence = String.raw`\begin{itemize}
   \item Demo
 \end{itemize}`;
 
@@ -35,7 +35,7 @@ Deno.test(`bulleted list`, () => {
 });
 
 Deno.test(`description list`, () => {
-  const sentence = `\begin{description}
+  const sentence = String.raw`\begin{description}
   \item[Foo] bar
 \end{description}`;
 

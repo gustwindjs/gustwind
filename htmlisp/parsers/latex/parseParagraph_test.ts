@@ -33,7 +33,7 @@ Deno.test(`simple link`, () => {
 });
 
 Deno.test(`named link`, () => {
-  const sentence = "hello \href{https://google.com}{Google}";
+  const sentence = String.raw`hello \href{https://google.com}{Google}`;
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
@@ -50,7 +50,7 @@ Deno.test(`named link`, () => {
 });
 
 Deno.test(`monospaced word`, () => {
-  const sentence = "hello \texttt{world}";
+  const sentence = String.raw`hello \texttt{world}`;
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
@@ -67,7 +67,7 @@ Deno.test(`monospaced word`, () => {
 });
 
 Deno.test(`bold word`, () => {
-  const sentence = "hello \textbf{world}";
+  const sentence = String.raw`hello \textbf{world}`;
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
@@ -84,7 +84,7 @@ Deno.test(`bold word`, () => {
 });
 
 Deno.test(`italic word`, () => {
-  const sentence = "hello \textit{world}";
+  const sentence = String.raw`hello \textit{world}`;
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
@@ -116,7 +116,7 @@ world`;
 });
 
 Deno.test(`verbatim`, () => {
-  const sentence = `\begin{verbatim}
+  const sentence = String.raw`\begin{verbatim}
 hello world
 \end{verbatim}`;
 

@@ -3,7 +3,7 @@ import { parseRef } from "./parseRef.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`ref`, () => {
-  const sentence = "hello world at \ref{ch:foo}";
+  const sentence = String.raw`hello world at \ref{ch:foo}`;
 
   assertEquals(
     parseRef(characterGenerator(sentence)),
@@ -17,7 +17,7 @@ Deno.test(`ref`, () => {
 });
 
 Deno.test(`nameref`, () => {
-  const sentence = "hello world at \nameref{ch:foo}";
+  const sentence = String.raw`hello world at \nameref{ch:foo}`;
 
   assertEquals(
     parseRef(characterGenerator(sentence)),
@@ -31,7 +31,7 @@ Deno.test(`nameref`, () => {
 });
 
 Deno.test(`autoref`, () => {
-  const sentence = "hello world at \autoref{ch:foo}";
+  const sentence = String.raw`hello world at \autoref{ch:foo}`;
 
   assertEquals(
     parseRef(characterGenerator(sentence)),

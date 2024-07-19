@@ -3,7 +3,7 @@ import { parseCite } from "./parseCite.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`sentence with a citation`, () => {
-  const sentence = "According to \cite{openWhatFirst}, the first.";
+  const sentence = String.raw`According to \cite{openWhatFirst}, the first.`;
 
   assertEquals(
     parseCite(characterGenerator(sentence)),
@@ -17,7 +17,7 @@ Deno.test(`sentence with a citation`, () => {
 });
 
 Deno.test(`sentence with a textual citation`, () => {
-  const sentence = "According to \citet{openWhatFirst}, the first.";
+  const sentence = String.raw`According to \citet{openWhatFirst}, the first.`;
 
   assertEquals(
     parseCite(characterGenerator(sentence)),
@@ -31,7 +31,7 @@ Deno.test(`sentence with a textual citation`, () => {
 });
 
 Deno.test(`sentence with a parentheses citation`, () => {
-  const sentence = "According to \citep{openWhatFirst}, the first.";
+  const sentence = String.raw`According to \citep{openWhatFirst}, the first.`;
 
   assertEquals(
     parseCite(characterGenerator(sentence)),
