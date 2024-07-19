@@ -16,7 +16,7 @@ Deno.test(`simple sentence`, () => {
 });
 
 Deno.test(`simple link`, () => {
-  const sentence = "hello " + "\\u" + "rl{https://google.com}";
+  const sentence = String.raw`hello \url{https://google.com}`;
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),

@@ -17,8 +17,8 @@ Deno.test(`footnote`, () => {
 });
 
 Deno.test(`simple link in footnote`, () => {
-  const sentence = "\footnote{and hello again " + "\\u" +
-    "rl{https://google.com}}";
+  const sentence = String
+    .raw`\footnote{and hello again \url{https://google.com}}`;
 
   assertEquals(
     parseFootnote(characterGenerator(sentence)),
