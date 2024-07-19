@@ -6,6 +6,7 @@ enum STATES {
   PARSE_EXPRESSION,
   PARSE_NAMED_LINK_URL,
   PARSE_NAMED_LINK_CONTENT,
+  PARSE_MONOSPACE,
   PARSE_SIMPLE_LINK,
 }
 const LIMIT = 100000;
@@ -41,11 +42,14 @@ function parseParagraph(
         if (stringBuffer === "url") {
           stringBuffer = "";
           state = STATES.PARSE_SIMPLE_LINK;
-        }
-        if (stringBuffer === "href") {
+        } else if (stringBuffer === "texttt") {
+          stringBuffer = "";
+          state = STATES.PARSE_MONOSPACE;
+        } else if (stringBuffer === "href") {
           stringBuffer = "";
           state = STATES.PARSE_NAMED_LINK_URL;
         } else {
+          console.log("foo", stringBuffer);
           throw new Error(`Unknown expression: ${stringBuffer}`);
         }
       } else {
@@ -93,6 +97,22 @@ function parseParagraph(
         currentTag.children.push({
           type: "a",
           attributes: { href: stringBuffer },
+          children: [stringBuffer],
+        });
+        stringBuffer = "";
+        state = STATES.IDLE;
+      } else {
+        stringBuffer += c;
+      }
+    } else if (state === STATES.PARSE_MONOSPACE) {
+      if (c === "}") {
+        if (!currentTag) {
+          throw new Error("Missing current tag");
+        }
+
+        currentTag.children.push({
+          type: "code",
+          attributes: {},
           children: [stringBuffer],
         });
         stringBuffer = "";
