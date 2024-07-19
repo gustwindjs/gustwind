@@ -4,6 +4,8 @@ import type { Element } from "../../types.ts";
 enum STATES {
   IDLE,
   PARSE_EXPRESSION,
+  PARSE_NAMED_LINK_URL,
+  PARSE_NAMED_LINK_CONTENT,
   PARSE_SIMPLE_LINK,
 }
 const LIMIT = 100000;
@@ -15,6 +17,7 @@ function parseParagraph(
   const ret = [];
   let currentTag: Element | null = null;
   let stringBuffer = "";
+  let href = "";
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -25,8 +28,6 @@ function parseParagraph(
 
     if (state === STATES.IDLE) {
       if (c === "\\") {
-        console.log("got backslash");
-
         const tag = { type: "p", attributes: {}, children: [stringBuffer] };
         ret.push(tag);
         currentTag = tag;
@@ -40,9 +41,46 @@ function parseParagraph(
         if (stringBuffer === "url") {
           stringBuffer = "";
           state = STATES.PARSE_SIMPLE_LINK;
+        }
+        if (stringBuffer === "href") {
+          stringBuffer = "";
+          state = STATES.PARSE_NAMED_LINK_URL;
         } else {
           throw new Error(`Unknown expression: ${stringBuffer}`);
         }
+      } else {
+        stringBuffer += c;
+      }
+    } else if (state === STATES.PARSE_NAMED_LINK_URL) {
+      if (c === "}") {
+        if (!currentTag) {
+          throw new Error("Missing current tag");
+        }
+
+        href = stringBuffer;
+        stringBuffer = "";
+        state = STATES.PARSE_NAMED_LINK_CONTENT;
+      } else {
+        stringBuffer += c;
+      }
+    } else if (state === STATES.PARSE_NAMED_LINK_CONTENT) {
+      if (c === "{") {
+        if (stringBuffer.length) {
+          throw new Error("Invalid named link syntax");
+        }
+      } else if (c === "}") {
+        if (!currentTag) {
+          throw new Error("Missing current tag");
+        }
+
+        currentTag.children.push({
+          type: "a",
+          attributes: { href },
+          children: [stringBuffer],
+        });
+        href = "";
+        stringBuffer = "";
+        state = STATES.IDLE;
       } else {
         stringBuffer += c;
       }
