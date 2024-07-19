@@ -1,8 +1,8 @@
 import { parseAttributes } from "./parseAttributes.ts";
-import { getMemo } from "../../../../utilities/getMemo.ts";
+import { getMemo } from "../../../utilities/getMemo.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 import type { CharacterGenerator } from "../types.ts";
-import type { Element } from "../../../types.ts";
+import type { Element } from "../../types.ts";
 
 enum STATES {
   IDLE,
