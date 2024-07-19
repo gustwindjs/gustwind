@@ -1,10 +1,11 @@
 import type { CharacterGenerator } from "../types.ts";
+import type { Element } from "../../types.ts";
 
 const LIMIT = 100000;
 
 function parseParagraph(
   getCharacter: CharacterGenerator,
-): string {
+): Element[] {
   let ret = "";
 
   for (let i = 0; i < LIMIT; i++) {
@@ -17,7 +18,11 @@ function parseParagraph(
     ret += c;
   }
 
-  return ret;
+  return [{
+    type: "p",
+    attributes: {},
+    children: [ret],
+  }];
 }
 
 export { parseParagraph };

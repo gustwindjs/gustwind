@@ -7,17 +7,25 @@ Deno.test(`simple sentence`, () => {
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
 Deno.test(`simple link`, () => {
-  const sentence = "hello \url{https://google.com}";
+  const sentence = "hello " + "\\u" + "rl{https://google.com}";
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -27,7 +35,11 @@ Deno.test(`named link`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -37,7 +49,11 @@ Deno.test(`monospaced word`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -47,7 +63,11 @@ Deno.test(`bold word`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -57,7 +77,11 @@ Deno.test(`italic word`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -68,7 +92,11 @@ world`;
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -80,7 +108,11 @@ hello world
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -91,7 +123,11 @@ Deno.test(`sentence with a citation`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -101,7 +137,11 @@ Deno.test(`sentence with a textual citation`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -111,7 +151,11 @@ Deno.test(`sentence with a parentheses citation`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -122,28 +166,41 @@ Deno.test(`footnote`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
 Deno.test(`simple link in footnote`, () => {
-  const sentence = "hello world\footnote{and hello again \url{https://google.com}}";
+  const sentence = "hello world\footnote{and hello again " + "\\u" +
+    "rl{https://google.com}}";
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
-
 Deno.test(`complex link in footnote`, () => {
-  const sentence = "hello world\footnote{and hello again \href{https://google.com}{Google}}";
+  const sentence =
+    "hello world\footnote{and hello again \href{https://google.com}{Google}}";
 
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -156,7 +213,11 @@ Deno.test(`numbered list`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -168,7 +229,11 @@ Deno.test(`bulleted list`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -180,7 +245,11 @@ Deno.test(`description list`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -191,7 +260,11 @@ Deno.test(`ref`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -201,7 +274,11 @@ Deno.test(`nameref`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -211,7 +288,11 @@ Deno.test(`autoref`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -222,7 +303,11 @@ Deno.test(`chapter title`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -232,7 +317,11 @@ Deno.test(`section title`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -242,7 +331,11 @@ Deno.test(`subsection title`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -252,7 +345,11 @@ Deno.test(`subsubsection title`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
 
@@ -262,6 +359,10 @@ Deno.test(`paragraph title`, () => {
   assertEquals(
     parseParagraph(characterGenerator(sentence)),
     // TODO
-    sentence,
+    [{
+      type: "p",
+      attributes: {},
+      children: [sentence],
+    }],
   );
 });
