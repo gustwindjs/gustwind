@@ -1,6 +1,6 @@
 import { parseAttribute } from "./parseAttribute.ts";
-import type { CharacterGenerator } from "./types.ts";
-import type { Attributes } from "../../types.ts";
+import type { CharacterGenerator } from "../types.ts";
+import type { Attributes } from "../../../types.ts";
 
 function parseAttributes(getCharacter: CharacterGenerator) {
   const attributes: Attributes = {};

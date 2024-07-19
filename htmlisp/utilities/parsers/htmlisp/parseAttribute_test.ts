@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseAttribute } from "./parseAttribute.ts";
-import { characterGenerator } from "./characterGenerator.ts";
+import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`attribute with "`, () => {
   assertEquals(

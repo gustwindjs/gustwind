@@ -1,4 +1,4 @@
-import type { CharacterGenerator } from "./types.ts";
+import type { CharacterGenerator } from "../types.ts";
 
 enum STATES {
   FIND_ATTRIBUTE_NAME,

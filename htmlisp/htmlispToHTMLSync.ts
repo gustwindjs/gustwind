@@ -1,6 +1,6 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
-import { parseTag } from "./utilities/parsers/parseTag.ts";
+import { parseTag } from "./utilities/parsers/htmlisp/parseTag.ts";
 import { astToHtmlSync } from "./utilities/astToHtmlSync.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
