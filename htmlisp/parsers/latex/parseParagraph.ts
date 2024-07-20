@@ -29,7 +29,7 @@ function parseParagraph(
           const tag = {
             type: "p",
             attributes: {},
-            children: [stringBuffer.trim()],
+            children: [stringBuffer],
           };
           ret.push(tag);
           currentTag = tag;

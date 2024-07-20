@@ -143,7 +143,7 @@ hello world
       {
         type: "p",
         attributes: {},
-        children: ["hello"],
+        children: ["hello\n\n"],
       },
       {
         type: "pre",
@@ -169,7 +169,7 @@ again`;
       {
         type: "p",
         attributes: {},
-        children: ["hello"],
+        children: ["hello\n\n"],
       },
       {
         type: "pre",
