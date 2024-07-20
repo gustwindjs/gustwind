@@ -7,11 +7,10 @@ Deno.test(`chapter title`, () => {
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
-    // TODO
     [{
-      type: "p",
+      type: "h1",
       attributes: {},
-      children: [sentence],
+      children: ["hello world"],
     }],
   );
 });
@@ -21,11 +20,10 @@ Deno.test(`section title`, () => {
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
-    // TODO
     [{
-      type: "p",
+      type: "h2",
       attributes: {},
-      children: [sentence],
+      children: ["hello world"],
     }],
   );
 });
@@ -35,11 +33,10 @@ Deno.test(`subsection title`, () => {
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
-    // TODO
     [{
-      type: "p",
+      type: "h3",
       attributes: {},
-      children: [sentence],
+      children: ["hello world"],
     }],
   );
 });
@@ -49,11 +46,10 @@ Deno.test(`subsubsection title`, () => {
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
-    // TODO
     [{
-      type: "p",
+      type: "h4",
       attributes: {},
-      children: [sentence],
+      children: ["hello world"],
     }],
   );
 });
@@ -63,11 +59,10 @@ Deno.test(`paragraph title`, () => {
 
   assertEquals(
     parseTitle(characterGenerator(sentence)),
-    // TODO
     [{
-      type: "p",
+      type: "b",
       attributes: {},
-      children: [sentence],
+      children: ["hello world"],
     }],
   );
 });
