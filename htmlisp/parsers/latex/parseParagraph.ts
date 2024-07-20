@@ -37,7 +37,11 @@ function parseParagraph(
     if (state === STATES.IDLE) {
       if (c === "\\") {
         if (stringBuffer) {
-          const tag = { type: "p", attributes: {}, children: [stringBuffer] };
+          const tag = {
+            type: "p",
+            attributes: {},
+            children: [stringBuffer.trim()],
+          };
           ret.push(tag);
           currentTag = tag;
         }

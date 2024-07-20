@@ -115,7 +115,6 @@ world`;
   );
 });
 
-// TODO: Test a mixed case (i.e., a paragraph before verbatim)
 Deno.test(`verbatim`, () => {
   const sentence = String.raw`\begin{verbatim}
 hello world
@@ -128,5 +127,29 @@ hello world
       attributes: {},
       children: ["hello world"],
     }],
+  );
+});
+
+Deno.test(`paragraph and verbatim`, () => {
+  const sentence = String.raw`hello
+
+\begin{verbatim}
+hello world
+\end{verbatim}`;
+
+  assertEquals(
+    parseParagraph(characterGenerator(sentence)),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["hello"],
+      },
+      {
+        type: "pre",
+        attributes: {},
+        children: ["hello world"],
+      },
+    ],
   );
 });
