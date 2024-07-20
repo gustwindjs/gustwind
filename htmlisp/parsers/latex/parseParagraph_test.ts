@@ -153,3 +153,34 @@ hello world
     ],
   );
 });
+
+Deno.test(`paragraph, verbatim, and paragraph`, () => {
+  const sentence = String.raw`hello
+
+\begin{verbatim}
+hello world
+\end{verbatim}
+
+again`;
+
+  assertEquals(
+    parseParagraph(characterGenerator(sentence)),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["hello"],
+      },
+      {
+        type: "pre",
+        attributes: {},
+        children: ["hello world"],
+      },
+      {
+        type: "p",
+        attributes: {},
+        children: ["again"],
+      },
+    ],
+  );
+});

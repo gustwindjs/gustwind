@@ -183,7 +183,7 @@ function parseParagraph(
   }
 
   if (stringBuffer) {
-    ret.push({ type: "p", attributes: {}, children: [stringBuffer] });
+    ret.push({ type: "p", attributes: {}, children: [stringBuffer.trim()] });
   }
 
   return ret;
