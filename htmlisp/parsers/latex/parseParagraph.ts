@@ -1,19 +1,8 @@
+import { parseExpression } from "./utilities.ts";
+import { STATES } from "./states.ts";
 import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
-enum STATES {
-  IDLE,
-  PARSE_EXPRESSION,
-  PARSE_NAMED_LINK_URL,
-  PARSE_NAMED_LINK_CONTENT,
-  PARSE_MONOSPACE,
-  PARSE_BOLD,
-  PARSE_ITALIC,
-  PARSE_SIMPLE_LINK,
-  PARSE_BLOCK_START,
-  PARSE_BLOCK_CONTENT,
-  PARSE_BLOCK_END,
-}
 const LIMIT = 100000;
 
 function parseParagraph(
@@ -187,31 +176,6 @@ function parseParagraph(
   }
 
   return ret;
-}
-
-function parseExpression(
-  c: string,
-  currentTag: Element | null,
-  stringBuffer: string,
-  type: string,
-  attributes: Record<string, string>,
-) {
-  if (c === "}") {
-    if (!currentTag) {
-      throw new Error("Missing current tag");
-    }
-
-    currentTag.children.push({
-      type,
-      attributes,
-      children: [stringBuffer],
-    });
-    stringBuffer = "";
-
-    return { stringBuffer: "", state: STATES.IDLE };
-  }
-
-  return { stringBuffer: stringBuffer + c };
 }
 
 export { parseParagraph };
