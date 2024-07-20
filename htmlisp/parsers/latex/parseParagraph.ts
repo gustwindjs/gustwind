@@ -10,6 +10,9 @@ enum STATES {
   PARSE_BOLD,
   PARSE_ITALIC,
   PARSE_SIMPLE_LINK,
+  PARSE_BLOCK_START,
+  PARSE_BLOCK_CONTENT,
+  PARSE_BLOCK_END,
 }
 const LIMIT = 100000;
 
@@ -21,6 +24,8 @@ function parseParagraph(
   let currentTag: Element | null = null;
   let stringBuffer = "";
   let href = "";
+  let blockName = "";
+  let blockContent = "";
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -31,9 +36,12 @@ function parseParagraph(
 
     if (state === STATES.IDLE) {
       if (c === "\\") {
-        const tag = { type: "p", attributes: {}, children: [stringBuffer] };
-        ret.push(tag);
-        currentTag = tag;
+        if (stringBuffer) {
+          const tag = { type: "p", attributes: {}, children: [stringBuffer] };
+          ret.push(tag);
+          currentTag = tag;
+        }
+
         stringBuffer = "";
         state = STATES.PARSE_EXPRESSION;
       } else {
@@ -56,6 +64,12 @@ function parseParagraph(
         } else if (stringBuffer === "href") {
           stringBuffer = "";
           state = STATES.PARSE_NAMED_LINK_URL;
+        } else if (stringBuffer === "begin") {
+          stringBuffer = "";
+          state = STATES.PARSE_BLOCK_START;
+        } else if (stringBuffer === "end") {
+          stringBuffer = "";
+          state = STATES.PARSE_BLOCK_END;
         } else {
           throw new Error(`Unknown expression: ${stringBuffer}`);
         }
@@ -124,6 +138,42 @@ function parseParagraph(
       stringBuffer = o.stringBuffer;
       if (o.state) {
         state = o.state;
+      }
+    } else if (state === STATES.PARSE_BLOCK_START) {
+      if (c === "}") {
+        blockName = stringBuffer;
+        stringBuffer = "";
+
+        state = STATES.PARSE_BLOCK_CONTENT;
+      } else {
+        stringBuffer += c;
+      }
+    } else if (state === STATES.PARSE_BLOCK_CONTENT) {
+      if (c === "\\") {
+        blockContent = stringBuffer;
+        stringBuffer = "";
+        state = STATES.PARSE_EXPRESSION;
+      } else {
+        stringBuffer += c;
+      }
+    } else if (state === STATES.PARSE_BLOCK_END) {
+      if (c === "}") {
+        if (blockName !== stringBuffer) {
+          console.log(blockName, stringBuffer);
+          throw new Error("Block start and end name did not match");
+        }
+
+        currentTag = {
+          type: "pre", // TODO: Map verbatim to pre etc.
+          attributes: {},
+          children: [blockContent.trim()],
+        };
+        ret.push(currentTag);
+
+        stringBuffer = "";
+        state = STATES.IDLE;
+      } else {
+        stringBuffer += c;
       }
     }
   }

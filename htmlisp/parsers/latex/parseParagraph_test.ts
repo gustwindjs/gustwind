@@ -115,6 +115,7 @@ world`;
   );
 });
 
+// TODO: Test a mixed case (i.e., a paragraph before verbatim)
 Deno.test(`verbatim`, () => {
   const sentence = String.raw`\begin{verbatim}
 hello world
