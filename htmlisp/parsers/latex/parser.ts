@@ -1,8 +1,8 @@
-// Syntax prototype for a parser
-// TODO: Hook these up with a parser engine + add missing details
+import type { Element } from "../../types.ts";
 
-// TODO: Clean up typing
-const singleExpressions = [
+type Expression = [string, (s: string, attribute?: string) => Element];
+
+const singleExpressions: Expression[] = [
   // Url
   ["url", (href: string) => element("a", href, { href })],
   // Titles
@@ -10,7 +10,7 @@ const singleExpressions = [
   ["section", (children: string) => element("h2", children)],
   ["subsection", (children: string) => element("h3", children)],
   ["subsubsection", (children: string) => element("h4", children)],
-  ["paragraph", "b", (children: string) => element("b", children)],
+  ["paragraph", (children: string) => element("b", children)],
   // Formatting
   ["texttt", (children: string) => element("code", children)],
   ["textbf", (children: string) => element("b", children)],
@@ -26,15 +26,16 @@ const singleExpressions = [
   ["citep", (children: string) => element("sup", children)],
 ];
 
-const doubleExpressions = [
+const doubleExpressions: Expression[] = [
   // Url
   [
     "href",
-    (children: string, href: string) => element("a", children, { href }),
+    (children: string, href?: string) =>
+      element("a", children, href ? { href } : {}),
   ],
 ];
 
-const blocks = [
+const blockExpressions: Expression[] = [
   // Url
   ["verbatim", (children: string) => element("pre", children)],
   // Lists
@@ -46,17 +47,22 @@ const blocks = [
   ["description", (children: string) => element("dl", children)],
 ];
 
+const allExpressions: Expression[] = singleExpressions.concat(
+  doubleExpressions,
+  blockExpressions,
+);
+
+// TODO
+function parse(name: string) {}
+
 function element(
   type: string,
   children: string,
   attributes?: Record<string, string>,
-) {
+): Element {
   return {
-    type: [type],
+    type,
     attributes: attributes || {},
-    children,
+    children: [children],
   };
 }
-
-// TODO
-function parse(name: string) {}
