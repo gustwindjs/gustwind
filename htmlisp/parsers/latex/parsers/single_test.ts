@@ -7,8 +7,8 @@ Deno.test(`simple expression`, () => {
 
   assertEquals(
     parseSingle(
-      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
       characterGenerator(String.raw`\id{${input}}`),
+      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
     ),
     { type: "div", attributes: {}, children: [input] },
   );

@@ -12,8 +12,8 @@ const LIMIT = 100000;
 
 // Parses \<expression>{<parameter>} form
 function parseSingle(
-  expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
+  expressions: Record<string, Expression>,
 ): string | Element {
   let state = STATES.IDLE;
   let foundKey = "";

@@ -7,14 +7,14 @@ const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
 function parseBlock(
-  expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
+  expressions: Record<string, Expression>,
 ): Element {
   let output = "";
 
-  const begin = parseSingle({
+  const begin = parseSingle(getCharacter, {
     begin: (i) => i,
-  }, getCharacter);
+  });
   // TODO: Set up a content parser that terminates on \
   // TODO: Parse end block
   // TODO: Compile parsing results

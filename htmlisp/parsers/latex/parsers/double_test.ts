@@ -8,6 +8,7 @@ Deno.test(`simple expression`, () => {
 
   assertEquals(
     parseDouble(
+      characterGenerator(String.raw`\id{${input}}{${arg}}`),
       {
         id: (i, arg) => ({
           type: "div",
@@ -15,7 +16,6 @@ Deno.test(`simple expression`, () => {
           children: [i],
         }),
       },
-      characterGenerator(String.raw`\id{${input}}{${arg}}`),
     ),
     { type: "div", attributes: { id: arg }, children: [input] },
   );

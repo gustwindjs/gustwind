@@ -13,8 +13,8 @@ const LIMIT = 100000;
 
 // Parses \<expression>{<parameter 1>}{<parameter 2>} form
 function parseDouble(
-  expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
+  expressions: Record<string, Expression>,
 ): string | Element {
   let state = STATES.IDLE;
   let foundKey = "";
