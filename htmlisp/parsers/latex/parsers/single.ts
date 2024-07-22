@@ -14,8 +14,9 @@ const LIMIT = 100000;
 function parseSingle(
   expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
-): Element[] {
+): Element {
   let state = STATES.IDLE;
+  let foundKey = "";
   let stringBuffer = "";
 
   for (let i = 0; i < LIMIT; i++) {
@@ -27,18 +28,6 @@ function parseSingle(
 
     if (state === STATES.IDLE) {
       if (c === "\\") {
-        if (stringBuffer) {
-          /*
-          const tag = {
-            type: "p",
-            attributes: {},
-            children: [stringBuffer],
-          };
-          ret.push(tag);
-          currentTag = tag;
-          */
-        }
-
         stringBuffer = "";
         state = STATES.PARSE_EXPRESSION;
       } else {
@@ -46,7 +35,8 @@ function parseSingle(
       }
     } else if (state === STATES.PARSE_EXPRESSION) {
       if (c === "{") {
-        if (Object.keys(expressions).includes(stringBuffer)) {
+        if (expressions[stringBuffer]) {
+          foundKey = stringBuffer;
           stringBuffer = "";
           state = STATES.PARSE_EXPRESSION_CONTENT;
         } else {
@@ -56,26 +46,15 @@ function parseSingle(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_EXPRESSION_CONTENT) {
-      // TODO: Adjust this to fit - likely the functionality should be inlined here
-      /*
-      const o = parseExpression(c, currentTag, stringBuffer, "a", {
-        href: stringBuffer,
-      });
-
-      stringBuffer = o.stringBuffer;
-      if (o.state) {
-        state = o.state;
-      }
-      */
       if (c === "}") {
-        // TODO: Call match logic and generate an element to return
-        // Likely this should return here
+        return expressions[foundKey](stringBuffer);
+      } else {
+        stringBuffer += c;
       }
     }
   }
 
-  // TODO: Likely this code should never be reached. If reached, then it should throw
-  return [{ type: "p", attributes: {}, children: [stringBuffer] }];
+  throw new Error("No matching expression was found");
 }
 
 export { parseSingle };

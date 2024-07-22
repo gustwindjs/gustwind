@@ -6,7 +6,13 @@ Deno.test(`id expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parseSingle({}, characterGenerator(input)),
-    [{ type: "p", attributes: {}, children: [input] }],
+    parseSingle(
+      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      characterGenerator(String.raw`\id{${input}}`),
+    ),
+    { type: "div", attributes: {}, children: [input] },
   );
 });
+
+// TODO: Test that the logic throws in case a matching expression was not found
+// TODO: Test that the logic throws in case an expression is incomplete
