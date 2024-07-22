@@ -17,8 +17,12 @@ const LIMIT = 100000;
 function parseBlock(
   expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
-): Element[] {
+): Element {
   let output = "";
+
+  // TODO: 1. parse begin block - reuse single parser here
+  // TODO: 2. parse block content - keep this simple for now
+  // TODO: 3. parse end block - reuse single parser here
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -30,7 +34,7 @@ function parseBlock(
     output += c;
   }
 
-  return [{ type: "p", attributes: {}, children: [output] }];
+  return { type: "p", attributes: {}, children: [output] };
 }
 
 export { parseBlock };
