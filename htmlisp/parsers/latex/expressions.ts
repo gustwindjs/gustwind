@@ -2,7 +2,7 @@ import type { Element } from "../../types.ts";
 
 type Expression = [string, (s: string, attribute?: string) => Element];
 
-const singleExpressions: Expression[] = [
+const singles: Expression[] = [
   // Url
   ["url", (href: string) => element("a", href, { href })],
   // Titles
@@ -26,7 +26,7 @@ const singleExpressions: Expression[] = [
   ["citep", (children: string) => element("sup", children)],
 ];
 
-const doubleExpressions: Expression[] = [
+const doubles: Expression[] = [
   // Url
   [
     "href",
@@ -35,7 +35,7 @@ const doubleExpressions: Expression[] = [
   ],
 ];
 
-const blockExpressions: Expression[] = [
+const blocks: Expression[] = [
   // Url
   ["verbatim", (children: string) => element("pre", children)],
   // Lists
@@ -46,11 +46,6 @@ const blockExpressions: Expression[] = [
   // so this might need a parser of its own
   ["description", (children: string) => element("dl", children)],
 ];
-
-const allExpressions: Expression[] = singleExpressions.concat(
-  doubleExpressions,
-  blockExpressions,
-);
 
 function element(
   type: string,
@@ -65,9 +60,4 @@ function element(
 }
 
 export type { Expression };
-export {
-  allExpressions,
-  blockExpressions,
-  doubleExpressions,
-  singleExpressions,
-};
+export { blocks, doubles, singles };
