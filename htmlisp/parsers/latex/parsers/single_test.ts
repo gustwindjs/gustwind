@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
-Deno.test(`id expression`, () => {
+Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
