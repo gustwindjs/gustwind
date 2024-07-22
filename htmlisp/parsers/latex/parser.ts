@@ -1,53 +1,62 @@
 // Syntax prototype for a parser
 // TODO: Hook these up with a parser engine + add missing details
 
+// TODO: Clean up typing
 const singleExpressions = [
   // Url
-  // TODO: Clean up typing
-  ["url", "a", (href: string) => ({ href }), id],
+  ["url", (href: string) => element("a", href, { href })],
   // Titles
-  ["chapter", "h1", noop, id],
-  ["section", "h2", noop, id],
-  ["subsection", "h3", noop, id],
-  ["subsubsection", "h4", noop, id],
-  ["paragraph", "b", noop, id],
+  ["chapter", (children: string) => element("h1", children)],
+  ["section", (children: string) => element("h2", children)],
+  ["subsection", (children: string) => element("h3", children)],
+  ["subsubsection", (children: string) => element("h4", children)],
+  ["paragraph", "b", (children: string) => element("b", children)],
   // Formatting
-  ["texttt", "code", noop, id],
-  ["textbf", "b", noop, id],
-  ["textit", "i", noop, id],
+  ["texttt", (children: string) => element("code", children)],
+  ["textbf", (children: string) => element("b", children)],
+  ["textit", (children: string) => element("i", children)],
   // Footnote
   // TODO: This needs numbering and https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/popover
   // TODO: Footnote contents can have expressions so they should go through the expression parser as well
-  ["footnote", "sup", noop, id],
+  ["footnote", (children: string) => element("sup", children)],
   // Citations
   // TODO: Same problem here but with varying output depending on citation type
-  ["cite", "sup", noop, id],
-  ["citet", "sup", noop, id],
-  ["citep", "sup", noop, id],
+  ["cite", (children: string) => element("sup", children)],
+  ["citet", (children: string) => element("sup", children)],
+  ["citep", (children: string) => element("sup", children)],
 ];
 
 const doubleExpressions = [
   // Url
-  ["href", "a", (href: string) => ({ href }), (a: string) => a],
+  [
+    "href",
+    (children: string, href: string) => element("a", children, { href }),
+  ],
 ];
 
 const blocks = [
   // Url
-  ["verbatim", "pre", noop, id],
+  ["verbatim", (children: string) => element("pre", children)],
   // Lists
   // TODO: How to parse \item and how to model li for items? Maybe a subparser is needed
-  ["enumerate", "ol", (content: string) => parse(content)],
-  ["itemize", "ul", (content: string) => parse(content)],
+  ["enumerate", (children: string) => element("ol", children)],
+  ["itemize", (children: string) => element("ul", children)],
   // TODO: This case is even more complex to parse since it's \item[Foo] bar
   // so this might need a parser of its own
-  ["description", "dl", (content: string) => parse(content)],
+  ["description", (children: string) => element("dl", children)],
 ];
+
+function element(
+  type: string,
+  children: string,
+  attributes?: Record<string, string>,
+) {
+  return {
+    type: [type],
+    attributes: attributes || {},
+    children,
+  };
+}
 
 // TODO
 function parse(name: string) {}
-
-function noop() {}
-
-function id(s: string) {
-  return s;
-}
