@@ -1,15 +1,7 @@
+import { parseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
 import type { Expression } from "./../expressions.ts";
 import type { Element } from "../../../types.ts";
-
-enum STATES {
-  IDLE,
-  PARSE_BLOCK_START,
-  PARSE_BLOCK_CONTENT,
-  PARSE_BLOCK_END,
-  PARSE_EXPRESSION,
-  PARSE_EXPRESSION_CONTENT,
-}
 
 const LIMIT = 100000;
 
@@ -20,9 +12,14 @@ function parseBlock(
 ): Element {
   let output = "";
 
-  // TODO: 1. parse begin block - reuse single parser here
-  // TODO: 2. parse block content - keep this simple for now
-  // TODO: 3. parse end block - reuse single parser here
+  const begin = parseSingle({
+    begin: (i) => i,
+  }, getCharacter);
+  // TODO: Set up a content parser that terminates on \
+  // TODO: Parse end block
+  // TODO: Compile parsing results
+
+  console.log("begin", begin);
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();

@@ -15,7 +15,7 @@ const LIMIT = 100000;
 function parseDouble(
   expressions: Record<string, Expression>,
   getCharacter: CharacterGenerator,
-): Element {
+): string | Element {
   let state = STATES.IDLE;
   let foundKey = "";
   let foundFirst = "";

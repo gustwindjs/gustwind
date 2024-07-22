@@ -1,6 +1,6 @@
 import type { Element } from "../../types.ts";
 
-type Expression = (s: string, attribute?: string) => Element;
+type Expression = (s: string, attribute?: string) => Element | string;
 
 const singles: Record<string, Expression> = {
   // Url
