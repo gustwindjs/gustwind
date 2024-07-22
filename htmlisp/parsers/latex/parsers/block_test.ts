@@ -8,12 +8,12 @@ Deno.test(`simple expression`, () => {
 
   assertEquals(
     parseBlock(
-      characterGenerator(String.raw`\begin{${name}}{${input}}\end{${name}}`),
+      characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
       {
-        [name]: (i, arg) => ({
+        [name]: (content) => ({
           type: "div",
-          attributes: { id: arg || null },
-          children: [i],
+          attributes: {},
+          children: [content],
         }),
       },
     ),
@@ -21,5 +21,6 @@ Deno.test(`simple expression`, () => {
   );
 });
 
+// TODO: Assert that begin/end block names are the same - if not, throw
 // TODO: Test that the logic throws in case a matching expression was not found
 // TODO: Test that the logic throws in case an expression is incomplete

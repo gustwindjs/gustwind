@@ -17,6 +17,8 @@ function parseContent(
     }
 
     if (c === "\\") {
+      getCharacter.previous();
+
       return stringBuffer;
     } else {
       stringBuffer += c;
