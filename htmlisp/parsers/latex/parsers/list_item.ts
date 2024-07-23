@@ -2,8 +2,8 @@ import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
 
-// Parses content until \
-function parseContent(
+// Parses the content following \item
+function parseListItem(
   getCharacter: CharacterGenerator,
 ): string {
   let stringBuffer = "";
@@ -27,4 +27,4 @@ function parseContent(
   throw new Error("No matching expression was found");
 }
 
-export { parseContent };
+export { parseListItem };

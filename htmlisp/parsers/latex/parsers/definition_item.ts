@@ -2,10 +2,10 @@ import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
 
-// Parses content until \
-function parseContent(
+// Parses the content within \item[<key>] <value>
+function parseDefinitionItem(
   getCharacter: CharacterGenerator,
-): string {
+): { title: string; description: string } {
   let stringBuffer = "";
 
   for (let i = 0; i < LIMIT; i++) {
@@ -18,7 +18,7 @@ function parseContent(
     if (c === "\\") {
       getCharacter.previous();
 
-      return stringBuffer;
+      return { title: "foo", description: "bar" };
     } else {
       stringBuffer += c;
     }
@@ -27,4 +27,4 @@ function parseContent(
   throw new Error("No matching expression was found");
 }
 
-export { parseContent };
+export { parseDefinitionItem };
