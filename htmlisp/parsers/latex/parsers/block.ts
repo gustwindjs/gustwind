@@ -7,6 +7,7 @@ import type { Element } from "../../../types.ts";
 // Parses \begin{<type>}...\end{<type>} form
 function parseBlock(
   getCharacter: CharacterGenerator,
+  // TODO: One good option might be to separate container and item parsers
   expressions: Record<string, Expression>,
 ): string | Element {
   const begin = parseSingle(getCharacter, { begin: (i) => i });
