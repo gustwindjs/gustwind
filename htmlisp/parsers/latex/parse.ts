@@ -17,6 +17,8 @@ function parse(
   },
   getCharacter: CharacterGenerator,
 ): Element[] {
+  // TODO: Put this together from smaller parsers while configuring them
+
   let output = "";
 
   for (let i = 0; i < LIMIT; i++) {
