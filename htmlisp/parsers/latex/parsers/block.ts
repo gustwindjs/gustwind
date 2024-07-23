@@ -10,7 +10,14 @@ function parseBlock(
   expressions: Record<string, Expression>,
 ): string | Element {
   const begin = parseSingle(getCharacter, { begin: (i) => i });
+
+  // TODO: This is a bad assumption for a block since it can have \'s
+  // TODO: Likely what should happen is that there's a bit of logic to capture
+  // what's between begin and end and then that's handled separately
   const content = parseContent(getCharacter);
+
+  console.log("b", begin, "c", content);
+
   const end = parseSingle(getCharacter, { end: (i) => i });
 
   if (begin === end) {
