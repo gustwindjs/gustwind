@@ -3,11 +3,11 @@ import { parseDefinitionItem } from "./definition_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 Deno.test(`simple expression`, () => {
-  const input = "\item[foo] bar";
+  const input = String.raw`\item[foo] bar`;
 
   assertEquals(
     parseDefinitionItem(
-      characterGenerator(String.raw`${input}\\`),
+      characterGenerator(input),
     ),
     { title: "foo", description: "bar" },
   );

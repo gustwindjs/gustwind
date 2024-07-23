@@ -3,11 +3,11 @@ import { parseListItem } from "./list_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 Deno.test(`simple expression`, () => {
-  const input = "\item foobar";
+  const input = String.raw`\item foobar`;
 
   assertEquals(
     parseListItem(
-      characterGenerator(String.raw`${input}\\`),
+      characterGenerator(input),
     ),
     "foobar",
   );
