@@ -11,11 +11,14 @@ Deno.test(`simple expression`, () => {
     parseBlock(
       characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
       {
-        [name]: (content) => ({
-          type: "div",
-          attributes: {},
-          children: [content],
-        }),
+        [name]: {
+          container: (content) => ({
+            type: "div",
+            attributes: {},
+            children: [content],
+          }),
+          item: (s) => s,
+        },
       },
     ),
     { type: "div", attributes: {}, children: [input] },
@@ -32,21 +35,20 @@ Deno.test(`simple list`, () => {
   \item Bar
 \end{${name}}`),
       {
-        [name]: (content) => ({
-          type: "div",
-          attributes: {},
-          // TODO: How to handle parsing multiple items here?
-          children: [
-            // TODO: Add some kind of a tokenizer here to split multiple items
-            parseListItem(
-              characterGenerator(content),
-            ), /*.map((s) => ({
-              type: "li",
-              attributes: {},
-              children: [s],
-            })), */
-          ],
-        }),
+        [name]: {
+          container: (content) => ({
+            type: "div",
+            attributes: {},
+            children: [content],
+          }),
+          // TODO: Attach list item parser here
+          item: (s) => s,
+          /*
+              parseListItem(
+                characterGenerator(content),
+              ),
+          */
+        },
       },
     ),
     { type: "div", attributes: {}, children: ["foo", "bar"] },
