@@ -40,6 +40,9 @@ function characterGenerator(s: string) {
 
       return ret;
     },
+    move(offset: number) {
+      i += offset;
+    },
   };
 }
 

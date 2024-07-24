@@ -30,12 +30,9 @@ function parseBlock(
         items.push(item);
       }
     } catch (_error) {
-      // TODO: Make character cursor rewind to the previous good state somehow
       break;
     }
   }
-
-  console.log(items, getCharacter.get());
 
   const end = parseSingle(getCharacter, { end: (i) => i });
 

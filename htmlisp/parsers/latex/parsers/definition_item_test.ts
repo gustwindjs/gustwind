@@ -26,10 +26,14 @@ Deno.test(`only single expression`, () => {
 
 Deno.test(`does not parse an invalid expression`, () => {
   const input = String.raw`\end{description}`;
+  const generator = characterGenerator(input);
 
   assertThrows(
-    () => parseDefinitionItem(characterGenerator(input)),
+    () => parseDefinitionItem(generator),
     Error,
     `No matching expression was found`,
   );
+
+  // It should return the cursor to the spot before the failure
+  assertEquals(generator.get(), input[0]);
 });

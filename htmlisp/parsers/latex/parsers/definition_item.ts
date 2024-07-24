@@ -39,6 +39,8 @@ function parseDefinitionItem(
         state = STATES.PARSE_TITLE;
       } else {
         if (ITEM_SYNTAX[itemIndex] !== c) {
+          getCharacter.move(-i - 1);
+
           throw new Error("No matching expression was found");
         }
 
