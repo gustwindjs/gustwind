@@ -39,15 +39,12 @@ Deno.test(`simple list`, () => {
           container: (content) => ({
             type: "div",
             attributes: {},
-            children: [content],
+            children: content,
           }),
           // TODO: Attach list item parser here
-          item: (s) => s,
-          /*
-              parseListItem(
-                characterGenerator(content),
-              ),
-          */
+          item: parseListItem, /* (s) => parseListItem(
+                characterGenerator(s),
+              ),*/
         },
       },
     ),
