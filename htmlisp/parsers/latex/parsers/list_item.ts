@@ -36,6 +36,10 @@ function parseListItem(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_CONTENT) {
+      if (c === "\n") {
+        return stringBuffer;
+      }
+
       stringBuffer += c;
     }
   }

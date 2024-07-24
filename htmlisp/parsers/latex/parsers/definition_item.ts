@@ -51,6 +51,10 @@ function parseDefinitionItem(
         state = STATES.PARSE_DESCRIPTION;
       }
     } else if (state === STATES.PARSE_DESCRIPTION) {
+      if (c === "\n") {
+        return { title, description };
+      }
+
       description += c;
     }
   }

@@ -12,3 +12,15 @@ Deno.test(`simple expression`, () => {
     { title: "foo", description: "bar" },
   );
 });
+
+Deno.test(`only single expression`, () => {
+  const input = String.raw`\item[foo] bar
+\item[bar] foo`;
+
+  assertEquals(
+    parseDefinitionItem(
+      characterGenerator(input),
+    ),
+    { title: "foo", description: "bar" },
+  );
+});

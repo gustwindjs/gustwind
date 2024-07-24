@@ -12,3 +12,15 @@ Deno.test(`simple expression`, () => {
     "foobar",
   );
 });
+
+Deno.test(`only single expression`, () => {
+  const input = String.raw`\item foobar
+\item barfoo`;
+
+  assertEquals(
+    parseListItem(
+      characterGenerator(input),
+    ),
+    "foobar",
+  );
+});
