@@ -17,6 +17,8 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
+          // TODO: Use content parser here instead and make content parser
+          // more robust
           item: (s) => s.next() as string,
         },
       },
