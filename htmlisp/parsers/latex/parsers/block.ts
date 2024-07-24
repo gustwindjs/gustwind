@@ -1,6 +1,5 @@
 import { parseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
-import type { Expression } from "./../expressions.ts";
 import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;

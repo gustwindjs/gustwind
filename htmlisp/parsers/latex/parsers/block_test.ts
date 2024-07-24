@@ -12,12 +12,12 @@ Deno.test(`simple expression`, () => {
       characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
       {
         [name]: {
-          container: (content) => ({
+          container: (children) => ({
             type: "div",
             attributes: {},
-            children: [content],
+            children,
           }),
-          item: (s) => s,
+          item: (s) => s.next() as string,
         },
       },
     ),
@@ -36,10 +36,10 @@ Deno.test(`simple list`, () => {
 \end{${name}}`),
       {
         [name]: {
-          container: (content) => ({
+          container: (children) => ({
             type: "div",
             attributes: {},
-            children: content,
+            children,
           }),
           // TODO: Attach list item parser here
           item: parseListItem, /* (s) => parseListItem(

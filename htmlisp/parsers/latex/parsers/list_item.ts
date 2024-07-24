@@ -7,6 +7,7 @@ enum STATES {
 }
 
 const LIMIT = 100000;
+const ITEM_SYNTAX = "item";
 
 // Parses the content following \item
 function parseListItem(
@@ -14,6 +15,7 @@ function parseListItem(
 ): string {
   let state = STATES.IDLE;
   let stringBuffer = "";
+  let itemIndex = 0;
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -33,6 +35,11 @@ function parseListItem(
         stringBuffer = "";
         state = STATES.PARSE_CONTENT;
       } else {
+        if (ITEM_SYNTAX[itemIndex] !== c) {
+          throw new Error("No matching expression was found");
+        }
+
+        itemIndex++;
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_CONTENT) {
