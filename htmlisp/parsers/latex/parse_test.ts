@@ -51,8 +51,60 @@ Deno.test(`multiple urls`, () => {
   );
 });
 
-// TODO: Test paragraph + url
-// TODO: Test url within a paragraph
+Deno.test(`paragraph and url`, () => {
+  const input = String.raw`foobar
+
+\url{https://bing.com}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "p",
+      attributes: {},
+      children: ["foobar"],
+    }, {
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }],
+  );
+});
+
+Deno.test(`url and paragraph`, () => {
+  const input = String.raw`\url{https://bing.com}
+
+foobar`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "p",
+      attributes: {},
+      children: ["foobar"],
+    }, {
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }],
+  );
+});
+
+Deno.test(`url within paragraph`, () => {
+  const input = String.raw`foobar \url{https://bing.com} foobar`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "p",
+      attributes: {},
+      children: ["foobar", {
+        type: "a",
+        attributes: { href: "https://bing.com" },
+        children: ["https://bing.com"],
+      }, "foobar"],
+    }],
+  );
+});
 
 // TODO: Test other singles - these tests could be even generated from the definition
 
