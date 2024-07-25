@@ -47,3 +47,66 @@ Deno.test(`href`, () => {
     }],
   );
 });
+
+Deno.test(`verbatim`, () => {
+  const input = String.raw`\begin{verbatim}
+test
+\end{verbatim}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "pre",
+      attributes: {},
+      children: ["\ntest\n"],
+    }],
+  );
+});
+
+Deno.test(`enumerate`, () => {
+  const input = String.raw`\begin{enumerate}
+\item test
+\end{enumerate}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "ol",
+      attributes: {},
+      children: [{ type: "li", attributes: {}, children: ["test"] }],
+    }],
+  );
+});
+
+Deno.test(`itemize`, () => {
+  const input = String.raw`\begin{itemize}
+\item test
+\end{itemize}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "ul",
+      attributes: {},
+      children: [{ type: "li", attributes: {}, children: ["test"] }],
+    }],
+  );
+});
+
+Deno.test(`description`, () => {
+  const input = String.raw`\begin{description}
+\item[foo] bar
+\end{description}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "dl",
+      attributes: {},
+      children: [
+        { type: "dt", attributes: {}, children: ["foo"] },
+        { type: "dd", attributes: {}, children: ["bar"] },
+      ],
+    }],
+  );
+});

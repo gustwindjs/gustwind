@@ -16,6 +16,7 @@ const doubleParser = (characterGenerator: CharacterGenerator) =>
 // It's likely better with a generic or some simplification
 const blockParser = (characterGenerator: CharacterGenerator) =>
   parseBlock(characterGenerator, blocks);
+const parsers = [singleParser, doubleParser, blockParser];
 
 function parse(
   getCharacter: CharacterGenerator,
@@ -25,31 +26,16 @@ function parse(
   for (let i = 0; i < LIMIT; i++) {
     const characterIndex = getCharacter.getIndex();
 
-    // TODO: Likely this would be cleaner using Promise.race
-    // but that would make the parser async (maybe not a problem)
-    // Singles
-    try {
-      const singleMatch = singleParser(getCharacter);
-
-      // TODO: Support more complex compositions
-      // @ts-ignore Ignore for now - most likely there's a type mismatch
-      return [singleMatch];
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
+    // For async version this could use Promise.race
+    for (const parser of parsers) {
+      try {
+        // TODO: Support more complex compositions
+        // @ts-ignore Ignore for now - most likely there's a type mismatch
+        return [parser(getCharacter)];
+      } catch (_error) {
+        getCharacter.setIndex(characterIndex);
+      }
     }
-
-    // Doubles
-    try {
-      const doubleMatch = doubleParser(getCharacter);
-
-      // TODO: Support more complex compositions
-      // @ts-ignore Ignore for now - most likely there's a type mismatch
-      return [doubleMatch];
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
-    }
-
-    // TODO: Blocks
 
     // Default case - paragraph
     const c = getCharacter.next();

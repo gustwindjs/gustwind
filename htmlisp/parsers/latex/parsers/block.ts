@@ -16,7 +16,7 @@ function parseBlock<ItemReturnValue = unknown>(
   >,
 ): string | Element {
   const begin = parseSingle(getCharacter, { begin: (i) => i });
-  const items: ItemReturnValue[] = [];
+  let items: ItemReturnValue[] = [];
 
   for (let i = 0; i < LIMIT; i++) {
     if (getCharacter.get() === null) {
@@ -28,7 +28,12 @@ function parseBlock<ItemReturnValue = unknown>(
       const item = expressions[begin as string].item(getCharacter);
 
       if (item) {
-        items.push(item);
+        // TODO: Test this case
+        if (Array.isArray(item)) {
+          items = items.concat(item);
+        } else {
+          items.push(item);
+        }
       }
     } catch (_error) {
       getCharacter.setIndex(characterIndex);
