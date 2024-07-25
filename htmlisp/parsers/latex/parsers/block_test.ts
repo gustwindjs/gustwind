@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseBlock } from "./block.ts";
 import { parseContent } from "./content.ts";
+import { parseDefinitionItem } from "./definition_item.ts";
 import { parseListItem } from "./list_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
@@ -40,7 +41,8 @@ Deno.test(`simple list`, () => {
           container: (children) => ({
             type: "div",
             attributes: {},
-            children,
+            // TODO: Likely this type could be handled through a generic
+            children: children as string[],
           }),
           item: parseListItem,
         },
@@ -50,7 +52,31 @@ Deno.test(`simple list`, () => {
   );
 });
 
-// TODO: Test definition list composition
+Deno.test(`simple definition list`, () => {
+  const name = "itemize";
+
+  assertEquals(
+    parseBlock(
+      characterGenerator(String.raw`\begin{${name}}
+  \item[Foo] foo
+  \item[Bar] bar
+\end{${name}}`),
+      {
+        [name]: {
+          container: (children) => ({
+            type: "div",
+            attributes: {},
+            // TODO: Likely this type could be handled through a generic
+            children: (children as ReturnType<typeof parseDefinitionItem>[])
+              .map(({ title, description }) => `${title}: ${description}`),
+          }),
+          item: parseDefinitionItem,
+        },
+      },
+    ),
+    { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
+  );
+});
 
 // TODO: Assert that begin/end block names are the same - if not, throw
 // TODO: Test that the logic throws in case a matching expression was not found

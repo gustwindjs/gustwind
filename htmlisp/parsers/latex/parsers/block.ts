@@ -4,14 +4,16 @@ import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;
 
+type ItemReturnValue = unknown;
+
 // Parses \begin{<type>}...\end{<type>} form
 function parseBlock(
   getCharacter: CharacterGenerator,
   expressions: Record<
     string,
     {
-      container: (items: (Element | string)[]) => Element | string;
-      item: (getCharacter: CharacterGenerator) => Element | string;
+      container: (items: (ItemReturnValue)[]) => Element | string;
+      item: (getCharacter: CharacterGenerator) => ItemReturnValue;
     }
   >,
 ): string | Element {
