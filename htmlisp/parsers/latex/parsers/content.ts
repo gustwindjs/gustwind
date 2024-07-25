@@ -2,7 +2,7 @@ import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
 
-// Parses content until \
+// Parses content until \ or \n\n or until string to parse ends
 function parseContent(
   getCharacter: CharacterGenerator,
 ): string {
@@ -15,7 +15,7 @@ function parseContent(
       break;
     }
 
-    if (c === "\\") {
+    if (c === "\\" || (c === "\n" && getCharacter.get() === "\n")) {
       getCharacter.previous();
 
       return stringBuffer;
@@ -24,7 +24,7 @@ function parseContent(
     }
   }
 
-  throw new Error("No matching expression was found");
+  return stringBuffer;
 }
 
 export { parseContent };
