@@ -34,3 +34,16 @@ Deno.test(`url`, () => {
 });
 
 // TODO: Test other singles - these tests could be even generated from the definition
+
+Deno.test(`href`, () => {
+  const input = String.raw`\href{https://google.com}{Google}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "a",
+      attributes: { href: "https://google.com" },
+      children: ["Google"],
+    }],
+  );
+});

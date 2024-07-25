@@ -35,8 +35,8 @@ const singles: Record<string, Expression> = {
 
 const doubles: Record<string, Expression> = {
   // Url
-  "href": (children: string, href?: string) =>
-    element("a", [children], href ? { href } : {}),
+  "href": (href: string, children?: string) =>
+    element("a", [children || ""], href ? { href } : {}),
 };
 
 // TODO: Likely this needs a generic to clean up typing

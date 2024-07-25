@@ -27,6 +27,7 @@ function parse(
 
     // TODO: Likely this would be cleaner using Promise.race
     // but that would make the parser async (maybe not a problem)
+    // Singles
     try {
       const singleMatch = singleParser(getCharacter);
 
@@ -37,6 +38,20 @@ function parse(
       getCharacter.setIndex(characterIndex);
     }
 
+    // Doubles
+    try {
+      const doubleMatch = doubleParser(getCharacter);
+
+      // TODO: Support more complex compositions
+      // @ts-ignore Ignore for now - most likely there's a type mismatch
+      return [doubleMatch];
+    } catch (_error) {
+      getCharacter.setIndex(characterIndex);
+    }
+
+    // TODO: Blocks
+
+    // Default case - paragraph
     const c = getCharacter.next();
 
     if (c === null) {
