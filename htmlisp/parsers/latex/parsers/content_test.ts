@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseContent } from "./content.ts";
+import { getParseContent } from "./content.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 // TODO: Add a curry syntax to allow customization of output
@@ -8,7 +8,7 @@ Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parseContent(characterGenerator(input)),
+    getParseContent(id)(characterGenerator(input)),
     input,
   );
 });
@@ -17,7 +17,7 @@ Deno.test(`simple expression with a forced newline`, () => {
   const input = "foobar";
 
   assertEquals(
-    parseContent(characterGenerator(String.raw`${input}\\`)),
+    getParseContent(id)(characterGenerator(String.raw`${input}\\`)),
     input,
   );
 });
@@ -29,8 +29,12 @@ foobar
 barfoo`;
 
   assertEquals(
-    parseContent(characterGenerator(input)),
+    getParseContent(id)(characterGenerator(input)),
     `foobar
 foobar`,
   );
 });
+
+function id(s: string) {
+  return s;
+}

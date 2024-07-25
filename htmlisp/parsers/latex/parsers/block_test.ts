@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseBlock } from "./block.ts";
-import { parseContent } from "./content.ts";
+import { getParseContent } from "./content.ts";
 import { parseDefinitionItem } from "./definition_item.ts";
 import { parseListItem } from "./list_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
@@ -18,7 +18,7 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
-          item: parseContent,
+          item: getParseContent((s) => s),
         },
       },
     )(

@@ -1,7 +1,7 @@
 import { getParseSingle } from "./parsers/single.ts";
 import { getParseDouble } from "./parsers/double.ts";
 import { getParseBlock } from "./parsers/block.ts";
-import { parseContent } from "./parsers/content.ts";
+import { getParseContent } from "./parsers/content.ts";
 import { blocks, doubles, singles } from "./expressions.ts";
 import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
@@ -12,7 +12,11 @@ const parsers = [
   getParseSingle(singles),
   getParseDouble(doubles),
   getParseBlock(blocks),
-  parseContent,
+  getParseContent((children) => ({
+    type: "p",
+    attributes: {},
+    children: [children],
+  })),
 ];
 
 function parse(

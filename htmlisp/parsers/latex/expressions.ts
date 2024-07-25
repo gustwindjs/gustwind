@@ -1,4 +1,4 @@
-import { parseContent } from "./parsers/content.ts";
+import { getParseContent } from "./parsers/content.ts";
 import { parseDefinitionItem } from "./parsers/definition_item.ts";
 import { parseListItem } from "./parsers/list_item.ts";
 import type { CharacterGenerator } from "../types.ts";
@@ -38,6 +38,8 @@ const doubles: Record<string, Expression> = {
   "href": (href: string, children?: string) =>
     element("a", [children || ""], href ? { href } : {}),
 };
+
+const parseContent = getParseContent((s) => s);
 
 // TODO: Likely this needs a generic to clean up typing
 const blocks: Record<string, {
