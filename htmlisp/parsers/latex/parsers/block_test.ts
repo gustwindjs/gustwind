@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseBlock } from "./block.ts";
+import { parseContent } from "./content.ts";
 import { parseListItem } from "./list_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
@@ -17,9 +18,7 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
-          // TODO: Use content parser here instead and make content parser
-          // more robust
-          item: (s) => s.next() as string,
+          item: parseContent,
         },
       },
     ),
