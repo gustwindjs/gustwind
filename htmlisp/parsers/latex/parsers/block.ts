@@ -18,7 +18,7 @@ function parseBlock(
   >,
 ): string | Element {
   const begin = parseSingle(getCharacter, { begin: (i) => i });
-  const items: (Element | string)[] = [];
+  const items: ItemReturnValue[] = [];
 
   for (let i = 0; i < LIMIT; i++) {
     if (getCharacter.get() === null) {
