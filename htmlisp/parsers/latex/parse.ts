@@ -21,7 +21,8 @@ const parsers = [singleParser, doubleParser, blockParser];
 function parse(
   getCharacter: CharacterGenerator,
 ): Element[] {
-  let output = "";
+  const ret = [];
+  let stringBuffer = "";
 
   for (let i = 0; i < LIMIT; i++) {
     const characterIndex = getCharacter.getIndex();
@@ -29,9 +30,10 @@ function parse(
     // For async version this could use Promise.race
     for (const parser of parsers) {
       try {
-        // TODO: Support more complex compositions
         // @ts-ignore Ignore for now - most likely there's a type mismatch
-        return [parser(getCharacter)];
+        ret.push(parser(getCharacter));
+
+        break;
       } catch (_error) {
         getCharacter.setIndex(characterIndex);
       }
@@ -44,10 +46,15 @@ function parse(
       break;
     }
 
-    output += c;
+    stringBuffer += c;
   }
 
-  return [{ type: "p", attributes: {}, children: [output] }];
+  if (stringBuffer.trim()) {
+    ret.push({ type: "p", attributes: {}, children: [stringBuffer] });
+  }
+
+  // @ts-ignore Ignore for now - most likely there's a type mismatch
+  return ret;
 }
 
 export { parse };

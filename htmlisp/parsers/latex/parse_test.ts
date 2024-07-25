@@ -33,6 +33,27 @@ Deno.test(`url`, () => {
   );
 });
 
+Deno.test(`multiple urls`, () => {
+  const input = String.raw`\url{https://google.com}
+\url{https://bing.com}`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [{
+      type: "a",
+      attributes: { href: "https://google.com" },
+      children: ["https://google.com"],
+    }, {
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }],
+  );
+});
+
+// TODO: Test paragraph + url
+// TODO: Test url within a paragraph
+
 // TODO: Test other singles - these tests could be even generated from the definition
 
 Deno.test(`href`, () => {
