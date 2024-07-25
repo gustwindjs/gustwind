@@ -1,4 +1,7 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseDouble } from "./double.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
@@ -19,6 +22,17 @@ Deno.test(`simple expression`, () => {
       characterGenerator(String.raw`\id{${input}}{${arg}}`),
     ),
     { type: "div", attributes: { id: arg }, children: [input] },
+  );
+});
+
+Deno.test(`throws unless first character is a backslash`, () => {
+  assertThrows(
+    () =>
+      getParseDouble(
+        { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      )(characterGenerator(String.raw`foobar \id{foobar}{barfoo}`)),
+    Error,
+    `No matching expression was found`,
   );
 });
 

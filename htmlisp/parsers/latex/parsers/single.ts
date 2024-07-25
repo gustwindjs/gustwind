@@ -30,6 +30,10 @@ function getParseSingle(
 
       if (state === STATES.IDLE) {
         if (c === "\\") {
+          if (i !== 0) {
+            throw new Error("No matching expression was found");
+          }
+
           stringBuffer = "";
           state = STATES.PARSE_EXPRESSION;
         } else {

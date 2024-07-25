@@ -11,6 +11,20 @@ Deno.test(`id expression`, () => {
   );
 });
 
+Deno.test(`multiple paragraphs`, () => {
+  const input = `foobar
+
+barfoo`;
+
+  assertEquals(
+    parse(characterGenerator(input)),
+    [
+      { type: "p", attributes: {}, children: ["foobar"] },
+      { type: "p", attributes: {}, children: ["\nbarfoo"] },
+    ],
+  );
+});
+
 Deno.test(`bold`, () => {
   const input = String.raw`\textbf{foobar}`;
 
