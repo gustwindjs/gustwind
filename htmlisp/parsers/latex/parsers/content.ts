@@ -18,8 +18,10 @@ function getParseContent(expression: Expression) {
         break;
       }
 
-      if (c === "\\" || (c === "\n" && getCharacter.get() === "\n")) {
-        getCharacter.previous();
+      const hasDoubleNewline = c === "\n" && getCharacter.get() === "\n";
+
+      if (c === "\\" || hasDoubleNewline) {
+        !hasDoubleNewline && getCharacter.previous();
 
         return expression(stringBuffer);
       } else {
