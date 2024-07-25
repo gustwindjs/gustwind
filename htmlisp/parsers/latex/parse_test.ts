@@ -92,13 +92,13 @@ foobar`;
   assertEquals(
     parse(characterGenerator(input)),
     [{
-      type: "p",
-      attributes: {},
-      children: ["foobar"],
-    }, {
       type: "a",
       attributes: { href: "https://bing.com" },
       children: ["https://bing.com"],
+    }, {
+      type: "p",
+      attributes: {},
+      children: ["\nfoobar"],
     }],
   );
 });
