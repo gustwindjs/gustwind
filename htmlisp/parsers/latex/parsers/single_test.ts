@@ -1,15 +1,14 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseSingle } from "./single.ts";
+import { getParseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parseSingle(
-      characterGenerator(String.raw`\id{${input}}`),
+    getParseSingle(
       { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
-    ),
+    )(characterGenerator(String.raw`\id{${input}}`)),
     { type: "div", attributes: {}, children: [input] },
   );
 });

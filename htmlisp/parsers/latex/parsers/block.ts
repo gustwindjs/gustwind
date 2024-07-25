@@ -1,12 +1,11 @@
-import { parseSingle } from "./single.ts";
+import { getParseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
 import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
-function parseBlock<ItemReturnValue = unknown>(
-  getCharacter: CharacterGenerator,
+function getParseBlock<ItemReturnValue = unknown>(
   expressions: Record<
     string,
     {
@@ -14,41 +13,45 @@ function parseBlock<ItemReturnValue = unknown>(
       item: (getCharacter: CharacterGenerator) => ItemReturnValue;
     }
   >,
-): string | Element {
-  const begin = parseSingle(getCharacter, { begin: (i) => i });
-  let items: ItemReturnValue[] = [];
+) {
+  return function parseBlock(
+    getCharacter: CharacterGenerator,
+  ): string | Element {
+    const begin = getParseSingle({ begin: (i) => i })(getCharacter);
+    let items: ItemReturnValue[] = [];
 
-  for (let i = 0; i < LIMIT; i++) {
-    if (getCharacter.get() === null) {
-      break;
-    }
-    const characterIndex = getCharacter.getIndex();
-
-    try {
-      const item = expressions[begin as string].item(getCharacter);
-
-      if (item) {
-        // TODO: Test this case
-        if (Array.isArray(item)) {
-          items = items.concat(item);
-        } else {
-          items.push(item);
-        }
+    for (let i = 0; i < LIMIT; i++) {
+      if (getCharacter.get() === null) {
+        break;
       }
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
+      const characterIndex = getCharacter.getIndex();
 
-      break;
+      try {
+        const item = expressions[begin as string].item(getCharacter);
+
+        if (item) {
+          // TODO: Test this case
+          if (Array.isArray(item)) {
+            items = items.concat(item);
+          } else {
+            items.push(item);
+          }
+        }
+      } catch (_error) {
+        getCharacter.setIndex(characterIndex);
+
+        break;
+      }
     }
-  }
 
-  const end = parseSingle(getCharacter, { end: (i) => i });
+    const end = getParseSingle({ end: (i) => i })(getCharacter);
 
-  if (begin === end) {
-    return expressions[begin as string].container(items);
-  }
+    if (begin === end) {
+      return expressions[begin as string].container(items);
+    }
 
-  throw new Error("No matching expression was found");
+    throw new Error("No matching expression was found");
+  };
 }
 
-export { parseBlock };
+export { getParseBlock };

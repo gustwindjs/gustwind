@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseBlock } from "./block.ts";
+import { getParseBlock } from "./block.ts";
 import { parseContent } from "./content.ts";
 import { parseDefinitionItem } from "./definition_item.ts";
 import { parseListItem } from "./list_item.ts";
@@ -10,8 +10,7 @@ Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parseBlock(
-      characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
+    getParseBlock(
       {
         [name]: {
           container: (children) => ({
@@ -22,6 +21,8 @@ Deno.test(`simple expression`, () => {
           item: parseContent,
         },
       },
+    )(
+      characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
     ),
     { type: "div", attributes: {}, children: [input] },
   );
@@ -31,11 +32,7 @@ Deno.test(`simple list`, () => {
   const name = "itemize";
 
   assertEquals(
-    parseBlock<string>(
-      characterGenerator(String.raw`\begin{${name}}
-  \item Foo
-  \item Bar
-\end{${name}}`),
+    getParseBlock<string>(
       {
         [name]: {
           container: (children) => ({
@@ -46,6 +43,11 @@ Deno.test(`simple list`, () => {
           item: parseListItem,
         },
       },
+    )(
+      characterGenerator(String.raw`\begin{${name}}
+        \item Foo
+        \item Bar
+      \end{${name}}`),
     ),
     { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
@@ -55,11 +57,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    parseBlock<ReturnType<typeof parseDefinitionItem>>(
-      characterGenerator(String.raw`\begin{${name}}
-  \item[Foo] foo
-  \item[Bar] bar
-\end{${name}}`),
+    getParseBlock<ReturnType<typeof parseDefinitionItem>>(
       {
         [name]: {
           container: (children) => ({
@@ -71,6 +69,11 @@ Deno.test(`simple definition list`, () => {
           item: parseDefinitionItem,
         },
       },
+    )(
+      characterGenerator(String.raw`\begin{${name}}
+        \item[Foo] foo
+        \item[Bar] bar
+      \end{${name}}`),
     ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
   );

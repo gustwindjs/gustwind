@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { parseDouble } from "./double.ts";
+import { getParseDouble } from "./double.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 Deno.test(`simple expression`, () => {
@@ -7,8 +7,7 @@ Deno.test(`simple expression`, () => {
   const arg = "demo";
 
   assertEquals(
-    parseDouble(
-      characterGenerator(String.raw`\id{${input}}{${arg}}`),
+    getParseDouble(
       {
         id: (i, arg) => ({
           type: "div",
@@ -16,6 +15,8 @@ Deno.test(`simple expression`, () => {
           children: [i],
         }),
       },
+    )(
+      characterGenerator(String.raw`\id{${input}}{${arg}}`),
     ),
     { type: "div", attributes: { id: arg }, children: [input] },
   );
