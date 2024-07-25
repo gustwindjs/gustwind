@@ -4,7 +4,10 @@ import { parseListItem } from "./parsers/list_item.ts";
 import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
-type Expression = (s: string, attribute?: string) => Element | string;
+type Expression<ReturnValue = Element | string> = (
+  s: string,
+  attribute?: string,
+) => ReturnValue;
 
 const singles: Record<string, Expression> = {
   // Url
