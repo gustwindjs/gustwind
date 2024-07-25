@@ -33,7 +33,4 @@ Deno.test(`does not parse an invalid expression`, () => {
     Error,
     `No matching expression was found`,
   );
-
-  // It should return the cursor to the spot before the failure
-  assertEquals(generator.get(), input[0]);
 });

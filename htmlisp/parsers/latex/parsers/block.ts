@@ -22,6 +22,7 @@ function parseBlock(
     if (getCharacter.get() === null) {
       break;
     }
+    const characterIndex = getCharacter.getIndex();
 
     try {
       const item = expressions[begin as string].item(getCharacter);
@@ -30,6 +31,8 @@ function parseBlock(
         items.push(item);
       }
     } catch (_error) {
+      getCharacter.setIndex(characterIndex);
+
       break;
     }
   }

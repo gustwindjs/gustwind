@@ -18,6 +18,12 @@ function characterGenerator(s: string) {
 
       return null;
     },
+    getIndex() {
+      return i;
+    },
+    setIndex(value: number) {
+      i = value;
+    },
     next() {
       if (i > s.length - 1) {
         return null;
@@ -39,9 +45,6 @@ function characterGenerator(s: string) {
       i--;
 
       return ret;
-    },
-    move(offset: number) {
-      i += offset;
     },
   };
 }
