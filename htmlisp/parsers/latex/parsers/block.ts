@@ -4,10 +4,8 @@ import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;
 
-type ItemReturnValue = unknown;
-
 // Parses \begin{<type>}...\end{<type>} form
-function parseBlock(
+function parseBlock<ItemReturnValue = unknown>(
   getCharacter: CharacterGenerator,
   expressions: Record<
     string,

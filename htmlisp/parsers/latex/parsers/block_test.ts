@@ -31,7 +31,7 @@ Deno.test(`simple list`, () => {
   const name = "itemize";
 
   assertEquals(
-    parseBlock(
+    parseBlock<string>(
       characterGenerator(String.raw`\begin{${name}}
   \item Foo
   \item Bar
@@ -41,8 +41,7 @@ Deno.test(`simple list`, () => {
           container: (children) => ({
             type: "div",
             attributes: {},
-            // TODO: Likely this type could be handled through a generic
-            children: children as string[],
+            children,
           }),
           item: parseListItem,
         },
@@ -56,7 +55,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    parseBlock(
+    parseBlock<ReturnType<typeof parseDefinitionItem>>(
       characterGenerator(String.raw`\begin{${name}}
   \item[Foo] foo
   \item[Bar] bar
@@ -66,8 +65,7 @@ Deno.test(`simple definition list`, () => {
           container: (children) => ({
             type: "div",
             attributes: {},
-            // TODO: Likely this type could be handled through a generic
-            children: (children as ReturnType<typeof parseDefinitionItem>[])
+            children: children
               .map(({ title, description }) => `${title}: ${description}`),
           }),
           item: parseDefinitionItem,
