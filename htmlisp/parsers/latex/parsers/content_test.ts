@@ -2,8 +2,6 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseContent } from "./content.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
-// TODO: Add a curry syntax to allow customization of output
-
 Deno.test(`simple expression`, () => {
   const input = "foobar";
 
