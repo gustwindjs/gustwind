@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseContent } from "./content.ts";
+import { getParseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
 Deno.test(`simple expression`, () => {
@@ -30,6 +31,17 @@ barfoo`;
     getParseContent(id)(characterGenerator(input)),
     `foobar
 foobar`,
+  );
+});
+
+Deno.test(`url within paragraph`, () => {
+  const input = String.raw`foobar \url{https://bing.com} barfoo`;
+
+  assertEquals(
+    getParseContent(id, [getParseSingle({ url: id })])(
+      characterGenerator(input),
+    ),
+    "foobar https://bing.com barfoo",
   );
 });
 

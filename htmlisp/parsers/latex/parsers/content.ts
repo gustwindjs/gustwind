@@ -5,7 +5,10 @@ import type { Element } from "../../../types.ts";
 const LIMIT = 100000;
 
 // Parses content until \ or \n\n or until string to parse ends
-function getParseContent(expression: Expression) {
+function getParseContent(
+  expression: Expression,
+  parsers?: ((getCharacter: CharacterGenerator) => string | Element)[],
+) {
   return function parseContent(
     getCharacter: CharacterGenerator,
   ): string | Element {
@@ -18,10 +21,11 @@ function getParseContent(expression: Expression) {
         break;
       }
 
-      const hasDoubleNewline = c === "\n" && getCharacter.get() === "\n";
-
-      if (c === "\\" || hasDoubleNewline) {
-        !hasDoubleNewline && getCharacter.previous();
+      if (c === "\n" && getCharacter.get() === "\n") {
+        return expression(stringBuffer);
+      } else if (c === "\\") {
+        // TODO: Handle subparser case here
+        getCharacter.previous();
 
         return expression(stringBuffer);
       } else {
