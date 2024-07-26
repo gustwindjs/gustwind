@@ -9,7 +9,6 @@ function runParsers<ExpressionReturnType>(
   // For async version this could use Promise.race
   for (const parser of parsers) {
     try {
-      // @ts-ignore Ignore for now - most likely there's a type mismatch
       return parser(getCharacter);
     } catch (_error) {
       getCharacter.setIndex(characterIndex);
