@@ -86,7 +86,7 @@ Deno.test(`url within paragraph with elements`, () => {
 });
 
 Deno.test(`footnote within paragraph with elements`, () => {
-  const input = String.raw`foobar \footnote{https://bing.com} barfoo`;
+  const input = String.raw`foobar\footnote{https://bing.com} barfoo`;
 
   assertEquals(
     getParseContent<Element>((children) => ({
@@ -94,11 +94,12 @@ Deno.test(`footnote within paragraph with elements`, () => {
       attributes: {},
       children,
     }), [getParseSingle({
-      footnote: (title) => ({
+      footnote: (title, matchCounts) => ({
         type: "sup",
         attributes: { title },
-        // TODO: Get amount of footnote matches here -> add tracking
-        children: ["1"], // n.toString()],
+        children: [
+          (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+        ],
       }),
     })])(
       characterGenerator(input),
@@ -107,7 +108,7 @@ Deno.test(`footnote within paragraph with elements`, () => {
       type: "p",
       attributes: {},
       children: [
-        "foobar ",
+        "foobar",
         {
           type: "sup",
           attributes: {
@@ -121,5 +122,49 @@ Deno.test(`footnote within paragraph with elements`, () => {
   );
 });
 
+Deno.test(`multiple footnotes`, () => {
+  const input = String
+    .raw`foobar\footnote{https://bing.com} barfoo\footnote{https://google.com}`;
+
+  assertEquals(
+    getParseContent<Element>((children) => ({
+      type: "p",
+      attributes: {},
+      children,
+    }), [getParseSingle({
+      footnote: (title, matchCounts) => ({
+        type: "sup",
+        attributes: { title },
+        children: [
+          (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+        ],
+      }),
+    })])(
+      characterGenerator(input),
+    ),
+    {
+      type: "p",
+      attributes: {},
+      children: [
+        "foobar",
+        {
+          type: "sup",
+          attributes: {
+            title: "https://bing.com",
+          },
+          children: ["1"],
+        },
+        " barfoo",
+        {
+          type: "sup",
+          attributes: {
+            title: "https://google.com",
+          },
+          children: ["2"],
+        },
+      ],
+    },
+  );
+});
+
 // TODO: Test a footnote with a url
-// TODO: Test numbering for multiple footnotes

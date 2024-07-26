@@ -10,10 +10,14 @@ const LIMIT = 100000;
 
 // Parses \<expression>{<parameter>} form
 function getParseSingle<ExpressionReturnType>(
-  expressions: Record<string, (s: string) => ExpressionReturnType>,
+  expressions: Record<
+    string,
+    (s: string, matchCounts: Record<string, number>) => ExpressionReturnType
+  >,
 ) {
   return function parseSingle(
     getCharacter: CharacterGenerator,
+    matchCounts?: Record<string, number>,
   ): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";
@@ -53,7 +57,7 @@ function getParseSingle<ExpressionReturnType>(
         if (c === "}") {
           return {
             match: foundKey,
-            value: expressions[foundKey](stringBuffer),
+            value: expressions[foundKey](stringBuffer, matchCounts || {}),
           };
         } else {
           stringBuffer += c;

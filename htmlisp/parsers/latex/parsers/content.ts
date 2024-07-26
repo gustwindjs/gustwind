@@ -15,6 +15,7 @@ function getParseContent<ExpressionReturnType>(
   ): ExpressionReturnType {
     let stringBuffer = "";
     const parts: ExpressionReturnType[] = [];
+    const matchCounts: Record<string, number> = {};
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -32,14 +33,19 @@ function getParseContent<ExpressionReturnType>(
 
         getCharacter.previous();
 
-        // TODO: Capture parseResult matches to calculate match counts
-        // and provide that as a parameter to runParsers
         const parseResult = runParsers<ExpressionReturnType>(
           getCharacter,
           parsers,
+          matchCounts,
         );
 
         if (parseResult) {
+          if (matchCounts[parseResult.match]) {
+            matchCounts[parseResult.match]++;
+          } else {
+            matchCounts[parseResult.match] = 1;
+          }
+
           parts.push(parseResult.value);
         } else {
           break;
