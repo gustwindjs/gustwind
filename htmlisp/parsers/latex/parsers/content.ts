@@ -7,7 +7,7 @@ const LIMIT = 100000;
 // Parses content until \ or \n\n or until string to parse ends
 function getParseContent(
   expression: Expression,
-  parsers?: ((getCharacter: CharacterGenerator) => string | Element)[],
+  parsers: ((getCharacter: CharacterGenerator) => string | Element)[] = [],
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
@@ -24,10 +24,30 @@ function getParseContent(
       if (c === "\n" && getCharacter.get() === "\n") {
         return expression(stringBuffer);
       } else if (c === "\\") {
-        // TODO: Handle subparser case here
+        const characterIndex = getCharacter.getIndex();
+        let foundMatch = false;
+
         getCharacter.previous();
 
-        return expression(stringBuffer);
+        // For async version this could use Promise.race
+        for (const parser of parsers) {
+          try {
+            // TODO: Figure out how this should work with element structure
+            // @ts-ignore Ignore for now - most likely there's a type mismatch
+            stringBuffer += parser(getCharacter);
+
+            foundMatch = true;
+            break;
+          } catch (_error) {
+            getCharacter.setIndex(characterIndex);
+          }
+        }
+
+        if (!foundMatch) {
+          getCharacter.previous();
+
+          return expression(stringBuffer);
+        }
       } else {
         stringBuffer += c;
       }
