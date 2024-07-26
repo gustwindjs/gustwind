@@ -54,7 +54,16 @@ function getParseSingle<ExpressionReturnType>(
           stringBuffer += c;
         }
       } else if (state === STATES.PARSE_EXPRESSION_CONTENT) {
-        if (c === "}") {
+        if (c === "\\") {
+          getCharacter.previous();
+          const ret = parseSingle(getCharacter, matchCounts);
+
+          if (ret) {
+            // TODO: Find a better way to handle this
+            // @ts-expect-error Nasty but works
+            stringBuffer = ret.value;
+          }
+        } else if (c === "}") {
           return {
             match: foundKey,
             value: expressions[foundKey](stringBuffer, matchCounts || {}),
