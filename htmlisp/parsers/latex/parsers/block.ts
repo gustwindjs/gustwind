@@ -2,7 +2,8 @@ import { getParseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
 import type { Element } from "../../../types.ts";
 
-const LIMIT = 100000;
+// const LIMIT = 100000;
+const LIMIT = 10;
 
 // Parses \begin{<type>}...\end{<type>} form
 function getParseBlock<ItemReturnValue = unknown>(

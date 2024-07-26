@@ -39,7 +39,7 @@ const doubles: Record<string, Expression> = {
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const parseContent = getParseContent((s) => s);
+const parseContent = getParseContent((s) => s.join(""));
 
 // TODO: Likely this needs a generic to clean up typing
 const blocks: Record<string, {

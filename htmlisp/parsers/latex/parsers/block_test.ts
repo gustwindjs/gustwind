@@ -18,7 +18,7 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
-          item: getParseContent((s) => s),
+          item: getParseContent((s) => s.join("")),
         },
       },
     )(
@@ -47,7 +47,7 @@ Deno.test(`simple list`, () => {
       characterGenerator(String.raw`\begin{${name}}
         \item Foo
         \item Bar
-      \end{${name}}`),
+\end{${name}}`),
     ),
     { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
@@ -73,7 +73,7 @@ Deno.test(`simple definition list`, () => {
       characterGenerator(String.raw`\begin{${name}}
         \item[Foo] foo
         \item[Bar] bar
-      \end{${name}}`),
+\end{${name}}`),
     ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
   );

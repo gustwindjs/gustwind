@@ -1,3 +1,4 @@
+import { runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 import type { Element } from "../../../types.ts";
 
@@ -27,27 +28,14 @@ function getParseContent(
         parts.push(stringBuffer);
         stringBuffer = "";
 
-        const characterIndex = getCharacter.getIndex();
-        let foundMatch = false;
-
         getCharacter.previous();
 
-        // For async version this could use Promise.race
-        for (const parser of parsers) {
-          try {
-            // @ts-ignore Ignore for now - most likely there's a type mismatch
-            parts.push(parser(getCharacter));
+        const parseResult = runParsers(getCharacter, parsers);
 
-            foundMatch = true;
-            break;
-          } catch (_error) {
-            getCharacter.setIndex(characterIndex);
-          }
-        }
-
-        if (!foundMatch) {
-          getCharacter.previous();
-
+        if (parseResult) {
+          // TODO: Likely typing should be cleaned up here
+          parts.push(parseResult as string);
+        } else {
           break;
         }
       } else {

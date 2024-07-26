@@ -14,7 +14,7 @@ Deno.test(`id expression`, () => {
 Deno.test(`multiple paragraphs`, () => {
   const input = `foobar
 
-barfoo`;
+\nbarfoo`;
 
   assertEquals(
     parse(characterGenerator(input)),
