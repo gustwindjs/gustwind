@@ -111,11 +111,11 @@ Deno.test(`url within paragraph`, () => {
     [{
       type: "p",
       attributes: {},
-      children: ["foobar", {
+      children: ["foobar ", {
         type: "a",
         attributes: { href: "https://bing.com" },
         children: ["https://bing.com"],
-      }, "foobar"],
+      }, " foobar"],
     }],
   );
 });

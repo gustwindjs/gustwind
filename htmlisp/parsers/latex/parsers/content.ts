@@ -1,18 +1,18 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { Expression } from "./../expressions.ts";
 import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;
 
 // Parses content until \ or \n\n or until string to parse ends
 function getParseContent(
-  expression: Expression,
+  expression: (parts: string[]) => string | Element,
   parsers: ((getCharacter: CharacterGenerator) => string | Element)[] = [],
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
   ): string | Element {
     let stringBuffer = "";
+    const parts: string[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -22,8 +22,11 @@ function getParseContent(
       }
 
       if (c === "\n" && getCharacter.get() === "\n") {
-        return expression(stringBuffer);
+        break;
       } else if (c === "\\") {
+        parts.push(stringBuffer);
+        stringBuffer = "";
+
         const characterIndex = getCharacter.getIndex();
         let foundMatch = false;
 
@@ -32,9 +35,8 @@ function getParseContent(
         // For async version this could use Promise.race
         for (const parser of parsers) {
           try {
-            // TODO: Figure out how this should work with element structure
             // @ts-ignore Ignore for now - most likely there's a type mismatch
-            stringBuffer += parser(getCharacter);
+            parts.push(parser(getCharacter));
 
             foundMatch = true;
             break;
@@ -46,14 +48,18 @@ function getParseContent(
         if (!foundMatch) {
           getCharacter.previous();
 
-          return expression(stringBuffer);
+          break;
         }
       } else {
         stringBuffer += c;
       }
     }
 
-    return expression(stringBuffer);
+    if (stringBuffer) {
+      parts.push(stringBuffer);
+    }
+
+    return expression(parts);
   };
 }
 

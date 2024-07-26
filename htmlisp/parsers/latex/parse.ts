@@ -8,15 +8,17 @@ import type { Element } from "../../types.ts";
 
 const LIMIT = 100000;
 
+const singleParsers = getParseSingle(singles);
+const doubleParsers = getParseDouble(doubles);
 const parsers = [
-  getParseSingle(singles),
-  getParseDouble(doubles),
+  singleParsers,
+  doubleParsers,
   getParseBlock(blocks),
   getParseContent((children) => ({
     type: "p",
     attributes: {},
-    children: [children],
-  })),
+    children,
+  }), [singleParsers, doubleParsers]),
 ];
 
 function parse(
