@@ -32,6 +32,25 @@ Deno.test(`expression within expression`, () => {
   );
 });
 
+Deno.test(`expression within expression 2`, () => {
+  const input = "foobar";
+
+  assertEquals(
+    getParseSingle<Element>(
+      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+    )(characterGenerator(String.raw`\id{foo \id{${input}} bar}`)).value,
+    {
+      type: "div",
+      attributes: {},
+      children: [
+        "foo ",
+        { type: "div", attributes: {}, children: [input] },
+        " bar",
+      ],
+    },
+  );
+});
+
 Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>
