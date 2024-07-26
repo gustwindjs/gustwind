@@ -1,17 +1,16 @@
 import { runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
-import type { Element } from "../../../types.ts";
 
 const LIMIT = 100000;
 
 // Parses content until \ or \n\n or until string to parse ends
-function getParseContent(
-  expression: (parts: string[]) => string | Element,
-  parsers: ((getCharacter: CharacterGenerator) => string | Element)[] = [],
+function getParseContent<ExpressionReturnType>(
+  expression: (parts: string[]) => ExpressionReturnType,
+  parsers: ((getCharacter: CharacterGenerator) => ExpressionReturnType)[] = [],
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
-  ): string | Element {
+  ): ExpressionReturnType {
     let stringBuffer = "";
     const parts: string[] = [];
 
@@ -30,7 +29,10 @@ function getParseContent(
 
         getCharacter.previous();
 
-        const parseResult = runParsers(getCharacter, parsers);
+        const parseResult = runParsers<ExpressionReturnType>(
+          getCharacter,
+          parsers,
+        );
 
         if (parseResult) {
           // TODO: Likely typing should be cleaned up here

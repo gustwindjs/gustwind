@@ -2,12 +2,15 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseContent } from "./content.ts";
 import { getParseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
+import type { Element } from "../../../types.ts";
 
 Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    getParseContent((parts) => parts.join(""))(characterGenerator(input)),
+    getParseContent<string>((parts) => parts.join(""))(
+      characterGenerator(input),
+    ),
     input,
   );
 });
@@ -16,7 +19,7 @@ Deno.test(`simple expression with a forced newline`, () => {
   const input = "foobar";
 
   assertEquals(
-    getParseContent((parts) => parts.join(""))(
+    getParseContent<string>((parts) => parts.join(""))(
       characterGenerator(String.raw`${input}\\`),
     ),
     input,
@@ -30,7 +33,9 @@ foobar
 barfoo`;
 
   assertEquals(
-    getParseContent((parts) => parts.join(""))(characterGenerator(input)),
+    getParseContent<string>((parts) => parts.join(""))(
+      characterGenerator(input),
+    ),
     `foobar
 foobar`,
   );
@@ -40,7 +45,7 @@ Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} barfoo`;
 
   assertEquals(
-    getParseContent((parts) => parts.join(""), [
+    getParseContent<string>((parts) => parts.join(""), [
       getParseSingle({ url: (s) => s }),
     ])(
       characterGenerator(input),
@@ -53,7 +58,7 @@ Deno.test(`url within paragraph with elements`, () => {
   const input = String.raw`foobar \url{https://bing.com} barfoo`;
 
   assertEquals(
-    getParseContent((children) => ({
+    getParseContent<Element>((children) => ({
       type: "p",
       attributes: {},
       children,

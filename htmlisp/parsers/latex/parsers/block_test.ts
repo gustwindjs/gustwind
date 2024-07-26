@@ -4,13 +4,14 @@ import { getParseContent } from "./content.ts";
 import { parseDefinitionItem } from "./definition_item.ts";
 import { parseListItem } from "./list_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
+import type { Element } from "../../../types.ts";
 
 Deno.test(`simple expression`, () => {
   const name = "verbatim";
   const input = "foobar";
 
   assertEquals(
-    getParseBlock(
+    getParseBlock<Element, string>(
       {
         [name]: {
           container: (children) => ({
@@ -32,7 +33,7 @@ Deno.test(`simple list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<string>(
+    getParseBlock<Element, string>(
       {
         [name]: {
           container: (children) => ({
@@ -57,7 +58,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<ReturnType<typeof parseDefinitionItem>>(
+    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>>(
       {
         [name]: {
           container: (children) => ({

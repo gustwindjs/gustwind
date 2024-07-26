@@ -4,12 +4,13 @@ import {
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
+import type { Element } from "../../../types.ts";
 
 Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    getParseSingle(
+    getParseSingle<Element>(
       { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
     )(characterGenerator(String.raw`\id{${input}}`)),
     { type: "div", attributes: {}, children: [input] },
@@ -19,7 +20,7 @@ Deno.test(`simple expression`, () => {
 Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>
-      getParseSingle(
+      getParseSingle<Element>(
         { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
       )(characterGenerator(String.raw`foobar \id{foobar}`)),
     Error,

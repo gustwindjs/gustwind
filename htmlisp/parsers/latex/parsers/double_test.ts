@@ -4,13 +4,14 @@ import {
 } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseDouble } from "./double.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
+import type { Element } from "../../../types.ts";
 
 Deno.test(`simple expression`, () => {
   const input = "foobar";
   const arg = "demo";
 
   assertEquals(
-    getParseDouble(
+    getParseDouble<Element>(
       {
         id: (i, arg) => ({
           type: "div",
@@ -28,7 +29,7 @@ Deno.test(`simple expression`, () => {
 Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>
-      getParseDouble(
+      getParseDouble<Element>(
         { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
       )(characterGenerator(String.raw`foobar \id{foobar}{barfoo}`)),
     Error,

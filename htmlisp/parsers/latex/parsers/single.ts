@@ -1,6 +1,4 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { Expression } from "./../expressions.ts";
-import type { Element } from "../../../types.ts";
 
 enum STATES {
   IDLE,
@@ -11,12 +9,12 @@ enum STATES {
 const LIMIT = 100000;
 
 // Parses \<expression>{<parameter>} form
-function getParseSingle(
-  expressions: Record<string, Expression>,
+function getParseSingle<ExpressionReturnType>(
+  expressions: Record<string, (s: string) => ExpressionReturnType>,
 ) {
   return function parseSingle(
     getCharacter: CharacterGenerator,
-  ): string | Element {
+  ): ExpressionReturnType {
     let state = STATES.IDLE;
     let foundKey = "";
     let stringBuffer = "";

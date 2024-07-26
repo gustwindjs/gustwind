@@ -1,24 +1,24 @@
 import { getParseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
-import type { Element } from "../../../types.ts";
 
-// const LIMIT = 100000;
-const LIMIT = 10;
+const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
-function getParseBlock<ItemReturnValue = unknown>(
+function getParseBlock<ExpressionReturnType, ItemReturnValue>(
   expressions: Record<
     string,
     {
-      container: (items: (ItemReturnValue)[]) => Element | string;
+      container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
       item: (getCharacter: CharacterGenerator) => ItemReturnValue;
     }
   >,
 ) {
   return function parseBlock(
     getCharacter: CharacterGenerator,
-  ): string | Element {
-    const begin = getParseSingle({ begin: (i) => i })(getCharacter);
+  ): ExpressionReturnType {
+    const begin = getParseSingle<string>({ begin: (i) => i })(
+      getCharacter,
+    );
     let items: ItemReturnValue[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
@@ -45,7 +45,7 @@ function getParseBlock<ItemReturnValue = unknown>(
       }
     }
 
-    const end = getParseSingle({ end: (i) => i })(getCharacter);
+    const end = getParseSingle<string>({ end: (i) => i })(getCharacter);
 
     if (begin === end) {
       return expressions[begin as string].container(items);

@@ -1,6 +1,4 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { Expression } from "./../expressions.ts";
-import type { Element } from "../../../types.ts";
 
 enum STATES {
   IDLE,
@@ -12,12 +10,12 @@ enum STATES {
 const LIMIT = 100000;
 
 // Parses \<expression>{<parameter 1>}{<parameter 2>} form
-function getParseDouble(
-  expressions: Record<string, Expression>,
+function getParseDouble<ExpressionReturnType>(
+  expressions: Record<string, (s: string, arg: string) => ExpressionReturnType>,
 ) {
   return function parseDouble(
     getCharacter: CharacterGenerator,
-  ): string | Element {
+  ): ExpressionReturnType {
     let state = STATES.IDLE;
     let foundKey = "";
     let foundFirst = "";
