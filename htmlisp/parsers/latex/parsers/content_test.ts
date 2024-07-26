@@ -84,3 +84,42 @@ Deno.test(`url within paragraph with elements`, () => {
     },
   );
 });
+
+Deno.test(`footnote within paragraph with elements`, () => {
+  const input = String.raw`foobar \footnote{https://bing.com} barfoo`;
+
+  assertEquals(
+    getParseContent<Element>((children) => ({
+      type: "p",
+      attributes: {},
+      children,
+    }), [getParseSingle({
+      footnote: (title) => ({
+        type: "sup",
+        attributes: { title },
+        // TODO: Get amount of footnote matches here -> add tracking
+        children: ["1"], // n.toString()],
+      }),
+    })])(
+      characterGenerator(input),
+    ),
+    {
+      type: "p",
+      attributes: {},
+      children: [
+        "foobar ",
+        {
+          type: "sup",
+          attributes: {
+            title: "https://bing.com",
+          },
+          children: ["1"],
+        },
+        " barfoo",
+      ],
+    },
+  );
+});
+
+// TODO: Test a footnote with a url
+// TODO: Test numbering for multiple footnotes
