@@ -2,7 +2,10 @@ import type { CharacterGenerator } from "../../types.ts";
 
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
-  parsers: ((getCharacter: CharacterGenerator) => ExpressionReturnType)[],
+  parsers:
+    ((
+      getCharacter: CharacterGenerator,
+    ) => { match: string; value: ExpressionReturnType })[],
 ) {
   const characterIndex = getCharacter.getIndex();
 

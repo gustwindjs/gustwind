@@ -21,7 +21,7 @@ Deno.test(`simple expression`, () => {
       },
     )(
       characterGenerator(String.raw`\id{${input}}{${arg}}`),
-    ),
+    ).value,
     { type: "div", attributes: { id: arg }, children: [input] },
   );
 });

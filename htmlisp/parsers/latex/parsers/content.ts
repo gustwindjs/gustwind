@@ -5,14 +5,16 @@ const LIMIT = 100000;
 
 // Parses content until \ or \n\n or until string to parse ends
 function getParseContent<ExpressionReturnType>(
-  expression: (parts: string[]) => ExpressionReturnType,
-  parsers: ((getCharacter: CharacterGenerator) => ExpressionReturnType)[] = [],
+  expression: (parts: ExpressionReturnType[]) => ExpressionReturnType,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+  ) => { match: string; value: ExpressionReturnType })[] = [],
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
     let stringBuffer = "";
-    const parts: string[] = [];
+    const parts: ExpressionReturnType[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -24,19 +26,21 @@ function getParseContent<ExpressionReturnType>(
       if (c === "\n" && getCharacter.get() === "\n") {
         break;
       } else if (c === "\\") {
+        // @ts-expect-error This is fine
         parts.push(stringBuffer);
         stringBuffer = "";
 
         getCharacter.previous();
 
+        // TODO: Capture parseResult matches to calculate match counts
+        // and provide that as a parameter to runParsers
         const parseResult = runParsers<ExpressionReturnType>(
           getCharacter,
           parsers,
         );
 
         if (parseResult) {
-          // TODO: Likely typing should be cleaned up here
-          parts.push(parseResult as string);
+          parts.push(parseResult.value);
         } else {
           break;
         }
@@ -46,6 +50,7 @@ function getParseContent<ExpressionReturnType>(
     }
 
     if (stringBuffer) {
+      // @ts-expect-error This is fine
       parts.push(stringBuffer);
     }
 

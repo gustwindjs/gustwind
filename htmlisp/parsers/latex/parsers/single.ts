@@ -14,7 +14,7 @@ function getParseSingle<ExpressionReturnType>(
 ) {
   return function parseSingle(
     getCharacter: CharacterGenerator,
-  ): ExpressionReturnType {
+  ): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";
     let stringBuffer = "";
@@ -51,7 +51,10 @@ function getParseSingle<ExpressionReturnType>(
         }
       } else if (state === STATES.PARSE_EXPRESSION_CONTENT) {
         if (c === "}") {
-          return expressions[foundKey](stringBuffer);
+          return {
+            match: foundKey,
+            value: expressions[foundKey](stringBuffer),
+          };
         } else {
           stringBuffer += c;
         }

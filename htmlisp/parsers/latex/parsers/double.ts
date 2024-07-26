@@ -15,7 +15,7 @@ function getParseDouble<ExpressionReturnType>(
 ) {
   return function parseDouble(
     getCharacter: CharacterGenerator,
-  ): ExpressionReturnType {
+  ): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";
     let foundFirst = "";
@@ -62,7 +62,10 @@ function getParseDouble<ExpressionReturnType>(
         }
       } else if (state === STATES.PARSE_EXPRESSION_SECOND) {
         if (c === "}") {
-          return expressions[foundKey](foundFirst, stringBuffer);
+          return {
+            match: foundKey,
+            value: expressions[foundKey](foundFirst, stringBuffer),
+          };
         } else {
           stringBuffer += c;
         }

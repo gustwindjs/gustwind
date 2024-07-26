@@ -12,7 +12,7 @@ Deno.test(`simple expression`, () => {
   assertEquals(
     getParseSingle<Element>(
       { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
-    )(characterGenerator(String.raw`\id{${input}}`)),
+    )(characterGenerator(String.raw`\id{${input}}`)).value,
     { type: "div", attributes: {}, children: [input] },
   );
 });
@@ -22,7 +22,7 @@ Deno.test(`throws unless first character is a backslash`, () => {
     () =>
       getParseSingle<Element>(
         { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
-      )(characterGenerator(String.raw`foobar \id{foobar}`)),
+      )(characterGenerator(String.raw`foobar \id{foobar}`)).value,
     Error,
     `No matching expression was found`,
   );
