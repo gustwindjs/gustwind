@@ -4,10 +4,10 @@ import { parseListItem } from "./parsers/list_item.ts";
 import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
-type Expression<ReturnValue = Element | string> = (
+type Expression = (
   s: string,
   attribute?: string,
-) => ReturnValue;
+) => Element;
 
 const singles: Record<string, Expression> = {
   // Url
@@ -39,9 +39,6 @@ const doubles: Record<string, Expression> = {
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const parseContent = getParseContent((s) => s.join(""));
-
-// TODO: Likely this needs a generic to clean up typing
 const blocks: Record<string, {
   container: (items: unknown[]) => Element | string;
   item: (getCharacter: CharacterGenerator) => unknown;
@@ -49,7 +46,7 @@ const blocks: Record<string, {
   // Url
   "verbatim": {
     container: (children) => element("pre", children as string[]),
-    item: parseContent,
+    item: getParseContent((s) => s.join("")),
   },
   // Lists
   "enumerate": {
@@ -82,5 +79,4 @@ function element(
   };
 }
 
-export type { Expression };
 export { blocks, doubles, singles };
