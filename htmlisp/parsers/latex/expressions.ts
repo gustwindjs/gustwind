@@ -5,32 +5,29 @@ import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
 type Expression = (
-  s: string,
+  children: string[],
   attribute?: string,
 ) => Element;
 
 const singles: Record<string, Expression> = {
   // Url
-  url: (href: string) => element("a", [href], { href }),
+  url: (children) => element("a", children, { href: children[0] }),
   // Titles
-  chapter: (children: string) => element("h1", [children]),
-  section: (children: string) => element("h2", [children]),
-  subsection: (children: string) => element("h3", [children]),
-  subsubsection: (children: string) => element("h4", [children]),
-  paragraph: (children: string) => element("b", [children]),
+  chapter: el("h1"),
+  section: el("h2"),
+  subsection: el("h3"),
+  subsubsection: el("h4"),
+  paragraph: el("b"),
   // Formatting
-  texttt: (children: string) => element("code", [children]),
-  textbf: (children: string) => element("b", [children]),
-  textit: (children: string) => element("i", [children]),
-  // Footnote
-  // TODO: This needs numbering and https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/popover
-  // TODO: Footnote contents can have expressions so they should go through the expression parser as well
-  footnote: (children: string) => element("sup", [children]),
-  // Citations
-  // TODO: Same problem here but with varying output depending on citation type
-  cite: (children: string) => element("sup", [children]),
-  citet: (children: string) => element("sup", [children]),
-  citep: (children: string) => element("sup", [children]),
+  texttt: el("code"),
+  textbf: el("b"),
+  textit: el("i"),
+  // Footnote and citations
+  // TODO: These need a different design due to numbering and markup requirements
+  footnote: el("sup"),
+  cite: el("sup"),
+  citet: el("sup"),
+  citep: el("sup"),
 };
 
 const doubles: Record<string, Expression> = {
@@ -66,6 +63,12 @@ const blocks: Record<string, {
     },
   },
 };
+
+function el(type: string) {
+  return function e(children: string[]) {
+    return element(type, children);
+  };
+}
 
 function element(
   type: string,

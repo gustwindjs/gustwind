@@ -12,6 +12,7 @@ const LIMIT = 100000;
 function getParseSingle<ExpressionReturnType>(
   expressions: Record<
     string,
+    // TODO: Extract this as an Expression type + consider usage for doubles
     (s: string[], matchCounts: Record<string, number>) => ExpressionReturnType
   >,
 ) {
