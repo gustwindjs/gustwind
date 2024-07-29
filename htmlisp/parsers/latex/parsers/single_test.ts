@@ -11,7 +11,7 @@ Deno.test(`simple expression`, () => {
 
   assertEquals(
     getParseSingle<Element>(
-      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      { id: (children) => ({ type: "div", attributes: {}, children }) },
     )(characterGenerator(String.raw`\id{${input}}`)).value,
     { type: "div", attributes: {}, children: [input] },
   );
@@ -22,7 +22,7 @@ Deno.test(`expression within expression`, () => {
 
   assertEquals(
     getParseSingle<Element>(
-      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      { id: (children) => ({ type: "div", attributes: {}, children }) },
     )(characterGenerator(String.raw`\id{\id{${input}}}`)).value,
     {
       type: "div",
@@ -37,7 +37,7 @@ Deno.test(`expression within expression 2`, () => {
 
   assertEquals(
     getParseSingle<Element>(
-      { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      { id: (children) => ({ type: "div", attributes: {}, children }) },
     )(characterGenerator(String.raw`\id{foo \id{${input}} bar}`)).value,
     {
       type: "div",
@@ -55,7 +55,7 @@ Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>
       getParseSingle<Element>(
-        { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+        { id: (children) => ({ type: "div", attributes: {}, children }) },
       )(characterGenerator(String.raw`foobar \id{foobar}`)).value,
     Error,
     `No matching expression was found`,

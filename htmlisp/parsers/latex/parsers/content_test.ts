@@ -46,7 +46,7 @@ Deno.test(`url within paragraph`, () => {
 
   assertEquals(
     getParseContent<string>((parts) => parts.join(""), [
-      getParseSingle({ url: (s) => s }),
+      getParseSingle({ url: (children) => children[0] }),
     ])(
       characterGenerator(input),
     ),
@@ -63,7 +63,11 @@ Deno.test(`url within paragraph with elements`, () => {
       attributes: {},
       children,
     }), [getParseSingle({
-      url: (href) => ({ type: "a", attributes: { href }, children: [href] }),
+      url: (children) => ({
+        type: "a",
+        attributes: { href: children[0] },
+        children,
+      }),
     })])(
       characterGenerator(input),
     ),
@@ -94,9 +98,9 @@ Deno.test(`footnote within paragraph with elements`, () => {
       attributes: {},
       children,
     }), [getParseSingle({
-      footnote: (title, matchCounts) => ({
+      footnote: (children, matchCounts) => ({
         type: "sup",
-        attributes: { title },
+        attributes: { title: children[0] },
         children: [
           (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
         ],
@@ -132,9 +136,9 @@ Deno.test(`multiple footnotes`, () => {
       attributes: {},
       children,
     }), [getParseSingle({
-      footnote: (title, matchCounts) => ({
+      footnote: (children, matchCounts) => ({
         type: "sup",
-        attributes: { title },
+        attributes: { title: children[0] },
         children: [
           (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
         ],

@@ -12,7 +12,7 @@ const LIMIT = 100000;
 function getParseSingle<ExpressionReturnType>(
   expressions: Record<
     string,
-    (s: string, matchCounts: Record<string, number>) => ExpressionReturnType
+    (s: string[], matchCounts: Record<string, number>) => ExpressionReturnType
   >,
 ) {
   return function parseSingle(
@@ -21,6 +21,7 @@ function getParseSingle<ExpressionReturnType>(
   ): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";
+    const parts: unknown[] = [];
     let stringBuffer = "";
 
     for (let i = 0; i < LIMIT; i++) {
@@ -55,18 +56,25 @@ function getParseSingle<ExpressionReturnType>(
         }
       } else if (state === STATES.PARSE_EXPRESSION_CONTENT) {
         if (c === "\\") {
+          if (stringBuffer) {
+            parts.push(stringBuffer);
+            stringBuffer = "";
+          }
+
           getCharacter.previous();
           const ret = parseSingle(getCharacter, matchCounts);
 
           if (ret) {
-            // TODO: Find a better way to handle this
-            // @ts-expect-error Nasty but works
-            stringBuffer = ret.value;
+            parts.push(ret.value);
           }
         } else if (c === "}") {
+          if (stringBuffer) {
+            parts.push(stringBuffer);
+          }
+
           return {
             match: foundKey,
-            value: expressions[foundKey](stringBuffer, matchCounts || {}),
+            value: expressions[foundKey](parts as string[], matchCounts || {}),
           };
         } else {
           stringBuffer += c;

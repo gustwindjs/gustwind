@@ -37,5 +37,7 @@ Deno.test(`throws unless first character is a backslash`, () => {
   );
 });
 
+// TODO: Allow parsing expressions for the second parameter
+
 // TODO: Test that the logic throws in case a matching expression was not found
 // TODO: Test that the logic throws in case an expression is incomplete
