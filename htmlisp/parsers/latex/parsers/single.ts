@@ -1,5 +1,10 @@
 import type { CharacterGenerator } from "../../types.ts";
 
+type SingleParser<ExpressionReturnType> = (
+  s: string[],
+  matchCounts: Record<string, number>,
+) => ExpressionReturnType;
+
 enum STATES {
   IDLE,
   PARSE_EXPRESSION,
@@ -12,8 +17,7 @@ const LIMIT = 100000;
 function getParseSingle<ExpressionReturnType>(
   expressions: Record<
     string,
-    // TODO: Extract this as an Expression type + consider usage for doubles
-    (s: string[], matchCounts: Record<string, number>) => ExpressionReturnType
+    SingleParser<ExpressionReturnType>
   >,
 ) {
   return function parseSingle(
@@ -87,4 +91,4 @@ function getParseSingle<ExpressionReturnType>(
   };
 }
 
-export { getParseSingle };
+export { getParseSingle, type SingleParser };

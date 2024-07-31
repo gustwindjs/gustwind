@@ -1,5 +1,10 @@
 import type { CharacterGenerator } from "../../types.ts";
 
+type DoubleParser<ExpressionReturnType> = (
+  s: string,
+  arg: string,
+) => ExpressionReturnType;
+
 enum STATES {
   IDLE,
   PARSE_EXPRESSION,
@@ -11,7 +16,7 @@ const LIMIT = 100000;
 
 // Parses \<expression>{<parameter 1>}{<parameter 2>} form
 function getParseDouble<ExpressionReturnType>(
-  expressions: Record<string, (s: string, arg: string) => ExpressionReturnType>,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
 ) {
   return function parseDouble(
     getCharacter: CharacterGenerator,
@@ -76,4 +81,4 @@ function getParseDouble<ExpressionReturnType>(
   };
 }
 
-export { getParseDouble };
+export { type DoubleParser, getParseDouble };

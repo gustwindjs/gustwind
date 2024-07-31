@@ -1,22 +1,24 @@
 import { getParseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
+type BlockParser<ExpressionReturnType, ItemReturnValue> = {
+  container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
+  item: (getCharacter: CharacterGenerator) => ItemReturnValue;
+};
+
 const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
 function getParseBlock<ExpressionReturnType, ItemReturnValue>(
   expressions: Record<
     string,
-    {
-      container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
-      item: (getCharacter: CharacterGenerator) => ItemReturnValue;
-    }
+    BlockParser<ExpressionReturnType, ItemReturnValue>
   >,
 ) {
   return function parseBlock(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
-    const begin = getParseSingle<string>({ begin: (i) => i })(
+    const begin = getParseSingle<string>({ begin: (i) => i.join("") })(
       getCharacter,
     );
     let items: ItemReturnValue[] = [];
@@ -28,7 +30,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       const characterIndex = getCharacter.getIndex();
 
       try {
-        const item = expressions[begin as string].item(getCharacter);
+        const item = expressions[begin.value].item(getCharacter);
 
         if (item) {
           // TODO: Test this case
@@ -45,14 +47,16 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       }
     }
 
-    const end = getParseSingle<string>({ end: (i) => i })(getCharacter);
+    const end = getParseSingle<string>({ end: (i) => i.join("") })(
+      getCharacter,
+    );
 
     if (begin === end) {
-      return expressions[begin as string].container(items);
+      return expressions[begin.value].container(items);
     }
 
     throw new Error("No matching expression was found");
   };
 }
 
-export { getParseBlock };
+export { type BlockParser, getParseBlock };
