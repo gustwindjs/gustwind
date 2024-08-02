@@ -76,4 +76,4 @@ function element(
   };
 }
 
-export { blocks, doubles, singles };
+export { blocks, doubles, el, element, singles };
