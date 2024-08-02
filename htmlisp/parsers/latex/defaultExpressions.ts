@@ -19,12 +19,6 @@ const singles: Record<string, SingleParser<Element>> = {
   texttt: el("code"),
   textbf: el("b"),
   textit: el("i"),
-  // Footnote and citations
-  // TODO: These need a different design due to numbering and markup requirements
-  footnote: el("sup"),
-  cite: el("sup"),
-  citet: el("sup"),
-  citep: el("sup"),
 };
 
 const doubles: Record<string, DoubleParser<Element>> = {
@@ -58,6 +52,44 @@ const blocks: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
+const contents: Record<string, SingleParser<Element>> = {
+  footnote: (children, matchCounts) => ({
+    type: "sup",
+    attributes: { title: children[0] },
+    children: [
+      (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+    ],
+  }),
+  // TODO: Add reference through bibtex
+  cite: (children, matchCounts) => ({
+    type: "span",
+    attributes: { title: children[0] },
+    children: [
+      "[",
+      (matchCounts.cite ? matchCounts.cite + 1 : 1).toString(),
+      "]",
+    ],
+  }),
+  // TODO: Textual citation (needs a bibtex lookup)
+  citet: (children, matchCounts) => ({
+    type: "span",
+    attributes: { title: children[0] },
+    children: [
+      (matchCounts.citet ? matchCounts.citet + 1 : 1).toString(),
+    ],
+  }),
+  // TODO: Textual citation in parentheses (needs a bibtex lookup)
+  citep: (children, matchCounts) => ({
+    type: "span",
+    attributes: { title: children[0] },
+    children: [
+      "(",
+      (matchCounts.citep ? matchCounts.citep + 1 : 1).toString(),
+      ")",
+    ],
+  }),
+};
+
 function el(type: string) {
   return function e(children: string[]) {
     return element(type, children);
@@ -76,4 +108,4 @@ function element(
   };
 }
 
-export { blocks, doubles, el, element, singles };
+export { blocks, contents, doubles, el, element, singles };

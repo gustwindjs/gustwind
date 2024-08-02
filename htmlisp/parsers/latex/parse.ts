@@ -14,12 +14,14 @@ const LIMIT = 100000;
 function parse(
   getCharacter: CharacterGenerator,
   singleExpressions: Record<string, SingleParser<Element>>,
+  contentExpressions: Record<string, SingleParser<Element>>,
   doubleExpressions: Record<string, DoubleParser<Element>>,
   blockExpressions: Record<string, BlockParser<Element, Element>>,
 ): Element[] {
   const singleParsers = getParseSingle(singleExpressions);
   const doubleParsers = getParseDouble(doubleExpressions);
   const blockParsers = getParseBlock(blockExpressions);
+  const contentParsers = getParseSingle(contentExpressions);
   const allParsers = [
     singleParsers,
     doubleParsers,
@@ -30,7 +32,7 @@ function parse(
         attributes: {},
         children,
       }),
-      [singleParsers, doubleParsers],
+      [singleParsers, doubleParsers, contentParsers],
     ),
   ];
   const ret = [];
