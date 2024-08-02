@@ -1,15 +1,12 @@
+import { type SingleParser } from "./parsers/single.ts";
+import { type DoubleParser } from "./parsers/double.ts";
+import { type BlockParser } from "./parsers/block.ts";
 import { getParseContent } from "./parsers/content.ts";
 import { parseDefinitionItem } from "./parsers/definition_item.ts";
 import { parseListItem } from "./parsers/list_item.ts";
-import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
-type Expression = (
-  children: string[],
-  attribute?: string,
-) => Element;
-
-const singles: Record<string, Expression> = {
+const singles: Record<string, SingleParser<Element>> = {
   // Url
   url: (children) => element("a", children, { href: children[0] }),
   // Titles
@@ -30,36 +27,33 @@ const singles: Record<string, Expression> = {
   citep: el("sup"),
 };
 
-const doubles: Record<string, Expression> = {
+const doubles: Record<string, DoubleParser<Element>> = {
   // Url
   "href": (href: string, children?: string) =>
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const blocks: Record<string, {
-  container: (items: unknown[]) => Element | string;
-  item: (getCharacter: CharacterGenerator) => unknown;
-}> = {
+const blocks: Record<string, BlockParser<Element, Element>> = {
   // Url
   "verbatim": {
-    container: (children) => element("pre", children as string[]),
-    item: getParseContent((s) => s.join("")),
+    container: (children) => element("pre", children),
+    item: (g) => element("", [getParseContent<string>((s) => s.join(""))(g)]),
   },
   // Lists
   "enumerate": {
-    container: (children) => element("ol", children as string[]),
+    container: (children) => element("ol", children),
     item: (g) => element("li", [parseListItem(g)]),
   },
   "itemize": {
-    container: (children) => element("ul", children as string[]),
+    container: (children) => element("ul", children),
     item: (g) => element("li", [parseListItem(g)]),
   },
   "description": {
-    container: (children) => element("dl", children as string[]),
+    container: (children) => element("dl", children),
     item: (g) => {
       const { title, description } = parseDefinitionItem(g);
 
-      return [element("dt", [title]), element("dd", [description])];
+      return element("dt", [title]), element("dd", [description]);
     },
   },
 };
@@ -72,7 +66,7 @@ function el(type: string) {
 
 function element(
   type: string,
-  children: string[],
+  children: (Element | string)[],
   attributes?: Record<string, string>,
 ): Element {
   return {

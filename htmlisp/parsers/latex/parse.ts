@@ -2,7 +2,7 @@ import { getParseSingle } from "./parsers/single.ts";
 import { getParseDouble } from "./parsers/double.ts";
 import { getParseBlock } from "./parsers/block.ts";
 import { getParseContent } from "./parsers/content.ts";
-import { blocks, doubles, singles } from "./expressions.ts";
+import { blocks, doubles, singles } from "./defaultExpressions.ts";
 import { runParsers } from "./parsers/runParsers.ts";
 import type { CharacterGenerator } from "../types.ts";
 
