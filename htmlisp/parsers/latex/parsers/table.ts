@@ -47,6 +47,7 @@ function getParseTable<ExpressionReturnType>(
     */
 
     // TODO: Extract this pattern as a helper function
+    parseEmpty(getCharacter);
     let characterIndex = getCharacter.getIndex();
     let caption = "";
     try {
@@ -63,6 +64,7 @@ function getParseTable<ExpressionReturnType>(
       getCharacter.setIndex(characterIndex);
     }
 
+    parseEmpty(getCharacter);
     characterIndex = getCharacter.getIndex();
     let label = "";
     try {
