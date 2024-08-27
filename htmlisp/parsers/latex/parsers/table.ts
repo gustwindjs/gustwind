@@ -45,11 +45,39 @@ function getParseTable<ExpressionReturnType>(
     }
     */
 
-    // TODO: Parse caption
-    const caption = "barfoo";
+    // TODO: Extract this pattern as a helper function
+    let characterIndex = getCharacter.getIndex();
+    let caption = "";
+    try {
+      const parsedCaption = getParseSingle<string>({
+        caption: (i) => i.join(""),
+      })(
+        getCharacter,
+      );
 
-    // TODO: Parse label
-    const label = "foobar";
+      if (parsedCaption.match) {
+        caption = parsedCaption.value;
+      }
+    } catch (_error) {
+      getCharacter.setIndex(characterIndex);
+    }
+
+    characterIndex = getCharacter.getIndex();
+    let label = "";
+    try {
+      const parsedLabel = getParseSingle<string>({ label: (i) => i.join("") })(
+        getCharacter,
+      );
+
+      if (parsedLabel.match) {
+        label = parsedLabel.value;
+      }
+    } catch (_error) {
+      getCharacter.setIndex(characterIndex);
+    }
+
+    // TODO: How to handle newlines/spaces before parsing \end{table}?
+    // Likely this needs some parsing step to swallow empties
 
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
       getCharacter,
