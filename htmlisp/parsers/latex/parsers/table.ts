@@ -1,3 +1,4 @@
+import { parseEmpty } from "./empty.ts";
 import { getParseSingle } from "./single.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
@@ -76,8 +77,7 @@ function getParseTable<ExpressionReturnType>(
       getCharacter.setIndex(characterIndex);
     }
 
-    // TODO: How to handle newlines/spaces before parsing \end{table}?
-    // Likely this needs some parsing step to swallow empties
+    parseEmpty(getCharacter);
 
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
       getCharacter,
