@@ -3,7 +3,7 @@ import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType, ItemReturnValue> = {
   container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
-  item: (getCharacter: CharacterGenerator) => ItemReturnValue;
+  item?: (getCharacter: CharacterGenerator) => ItemReturnValue;
 };
 
 const LIMIT = 100000;
@@ -21,29 +21,32 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     const begin = getParseSingle<string>({ begin: (i) => i.join("") })(
       getCharacter,
     );
+    const itemCb = expressions[begin.value].item;
     let items: ItemReturnValue[] = [];
 
-    for (let i = 0; i < LIMIT; i++) {
-      if (getCharacter.get() === null) {
-        break;
-      }
-      const characterIndex = getCharacter.getIndex();
-
-      try {
-        const item = expressions[begin.value].item(getCharacter);
-
-        if (item) {
-          // TODO: Test this case
-          if (Array.isArray(item)) {
-            items = items.concat(item);
-          } else {
-            items.push(item);
-          }
+    if (itemCb) {
+      for (let i = 0; i < LIMIT; i++) {
+        if (getCharacter.get() === null) {
+          break;
         }
-      } catch (_error) {
-        getCharacter.setIndex(characterIndex);
+        const characterIndex = getCharacter.getIndex();
 
-        break;
+        try {
+          const item = itemCb(getCharacter);
+
+          if (item) {
+            // TODO: Test this case
+            if (Array.isArray(item)) {
+              items = items.concat(item);
+            } else {
+              items.push(item);
+            }
+          }
+        } catch (_error) {
+          getCharacter.setIndex(characterIndex);
+
+          break;
+        }
       }
     }
 
@@ -51,11 +54,11 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       getCharacter,
     );
 
-    if (begin === end) {
+    if (begin.value === end.value) {
       return expressions[begin.value].container(items);
     }
 
-    throw new Error("No matching expression was found");
+    throw new Error(`Expression matching to ${begin.value} was not found`);
   };
 }
 
