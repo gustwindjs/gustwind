@@ -28,9 +28,12 @@ const doubles: Record<string, DoubleParser<Element>> = {
 };
 
 const blocks: Record<string, BlockParser<Element, Element>> = {
-  // Url
   "verbatim": {
     container: (children) => element("pre", children),
+    item: (g) => element("", [getParseContent<string>((s) => s.join(""))(g)]),
+  },
+  "quote": {
+    container: (children) => element("blockquote", children),
     item: (g) => element("", [getParseContent<string>((s) => s.join(""))(g)]),
   },
   // Lists
