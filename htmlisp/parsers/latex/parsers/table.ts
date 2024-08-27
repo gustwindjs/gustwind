@@ -1,5 +1,5 @@
-import { parseEmpty } from "./empty.ts";
 import { getParseSingle } from "./single.ts";
+import { runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
@@ -13,86 +13,49 @@ function getParseTable<ExpressionReturnType>(
   return function parseBlock(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
-    const begin = getParseSingle<string>({ begin: (i) => i.join("") })(
-      getCharacter,
-    );
-    // const itemCb = expressions[begin.value].item;
-    // TODO
-    // let items: {}[] = [];
+    const parsedValues: Record<string, ExpressionReturnType> = {};
 
-    /*
+    // TODO: The problem with this solution is that it doesn't validate the location
+    // of \begin and \end. Likely this could be solved by letting runParsers
+    // return more metadata about the matches so order can be validated.
     for (let i = 0; i < LIMIT; i++) {
-      if (getCharacter.get() === null) {
-        break;
-      }
-      const characterIndex = getCharacter.getIndex();
-
-      try {
-        const item = itemCb(getCharacter);
-
-        if (item) {
-          // TODO: Test this case
-          if (Array.isArray(item)) {
-            items = items.concat(item);
-          } else {
-            items.push(item);
-          }
-        }
-      } catch (_error) {
-        getCharacter.setIndex(characterIndex);
-
-        break;
-      }
-    }
-    */
-
-    // TODO: The order could be different so this needs a state machine.
-    // This is enough for now.
-    // TODO: Extract this pattern as a helper function
-    parseEmpty(getCharacter);
-    let characterIndex = getCharacter.getIndex();
-    let label = "";
-    try {
-      const parsedLabel = getParseSingle<string>({ label: (i) => i.join("") })(
+      const parseResult = runParsers<ExpressionReturnType>(
         getCharacter,
+        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+        [getParseSingle({
+          begin: joinString,
+          caption: joinString,
+          label: joinString,
+          end: joinString,
+        })],
       );
 
-      if (parsedLabel.match) {
-        label = parsedLabel.value;
+      if (parseResult?.match) {
+        parsedValues[parseResult.match] = parseResult.value;
       }
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
+
+      const c = getCharacter.next();
+
+      if (c === null) {
+        break;
+      }
     }
 
-    parseEmpty(getCharacter);
-    characterIndex = getCharacter.getIndex();
-    let caption = "";
-    try {
-      const parsedCaption = getParseSingle<string>({
-        caption: (i) => i.join(""),
-      })(
-        getCharacter,
+    if (parsedValues.begin === parsedValues.end) {
+      return cbs.container(
+        // @ts-ignore This is ok for now (different sized type)
+        parsedValues,
       );
-
-      if (parsedCaption.match) {
-        caption = parsedCaption.value;
-      }
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
     }
 
-    parseEmpty(getCharacter);
-
-    const end = getParseSingle<string>({ end: (i) => i.join("") })(
-      getCharacter,
+    throw new Error(
+      `Expression matching to ${parsedValues.begin} was not found`,
     );
-
-    if (begin.value === end.value) {
-      return cbs.container({ caption, label });
-    }
-
-    throw new Error(`Expression matching to ${begin.value} was not found`);
   };
+}
+
+function joinString(i: string[]) {
+  return i.join("");
 }
 
 export { getParseTable };

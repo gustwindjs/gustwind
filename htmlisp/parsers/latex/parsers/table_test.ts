@@ -110,7 +110,37 @@ Deno.test(`table with caption and label`, () => {
   );
 });
 
-// TODO: Support parsing label and caption in a different order caption first
+Deno.test(`table with label and caption`, () => {
+  assertEquals(
+    getParseTable<Element>(
+      {
+        container: ({ caption, label: id }) => ({
+          type: "table",
+          attributes: { id },
+          children: [{
+            type: "caption",
+            attributes: {},
+            children: [caption],
+          }],
+        }),
+      },
+    )(
+      characterGenerator(String.raw`\begin{table}
+  \caption{Test}
+  \label{table:imrad}
+\end{table}`),
+    ),
+    {
+      type: "table",
+      attributes: { id: "table:imrad" },
+      children: [{
+        type: "caption",
+        attributes: {},
+        children: ["Test"],
+      }],
+    },
+  );
+});
 
 // TODO: Handle recursion here at definition level since it should find a block inside a block + handle metadata
 Deno.test(`complete table`, () => {
