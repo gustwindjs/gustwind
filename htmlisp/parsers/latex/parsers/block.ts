@@ -1,4 +1,7 @@
+import { getParseDouble } from "./double.ts";
 import { getParseSingle } from "./single.ts";
+import { parseEmpty } from "./empty.ts";
+import { runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType, ItemReturnValue> = {
@@ -18,11 +21,28 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
   return function parseBlock(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
-    const begin = getParseSingle<string>({ begin: (i) => i.join("") })(
+    const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
+      [
+        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+        getParseDouble({ begin: (i) => i }),
+        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+        getParseSingle({ begin: joinString }),
+      ],
     );
-    const itemCb = expressions[begin.value].item;
-    let items: ItemReturnValue[] = [];
+
+    let beginValue: string = "";
+    if (parseResult?.match) {
+      // @ts-expect-error This is fine
+      beginValue = parseResult.value;
+    }
+
+    if (!beginValue) {
+      throw new Error("begin was not found");
+    }
+
+    const itemCb = expressions[beginValue].item;
+    const items: ItemReturnValue[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
       if (getCharacter.get() === null) {
@@ -36,7 +56,8 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
         if (item) {
           // TODO: Test this case
           if (Array.isArray(item)) {
-            items = items.concat(item);
+            // items = items.concat(item);
+            item.length > 0 && items.push(item);
           } else {
             items.push(item);
           }
@@ -48,16 +69,22 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       }
     }
 
+    parseEmpty(getCharacter);
+
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
       getCharacter,
     );
 
-    if (begin.value === end.value) {
-      return expressions[begin.value].container(items);
+    if (beginValue === end.value) {
+      return expressions[beginValue].container(items);
     }
 
-    throw new Error(`Expression matching to ${begin.value} was not found`);
+    throw new Error(`Expression matching to ${beginValue} was not found`);
   };
+}
+
+function joinString(i: string[]) {
+  return i.join("");
 }
 
 export { type BlockParser, getParseBlock };

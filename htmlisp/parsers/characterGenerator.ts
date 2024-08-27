@@ -46,6 +46,9 @@ function characterGenerator(s: string) {
 
       return ret;
     },
+    slice(a: number, b: number) {
+      return s.slice(i + a, i + b);
+    },
   };
 }
 

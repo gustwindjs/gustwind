@@ -13,14 +13,14 @@ function parseEmpty(
       break;
     }
 
-    if (c.trim()) {
+    if (c === " " || c === `\n`) {
+      // Nothing to do
+    } else {
       getCharacter.previous();
 
       return;
     }
   }
-
-  throw new Error("No matching expression was found");
 }
 
 export { parseEmpty };

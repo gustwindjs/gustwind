@@ -8,7 +8,7 @@ Deno.test(`simple expression`, () => {
 
   parseEmpty(getCharacter);
 
-  assertEquals(getCharacter.get(), "f");
+  assertEquals(getCharacter.get(), null);
 });
 
 Deno.test(`simple expression with empty in the beginning`, () => {

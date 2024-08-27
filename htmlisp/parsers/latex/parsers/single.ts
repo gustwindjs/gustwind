@@ -77,8 +77,6 @@ function getParseSingle<ExpressionReturnType>(
             parts.push(stringBuffer);
           }
 
-          getCharacter.previous();
-
           return {
             match: foundKey,
             value: expressions[foundKey](parts as string[], matchCounts || {}),

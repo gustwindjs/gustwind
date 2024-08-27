@@ -16,13 +16,17 @@ function parseTabularItem(
       return ret;
     }
 
-    if (c === "\\" && getCharacter.get() === "\\") {
+    if (getCharacter.slice(0, 3) === "\end") {
+      throw new Error("No matching expression was found");
+    } else if (c === "\\" && getCharacter.get() === "\\") {
+      getCharacter.next();
+
       return ret.concat(stringBuffer.trim());
     } else if (c === "&") {
       ret.push(stringBuffer.trim());
 
       stringBuffer = "";
-    } else {
+    } else if (c !== "\n") {
       stringBuffer += c;
     }
   }

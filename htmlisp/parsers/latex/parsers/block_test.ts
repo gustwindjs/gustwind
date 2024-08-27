@@ -3,6 +3,7 @@ import { getParseBlock } from "./block.ts";
 import { getParseContent } from "./content.ts";
 import { parseDefinitionItem } from "./definition_item.ts";
 import { parseListItem } from "./list_item.ts";
+import { parseTabularItem } from "./tabular_item.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 import type { Element } from "../../../types.ts";
 
@@ -77,6 +78,34 @@ Deno.test(`simple definition list`, () => {
 \end{${name}}`),
     ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
+  );
+});
+
+Deno.test(`tabular list`, () => {
+  const name = "tabular";
+
+  assertEquals(
+    getParseBlock<Element, string[]>(
+      {
+        [name]: {
+          container: (items) => ({
+            type: "div",
+            attributes: {},
+            // TODO: Figure out what to do here
+            children: [items.join("")],
+          }),
+          item: parseTabularItem,
+        },
+      },
+    )(
+      // TODO: Allow parsing {}'s within doubles (needs a change at double parser)
+      characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
+    Chapter & Purpose & Writing approach \\
+    \hline
+    Foo & Bar & Baz \\
+\end{${name}}`),
+    ),
+    { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
 });
 
