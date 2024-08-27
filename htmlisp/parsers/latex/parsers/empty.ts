@@ -13,7 +13,7 @@ function parseEmpty(
       break;
     }
 
-    if (!(c === " " || c === String.raw`\n`)) {
+    if (c.trim()) {
       getCharacter.previous();
 
       return;

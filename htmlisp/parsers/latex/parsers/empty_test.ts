@@ -19,3 +19,25 @@ Deno.test(`simple expression with empty in the beginning`, () => {
 
   assertEquals(getCharacter.get(), "f");
 });
+
+Deno.test(`simple expression with newline`, () => {
+  const input = `
+
+foobar`;
+  const getCharacter = characterGenerator(input);
+
+  parseEmpty(getCharacter);
+
+  assertEquals(getCharacter.get(), "f");
+});
+
+Deno.test(`simple expression with newline and whitespace`, () => {
+  const input = `
+
+  foobar`;
+  const getCharacter = characterGenerator(input);
+
+  parseEmpty(getCharacter);
+
+  assertEquals(getCharacter.get(), "f");
+});
