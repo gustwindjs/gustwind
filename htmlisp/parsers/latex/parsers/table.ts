@@ -6,7 +6,7 @@ const LIMIT = 100000;
 // Parses \begin{<type>}...\end{<type>} form
 function getParseTable<ExpressionReturnType>(
   cbs: {
-    container: () => ExpressionReturnType;
+    container: (o: { caption: string; label: string }) => ExpressionReturnType;
   },
 ) {
   return function parseBlock(
@@ -45,12 +45,18 @@ function getParseTable<ExpressionReturnType>(
     }
     */
 
+    // TODO: Parse caption
+    const caption = "barfoo";
+
+    // TODO: Parse label
+    const label = "foobar";
+
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
       getCharacter,
     );
 
     if (begin.value === end.value) {
-      return cbs.container();
+      return cbs.container({ caption, label });
     }
 
     throw new Error(`Expression matching to ${begin.value} was not found`);

@@ -24,7 +24,91 @@ Deno.test(`empty table`, () => {
   );
 });
 
-// TODO: Test label + caption parsing separately and together
+Deno.test(`table with label`, () => {
+  assertEquals(
+    getParseTable<Element>(
+      {
+        container: ({ label: id }) => ({
+          type: "table",
+          attributes: { id },
+          children: [],
+        }),
+      },
+    )(
+      characterGenerator(String.raw`\begin{table}
+  \label{table:imrad}
+\end{table}`),
+    ),
+    {
+      type: "table",
+      attributes: { id: "table:imrad" },
+      children: [],
+    },
+  );
+});
+
+Deno.test(`table with caption`, () => {
+  assertEquals(
+    getParseTable<Element>(
+      {
+        container: ({ caption }) => ({
+          type: "table",
+          attributes: {},
+          children: [{
+            type: "caption",
+            attributes: {},
+            children: [caption],
+          }],
+        }),
+      },
+    )(
+      characterGenerator(String.raw`\begin{table}
+  \caption{Test}
+\end{table}`),
+    ),
+    {
+      type: "table",
+      attributes: {},
+      children: [{
+        type: "caption",
+        attributes: {},
+        children: ["Test"],
+      }],
+    },
+  );
+});
+
+Deno.test(`table with caption and label`, () => {
+  assertEquals(
+    getParseTable<Element>(
+      {
+        container: ({ caption, label: id }) => ({
+          type: "table",
+          attributes: { id },
+          children: [{
+            type: "caption",
+            attributes: {},
+            children: [caption],
+          }],
+        }),
+      },
+    )(
+      characterGenerator(String.raw`\begin{table}
+  \label{table:imrad}
+  \caption{Test}
+\end{table}`),
+    ),
+    {
+      type: "table",
+      attributes: { id: "table:imrad" },
+      children: [{
+        type: "caption",
+        attributes: {},
+        children: ["Test"],
+      }],
+    },
+  );
+});
 
 // TODO: Handle recursion here at definition level since it should find a block inside a block + handle metadata
 Deno.test(`complete table`, () => {
