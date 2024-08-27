@@ -110,6 +110,8 @@ Deno.test(`table with caption and label`, () => {
   );
 });
 
+// TODO: Support parsing label and caption in a different order caption first
+
 // TODO: Handle recursion here at definition level since it should find a block inside a block + handle metadata
 Deno.test(`complete table`, () => {
   assertEquals(

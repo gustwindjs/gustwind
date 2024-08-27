@@ -46,9 +46,26 @@ function getParseTable<ExpressionReturnType>(
     }
     */
 
+    // TODO: The order could be different so this needs a state machine.
+    // This is enough for now.
     // TODO: Extract this pattern as a helper function
     parseEmpty(getCharacter);
     let characterIndex = getCharacter.getIndex();
+    let label = "";
+    try {
+      const parsedLabel = getParseSingle<string>({ label: (i) => i.join("") })(
+        getCharacter,
+      );
+
+      if (parsedLabel.match) {
+        label = parsedLabel.value;
+      }
+    } catch (_error) {
+      getCharacter.setIndex(characterIndex);
+    }
+
+    parseEmpty(getCharacter);
+    characterIndex = getCharacter.getIndex();
     let caption = "";
     try {
       const parsedCaption = getParseSingle<string>({
@@ -59,21 +76,6 @@ function getParseTable<ExpressionReturnType>(
 
       if (parsedCaption.match) {
         caption = parsedCaption.value;
-      }
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
-    }
-
-    parseEmpty(getCharacter);
-    characterIndex = getCharacter.getIndex();
-    let label = "";
-    try {
-      const parsedLabel = getParseSingle<string>({ label: (i) => i.join("") })(
-        getCharacter,
-      );
-
-      if (parsedLabel.match) {
-        label = parsedLabel.value;
       }
     } catch (_error) {
       getCharacter.setIndex(characterIndex);
