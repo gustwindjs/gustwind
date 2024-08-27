@@ -4,7 +4,7 @@ import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
 
-// Parses \begin{<type>}...\end{<type>} form
+// Parses \begin{table}...\end{table} form
 function getParseTable<ExpressionReturnType>(
   cbs: {
     container: (o: { caption: string; label: string }) => ExpressionReturnType;
