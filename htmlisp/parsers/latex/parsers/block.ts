@@ -55,7 +55,9 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
 
         if (item) {
           if (Array.isArray(item)) {
-            items = items.concat([item]);
+            if (item.length) {
+              items = items.concat([item]);
+            }
           } else {
             items.push(item);
           }

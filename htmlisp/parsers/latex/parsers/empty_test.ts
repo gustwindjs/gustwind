@@ -8,7 +8,7 @@ Deno.test(`simple expression`, () => {
 
   parseEmpty(getCharacter);
 
-  assertEquals(getCharacter.get(), null);
+  assertEquals(getCharacter.get(), "f");
 });
 
 Deno.test(`simple expression with empty in the beginning`, () => {
@@ -41,3 +41,5 @@ Deno.test(`simple expression with newline and whitespace`, () => {
 
   assertEquals(getCharacter.get(), "f");
 });
+
+// TODO: Test checkRule parameter

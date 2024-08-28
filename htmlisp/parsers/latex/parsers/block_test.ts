@@ -151,7 +151,7 @@ Deno.test(`tabular list with header and content`, () => {
           container: (items) => {
             const [header, ...rows] = items;
 
-            // TODO: Map rows to td/td
+            // TODO: Map rows to tr/td
             return ({
               type: "",
               attributes: {},

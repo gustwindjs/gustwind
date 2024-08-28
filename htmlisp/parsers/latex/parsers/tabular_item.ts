@@ -1,3 +1,4 @@
+import { parseEmpty } from "./empty.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
@@ -9,6 +10,20 @@ function parseTabularItem(
   const ret: string[] = [];
   let stringBuffer = "";
 
+  parseEmpty(getCharacter);
+
+  if (getCharacter.slice(0, 4) === "\\end") {
+    throw new Error("No matching expression was found");
+  }
+
+  if (getCharacter.get()?.trim() === "\\") {
+    parseEmpty(getCharacter, (c) => c !== `\n`);
+
+    getCharacter.next();
+
+    return [];
+  }
+
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
 
@@ -16,7 +31,7 @@ function parseTabularItem(
       return ret;
     }
 
-    if (getCharacter.slice(0, 3) === "\end") {
+    if (getCharacter.slice(0, 4) === "\\end") {
       throw new Error("No matching expression was found");
     } else if (c === "\\" && getCharacter.get() === "\\") {
       getCharacter.next();

@@ -47,6 +47,26 @@ Deno.test(`hline`, () => {
   );
 });
 
+Deno.test(`hline with content`, () => {
+  const input = String.raw`\hline
+Foo & Bar & Baz \\`;
+
+  assertEquals(
+    parseTabularItem(characterGenerator(input)),
+    [],
+  );
+});
+
+Deno.test(`hline with content and whitespace`, () => {
+  const input = String.raw`  \hline
+  Foo & Bar & Baz \\`;
+
+  assertEquals(
+    parseTabularItem(characterGenerator(input)),
+    [],
+  );
+});
+
 Deno.test(`does not parse an invalid expression`, () => {
   const input = String.raw`\end{description}`;
   const generator = characterGenerator(input);
