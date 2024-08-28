@@ -151,7 +151,6 @@ Deno.test(`tabular list with header and content`, () => {
           container: (items) => {
             const [header, ...rows] = items;
 
-            // TODO: Map rows to tr/td
             return ({
               type: "",
               attributes: {},
@@ -163,7 +162,15 @@ Deno.test(`tabular list with header and content`, () => {
                   attributes: {},
                   children: [r],
                 })),
-              }],
+              }].concat(rows.map((row) => ({
+                type: "tr",
+                attributes: {},
+                children: row.map((i) => ({
+                  type: "td",
+                  attributes: {},
+                  children: [i],
+                })),
+              }))),
             });
           },
           item: parseTabularItem,
@@ -197,6 +204,26 @@ Deno.test(`tabular list with header and content`, () => {
             type: "th",
             attributes: {},
             children: ["Writing approach"],
+          },
+        ],
+      }, {
+        type: "tr",
+        attributes: {},
+        children: [
+          {
+            type: "td",
+            attributes: {},
+            children: ["Foo"],
+          },
+          {
+            type: "td",
+            attributes: {},
+            children: ["Bar"],
+          },
+          {
+            type: "td",
+            attributes: {},
+            children: ["Baz"],
           },
         ],
       }],
