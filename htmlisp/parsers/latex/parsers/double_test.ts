@@ -26,6 +26,26 @@ Deno.test(`simple expression`, () => {
   );
 });
 
+Deno.test(`braces in argument`, () => {
+  const input = "foobar";
+  const arg = "l|p{4.0cm}|p{5.0cm}";
+
+  assertEquals(
+    getParseDouble<Element>(
+      {
+        begin: (i, arg) => ({
+          type: "div",
+          attributes: { id: arg || null },
+          children: [i],
+        }),
+      },
+    )(
+      characterGenerator(String.raw`\begin{${input}}{${arg}}`),
+    ).value,
+    { type: "div", attributes: { id: arg }, children: [input] },
+  );
+});
+
 Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>

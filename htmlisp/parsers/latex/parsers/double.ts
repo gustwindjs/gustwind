@@ -25,6 +25,7 @@ function getParseDouble<ExpressionReturnType>(
     let foundKey = "";
     let foundFirst = "";
     let stringBuffer = "";
+    let bracesFound = 0;
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -66,14 +67,20 @@ function getParseDouble<ExpressionReturnType>(
           stringBuffer += c;
         }
       } else if (state === STATES.PARSE_EXPRESSION_SECOND) {
-        if (c === "}") {
-          return {
-            match: foundKey,
-            value: expressions[foundKey](foundFirst, stringBuffer),
-          };
-        } else {
-          stringBuffer += c;
+        if (c === "{") {
+          bracesFound++;
+        } else if (c === "}") {
+          if (bracesFound) {
+            bracesFound--;
+          } else {
+            return {
+              match: foundKey,
+              value: expressions[foundKey](foundFirst, stringBuffer),
+            };
+          }
         }
+
+        stringBuffer += c;
       }
     }
 
