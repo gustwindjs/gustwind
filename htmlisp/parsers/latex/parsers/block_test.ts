@@ -170,7 +170,6 @@ Deno.test(`tabular list with header and content`, () => {
         },
       },
     )(
-      // TODO: Figure out why \hline gets parsed although it shouldn't
       characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
     \hline
