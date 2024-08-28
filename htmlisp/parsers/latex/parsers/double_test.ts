@@ -46,6 +46,17 @@ Deno.test(`braces in argument`, () => {
   );
 });
 
+Deno.test(`throws if argument is missing`, () => {
+  assertThrows(
+    () =>
+      getParseDouble<Element>(
+        { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
+      )(characterGenerator(String.raw`\id{foobar}barfoo`)),
+    Error,
+    `Argument was missing`,
+  );
+});
+
 Deno.test(`throws unless first character is a backslash`, () => {
   assertThrows(
     () =>

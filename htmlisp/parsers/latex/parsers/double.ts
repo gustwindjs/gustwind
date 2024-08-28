@@ -60,9 +60,14 @@ function getParseDouble<ExpressionReturnType>(
       } else if (state === STATES.PARSE_EXPRESSION_FIRST) {
         if (c === "}") {
           foundFirst = stringBuffer;
-        } else if (c === "{") {
-          stringBuffer = "";
-          state = STATES.PARSE_EXPRESSION_SECOND;
+
+          if (getCharacter.get() === "{") {
+            stringBuffer = "";
+            state = STATES.PARSE_EXPRESSION_SECOND;
+            getCharacter.next();
+          } else {
+            throw new Error("Argument was missing");
+          }
         } else {
           stringBuffer += c;
         }
