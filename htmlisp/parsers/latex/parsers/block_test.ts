@@ -81,31 +81,127 @@ Deno.test(`simple definition list`, () => {
   );
 });
 
-Deno.test(`tabular list`, () => {
+Deno.test(`tabular list with only header`, () => {
   const name = "tabular";
 
   assertEquals(
     getParseBlock<Element, string[]>(
       {
         [name]: {
-          container: (items) => ({
-            type: "div",
-            attributes: {},
-            // TODO: Figure out what to do here
-            children: [items.join("")],
-          }),
+          container: (items) => {
+            const [header, ..._rows] = items;
+
+            return ({
+              type: "",
+              attributes: {},
+              children: [{
+                type: "tr",
+                attributes: {},
+                children: header.map((r) => ({
+                  type: "th",
+                  attributes: {},
+                  children: [r],
+                })),
+              }],
+            });
+          },
           item: parseTabularItem,
         },
       },
     )(
-      // TODO: Allow parsing {}'s within doubles (needs a change at double parser)
+      characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
+    Chapter & Purpose & Writing approach \\
+\end{${name}}`),
+    ),
+    {
+      type: "",
+      attributes: {},
+      children: [{
+        type: "tr",
+        attributes: {},
+        children: [
+          {
+            type: "th",
+            attributes: {},
+            children: ["Chapter"],
+          },
+          {
+            type: "th",
+            attributes: {},
+            children: ["Purpose"],
+          },
+          {
+            type: "th",
+            attributes: {},
+            children: ["Writing approach"],
+          },
+        ],
+      }],
+    },
+  );
+});
+
+Deno.test(`tabular list with header and content`, () => {
+  const name = "tabular";
+
+  assertEquals(
+    getParseBlock<Element, string[]>(
+      {
+        [name]: {
+          container: (items) => {
+            const [header, ...rows] = items;
+
+            // TODO: Map rows to td/td
+            return ({
+              type: "",
+              attributes: {},
+              children: [{
+                type: "tr",
+                attributes: {},
+                children: header.map((r) => ({
+                  type: "th",
+                  attributes: {},
+                  children: [r],
+                })),
+              }],
+            });
+          },
+          item: parseTabularItem,
+        },
+      },
+    )(
+      // TODO: Figure out why \hline gets parsed although it shouldn't
       characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
     \hline
     Foo & Bar & Baz \\
 \end{${name}}`),
     ),
-    { type: "div", attributes: {}, children: ["Foo", "Bar"] },
+    {
+      type: "",
+      attributes: {},
+      children: [{
+        type: "tr",
+        attributes: {},
+        children: [
+          {
+            type: "th",
+            attributes: {},
+            children: ["Chapter"],
+          },
+          {
+            type: "th",
+            attributes: {},
+            children: ["Purpose"],
+          },
+          {
+            type: "th",
+            attributes: {},
+            children: ["Writing approach"],
+          },
+        ],
+      }],
+    },
   );
 });
 

@@ -42,7 +42,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     }
 
     const itemCb = expressions[beginValue].item;
-    const items: ItemReturnValue[] = [];
+    let items: ItemReturnValue[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
       if (getCharacter.get() === null) {
@@ -54,10 +54,8 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
         const item = itemCb(getCharacter);
 
         if (item) {
-          // TODO: Test this case
           if (Array.isArray(item)) {
-            // items = items.concat(item);
-            item.length > 0 && items.push(item);
+            items = items.concat([item]);
           } else {
             items.push(item);
           }
