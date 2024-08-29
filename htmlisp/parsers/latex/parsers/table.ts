@@ -1,4 +1,6 @@
+import { getParseBlock } from "./block.ts";
 import { getParseSingle } from "./single.ts";
+import { parseTabularItem } from "./tabular_item.ts";
 import { runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
@@ -21,13 +23,24 @@ function getParseTable<ExpressionReturnType>(
     for (let i = 0; i < LIMIT; i++) {
       const parseResult = runParsers<ExpressionReturnType>(
         getCharacter,
-        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-        [getParseSingle({
-          begin: joinString,
-          caption: joinString,
-          label: joinString,
-          end: joinString,
-        })],
+        [
+          // TODO: Add tabular block parser here
+          // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+          getParseSingle({
+            begin: joinString,
+            caption: joinString,
+            label: joinString,
+            end: joinString,
+          }),
+          // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+          getParseBlock({
+            tabular: {
+              // TODO: Define container mapping
+              container: () => {},
+              item: parseTabularItem,
+            },
+          }),
+        ],
       );
 
       if (parseResult?.match) {
