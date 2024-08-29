@@ -88,23 +88,19 @@ Deno.test(`tabular list with only header`, () => {
     getParseBlock<Element, string[]>(
       {
         [name]: {
-          container: (items) => {
-            const [header, ..._rows] = items;
-
-            return ({
-              type: "",
+          container: ([header]) => ({
+            type: "",
+            attributes: {},
+            children: [{
+              type: "tr",
               attributes: {},
-              children: [{
-                type: "tr",
+              children: header.map((r) => ({
+                type: "th",
                 attributes: {},
-                children: header.map((r) => ({
-                  type: "th",
-                  attributes: {},
-                  children: [r],
-                })),
-              }],
-            });
-          },
+                children: [r],
+              })),
+            }],
+          }),
           item: parseTabularItem,
         },
       },
@@ -148,31 +144,27 @@ Deno.test(`tabular list with header and content`, () => {
     getParseBlock<Element, string[]>(
       {
         [name]: {
-          container: (items) => {
-            const [header, ...rows] = items;
-
-            return ({
-              type: "",
+          container: ([header, ...rows]) => ({
+            type: "",
+            attributes: {},
+            children: [{
+              type: "tr",
               attributes: {},
-              children: [{
-                type: "tr",
+              children: header.map((r) => ({
+                type: "th",
                 attributes: {},
-                children: header.map((r) => ({
-                  type: "th",
-                  attributes: {},
-                  children: [r],
-                })),
-              }].concat(rows.map((row) => ({
-                type: "tr",
+                children: [r],
+              })),
+            }].concat(rows.map((row) => ({
+              type: "tr",
+              attributes: {},
+              children: row.map((i) => ({
+                type: "td",
                 attributes: {},
-                children: row.map((i) => ({
-                  type: "td",
-                  attributes: {},
-                  children: [i],
-                })),
-              }))),
-            });
-          },
+                children: [i],
+              })),
+            }))),
+          }),
           item: parseTabularItem,
         },
       },

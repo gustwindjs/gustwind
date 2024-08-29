@@ -12,10 +12,13 @@ function getParseTable<ExpressionReturnType>(
     container: (o: { caption: string; label: string }) => ExpressionReturnType;
   },
 ) {
-  return function parseBlock(
+  return function parseTable(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
-    const parsedValues: Record<string, ExpressionReturnType> = {};
+    const parsedValues: Record<string, ExpressionReturnType> & {
+      header?: string[];
+      rows?: string[][];
+    } = {};
 
     // TODO: The problem with this solution is that it doesn't validate the location
     // of \begin and \end. Likely this could be solved by letting runParsers
@@ -24,7 +27,6 @@ function getParseTable<ExpressionReturnType>(
       const parseResult = runParsers<ExpressionReturnType>(
         getCharacter,
         [
-          // TODO: Add tabular block parser here
           // @ts-expect-error This is fine for now. TODO: Fix runParsers type
           getParseSingle({
             begin: joinString,
@@ -35,8 +37,10 @@ function getParseTable<ExpressionReturnType>(
           // @ts-expect-error This is fine for now. TODO: Fix runParsers type
           getParseBlock({
             tabular: {
-              // TODO: Define container mapping
-              container: () => {},
+              container: ([header, ...rows]) => {
+                parsedValues.header = header;
+                parsedValues.rows = rows;
+              },
               item: parseTabularItem,
             },
           }),
