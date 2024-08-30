@@ -31,6 +31,8 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       ],
     );
 
+    getCharacter.next();
+
     let beginValue: string = "";
     if (parseResult?.match) {
       // @ts-expect-error This is fine

@@ -67,7 +67,6 @@ Deno.test(`table with label and caption`, () => {
   );
 });
 
-// TODO: Check why tabular is not found
 Deno.test(`complete table`, () => {
   assertEquals(
     parseTable(
