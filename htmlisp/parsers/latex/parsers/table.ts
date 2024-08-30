@@ -26,12 +26,6 @@ function parseTable(
     const parseResult = runParsers<string>(
       getCharacter,
       [
-        getParseSingle({
-          begin: joinString,
-          caption: joinString,
-          label: joinString,
-          end: joinString,
-        }),
         // @ts-expect-error This is fine for now. TODO: Fix runParsers type
         getParseBlock({
           tabular: {
@@ -41,6 +35,12 @@ function parseTable(
             },
             item: parseTabularItem,
           },
+        }),
+        getParseSingle({
+          begin: joinString,
+          caption: joinString,
+          label: joinString,
+          end: joinString,
         }),
       ],
     );
