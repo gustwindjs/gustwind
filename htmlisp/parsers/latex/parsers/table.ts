@@ -67,10 +67,6 @@ function parseTable(
     return parsedValues;
   }
 
-  // TODO: Figure out why end doesn't get parsed
-  // @ts-ignore Ok for now
-  console.log(parsedValues.begin, parsedValues.end);
-
   throw new Error(
     // @ts-ignore Ok for now
     `Expression matching to ${parsedValues.begin} was not found`,
