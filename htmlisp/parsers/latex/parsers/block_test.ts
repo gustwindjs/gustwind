@@ -30,6 +30,28 @@ Deno.test(`simple expression`, () => {
   );
 });
 
+Deno.test(`begin and end next to each other`, () => {
+  const name = "verbatim";
+
+  assertEquals(
+    getParseBlock<Element, string>(
+      {
+        [name]: {
+          container: (children) => ({
+            type: "div",
+            attributes: {},
+            children,
+          }),
+          item: getParseContent((s) => s.join("")),
+        },
+      },
+    )(
+      characterGenerator(String.raw`\begin{${name}}\end{${name}}`),
+    ),
+    { type: "div", attributes: {}, children: [] },
+  );
+});
+
 Deno.test(`simple list`, () => {
   const name = "itemize";
 
