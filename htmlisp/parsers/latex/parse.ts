@@ -13,16 +13,18 @@ const LIMIT = 100000;
 
 function parse(
   input: string,
-  singleExpressions: Record<string, SingleParser<Element>>,
-  contentExpressions: Record<string, SingleParser<Element>>,
-  doubleExpressions: Record<string, DoubleParser<Element>>,
-  blockExpressions: Record<string, BlockParser<Element, Element>>,
+  parser: {
+    singles?: Record<string, SingleParser<Element>>;
+    doubles?: Record<string, DoubleParser<Element>>;
+    blocks?: Record<string, BlockParser<Element, Element>>;
+    contents?: Record<string, SingleParser<Element>>;
+  },
 ): Element[] {
   const getCharacter = characterGenerator(input);
-  const singleParsers = getParseSingle(singleExpressions);
-  const doubleParsers = getParseDouble(doubleExpressions);
-  const blockParsers = getParseBlock(blockExpressions);
-  const contentParsers = getParseSingle(contentExpressions);
+  const singleParsers = parser.singles && getParseSingle(parser.singles);
+  const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
+  const blockParsers = parser.blocks && getParseBlock(parser.blocks);
+  const contentParsers = parser.contents && getParseSingle(parser.contents);
   const allParsers = [
     singleParsers,
     doubleParsers,
@@ -33,9 +35,10 @@ function parse(
         attributes: {},
         children,
       }),
-      [singleParsers, doubleParsers, contentParsers],
+      // @ts-expect-error This is fine for now as it will be fixed in a later TS most likely.
+      [singleParsers, doubleParsers, contentParsers].filter(Boolean),
     ),
-  ];
+  ].filter(Boolean);
   const ret = [];
 
   for (let i = 0; i < LIMIT; i++) {

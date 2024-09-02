@@ -1,11 +1,12 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import { blocks, contents, doubles, singles } from "./defaultExpressions.ts";
 import { parse } from "./parse.ts";
 
 Deno.test(`id expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parse(input),
+    parse(input, {}),
     [{ type: "p", attributes: {}, children: [input] }],
   );
 });
@@ -16,7 +17,7 @@ Deno.test(`multiple paragraphs`, () => {
 \nbarfoo`;
 
   assertEquals(
-    parse(input),
+    parse(input, {}),
     [
       { type: "p", attributes: {}, children: ["foobar"] },
       { type: "p", attributes: {}, children: ["\nbarfoo"] },
@@ -28,7 +29,7 @@ Deno.test(`bold`, () => {
   const input = String.raw`\textbf{foobar}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{ type: "b", attributes: {}, children: ["foobar"] }],
   );
 });
@@ -37,7 +38,7 @@ Deno.test(`url`, () => {
   const input = String.raw`\url{https://google.com}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -51,7 +52,7 @@ Deno.test(`multiple urls`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -70,7 +71,7 @@ Deno.test(`paragraph and url`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{
       type: "p",
       attributes: {},
@@ -89,7 +90,7 @@ Deno.test(`url and paragraph`, () => {
 foobar`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://bing.com" },
@@ -106,7 +107,7 @@ Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} foobar`;
 
   assertEquals(
-    parse(input),
+    parse(input, { singles }),
     [{
       type: "p",
       attributes: {},
@@ -125,7 +126,7 @@ Deno.test(`href`, () => {
   const input = String.raw`\href{https://google.com}{Google}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { doubles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -140,7 +141,7 @@ test
 \end{verbatim}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { blocks }),
     [{
       type: "pre",
       attributes: {},
@@ -155,7 +156,7 @@ Deno.test(`enumerate`, () => {
 \end{enumerate}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { blocks }),
     [{
       type: "ol",
       attributes: {},
@@ -170,7 +171,7 @@ Deno.test(`itemize`, () => {
 \end{itemize}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { blocks }),
     [{
       type: "ul",
       attributes: {},
@@ -185,7 +186,7 @@ Deno.test(`description`, () => {
 \end{description}`;
 
   assertEquals(
-    parse(input),
+    parse(input, { blocks }),
     [{
       type: "dl",
       attributes: {},
@@ -196,3 +197,19 @@ Deno.test(`description`, () => {
     }],
   );
 });
+
+// TODO: Define in a more accurate manner
+Deno.test(`cite`, () => {
+  const input = String.raw`Foobar \cite{test24}`;
+
+  assertEquals(
+    parse(input, { contents }),
+    [{
+      type: "a",
+      attributes: { href: "https://google.com" },
+      children: ["Google"],
+    }],
+  );
+});
+
+// TODO: Test ~ - it should be replaced with a whitespace
