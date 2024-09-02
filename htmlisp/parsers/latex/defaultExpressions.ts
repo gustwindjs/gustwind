@@ -91,6 +91,12 @@ const contents: Record<string, SingleParser<Element>> = {
       ")",
     ],
   }),
+  // TODO: Write reference using bibtex
+  fullcite: (children) => ({
+    type: "span",
+    attributes: { title: children[0] },
+    children: ["full cite goes here"],
+  }),
 };
 
 function el(type: string) {
