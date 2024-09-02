@@ -1,12 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parse } from "./parse.ts";
-import { characterGenerator } from "../characterGenerator.ts";
 
 Deno.test(`id expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{ type: "p", attributes: {}, children: [input] }],
   );
 });
@@ -17,7 +16,7 @@ Deno.test(`multiple paragraphs`, () => {
 \nbarfoo`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [
       { type: "p", attributes: {}, children: ["foobar"] },
       { type: "p", attributes: {}, children: ["\nbarfoo"] },
@@ -29,7 +28,7 @@ Deno.test(`bold`, () => {
   const input = String.raw`\textbf{foobar}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{ type: "b", attributes: {}, children: ["foobar"] }],
   );
 });
@@ -38,7 +37,7 @@ Deno.test(`url`, () => {
   const input = String.raw`\url{https://google.com}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -52,7 +51,7 @@ Deno.test(`multiple urls`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -71,7 +70,7 @@ Deno.test(`paragraph and url`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "p",
       attributes: {},
@@ -90,7 +89,7 @@ Deno.test(`url and paragraph`, () => {
 foobar`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "a",
       attributes: { href: "https://bing.com" },
@@ -107,7 +106,7 @@ Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} foobar`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "p",
       attributes: {},
@@ -126,7 +125,7 @@ Deno.test(`href`, () => {
   const input = String.raw`\href{https://google.com}{Google}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -141,7 +140,7 @@ test
 \end{verbatim}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "pre",
       attributes: {},
@@ -156,7 +155,7 @@ Deno.test(`enumerate`, () => {
 \end{enumerate}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "ol",
       attributes: {},
@@ -171,7 +170,7 @@ Deno.test(`itemize`, () => {
 \end{itemize}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "ul",
       attributes: {},
@@ -186,7 +185,7 @@ Deno.test(`description`, () => {
 \end{description}`;
 
   assertEquals(
-    parse(characterGenerator(input)),
+    parse(input),
     [{
       type: "dl",
       attributes: {},
