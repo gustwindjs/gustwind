@@ -9,7 +9,7 @@ Deno.test(`simple expression`, () => {
   const input = String.raw`Chapter & Purpose & Writing approach \\`;
 
   assertEquals(
-    parseTabularItem(characterGenerator(input)),
+    parseTabularItem(characterGenerator(input)).value,
     ["Chapter", "Purpose", "Writing approach"],
   );
 });
@@ -20,10 +20,10 @@ Foo & Bar & Baz \\`;
   const getCharacter = characterGenerator(input);
 
   assertEquals(
-    parseTabularItem(getCharacter),
+    parseTabularItem(getCharacter).value,
     ["Chapter", "Purpose", "Writing approach"],
   );
-  assertEquals(getCharacter.get(), "\\");
+  assertEquals(getCharacter.get(), "\n");
 });
 
 Deno.test(`only single expression with a tabular end`, () => {
@@ -32,17 +32,17 @@ Deno.test(`only single expression with a tabular end`, () => {
   const getCharacter = characterGenerator(input);
 
   assertEquals(
-    parseTabularItem(getCharacter),
+    parseTabularItem(getCharacter).value,
     ["Foo", "Bar", "Baz"],
   );
-  assertEquals(getCharacter.get(), "\\");
+  assertEquals(getCharacter.get(), "\n");
 });
 
 Deno.test(`hline`, () => {
   const input = String.raw`\hline`;
 
   assertEquals(
-    parseTabularItem(characterGenerator(input)),
+    parseTabularItem(characterGenerator(input)).value,
     [],
   );
 });
@@ -52,7 +52,7 @@ Deno.test(`hline with content`, () => {
 Foo & Bar & Baz \\`;
 
   assertEquals(
-    parseTabularItem(characterGenerator(input)),
+    parseTabularItem(characterGenerator(input)).value,
     [],
   );
 });
@@ -62,7 +62,7 @@ Deno.test(`hline with content and whitespace`, () => {
   Foo & Bar & Baz \\`;
 
   assertEquals(
-    parseTabularItem(characterGenerator(input)),
+    parseTabularItem(characterGenerator(input)).value,
     [],
   );
 });
