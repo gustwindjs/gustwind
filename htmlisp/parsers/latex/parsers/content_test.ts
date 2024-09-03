@@ -10,7 +10,7 @@ Deno.test(`simple expression`, () => {
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
       characterGenerator(input),
-    ),
+    ).value,
     input,
   );
 });
@@ -21,7 +21,7 @@ Deno.test(`simple expression with a forced newline`, () => {
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
       characterGenerator(String.raw`${input}\\`),
-    ),
+    ).value,
     input,
   );
 });
@@ -35,7 +35,7 @@ barfoo`;
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
       characterGenerator(input),
-    ),
+    ).value,
     `foobar
 foobar`,
   );
@@ -49,7 +49,7 @@ Deno.test(`url within paragraph`, () => {
       getParseSingle({ url: (children) => children[0] }),
     ])(
       characterGenerator(input),
-    ),
+    ).value,
     "foobar https://bing.com barfoo",
   );
 });
@@ -70,7 +70,7 @@ Deno.test(`url within paragraph with elements`, () => {
       }),
     })])(
       characterGenerator(input),
-    ),
+    ).value,
     {
       type: "p",
       attributes: {},
@@ -107,7 +107,7 @@ Deno.test(`footnote within paragraph with elements`, () => {
       }),
     })])(
       characterGenerator(input),
-    ),
+    ).value,
     {
       type: "p",
       attributes: {},
@@ -145,7 +145,7 @@ Deno.test(`multiple footnotes`, () => {
       }),
     })])(
       characterGenerator(input),
-    ),
+    ).value,
     {
       type: "p",
       attributes: {},

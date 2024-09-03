@@ -13,13 +13,7 @@ function runParsers<ExpressionReturnType>(
   // For async version this could use Promise.race
   for (const parser of parsers) {
     try {
-      const result = parser(getCharacter, matchCounts);
-
-      // Without moving cursor back a step it would be in a wrong spot
-      // for the next round assuming a result was parsed
-      getCharacter.previous();
-
-      return result;
+      return parser(getCharacter, matchCounts);
     } catch (_error) {
       getCharacter.setIndex(characterIndex);
     }

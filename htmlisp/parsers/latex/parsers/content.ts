@@ -12,7 +12,7 @@ function getParseContent<ExpressionReturnType>(
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
-  ): ExpressionReturnType {
+  ): { match: boolean; value: ExpressionReturnType } {
     let stringBuffer = "";
     const parts: ExpressionReturnType[] = [];
     const matchCounts: Record<string, number> = {};
@@ -60,7 +60,7 @@ function getParseContent<ExpressionReturnType>(
       parts.push(stringBuffer);
     }
 
-    return expression(parts);
+    return { match: true, value: expression(parts) };
   };
 }
 
