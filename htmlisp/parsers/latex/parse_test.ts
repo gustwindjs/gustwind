@@ -223,17 +223,22 @@ Deno.test(`description`, () => {
   );
 });
 
-// TODO: Define in a more accurate manner
 Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
 
   assertEquals(
     parse(input, { contents }),
-    [{
-      type: "a",
-      attributes: { href: "https://google.com" },
-      children: ["Google"],
-    }],
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["Foobar ", {
+          type: "span",
+          attributes: { title: "test24" },
+          children: ["[0]"],
+        }],
+      },
+    ],
   );
 });
 

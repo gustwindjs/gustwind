@@ -73,8 +73,8 @@ const contents: Record<string, SingleParser<Element>> = {
     type: "span",
     attributes: { title: children[0] },
     children: [
-      "[",
-      (matchCounts.cite ? matchCounts.cite + 1 : 1).toString(),
+      "[" +
+      (matchCounts.cite ? matchCounts.cite : 0).toString() +
       "]",
     ],
   }),
