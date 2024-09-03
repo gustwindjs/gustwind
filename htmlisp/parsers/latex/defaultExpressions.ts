@@ -30,25 +30,27 @@ const doubles: Record<string, DoubleParser<Element>> = {
 const blocks: Record<string, BlockParser<Element, Element>> = {
   "verbatim": {
     container: (children) => element("pre", children),
-    item: (g) => element("", [getParseContent<string>((s) => s.join(""))(g)]),
+    item: (g) =>
+      element("", [getParseContent<string>((s) => s.join(""))(g).value]),
   },
   "quote": {
     container: (children) => element("blockquote", children),
-    item: (g) => element("", [getParseContent<string>((s) => s.join(""))(g)]),
+    item: (g) =>
+      element("", [getParseContent<string>((s) => s.join(""))(g).value]),
   },
   // Lists
   "enumerate": {
     container: (children) => element("ol", children),
-    item: (g) => element("li", [parseListItem(g)]),
+    item: (g) => element("li", [parseListItem(g).value]),
   },
   "itemize": {
     container: (children) => element("ul", children),
-    item: (g) => element("li", [parseListItem(g)]),
+    item: (g) => element("li", [parseListItem(g).value]),
   },
   "description": {
     container: (children) => element("dl", children),
     item: (g) => {
-      const { title, description } = parseDefinitionItem(g);
+      const { title, description } = parseDefinitionItem(g).value;
 
       return element("dt", [title]), element("dd", [description]);
     },

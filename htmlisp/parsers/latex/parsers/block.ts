@@ -8,7 +8,7 @@ type BlockParser<ExpressionReturnType, ItemReturnValue> = {
   container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
   item: (
     getCharacter: CharacterGenerator,
-  ) => { match: boolean; value: ItemReturnValue };
+  ) => ItemReturnValue;
 };
 
 const LIMIT = 100000;
@@ -57,13 +57,13 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       try {
         const item = itemCb(getCharacter);
 
-        if (item.match) {
-          if (Array.isArray(item.value)) {
-            if (item.value.length) {
-              items = items.concat([item.value]);
+        if (item) {
+          if (Array.isArray(item)) {
+            if (item.length) {
+              items = items.concat([item]);
             }
           } else {
-            items.push(item.value);
+            items.push(item);
           }
         }
       } catch (_error) {

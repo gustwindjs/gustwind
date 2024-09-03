@@ -20,7 +20,7 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
-          item: getParseContent((s) => s.join("")),
+          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
         },
       },
     )(
@@ -43,7 +43,7 @@ Deno.test(`simple expression with a newline`, () => {
             attributes: {},
             children,
           }),
-          item: getParseContent((s) => s.join("")),
+          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
         },
       },
     )(
@@ -67,7 +67,7 @@ Deno.test(`begin and end next to each other`, () => {
             attributes: {},
             children,
           }),
-          item: getParseContent((s) => s.join("")),
+          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
         },
       },
     )(
@@ -89,7 +89,7 @@ Deno.test(`simple list`, () => {
             attributes: {},
             children,
           }),
-          item: parseListItem,
+          item: (g) => parseListItem(g).value,
         },
       },
     )(
@@ -115,7 +115,7 @@ Deno.test(`simple definition list`, () => {
             children: children
               .map(({ title, description }) => `${title}: ${description}`),
           }),
-          item: parseDefinitionItem,
+          item: (g) => parseDefinitionItem(g).value,
         },
       },
     )(
@@ -148,7 +148,7 @@ Deno.test(`tabular list with only header`, () => {
               })),
             }],
           }),
-          item: parseTabularItem,
+          item: (g) => parseTabularItem(g).value,
         },
       },
     )(
@@ -212,7 +212,7 @@ Deno.test(`tabular list with header and content`, () => {
               })),
             }))),
           }),
-          item: parseTabularItem,
+          item: (g) => parseTabularItem(g).value,
         },
       },
     )(

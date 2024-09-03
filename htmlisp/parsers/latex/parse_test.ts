@@ -135,7 +135,22 @@ Deno.test(`href`, () => {
   );
 });
 
-Deno.test(`verbatim`, () => {
+Deno.test(`single line verbatim`, () => {
+  const input = String.raw`\begin{verbatim}
+test
+\end{verbatim}`;
+
+  assertEquals(
+    parse(input, { blocks }),
+    [{
+      type: "pre",
+      attributes: {},
+      children: ["test"],
+    }],
+  );
+});
+
+Deno.test(`multiline verbatim`, () => {
   const input = String.raw`\begin{verbatim}
 test
 \end{verbatim}`;
