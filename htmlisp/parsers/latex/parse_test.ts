@@ -1,7 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import {
   blocks,
-  contents,
+  cites,
   doubles,
   lists,
   singles,
@@ -227,7 +227,7 @@ Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
 
   assertEquals(
-    parse(input, { contents }),
+    parse(input, { singles: cites }),
     [
       {
         type: "p",
@@ -246,7 +246,7 @@ Deno.test(`cite twice to the same reference`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test24}`;
 
   assertEquals(
-    parse(input, { contents }),
+    parse(input, { singles: cites }),
     [
       {
         type: "p",

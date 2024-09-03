@@ -60,7 +60,7 @@ const lists: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
-const contents: Record<string, SingleParser<Element>> = {
+const cites: Record<string, SingleParser<Element>> = {
   footnote: (children, matchCounts) => ({
     type: "sup",
     attributes: { title: children[0] },
@@ -123,4 +123,4 @@ function element(
   };
 }
 
-export { blocks, contents, doubles, el, element, lists, singles };
+export { blocks, cites, doubles, el, element, lists, singles };

@@ -18,7 +18,6 @@ function parse(
     doubles?: Record<string, DoubleParser<Element>>;
     blocks?: Record<string, BlockParser<Element, string>>;
     lists?: Record<string, BlockParser<Element, Element>>;
-    contents?: Record<string, SingleParser<Element>>;
   },
 ): Element[] {
   const getCharacter = characterGenerator(input);
@@ -26,7 +25,6 @@ function parse(
   const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
   const blockParsers = parser.blocks && getParseBlock(parser.blocks);
   const listParsers = parser.lists && getParseBlock(parser.lists);
-  const contentParsers = parser.contents && getParseSingle(parser.contents);
   const allParsers = [
     singleParsers,
     doubleParsers,
@@ -39,7 +37,7 @@ function parse(
         children,
       }),
       // @ts-expect-error This is fine for now as it will be fixed in a later TS most likely.
-      [singleParsers, doubleParsers, contentParsers].filter(Boolean),
+      [singleParsers, doubleParsers].filter(Boolean),
     ),
   ].filter(Boolean);
   const ret = [];
