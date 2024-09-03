@@ -12,7 +12,7 @@ const ITEM_SYNTAX = "item";
 // Parses the content following \item
 function parseListItem(
   getCharacter: CharacterGenerator,
-): string {
+): { match: boolean; value: string } {
   let state = STATES.IDLE;
   let stringBuffer = "";
   let itemIndex = 0;
@@ -21,7 +21,7 @@ function parseListItem(
     const c = getCharacter.next();
 
     if (c === null) {
-      return stringBuffer;
+      return { match: true, value: stringBuffer };
     }
 
     if (state === STATES.IDLE) {
@@ -44,7 +44,7 @@ function parseListItem(
       }
     } else if (state === STATES.PARSE_CONTENT) {
       if (c === "\n") {
-        return stringBuffer;
+        return { match: true, value: stringBuffer };
       }
 
       stringBuffer += c;

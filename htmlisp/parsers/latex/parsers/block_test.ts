@@ -25,8 +25,33 @@ Deno.test(`simple expression`, () => {
       },
     )(
       characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
-    ),
+    ).value,
     { type: "div", attributes: {}, children: [input] },
+  );
+});
+
+Deno.test(`simple expression with a newline`, () => {
+  const name = "verbatim";
+  const input = "foobar";
+
+  assertEquals(
+    getParseBlock<Element, string>(
+      {
+        [name]: {
+          container: (children) => ({
+            type: "div",
+            attributes: {},
+            children,
+          }),
+          item: getParseContent((s) => s.join("")),
+        },
+      },
+    )(
+      characterGenerator(String.raw`\begin{${name}}
+${input}
+\end{${name}}`),
+    ).value,
+    { type: "div", attributes: {}, children: ["\n" + input + "\n"] },
   );
 });
 
@@ -47,7 +72,7 @@ Deno.test(`begin and end next to each other`, () => {
       },
     )(
       characterGenerator(String.raw`\begin{${name}}\end{${name}}`),
-    ),
+    ).value,
     { type: "div", attributes: {}, children: [] },
   );
 });
@@ -72,7 +97,7 @@ Deno.test(`simple list`, () => {
         \item Foo
         \item Bar
 \end{${name}}`),
-    ),
+    ).value,
     { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
 });
@@ -81,7 +106,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>>(
+    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>["value"]>(
       {
         [name]: {
           container: (children) => ({
@@ -98,7 +123,7 @@ Deno.test(`simple definition list`, () => {
         \item[Foo] foo
         \item[Bar] bar
 \end{${name}}`),
-    ),
+    ).value,
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
   );
 });
@@ -130,7 +155,7 @@ Deno.test(`tabular list with only header`, () => {
       characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
 \end{${name}}`),
-    ),
+    ).value,
     {
       type: "",
       attributes: {},
@@ -196,7 +221,7 @@ Deno.test(`tabular list with header and content`, () => {
     \hline
     Foo & Bar & Baz \\
 \end{${name}}`),
-    ),
+    ).value,
     {
       type: "",
       attributes: {},

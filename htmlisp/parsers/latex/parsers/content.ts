@@ -60,7 +60,9 @@ function getParseContent<ExpressionReturnType>(
       parts.push(stringBuffer);
     }
 
-    return { match: true, value: expression(parts) };
+    const value = expression(parts);
+
+    return { match: !!value, value };
   };
 }
 

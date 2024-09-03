@@ -14,7 +14,7 @@ const ITEM_SYNTAX = "item";
 // Parses the content within \item[<key>] <value>
 function parseDefinitionItem(
   getCharacter: CharacterGenerator,
-): { title: string; description: string } {
+): { match: boolean; value: { title: string; description: string } } {
   let state = STATES.IDLE;
   let stringBuffer = "";
   let title = "";
@@ -25,7 +25,7 @@ function parseDefinitionItem(
     const c = getCharacter.next();
 
     if (c === null) {
-      return { title, description };
+      return { match: true, value: { title, description } };
     }
 
     if (state === STATES.IDLE) {
@@ -59,7 +59,7 @@ function parseDefinitionItem(
       }
     } else if (state === STATES.PARSE_DESCRIPTION) {
       if (c === "\n") {
-        return { title, description };
+        return { match: true, value: { title, description } };
       }
 
       description += c;

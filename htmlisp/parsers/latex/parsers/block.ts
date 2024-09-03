@@ -6,7 +6,9 @@ import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType, ItemReturnValue> = {
   container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
-  item: (getCharacter: CharacterGenerator) => ItemReturnValue;
+  item: (
+    getCharacter: CharacterGenerator,
+  ) => { match: boolean; value: ItemReturnValue };
 };
 
 const LIMIT = 100000;
@@ -20,7 +22,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
 ) {
   return function parseBlock(
     getCharacter: CharacterGenerator,
-  ): ExpressionReturnType {
+  ): { match: boolean; value: ExpressionReturnType } {
     const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
       [
@@ -55,13 +57,13 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       try {
         const item = itemCb(getCharacter);
 
-        if (item) {
-          if (Array.isArray(item)) {
-            if (item.length) {
-              items = items.concat([item]);
+        if (item.match) {
+          if (Array.isArray(item.value)) {
+            if (item.value.length) {
+              items = items.concat([item.value]);
             }
           } else {
-            items.push(item);
+            items.push(item.value);
           }
         }
       } catch (_error) {
@@ -78,7 +80,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     );
 
     if (beginValue === end.value) {
-      return expressions[beginValue].container(items);
+      return { match: true, value: expressions[beginValue].container(items) };
     }
 
     throw new Error(`Expression matching to ${beginValue} was not found`);
