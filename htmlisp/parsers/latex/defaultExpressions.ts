@@ -65,7 +65,8 @@ const contents: Record<string, SingleParser<Element>> = {
     type: "sup",
     attributes: { title: children[0] },
     children: [
-      (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+      (matchCounts.footnote ? matchCounts.footnote[children[0]] : 0)
+        .toString(),
     ],
   }),
   // TODO: Add reference through bibtex
@@ -74,7 +75,7 @@ const contents: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: [
       "[" +
-      (matchCounts.cite ? matchCounts.cite : 0).toString() +
+      (matchCounts.cite ? matchCounts.cite[children[0]] : 0).toString() +
       "]",
     ],
   }),
@@ -83,7 +84,7 @@ const contents: Record<string, SingleParser<Element>> = {
     type: "span",
     attributes: { title: children[0] },
     children: [
-      (matchCounts.citet ? matchCounts.citet + 1 : 1).toString(),
+      (matchCounts.citet ? matchCounts.citet[children[0]] : 0).toString(),
     ],
   }),
   // TODO: Textual citation in parentheses (needs a bibtex lookup)
@@ -92,7 +93,7 @@ const contents: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: [
       "(",
-      (matchCounts.citep ? matchCounts.citep + 1 : 1).toString(),
+      (matchCounts.citep ? matchCounts.citep[children[0]] : 0).toString(),
       ")",
     ],
   }),

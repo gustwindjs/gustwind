@@ -1,8 +1,9 @@
 import type { CharacterGenerator } from "../../types.ts";
+import type { MatchCounts } from "./runParsers.ts";
 
 type SingleParser<ExpressionReturnType> = (
   s: string[],
-  matchCounts: Record<string, number>,
+  matchCounts: MatchCounts,
 ) => ExpressionReturnType;
 
 enum STATES {
@@ -22,7 +23,7 @@ function getParseSingle<ExpressionReturnType>(
 ) {
   return function parseSingle(
     getCharacter: CharacterGenerator,
-    matchCounts?: Record<string, number>,
+    matchCounts?: MatchCounts,
   ): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";

@@ -242,4 +242,32 @@ Deno.test(`cite`, () => {
   );
 });
 
+Deno.test(`cite twice to the same reference`, () => {
+  const input = String.raw`Foobar \cite{test24} \cite{test24}`;
+
+  assertEquals(
+    parse(input, { contents }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: [
+          "Foobar ",
+          {
+            type: "span",
+            attributes: { title: "test24" },
+            children: ["[0]"],
+          },
+          " ",
+          {
+            type: "span",
+            attributes: { title: "test24" },
+            children: ["[0]"],
+          },
+        ],
+      },
+    ],
+  );
+});
+
 // TODO: Test ~ - it should be replaced with a whitespace

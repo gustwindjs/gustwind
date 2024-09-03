@@ -1,4 +1,4 @@
-import { runParsers } from "./runParsers.ts";
+import { type MatchCounts, runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
@@ -15,7 +15,7 @@ function getParseContent<ExpressionReturnType>(
   ): { match: boolean; value: ExpressionReturnType } {
     let stringBuffer = "";
     const parts: ExpressionReturnType[] = [];
-    const matchCounts: Record<string, number> = {};
+    const matchCounts: MatchCounts = {};
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -40,10 +40,17 @@ function getParseContent<ExpressionReturnType>(
         );
 
         if (parseResult) {
-          if (matchCounts[parseResult.match]) {
-            matchCounts[parseResult.match]++;
+          // @ts-expect-error Assume that value has a toString() anyway
+          const parseValue = parseResult.value.toString();
+
+          if (matchCounts[parseResult.match]?.[parseValue]) {
+            matchCounts[parseResult.match][parseValue]++;
           } else {
-            matchCounts[parseResult.match] = 1;
+            if (!matchCounts[parseResult.match]) {
+              matchCounts[parseResult.match] = {};
+            }
+
+            matchCounts[parseResult.match][parseValue] = 1;
           }
 
           parts.push(parseResult.value);

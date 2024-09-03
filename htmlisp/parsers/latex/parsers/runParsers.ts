@@ -1,12 +1,15 @@
 import type { CharacterGenerator } from "../../types.ts";
 
+// element (cite etc.) -> input -> count
+type MatchCounts = Record<string, Record<string, number>>;
+
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
   parsers: ((
     getCharacter: CharacterGenerator,
-    matchCounts?: Record<string, number>,
+    matchCounts?: MatchCounts,
   ) => { match: string; value: ExpressionReturnType })[],
-  matchCounts?: Record<string, number>,
+  matchCounts?: MatchCounts,
 ) {
   const characterIndex = getCharacter.getIndex();
 
@@ -20,4 +23,4 @@ function runParsers<ExpressionReturnType>(
   }
 }
 
-export { runParsers };
+export { type MatchCounts, runParsers };
