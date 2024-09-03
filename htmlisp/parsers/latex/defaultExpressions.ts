@@ -27,18 +27,18 @@ const doubles: Record<string, DoubleParser<Element>> = {
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const blocks: Record<string, BlockParser<Element, Element>> = {
+const blocks: Record<string, BlockParser<Element, string>> = {
   "verbatim": {
     container: (children) => element("pre", children),
-    item: (g) =>
-      element("", [getParseContent<string>((s) => s.join(""))(g).value]),
+    item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
   },
   "quote": {
     container: (children) => element("blockquote", children),
-    item: (g) =>
-      element("", [getParseContent<string>((s) => s.join(""))(g).value]),
+    item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
   },
-  // Lists
+};
+
+const lists: Record<string, BlockParser<Element, Element>> = {
   "enumerate": {
     container: (children) => element("ol", children),
     item: (g) => element("li", [parseListItem(g).value]),
@@ -119,4 +119,4 @@ function element(
   };
 }
 
-export { blocks, contents, doubles, el, element, singles };
+export { blocks, contents, doubles, el, element, lists, singles };

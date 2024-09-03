@@ -1,5 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { blocks, contents, doubles, singles } from "./defaultExpressions.ts";
+import {
+  blocks,
+  contents,
+  doubles,
+  lists,
+  singles,
+} from "./defaultExpressions.ts";
 import { parse } from "./parse.ts";
 
 Deno.test(`id expression`, () => {
@@ -136,9 +142,7 @@ Deno.test(`href`, () => {
 });
 
 Deno.test(`single line verbatim`, () => {
-  const input = String.raw`\begin{verbatim}
-test
-\end{verbatim}`;
+  const input = String.raw`\begin{verbatim}test\end{verbatim}`;
 
   assertEquals(
     parse(input, { blocks }),
@@ -171,7 +175,7 @@ Deno.test(`enumerate`, () => {
 \end{enumerate}`;
 
   assertEquals(
-    parse(input, { blocks }),
+    parse(input, { lists }),
     [{
       type: "ol",
       attributes: {},
@@ -186,7 +190,7 @@ Deno.test(`itemize`, () => {
 \end{itemize}`;
 
   assertEquals(
-    parse(input, { blocks }),
+    parse(input, { lists }),
     [{
       type: "ul",
       attributes: {},
@@ -201,7 +205,7 @@ Deno.test(`description`, () => {
 \end{description}`;
 
   assertEquals(
-    parse(input, { blocks }),
+    parse(input, { lists }),
     [{
       type: "dl",
       attributes: {},

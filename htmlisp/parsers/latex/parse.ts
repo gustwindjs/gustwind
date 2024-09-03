@@ -16,7 +16,8 @@ function parse(
   parser: {
     singles?: Record<string, SingleParser<Element>>;
     doubles?: Record<string, DoubleParser<Element>>;
-    blocks?: Record<string, BlockParser<Element, Element>>;
+    blocks?: Record<string, BlockParser<Element, string>>;
+    lists?: Record<string, BlockParser<Element, Element>>;
     contents?: Record<string, SingleParser<Element>>;
   },
 ): Element[] {
@@ -24,11 +25,13 @@ function parse(
   const singleParsers = parser.singles && getParseSingle(parser.singles);
   const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
   const blockParsers = parser.blocks && getParseBlock(parser.blocks);
+  const listParsers = parser.lists && getParseBlock(parser.lists);
   const contentParsers = parser.contents && getParseSingle(parser.contents);
   const allParsers = [
     singleParsers,
     doubleParsers,
     blockParsers,
+    listParsers,
     getParseContent<Element>(
       (children) => ({
         type: "p",
