@@ -71,6 +71,7 @@ function getParseSingle<ExpressionReturnType>(
 
           if (ret) {
             parts.push(ret.value);
+            getCharacter.next();
           }
         } else if (c === "}") {
           if (stringBuffer) {
