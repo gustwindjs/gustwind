@@ -65,7 +65,9 @@ const cites: Record<string, SingleParser<Element>> = {
     type: "sup",
     attributes: { title: children[0] },
     children: [
-      (matchCounts.footnote ? matchCounts.footnote[children[0]] : 0)
+      (matchCounts.footnote
+        ? matchCounts.footnote.findIndex((e) => e === children[0])
+        : 0)
         .toString(),
     ],
   }),
@@ -75,7 +77,10 @@ const cites: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: [
       "[" +
-      (matchCounts.cite ? matchCounts.cite[children[0]] : 0).toString() +
+      (matchCounts.cite
+        ? matchCounts.cite.findIndex((e) => e === children[0])
+        : 0)
+        .toString() +
       "]",
     ],
   }),
@@ -84,7 +89,10 @@ const cites: Record<string, SingleParser<Element>> = {
     type: "span",
     attributes: { title: children[0] },
     children: [
-      (matchCounts.citet ? matchCounts.citet[children[0]] : 0).toString(),
+      (matchCounts.citet
+        ? matchCounts.citet.findIndex((e) => e === children[0])
+        : 0)
+        .toString(),
     ],
   }),
   // TODO: Textual citation in parentheses (needs a bibtex lookup)
@@ -92,8 +100,11 @@ const cites: Record<string, SingleParser<Element>> = {
     type: "span",
     attributes: { title: children[0] },
     children: [
-      "(",
-      (matchCounts.citep ? matchCounts.citep[children[0]] : 0).toString(),
+      "(" +
+      (matchCounts.citep
+        ? matchCounts.citep.findIndex((e) => e === children[0])
+        : 0)
+        .toString() +
       ")",
     ],
   }),

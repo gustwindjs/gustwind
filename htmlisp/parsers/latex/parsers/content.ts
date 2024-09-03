@@ -41,16 +41,14 @@ function getParseContent<ExpressionReturnType>(
 
         if (parseResult) {
           // @ts-expect-error Assume that value has a toString() anyway
-          const parseValue = parseResult.value.toString();
+          const parseValue = parseResult.parts[0];
 
-          if (matchCounts[parseResult.match]?.[parseValue]) {
-            matchCounts[parseResult.match][parseValue]++;
-          } else {
+          if (!matchCounts[parseResult.match]?.[parseValue]) {
             if (!matchCounts[parseResult.match]) {
-              matchCounts[parseResult.match] = {};
+              matchCounts[parseResult.match] = [];
             }
 
-            matchCounts[parseResult.match][parseValue] = 1;
+            matchCounts[parseResult.match].push(parseValue);
           }
 
           parts.push(parseResult.value);

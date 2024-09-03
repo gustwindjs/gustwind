@@ -1,7 +1,7 @@
 import type { CharacterGenerator } from "../../types.ts";
 
-// element (cite etc.) -> input -> count
-type MatchCounts = Record<string, Record<string, number>>;
+// element (cite etc.) -> input[] in discovery order
+type MatchCounts = Record<string, Array<string>>;
 
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
