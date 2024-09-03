@@ -71,14 +71,12 @@ function getParseSingle<ExpressionReturnType>(
 
           if (ret) {
             parts.push(ret.value);
-            getCharacter.next();
           }
         } else if (c === "}") {
           if (stringBuffer) {
             parts.push(stringBuffer);
           }
 
-          getCharacter.previous();
           return {
             match: foundKey,
             value: expressions[foundKey](parts as string[], matchCounts || {}),
