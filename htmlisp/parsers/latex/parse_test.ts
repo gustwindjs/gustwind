@@ -210,8 +210,14 @@ Deno.test(`description`, () => {
       type: "dl",
       attributes: {},
       children: [
-        { type: "dt", attributes: {}, children: ["foo"] },
-        { type: "dd", attributes: {}, children: ["bar"] },
+        {
+          type: "",
+          attributes: {},
+          children: [
+            { type: "dt", attributes: {}, children: ["foo"] },
+            { type: "dd", attributes: {}, children: ["bar"] },
+          ],
+        },
       ],
     }],
   );

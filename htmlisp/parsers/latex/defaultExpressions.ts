@@ -52,7 +52,10 @@ const lists: Record<string, BlockParser<Element, Element>> = {
     item: (g) => {
       const { title, description } = parseDefinitionItem(g).value;
 
-      return element("dt", [title]), element("dd", [description]);
+      return element("", [
+        element("dt", [title]),
+        element("dd", [description]),
+      ]);
     },
   },
 };
