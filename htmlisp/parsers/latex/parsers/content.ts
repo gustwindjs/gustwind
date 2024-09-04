@@ -48,6 +48,8 @@ function getParseContent<ExpressionReturnType>(
         } else {
           break;
         }
+      } else if (c === "~" && getCharacter.get() === "\\") {
+        stringBuffer += " ";
       } else {
         stringBuffer += c;
       }
