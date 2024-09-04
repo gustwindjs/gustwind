@@ -8,7 +8,11 @@ function runParsers<ExpressionReturnType>(
   parsers: ((
     getCharacter: CharacterGenerator,
     matchCounts?: MatchCounts,
-  ) => { match: string; value: ExpressionReturnType })[],
+  ) => {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  })[],
   matchCounts?: MatchCounts,
 ) {
   const characterIndex = getCharacter.getIndex();

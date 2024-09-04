@@ -15,7 +15,7 @@ function getParseContent<ExpressionReturnType>(
   ): { match: boolean; value: ExpressionReturnType } {
     let stringBuffer = "";
     const parts: ExpressionReturnType[] = [];
-    const matchCounts: MatchCounts = {};
+    let matchCounts: MatchCounts = {};
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -36,19 +36,12 @@ function getParseContent<ExpressionReturnType>(
         const parseResult = runParsers<ExpressionReturnType>(
           getCharacter,
           parsers,
-          matchCounts,
+          structuredClone(matchCounts),
         );
 
         if (parseResult) {
-          // @ts-expect-error Assume that value has a toString() anyway
-          const parseValue = parseResult.parts[0];
-
-          if (!matchCounts[parseResult.match]?.[parseValue]) {
-            if (!matchCounts[parseResult.match]) {
-              matchCounts[parseResult.match] = [];
-            }
-
-            matchCounts[parseResult.match].push(parseValue);
+          if (parseResult.matchCounts) {
+            matchCounts = parseResult.matchCounts;
           }
 
           parts.push(parseResult.value);
