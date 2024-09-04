@@ -242,6 +242,25 @@ Deno.test(`cite`, () => {
   );
 });
 
+Deno.test(`cite with a tilde`, () => {
+  const input = String.raw`Foobar~\cite{test24}`;
+
+  assertEquals(
+    parse(input, { singles: cites }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["Foobar ", {
+          type: "span",
+          attributes: { title: "test24" },
+          children: ["[0]"],
+        }],
+      },
+    ],
+  );
+});
+
 Deno.test(`cite twice to the same reference`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test24}`;
 
@@ -298,5 +317,50 @@ Deno.test(`cite to different references`, () => {
   );
 });
 
-// TODO: Test \cite{test24, test12}
-// TODO: Test ~ - it should be replaced with a whitespace
+// TODO: Implement
+Deno.test(`cite to two different references`, () => {
+  const input = String.raw`Foobar \cite{test12, test24}`;
+
+  // TODO: Specify test result
+  assertEquals(
+    parse(input, { singles: cites }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: [
+          "Foobar ",
+          {
+            type: "span",
+            attributes: { title: "test24" },
+            children: ["[0], [1]"],
+          },
+        ],
+      },
+    ],
+  );
+});
+
+// TODO: Implement
+Deno.test(`cite to three different references`, () => {
+  const input = String.raw`Foobar \cite{test12, test24, test36}`;
+
+  // TODO: Specify test result
+  assertEquals(
+    parse(input, { singles: cites }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: [
+          "Foobar ",
+          {
+            type: "span",
+            attributes: { title: "test24" },
+            children: ["[0], [1], [2]"],
+          },
+        ],
+      },
+    ],
+  );
+});
