@@ -9,7 +9,7 @@ Deno.test(`simple expression`, () => {
   const input = String.raw`\item[foo] bar`;
 
   assertEquals(
-    parseDefinitionItem(characterGenerator(input)).value,
+    parseDefinitionItem(characterGenerator(input)),
     { title: "foo", description: "bar" },
   );
 });
@@ -19,7 +19,7 @@ Deno.test(`only single expression`, () => {
 \item[bar] foo`;
 
   assertEquals(
-    parseDefinitionItem(characterGenerator(input)).value,
+    parseDefinitionItem(characterGenerator(input)),
     { title: "foo", description: "bar" },
   );
 });

@@ -15,9 +15,9 @@ function parseBibtexCollection(input: string): BibtexCollection[] {
       [parseBibtex],
     );
 
-    if (parseResult) {
+    if (parseResult?.match) {
       // @ts-expect-error This is fine. Likely runParsers return type can be simplified
-      ret.push(parseResult);
+      ret.push(parseResult.value);
     }
 
     const c = getCharacter.next();

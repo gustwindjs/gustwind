@@ -22,7 +22,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
 ) {
   return function parseBlock(
     getCharacter: CharacterGenerator,
-  ): { match: boolean; value: ExpressionReturnType } {
+  ): ExpressionReturnType {
     const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
       [
@@ -78,7 +78,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     );
 
     if (beginValue === end.value) {
-      return { match: true, value: expressions[beginValue].container(items) };
+      return expressions[beginValue].container(items);
     }
 
     throw new Error(`Expression matching to ${beginValue} was not found`);

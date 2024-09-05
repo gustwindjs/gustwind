@@ -12,7 +12,7 @@ function getParseContent<ExpressionReturnType>(
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
-  ): { match: boolean; value: ExpressionReturnType } {
+  ): ExpressionReturnType {
     let stringBuffer = "";
     const parts: ExpressionReturnType[] = [];
     let matchCounts: MatchCounts = {};
@@ -62,7 +62,11 @@ function getParseContent<ExpressionReturnType>(
 
     const value = expression(parts);
 
-    return { match: !!value, value };
+    if (!!value) {
+      return value;
+    }
+
+    throw new Error("No matching expression was found");
   };
 }
 

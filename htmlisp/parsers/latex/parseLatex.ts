@@ -60,6 +60,7 @@ function parseLatex(
     }
   }
 
+  // @ts-expect-error This is fine for now. TODO: Fix runParsers type
   return ret;
 }
 

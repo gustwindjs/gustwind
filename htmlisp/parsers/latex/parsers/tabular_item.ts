@@ -6,7 +6,7 @@ const LIMIT = 100000;
 // Parses the content within "Chapter & Purpose & Writing approach \\"
 function parseTabularItem(
   getCharacter: CharacterGenerator,
-): { match: boolean; value: string[] } {
+): string[] {
   const ret: string[] = [];
   let stringBuffer = "";
 
@@ -21,14 +21,14 @@ function parseTabularItem(
 
     getCharacter.next();
 
-    return { match: false, value: [] };
+    return [];
   }
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
 
     if (c === null) {
-      return { match: true, value: ret };
+      return ret;
     }
 
     if (getCharacter.slice(0, 4) === "\\end") {
@@ -36,7 +36,7 @@ function parseTabularItem(
     } else if (c === "\\" && getCharacter.get() === "\\") {
       getCharacter.next();
 
-      return { match: true, value: ret.concat(stringBuffer.trim()) };
+      return ret.concat(stringBuffer.trim());
     } else if (c === "&") {
       ret.push(stringBuffer.trim());
 

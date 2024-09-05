@@ -20,12 +20,12 @@ Deno.test(`simple expression`, () => {
             attributes: {},
             children,
           }),
-          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
+          item: getParseContent<string>((s) => s.join("")),
         },
       },
     )(
       characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
-    ).value,
+    ),
     { type: "div", attributes: {}, children: [input] },
   );
 });
@@ -43,14 +43,14 @@ Deno.test(`simple expression with a newline`, () => {
             attributes: {},
             children,
           }),
-          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
+          item: getParseContent<string>((s) => s.join("")),
         },
       },
     )(
       characterGenerator(String.raw`\begin{${name}}
 ${input}
 \end{${name}}`),
-    ).value,
+    ),
     { type: "div", attributes: {}, children: ["\n" + input + "\n"] },
   );
 });
@@ -67,12 +67,12 @@ Deno.test(`begin and end next to each other`, () => {
             attributes: {},
             children,
           }),
-          item: (g) => getParseContent<string>((s) => s.join(""))(g).value,
+          item: getParseContent<string>((s) => s.join("")),
         },
       },
     )(
       characterGenerator(String.raw`\begin{${name}}\end{${name}}`),
-    ).value,
+    ),
     { type: "div", attributes: {}, children: [] },
   );
 });
@@ -89,7 +89,7 @@ Deno.test(`simple list`, () => {
             attributes: {},
             children,
           }),
-          item: (g) => parseListItem(g).value,
+          item: parseListItem,
         },
       },
     )(
@@ -97,7 +97,7 @@ Deno.test(`simple list`, () => {
         \item Foo
         \item Bar
 \end{${name}}`),
-    ).value,
+    ),
     { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
 });
@@ -106,7 +106,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>["value"]>(
+    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>>(
       {
         [name]: {
           container: (children) => ({
@@ -115,7 +115,7 @@ Deno.test(`simple definition list`, () => {
             children: children
               .map(({ title, description }) => `${title}: ${description}`),
           }),
-          item: (g) => parseDefinitionItem(g).value,
+          item: parseDefinitionItem,
         },
       },
     )(
@@ -123,7 +123,7 @@ Deno.test(`simple definition list`, () => {
         \item[Foo] foo
         \item[Bar] bar
 \end{${name}}`),
-    ).value,
+    ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
   );
 });
@@ -148,14 +148,14 @@ Deno.test(`tabular list with only header`, () => {
               })),
             }],
           }),
-          item: (g) => parseTabularItem(g).value,
+          item: parseTabularItem,
         },
       },
     )(
       characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
 \end{${name}}`),
-    ).value,
+    ),
     {
       type: "",
       attributes: {},
@@ -212,7 +212,7 @@ Deno.test(`tabular list with header and content`, () => {
               })),
             }))),
           }),
-          item: (g) => parseTabularItem(g).value,
+          item: parseTabularItem,
         },
       },
     )(
@@ -221,7 +221,7 @@ Deno.test(`tabular list with header and content`, () => {
     \hline
     Foo & Bar & Baz \\
 \end{${name}}`),
-    ).value,
+    ),
     {
       type: "",
       attributes: {},

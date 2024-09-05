@@ -84,6 +84,10 @@ function parseBibtex(
     }
   }
 
+  if (!type) {
+    throw new Error("No matching expression was found");
+  }
+
   return { type, id, fields };
 }
 

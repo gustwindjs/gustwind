@@ -20,7 +20,16 @@ function runParsers<ExpressionReturnType>(
   // For async version this could use Promise.race
   for (const parser of parsers) {
     try {
-      return parser(getCharacter, matchCounts);
+      const ret = parser(getCharacter, matchCounts);
+
+      if (ret.match && ret.value) {
+        return ret;
+      }
+
+      return {
+        match: true,
+        value: ret,
+      };
     } catch (_error) {
       getCharacter.setIndex(characterIndex);
     }

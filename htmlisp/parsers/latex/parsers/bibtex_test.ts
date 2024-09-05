@@ -94,3 +94,11 @@ Deno.test(`throws if argument is missing`, () => {
     `No matching expression was found`,
   );
 });
+
+Deno.test(`throws if argument is missing 2`, () => {
+  assertThrows(
+    () => parseBibtex(characterGenerator("")),
+    Error,
+    `No matching expression was found`,
+  );
+});
