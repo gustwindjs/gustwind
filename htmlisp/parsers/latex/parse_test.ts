@@ -364,3 +364,6 @@ Deno.test(`cite to three different references`, () => {
     ],
   );
 });
+
+// TODO: Test \ref, \nameref, \autoref - these need some lookup against labels
+// TODO: Pass parsed bibtex data to cite parsers
