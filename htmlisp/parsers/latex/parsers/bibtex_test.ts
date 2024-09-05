@@ -9,7 +9,7 @@ Deno.test(`empty entry`, () => {
 
   assertEquals(
     parseBibtex(`@${type}{}`),
-    { type },
+    { type, id: "", fields: {} },
   );
 });
 
@@ -18,8 +18,8 @@ Deno.test(`entry with an id`, () => {
   const id = "foobar";
 
   assertEquals(
-    parseBibtex(`@${type}{}`),
-    { type, id },
+    parseBibtex(`@${type}{${id}}`),
+    { type, id, fields: {} },
   );
 });
 
