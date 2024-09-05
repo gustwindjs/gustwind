@@ -235,7 +235,7 @@ Deno.test(`cite`, () => {
         children: ["Foobar ", {
           type: "span",
           attributes: { title: "test24" },
-          children: ["[0]"],
+          children: ["[1]"],
         }],
       },
     ],
@@ -254,7 +254,7 @@ Deno.test(`cite with a tilde`, () => {
         children: ["Foobar ", {
           type: "span",
           attributes: { title: "test24" },
-          children: ["[0]"],
+          children: ["[1]"],
         }],
       },
     ],
@@ -275,13 +275,13 @@ Deno.test(`cite twice to the same reference`, () => {
           {
             type: "span",
             attributes: { title: "test24" },
-            children: ["[0]"],
+            children: ["[1]"],
           },
           " ",
           {
             type: "span",
             attributes: { title: "test24" },
-            children: ["[0]"],
+            children: ["[1]"],
           },
         ],
       },
@@ -303,13 +303,13 @@ Deno.test(`cite to different references`, () => {
           {
             type: "span",
             attributes: { title: "test24" },
-            children: ["[0]"],
+            children: ["[1]"],
           },
           " ",
           {
             type: "span",
             attributes: { title: "test12" },
-            children: ["[1]"],
+            children: ["[2]"],
           },
         ],
       },
@@ -333,7 +333,7 @@ Deno.test(`cite to two different references`, () => {
           {
             type: "span",
             attributes: { title: "test24" },
-            children: ["[0], [1]"],
+            children: ["[1], [2]"],
           },
         ],
       },
@@ -357,7 +357,7 @@ Deno.test(`cite to three different references`, () => {
           {
             type: "span",
             attributes: { title: "test24" },
-            children: ["[0], [1], [2]"],
+            children: ["[1], [2], [3]"],
           },
         ],
       },

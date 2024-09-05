@@ -66,8 +66,8 @@ const cites: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: [
       (matchCounts.footnote
-        ? matchCounts.footnote.findIndex((e) => e === children[0])
-        : 0)
+        ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+        : 1)
         .toString(),
     ],
   }),
@@ -78,8 +78,8 @@ const cites: Record<string, SingleParser<Element>> = {
     children: [
       "[" +
       (matchCounts.cite
-        ? matchCounts.cite.findIndex((e) => e === children[0])
-        : 0)
+        ? matchCounts.cite.findIndex((e) => e === children[0]) + 1
+        : 1)
         .toString() +
       "]",
     ],
@@ -90,8 +90,8 @@ const cites: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: [
       (matchCounts.citet
-        ? matchCounts.citet.findIndex((e) => e === children[0])
-        : 0)
+        ? matchCounts.citet.findIndex((e) => e === children[0]) + 1
+        : 1)
         .toString(),
     ],
   }),
@@ -102,8 +102,8 @@ const cites: Record<string, SingleParser<Element>> = {
     children: [
       "(" +
       (matchCounts.citep
-        ? matchCounts.citep.findIndex((e) => e === children[0])
-        : 0)
+        ? matchCounts.citep.findIndex((e) => e === children[0]) + 1
+        : 1)
         .toString() +
       ")",
     ],

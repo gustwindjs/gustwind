@@ -102,7 +102,10 @@ Deno.test(`footnote within paragraph with elements`, () => {
         type: "sup",
         attributes: { title: children[0] },
         children: [
-          (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+          (matchCounts.footnote
+            ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+            : 1)
+            .toString(),
         ],
       }),
     })])(
@@ -140,7 +143,10 @@ Deno.test(`multiple footnotes`, () => {
         type: "sup",
         attributes: { title: children[0] },
         children: [
-          (matchCounts.footnote ? matchCounts.footnote + 1 : 1).toString(),
+          (matchCounts.footnote
+            ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+            : 1)
+            .toString(),
         ],
       }),
     })])(
