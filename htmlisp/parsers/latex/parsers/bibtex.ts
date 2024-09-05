@@ -1,5 +1,11 @@
 import { characterGenerator } from "../../characterGenerator.ts";
 
+type BibtexCollection = {
+  type: string;
+  id: string;
+  fields?: Record<string, string>;
+};
+
 enum STATES {
   IDLE,
   PARSE_TYPE,
@@ -12,7 +18,7 @@ const LIMIT = 100000;
 
 function parseBibtex(
   input: string,
-): { type: string; id: string; fields?: Record<string, string> } {
+): BibtexCollection {
   let state = STATES.IDLE;
   const getCharacter = characterGenerator(input);
   let stringBuffer = "";
@@ -80,4 +86,4 @@ function parseBibtex(
   return { type, id, fields };
 }
 
-export { parseBibtex };
+export { type BibtexCollection, parseBibtex };
