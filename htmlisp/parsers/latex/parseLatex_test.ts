@@ -6,13 +6,13 @@ import {
   lists,
   singles,
 } from "./defaultExpressions.ts";
-import { parse } from "./parse.ts";
+import { parseLatex } from "./parseLatex.ts";
 
 Deno.test(`id expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    parse(input, {}),
+    parseLatex(input, {}),
     [{ type: "p", attributes: {}, children: [input] }],
   );
 });
@@ -23,7 +23,7 @@ Deno.test(`multiple paragraphs`, () => {
 \nbarfoo`;
 
   assertEquals(
-    parse(input, {}),
+    parseLatex(input, {}),
     [
       { type: "p", attributes: {}, children: ["foobar"] },
       { type: "p", attributes: {}, children: ["\nbarfoo"] },
@@ -35,7 +35,7 @@ Deno.test(`bold`, () => {
   const input = String.raw`\textbf{foobar}`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{ type: "b", attributes: {}, children: ["foobar"] }],
   );
 });
@@ -44,7 +44,7 @@ Deno.test(`url`, () => {
   const input = String.raw`\url{https://google.com}`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -58,7 +58,7 @@ Deno.test(`multiple urls`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -77,7 +77,7 @@ Deno.test(`paragraph and url`, () => {
 \url{https://bing.com}`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{
       type: "p",
       attributes: {},
@@ -96,7 +96,7 @@ Deno.test(`url and paragraph`, () => {
 foobar`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{
       type: "a",
       attributes: { href: "https://bing.com" },
@@ -113,7 +113,7 @@ Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} foobar`;
 
   assertEquals(
-    parse(input, { singles }),
+    parseLatex(input, { singles }),
     [{
       type: "p",
       attributes: {},
@@ -132,7 +132,7 @@ Deno.test(`href`, () => {
   const input = String.raw`\href{https://google.com}{Google}`;
 
   assertEquals(
-    parse(input, { doubles }),
+    parseLatex(input, { doubles }),
     [{
       type: "a",
       attributes: { href: "https://google.com" },
@@ -145,7 +145,7 @@ Deno.test(`single line verbatim`, () => {
   const input = String.raw`\begin{verbatim}test\end{verbatim}`;
 
   assertEquals(
-    parse(input, { blocks }),
+    parseLatex(input, { blocks }),
     [{
       type: "pre",
       attributes: {},
@@ -160,7 +160,7 @@ test
 \end{verbatim}`;
 
   assertEquals(
-    parse(input, { blocks }),
+    parseLatex(input, { blocks }),
     [{
       type: "pre",
       attributes: {},
@@ -175,7 +175,7 @@ Deno.test(`enumerate`, () => {
 \end{enumerate}`;
 
   assertEquals(
-    parse(input, { lists }),
+    parseLatex(input, { lists }),
     [{
       type: "ol",
       attributes: {},
@@ -190,7 +190,7 @@ Deno.test(`itemize`, () => {
 \end{itemize}`;
 
   assertEquals(
-    parse(input, { lists }),
+    parseLatex(input, { lists }),
     [{
       type: "ul",
       attributes: {},
@@ -205,7 +205,7 @@ Deno.test(`description`, () => {
 \end{description}`;
 
   assertEquals(
-    parse(input, { lists }),
+    parseLatex(input, { lists }),
     [{
       type: "dl",
       attributes: {},
@@ -227,7 +227,7 @@ Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
 
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",
@@ -246,7 +246,7 @@ Deno.test(`cite with a tilde`, () => {
   const input = String.raw`Foobar~\cite{test24}`;
 
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",
@@ -265,7 +265,7 @@ Deno.test(`cite twice to the same reference`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test24}`;
 
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",
@@ -293,7 +293,7 @@ Deno.test(`cite to different references`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test12}`;
 
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",
@@ -323,7 +323,7 @@ Deno.test(`cite to two different references`, () => {
 
   // TODO: Specify test result
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",
@@ -347,7 +347,7 @@ Deno.test(`cite to three different references`, () => {
 
   // TODO: Specify test result
   assertEquals(
-    parse(input, { singles: cites }),
+    parseLatex(input, { singles: cites }),
     [
       {
         type: "p",

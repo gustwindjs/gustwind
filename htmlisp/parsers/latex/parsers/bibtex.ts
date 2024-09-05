@@ -1,4 +1,4 @@
-import { characterGenerator } from "../../characterGenerator.ts";
+import type { CharacterGenerator } from "../../types.ts";
 
 type BibtexCollection = {
   type: string;
@@ -17,10 +17,9 @@ enum STATES {
 const LIMIT = 100000;
 
 function parseBibtex(
-  input: string,
+  getCharacter: CharacterGenerator,
 ): BibtexCollection {
   let state = STATES.IDLE;
-  const getCharacter = characterGenerator(input);
   let stringBuffer = "";
   let type = "";
   let id = "";
@@ -62,7 +61,9 @@ function parseBibtex(
       }
     }
     if (state === STATES.PARSE_KEY) {
-      if (c === "=") {
+      if (c === "}") {
+        break;
+      } else if (c === "=") {
         key = stringBuffer.trim();
         stringBuffer = "";
 
@@ -77,7 +78,7 @@ function parseBibtex(
         stringBuffer = "";
 
         state = STATES.PARSE_KEY;
-      } else if (c !== "=") {
+      } else if (c !== "=" && c !== "{") {
         stringBuffer += c;
       }
     }

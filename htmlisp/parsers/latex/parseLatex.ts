@@ -11,7 +11,7 @@ import { type BlockParser } from "./parsers/block.ts";
 
 const LIMIT = 100000;
 
-function parse(
+function parseLatex(
   input: string,
   parser: {
     singles?: Record<string, SingleParser<Element>>;
@@ -63,4 +63,4 @@ function parse(
   return ret;
 }
 
-export { parse };
+export { parseLatex };
