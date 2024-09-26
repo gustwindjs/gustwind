@@ -74,19 +74,35 @@ const cites = (
         .toString(),
     ],
   }),
-  // TODO: Add reference through bibtex
-  cite: (children, matchCounts) => ({
-    type: "span",
-    attributes: { title: children[0] },
-    children: [
-      "[" +
-      (matchCounts.cite
-        ? matchCounts.cite.findIndex((e) => e === children[0]) + 1
-        : 1)
-        .toString() +
-      "]",
-    ],
-  }),
+  cite: (children, matchCounts) => {
+    const id = children[0];
+    const entry = bibtexEntries[id];
+
+    if (!entry) {
+      throw new Error("No matching BibTeX entry was found!");
+    }
+
+    const title = entry.fields?.title;
+
+    if (!title) {
+      throw new Error("BibTeX entry was missing a title!");
+    }
+
+    const author = entry.fields?.author || "";
+
+    return {
+      type: "span",
+      attributes: { title: `${title} - ${author}` },
+      children: [
+        "[" +
+        (matchCounts.cite
+          ? matchCounts.cite.findIndex((e) => e === children[0]) + 1
+          : 1)
+          .toString() +
+        "]",
+      ],
+    };
+  },
   // TODO: Textual citation (needs a bibtex lookup)
   citet: (children, matchCounts) => ({
     type: "span",

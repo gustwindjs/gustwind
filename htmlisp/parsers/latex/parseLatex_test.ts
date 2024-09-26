@@ -227,14 +227,25 @@ Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites({}) }),
+    parseLatex(input, {
+      singles: cites({
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+          },
+        },
+      }),
+    }),
     [
       {
         type: "p",
         attributes: {},
         children: ["Foobar ", {
           type: "span",
-          attributes: { title: "test24" },
+          attributes: { title: "Test title - John Doe" },
           children: ["[1]"],
         }],
       },
@@ -246,14 +257,25 @@ Deno.test(`cite with a tilde`, () => {
   const input = String.raw`Foobar~\cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites({}) }),
+    parseLatex(input, {
+      singles: cites({
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+          },
+        },
+      }),
+    }),
     [
       {
         type: "p",
         attributes: {},
         children: ["Foobar ", {
           type: "span",
-          attributes: { title: "test24" },
+          attributes: { title: "Test title - John Doe" },
           children: ["[1]"],
         }],
       },
@@ -265,7 +287,18 @@ Deno.test(`cite twice to the same reference`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites({}) }),
+    parseLatex(input, {
+      singles: cites({
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+          },
+        },
+      }),
+    }),
     [
       {
         type: "p",
@@ -274,13 +307,13 @@ Deno.test(`cite twice to the same reference`, () => {
           "Foobar ",
           {
             type: "span",
-            attributes: { title: "test24" },
+            attributes: { title: "Test title - John Doe" },
             children: ["[1]"],
           },
           " ",
           {
             type: "span",
-            attributes: { title: "test24" },
+            attributes: { title: "Test title - John Doe" },
             children: ["[1]"],
           },
         ],
@@ -293,7 +326,26 @@ Deno.test(`cite to different references`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test12}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites({}) }),
+    parseLatex(input, {
+      singles: cites({
+        test12: {
+          type: "ARTICLE",
+          id: "test12",
+          fields: {
+            author: "Jane Doe",
+            title: "Test title 2",
+          },
+        },
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+          },
+        },
+      }),
+    }),
     [
       {
         type: "p",
@@ -302,13 +354,13 @@ Deno.test(`cite to different references`, () => {
           "Foobar ",
           {
             type: "span",
-            attributes: { title: "test24" },
+            attributes: { title: "Test title - John Doe" },
             children: ["[1]"],
           },
           " ",
           {
             type: "span",
-            attributes: { title: "test12" },
+            attributes: { title: "Test title 2 - Jane Doe" },
             children: ["[2]"],
           },
         ],
@@ -365,5 +417,6 @@ Deno.test(`cite to three different references`, () => {
   );
 });
 
+// TODO: Test \citet, \citep, \fullcite
 // TODO: Test \ref, \nameref, \autoref - these need some lookup against labels
 // TODO: Pass parsed bibtex data to cite parsers
