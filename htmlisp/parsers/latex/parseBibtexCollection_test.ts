@@ -6,7 +6,7 @@ Deno.test(`empty collection`, () => {
 
   assertEquals(
     parseBibtexCollection(input),
-    [],
+    {},
   );
 });
 
@@ -15,13 +15,15 @@ Deno.test(`single entry`, () => {
 
   assertEquals(
     parseBibtexCollection(input),
-    [{
-      type: "BOOK",
-      id: "foobar",
-      fields: {
-        title: "Test",
+    {
+      foobar: {
+        type: "BOOK",
+        id: "foobar",
+        fields: {
+          title: "Test",
+        },
       },
-    }],
+    },
   );
 });
 
@@ -32,18 +34,21 @@ Deno.test(`two entries`, () => {
 
   assertEquals(
     parseBibtexCollection(input),
-    [{
-      type: "BOOK",
-      id: "foobar",
-      fields: {
-        title: "Test",
+    {
+      foobar: {
+        type: "BOOK",
+        id: "foobar",
+        fields: {
+          title: "Test",
+        },
       },
-    }, {
-      type: "ARTICLE",
-      id: "barfoo",
-      fields: {
-        title: "Test",
+      barfoo: {
+        type: "ARTICLE",
+        id: "barfoo",
+        fields: {
+          title: "Test",
+        },
       },
-    }],
+    },
   );
 });

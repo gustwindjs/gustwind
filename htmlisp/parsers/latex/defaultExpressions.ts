@@ -2,6 +2,7 @@ import { type SingleParser } from "./parsers/single.ts";
 import { type DoubleParser } from "./parsers/double.ts";
 import { type BlockParser } from "./parsers/block.ts";
 import { getParseContent } from "./parsers/content.ts";
+import { type BibtexCollection } from "./parsers/bibtex.ts";
 import { parseDefinitionItem } from "./parsers/definition_item.ts";
 import { parseListItem } from "./parsers/list_item.ts";
 import type { Element } from "../../types.ts";
@@ -60,7 +61,9 @@ const lists: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
-const cites: Record<string, SingleParser<Element>> = {
+const cites = (
+  bibtexEntries: Record<string, BibtexCollection>,
+): Record<string, SingleParser<Element>> => ({
   footnote: (children, matchCounts) => ({
     type: "sup",
     attributes: { title: children[0] },
@@ -114,7 +117,7 @@ const cites: Record<string, SingleParser<Element>> = {
     attributes: { title: children[0] },
     children: ["full cite goes here"],
   }),
-};
+});
 
 function el(type: string) {
   return function e(children: string[]) {

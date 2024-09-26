@@ -4,9 +4,11 @@ import { characterGenerator } from "../characterGenerator.ts";
 
 const LIMIT = 100000;
 
-function parseBibtexCollection(input: string): BibtexCollection[] {
+function parseBibtexCollection(
+  input: string,
+): Record<string, BibtexCollection> {
   const getCharacter = characterGenerator(input);
-  const ret: BibtexCollection[] = [];
+  const ret: Record<string, BibtexCollection> = {};
 
   for (let i = 0; i < LIMIT; i++) {
     const parseResult = runParsers<BibtexCollection>(
@@ -17,7 +19,7 @@ function parseBibtexCollection(input: string): BibtexCollection[] {
 
     if (parseResult?.match) {
       // @ts-expect-error This is fine. Likely runParsers return type can be simplified
-      ret.push(parseResult.value);
+      ret[parseResult.value.id] = parseResult.value;
     }
 
     const c = getCharacter.next();

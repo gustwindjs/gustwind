@@ -227,7 +227,7 @@ Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
@@ -246,7 +246,7 @@ Deno.test(`cite with a tilde`, () => {
   const input = String.raw`Foobar~\cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
@@ -265,7 +265,7 @@ Deno.test(`cite twice to the same reference`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test24}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
@@ -293,7 +293,7 @@ Deno.test(`cite to different references`, () => {
   const input = String.raw`Foobar \cite{test24} \cite{test12}`;
 
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
@@ -323,7 +323,7 @@ Deno.test(`cite to two different references`, () => {
 
   // TODO: Specify test result
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
@@ -347,7 +347,7 @@ Deno.test(`cite to three different references`, () => {
 
   // TODO: Specify test result
   assertEquals(
-    parseLatex(input, { singles: cites }),
+    parseLatex(input, { singles: cites({}) }),
     [
       {
         type: "p",
