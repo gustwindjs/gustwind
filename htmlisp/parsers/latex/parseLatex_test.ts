@@ -412,13 +412,38 @@ Deno.test(`cite to two different references`, () => {
   );
 });
 
-// TODO: Implement
 Deno.test(`cite to three different references`, () => {
   const input = String.raw`Foobar \cite{test12, test24, test36}`;
 
-  // TODO: Specify test result
   assertEquals(
-    parseLatex(input, { singles: cites({}) }),
+    parseLatex(input, {
+      singles: cites({
+        test12: {
+          type: "ARTICLE",
+          id: "test12",
+          fields: {
+            author: "Jane Doe",
+            title: "Test title 2",
+          },
+        },
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+          },
+        },
+        test36: {
+          type: "ARTICLE",
+          id: "test36",
+          fields: {
+            author: "John John",
+            title: "Test title 3",
+          },
+        },
+      }),
+    }),
     [
       {
         type: "p",
@@ -427,8 +452,11 @@ Deno.test(`cite to three different references`, () => {
           "Foobar ",
           {
             type: "span",
-            attributes: { title: "test24" },
-            children: ["[1], [2], [3]"],
+            attributes: {
+              title:
+                "Test title 2 - Jane Doe, Test title - John Doe, Test title 3 - John John",
+            },
+            children: ["[1, 2, 3]"],
           },
         ],
       },
