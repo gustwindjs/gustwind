@@ -86,25 +86,25 @@ const cites = (
       return e;
     });
 
-    const titles = entries.map((entry) => {
-      const t = entry.fields?.title;
+    const references = entries.map((entry) => {
+      const title = entry.fields?.title;
 
-      if (!t) {
+      if (!title) {
         throw new Error("BibTeX entry was missing a title!");
       }
 
-      return t;
+      return { title, author: entry.fields?.author || "" };
     });
-
-    const authors = entries.map((entry) => entry.fields?.author || "");
-
-    // TODO: Handle rendering arrays
-    const title = titles[0];
-    const author = authors[0];
 
     return {
       type: "span",
-      attributes: { title: `${title} - ${author}` },
+      attributes: {
+        title: `${
+          references.map(({ title, author }) => `${title} - ${author}`).join(
+            ", ",
+          )
+        }`,
+      },
       children: [
         "[" +
         (matchCounts.cite

@@ -400,10 +400,12 @@ Deno.test(`cite to two different references`, () => {
         attributes: {},
         children: [
           "Foobar ",
-          // TODO: Specify test result
           {
             type: "span",
-            attributes: { title: "Test title 2 - Jane Doe" },
+            attributes: {
+              title: "Test title 2 - Jane Doe, Test title - John Doe",
+            },
+            // TODO: Specify test result
             children: ["[1]"], // ["[1], [2]"],
           },
         ],
