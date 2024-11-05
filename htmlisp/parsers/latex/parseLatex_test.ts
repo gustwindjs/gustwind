@@ -369,7 +369,6 @@ Deno.test(`cite to different references`, () => {
   );
 });
 
-// TODO: Implement
 Deno.test(`cite to two different references`, () => {
   const input = String.raw`Foobar \cite{test12, test24}`;
 
@@ -405,8 +404,7 @@ Deno.test(`cite to two different references`, () => {
             attributes: {
               title: "Test title 2 - Jane Doe, Test title - John Doe",
             },
-            // TODO: Specify test result
-            children: ["[1]"], // ["[1], [2]"],
+            children: ["[1, 2]"],
           },
         ],
       },

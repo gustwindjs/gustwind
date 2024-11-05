@@ -107,10 +107,10 @@ const cites = (
       },
       children: [
         "[" +
-        (matchCounts.cite
-          ? matchCounts.cite.findIndex((e) => e === children[0]) + 1
-          : 1)
-          .toString() +
+        (ids.map((id) =>
+          matchCounts.cite ? matchCounts.cite.findIndex((e) => e === id) + 1 : 1
+        )
+          .join(", ").toString()) +
         "]",
       ],
     };

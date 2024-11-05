@@ -84,7 +84,9 @@ function getParseSingle<ExpressionReturnType>(
               matchCounts[foundKey] = [];
             }
 
-            matchCounts[foundKey].push(stringBuffer);
+            stringBuffer.split(",").forEach((s) => {
+              matchCounts[foundKey].push(s.trim());
+            });
           }
 
           return {
