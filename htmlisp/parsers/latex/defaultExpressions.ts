@@ -75,20 +75,32 @@ const cites = (
     ],
   }),
   cite: (children, matchCounts) => {
-    const id = children[0];
-    const entry = bibtexEntries[id];
+    const ids = children[0].split(",").map((id) => id.trim());
+    const entries = ids.map((id) => {
+      const e = bibtexEntries[id];
 
-    if (!entry) {
-      throw new Error("No matching BibTeX entry was found!");
-    }
+      if (!e) {
+        throw new Error("No matching BibTeX entry was found!");
+      }
 
-    const title = entry.fields?.title;
+      return e;
+    });
 
-    if (!title) {
-      throw new Error("BibTeX entry was missing a title!");
-    }
+    const titles = entries.map((entry) => {
+      const t = entry.fields?.title;
 
-    const author = entry.fields?.author || "";
+      if (!t) {
+        throw new Error("BibTeX entry was missing a title!");
+      }
+
+      return t;
+    });
+
+    const authors = entries.map((entry) => entry.fields?.author || "");
+
+    // TODO: Handle rendering arrays
+    const title = titles[0];
+    const author = authors[0];
 
     return {
       type: "span",
