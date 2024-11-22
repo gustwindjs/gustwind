@@ -3,15 +3,15 @@
   "tasks": {
     "test": "deno test",
     "watch:test": "deno test --watch",
-    "serve": "deno run --lock=deno.server.lock --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -s -p 3000 -i ./build",
-    "start": "deno run --lock=deno.server.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
+    "serve": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -s -p 3000 -i ./build",
+    "start": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -d -p 3000",
     "start:netlify": "netlify dev",
-    "update:start:lock": "deno run --lock=deno.server.lock --lock-write --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -d -p 3000",
-    "watch:start": "deno run --lock=deno.server.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -d -p 3000",
-    "build": "deno run --lock=deno.build.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",
-    "netlify:build": "DEBUG=1 deno run --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",
-    "update:build:lock": "deno run --lock=deno.build.lock --lock-write --allow-env --allow-read --allow-net --allow-write --allow-run --unstable ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
-    "watch:build": "deno run --lock=deno.build.lock --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --unstable --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
+    "update:start:lock": "deno run --lock=deno.server.lock --lock-write --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -d -p 3000",
+    "watch:start": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import --watch ./gustwind-cli/mod.ts -d -p 3000",
+    "build": "deno run --lock=deno.build.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",
+    "netlify:build": "DEBUG=1 deno run --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -b -t cpuMax -o ./build",
+    "update:build:lock": "deno run --lock=deno.build.lock --lock-write --allow-sys --allow-env --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
+    "watch:build": "deno run --lock=deno.build.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts",
     "build:htmlisp-for-npm": "deno run -A build_htmlisp_for_npm.ts"
   }

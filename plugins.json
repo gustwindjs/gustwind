@@ -52,8 +52,11 @@
       }
     },
     {
-      "path": "./plugins/twind/mod.ts",
-      "options": { "setupPath": "./site/twindSetup.ts" }
+      "path": "./plugins/tailwind/mod.ts",
+      "options": {
+        "cssPath": "./site/tailwind.css",
+        "setupPath": "./site/tailwindSetup.ts"
+      }
     },
     {
       "path": "./plugins/sitemap/mod.ts"
