@@ -1,7 +1,17 @@
 import presetAutoprefix from "https://esm.sh/@twind/preset-autoprefix@1.0.5";
 import presetTailwind from "https://esm.sh/@twind/preset-tailwind@1.1.1";
 import presetTypography from "https://esm.sh/@twind/preset-typography@1.0.5";
-import meta from "./meta.json" assert { type: "json" };
+
+// Not supported anymore
+// import meta from "./meta.json" assert { type: "json" };
+// Current option
+// import meta from "./meta.json" with { type: "json" };
+
+const colors = {
+  "primary": "#3a2fa6",
+  "secondary": "#84ebec",
+  "tertiary": "#ffffff",
+};
 
 export default {
   presets: [presetAutoprefix(), presetTailwind(), presetTypography()],
@@ -14,10 +24,6 @@ export default {
     // For navigation
     ["pointer-events-all", { pointerEvents: "all" }],
   ],
-  theme: {
-    extend: {
-      colors: meta.colors,
-    },
-  },
+  theme: { extend: { colors } },
   hash: false,
 };

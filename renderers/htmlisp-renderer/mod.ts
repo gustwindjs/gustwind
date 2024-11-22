@@ -127,7 +127,6 @@ const plugin: Plugin<{
           Utilities,
           Context
         >(
-          // @ts-expect-error This is fine (due to meta field)
           context,
           defaultUtilities,
           { context },

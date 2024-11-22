@@ -10,11 +10,16 @@
   "author": "Juho Vepsäläinen",
   "license": "MIT",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.15",
+    "autoprefixer": "^10.4.20",
+    "cssnano": "^7.0.6",
     "htm": "^3.1.1",
-    "sharp": "^0.32.6"
+    "postcss": "^8.4.49",
+    "sharp": "^0.32.6",
+    "tailwindcss": "^3.4.15"
   },
   "engines": {
-    "node": "^18"
+    "node": ">=18"
   },
   "devDependencies": {
     "@netlify/functions": "^2.4.0"
