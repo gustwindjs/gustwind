@@ -230,7 +230,8 @@
     "https://esm.sh/v135/@twind/preset-tailwind@1.1.1/denonext/rules.js": "0e7b2a1b923947105e06a8e1319d90f67c6704be15c3af8e16f9ac469832b759",
     "https://esm.sh/v135/@twind/preset-tailwind@1.1.1/denonext/variants.js": "a6347e8eb7d73b87f3568e631599ac5b72c736889dfe0fb44196926cce5733b5",
     "https://esm.sh/v135/@twind/preset-typography@1.0.5/denonext/preset-typography.mjs": "b126f7b0b16014561ca0af6c6a2af3ff5bd824c4d1e09b1a8339caf7bab72d5d",
-    "https://esm.sh/v135/style-vendorizer@2.2.3/denonext/style-vendorizer.mjs": "121455e7b04b631ef6463ce63cdcd29febd74d88c37713c774ceca8a1561c83d"
+    "https://esm.sh/v135/style-vendorizer@2.2.3/denonext/style-vendorizer.mjs": "121455e7b04b631ef6463ce63cdcd29febd74d88c37713c774ceca8a1561c83d",
+    "https://unpkg.com/marked@15.0.3/lib/marked.esm.js": "908eb95a9441a7d58effe290aaadae29cb9905661c8fe427d22786fdf0b64027"
   },
   "workspace": {
     "packageJson": {
