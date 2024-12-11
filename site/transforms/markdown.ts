@@ -1,13 +1,13 @@
 import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@9.1.5/lib/marked.esm.js";
 import type { DataSourcesApi } from "../../types.ts";
-import highlight from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/es/core.min.js";
-import highlightBash from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/bash.js";
-import highlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.js";
-import highlightJSON from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/json.js";
-import highlightTS from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/typescript.js";
-import highlightXML from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/xml.js";
-import highlightYAML from "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/yaml.js";
+import highlight from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.10.0/es/core.min.js";
+import highlightBash from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/bash.js";
+import highlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/javascript.js";
+import highlightJSON from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/json.js";
+import highlightTS from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/typescript.js";
+import highlightXML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/xml.js";
+import highlightYAML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/yaml.js";
 import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);
