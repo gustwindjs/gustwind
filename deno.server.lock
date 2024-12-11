@@ -229,13 +229,12 @@
     "packageJson": {
       "dependencies": [
         "npm:@netlify/functions@^2.4.0",
+        "npm:@tailwindcss/postcss@^4.0.0-beta.6",
         "npm:@tailwindcss/typography@~0.5.15",
-        "npm:autoprefixer@^10.4.20",
-        "npm:cssnano@^7.0.6",
         "npm:htm@^3.1.1",
         "npm:postcss@^8.4.49",
         "npm:sharp@~0.32.6",
-        "npm:tailwindcss@^3.4.15"
+        "npm:tailwindcss@^4.0.0-beta.6"
       ]
     }
   }

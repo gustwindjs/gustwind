@@ -54,8 +54,7 @@
     {
       "path": "./plugins/tailwind/mod.ts",
       "options": {
-        "cssPath": "./site/tailwind.css",
-        "setupPath": "./site/tailwindSetup.ts"
+        "cssPath": "./site/tailwind.css"
       }
     },
     {

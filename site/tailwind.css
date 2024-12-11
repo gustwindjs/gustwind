@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-primary: #3a2fa6;
+  --color-secondary: #84ebec;
+  --color-tertiary: #ffffff;
+}
 
 @layer utilities {
   .btn {

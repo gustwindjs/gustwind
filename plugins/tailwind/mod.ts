@@ -1,12 +1,10 @@
 import * as path from "node:path";
-import tailwindCss from "npm:tailwindcss@3.4.15";
+import tailwindCss from "npm:@tailwindcss/postcss@4.0.0-beta.6";
 import postcss from "npm:postcss@8.4.49";
-import autoprefixer from "npm:autoprefixer@10.4.20";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
   cssPath: string;
-  setupPath: string;
 }> = {
   meta: {
     name: "gustwind-tailwind-plugin",
@@ -14,32 +12,16 @@ const plugin: Plugin<{
       "${name} implements Tailwind styling integration to the site giving access to Tailwind semantics.",
     dependsOn: [],
   },
-  init: ({ cwd, options, load, mode }) => {
+  init: ({ cwd, options, load }) => {
     const tailwindCssPath = path.join(cwd, options.cssPath);
-    const tailwindSetupPath = path.join(cwd, options.setupPath);
     let processor: ReturnType<typeof postcss>;
     let tailwindCSS: string;
 
     // TODO: Execute this only if needed (not for all files like now)
+    // Likely the right thing to do is to process once at prepareBuild and
+    // then used the cached CSS for everything.
     async function preparePlugins() {
-      const { default: tailwindSetup } = await import(tailwindSetupPath);
-
-      const plugins = [
-        // deno-lint-ignore no-explicit-any
-        tailwindCss(tailwindSetup) as any,
-        // deno-lint-ignore no-explicit-any
-        autoprefixer({}) as any,
-        // TODO: Consider allowing customizing autoprefixer
-        // autoprefixer(options.autoprefixer) as any,
-        // TODO: Consider adding postcss-import as a default plugin
-      ];
-
-      if (mode === "production") {
-        const { default: cssnano } = await import("npm:cssnano@7.0.6");
-        plugins.push(cssnano());
-      }
-
-      processor = await postcss(plugins);
+      processor = await postcss([tailwindCss()]);
       tailwindCSS = await load.textFile(tailwindCssPath);
     }
 
@@ -64,13 +46,13 @@ const plugin: Plugin<{
           ),
         };
       },
-      onMessage: ({ message }) => {
+      /*onMessage: ({ message }) => {
         const { type } = message;
 
         if (type === "getStyleSetupPath") {
           return { result: tailwindSetupPath };
         }
-      },
+      },*/
     };
   },
 };
