@@ -3,6 +3,7 @@ import {
   blocks,
   cites,
   doubles,
+  el,
   lists,
   singles,
 } from "./defaultExpressions.ts";
@@ -71,6 +72,25 @@ Deno.test(`multiple urls`, () => {
   );
 });
 
+Deno.test(`multiple urls 2`, () => {
+  const input = String.raw`\url{https://google.com}
+
+\url{https://bing.com}`;
+
+  assertEquals(
+    parseLatex(input, { singles }),
+    [{
+      type: "a",
+      attributes: { href: "https://google.com" },
+      children: ["https://google.com"],
+    }, {
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }],
+  );
+});
+
 Deno.test(`paragraph and url`, () => {
   const input = String.raw`foobar
 
@@ -109,6 +129,30 @@ foobar`;
   );
 });
 
+Deno.test(`two urls and paragraph`, () => {
+  const input = String.raw`\url{https://bing.com}
+\url{https://bing.com}
+
+foobar`;
+
+  assertEquals(
+    parseLatex(input, { singles }),
+    [{
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }, {
+      type: "a",
+      attributes: { href: "https://bing.com" },
+      children: ["https://bing.com"],
+    }, {
+      type: "p",
+      attributes: {},
+      children: ["\nfoobar"],
+    }],
+  );
+});
+
 Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} foobar`;
 
@@ -122,6 +166,52 @@ Deno.test(`url within paragraph`, () => {
         attributes: { href: "https://bing.com" },
         children: ["https://bing.com"],
       }, " foobar"],
+    }],
+  );
+});
+
+Deno.test(`multiple single blocks with a newline between`, () => {
+  const input = String.raw`\chapter{Introduction}
+\label{ch:introduction}
+\input{chapters/01-introduction}
+
+\chapter{What is scientific writing}
+\label{ch:what-is-scientific-writing}
+\input{chapters/02-what-is-scientific-writing}
+`;
+
+  assertEquals(
+    parseLatex(input, {
+      singles: {
+        chapter: el("title"),
+        label: el("label"),
+        input: el("slug"),
+      },
+    }),
+    [{
+      type: "title",
+      attributes: {},
+      children: ["Introduction"],
+    }, {
+      type: "label",
+      attributes: {},
+      children: ["ch:introduction"],
+    }, {
+      type: "slug",
+      attributes: {},
+      children: ["chapters/01-introduction"],
+    }, {
+      type: "title",
+      attributes: {},
+      children: ["What is scientific writing"],
+    }, {
+      type: "label",
+      attributes: {},
+      children: ["ch:what-is-scientific-writing"],
+    }, {
+      type: "slug",
+      attributes: {},
+      children: ["chapters/02-what-is-scientific-writing"],
     }],
   );
 });

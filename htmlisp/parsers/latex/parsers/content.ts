@@ -40,10 +40,13 @@ function getParseContent<ExpressionReturnType>(
         );
 
         if (parseResult) {
+          // @ts-expect-error There's some type confusion here
           if (parseResult.matchCounts) {
+            // @ts-expect-error There's some type confusion here
             matchCounts = parseResult.matchCounts;
           }
 
+          // @ts-expect-error There's some type confusion here
           parts.push(parseResult.value);
         } else {
           break;
