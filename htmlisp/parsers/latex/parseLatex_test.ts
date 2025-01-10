@@ -27,7 +27,7 @@ Deno.test(`multiple paragraphs`, () => {
     parseLatex(input, {}),
     [
       { type: "p", attributes: {}, children: ["foobar"] },
-      { type: "p", attributes: {}, children: ["\nbarfoo"] },
+      { type: "p", attributes: {}, children: ["barfoo"] },
     ],
   );
 });
@@ -124,7 +124,7 @@ foobar`;
     }, {
       type: "p",
       attributes: {},
-      children: ["\nfoobar"],
+      children: ["foobar"],
     }],
   );
 });
@@ -148,7 +148,7 @@ foobar`;
     }, {
       type: "p",
       attributes: {},
-      children: ["\nfoobar"],
+      children: ["foobar"],
     }],
   );
 });

@@ -20,6 +20,13 @@ function runParsers<ExpressionReturnType>(
   // For async version this could use Promise.race
   for (const parser of parsers) {
     try {
+      const c = getCharacter.get();
+
+      // Skip newlines and nulls
+      if (c === "\n" || c === null) {
+        return { match: false };
+      }
+
       const ret = parser(getCharacter, matchCounts);
 
       if (ret.match && ret.value) {
