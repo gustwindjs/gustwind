@@ -27,6 +27,23 @@ Deno.test(`single entry`, () => {
   );
 });
 
+Deno.test(`remote title braces`, () => {
+  const input = `@BOOK{foobar, title = {{T}est}}`;
+
+  assertEquals(
+    parseBibtexCollection(input),
+    {
+      foobar: {
+        type: "BOOK",
+        id: "foobar",
+        fields: {
+          title: "Test",
+        },
+      },
+    },
+  );
+});
+
 Deno.test(`two entries`, () => {
   const input = `@BOOK{foobar, title = {Test}}
 

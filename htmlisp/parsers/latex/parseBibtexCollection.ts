@@ -35,6 +35,15 @@ function parseBibtexCollection(
           .replaceAll('{"u}', "ü");
       }
 
+      // Remove title braces
+      // @ts-expect-error There's some type confusion here
+      if (parseResult.value?.fields?.title) {
+        // @ts-expect-error There's some type confusion here
+        parseResult.value.fields.title = parseResult.value.fields.title
+          .replaceAll("{", "")
+          .replaceAll("}", "");
+      }
+
       // @ts-expect-error This is fine. Likely runParsers return type can be simplified
       ret[parseResult.value.id] = parseResult.value;
     }
