@@ -24,6 +24,7 @@ function parseBibtex(
   let type = "";
   let id = "";
   let key = "";
+  let bracesFound = 0;
   const fields: Record<string, string> = {};
 
   for (let i = 0; i < LIMIT; i++) {
@@ -66,6 +67,7 @@ function parseBibtex(
       } else if (c === "=") {
         key = stringBuffer.trim();
         stringBuffer = "";
+        bracesFound = 0;
 
         state = STATES.PARSE_VALUE;
       } else if (c !== ",") {
@@ -73,11 +75,23 @@ function parseBibtex(
       }
     }
     if (state === STATES.PARSE_VALUE) {
-      if (c === "," || c === "}") {
-        fields[key] = stringBuffer.trim();
-        stringBuffer = "";
+      if (c === "{") {
+        if (bracesFound > 0) {
+          stringBuffer += c;
+        }
 
-        state = STATES.PARSE_KEY;
+        bracesFound++;
+      } else if (c === "}") {
+        bracesFound--;
+
+        if (bracesFound === 0) {
+          fields[key] = stringBuffer.trim();
+          stringBuffer = "";
+
+          state = STATES.PARSE_KEY;
+        } else {
+          stringBuffer += c;
+        }
       } else if (c !== "=" && c !== "{") {
         stringBuffer += c;
       }

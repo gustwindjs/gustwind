@@ -38,6 +38,34 @@ Deno.test(`entry with a field in a single line`, () => {
   );
 });
 
+Deno.test(`name with an umlaut`, () => {
+  const type = "BOOK";
+  const id = "foobar";
+  const fieldName = "author";
+  const value = `John D{\"o}e`;
+
+  assertEquals(
+    parseBibtex(
+      characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
+    ),
+    { type, id, fields: { [fieldName]: value } },
+  );
+});
+
+Deno.test(`name with a comma`, () => {
+  const type = "BOOK";
+  const id = "foobar";
+  const fieldName = "author";
+  const value = "Doe, John";
+
+  assertEquals(
+    parseBibtex(
+      characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
+    ),
+    { type, id, fields: { [fieldName]: value } },
+  );
+});
+
 Deno.test(`entry with a field in multiple lines`, () => {
   const type = "BOOK";
   const id = "foobar";
