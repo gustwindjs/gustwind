@@ -18,6 +18,17 @@ Deno.test(`id expression`, () => {
   );
 });
 
+Deno.test(`id expression with a comment`, () => {
+  const input = `foobar
+
+% comment`;
+
+  assertEquals(
+    parseLatex(input, {}),
+    [{ type: "p", attributes: {}, children: ["foobar"] }],
+  );
+});
+
 Deno.test(`multiple paragraphs`, () => {
   const input = `foobar
 

@@ -58,6 +58,11 @@ function getParseContent<ExpressionReturnType>(
       }
     }
 
+    // Skip comments
+    if (stringBuffer.startsWith("%")) {
+      throw new Error("Skip");
+    }
+
     if (stringBuffer) {
       // @ts-expect-error This is fine
       parts.push(stringBuffer);

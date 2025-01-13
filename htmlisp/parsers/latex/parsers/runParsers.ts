@@ -37,8 +37,11 @@ function runParsers<ExpressionReturnType>(
         match: true,
         value: ret,
       };
-    } catch (_error) {
-      getCharacter.setIndex(characterIndex);
+    } catch (error) {
+      // @ts-expect-error Figure out how to type this
+      if (error.message !== "Skip") {
+        getCharacter.setIndex(characterIndex);
+      }
     }
   }
 }
