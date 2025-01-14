@@ -31,6 +31,19 @@ Deno.test(`simple comment`, () => {
   );
 });
 
+Deno.test(`complex comment`, () => {
+  const input = "% \noindent\makebox[\linewidth]{\rule{\textwidth}{1pt}}";
+
+  assertThrows(
+    () =>
+      getParseContent<string>((parts) => parts.join(""))(
+        characterGenerator(input),
+      ),
+    Error,
+    `Skip`,
+  );
+});
+
 Deno.test(`simple expression with a forced newline`, () => {
   const input = "foobar";
 
