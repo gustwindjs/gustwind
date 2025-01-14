@@ -2,6 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { parseTable } from "./table.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
 
+// TODO: Fix this - there's some cursor issue (misses \)
 Deno.test(`empty table`, () => {
   assertEquals(
     parseTable(
@@ -67,6 +68,7 @@ Deno.test(`table with label and caption`, () => {
   );
 });
 
+// TODO: Fix this - misses tabular (nested parsing issue)
 Deno.test(`complete table`, () => {
   assertEquals(
     parseTable(
