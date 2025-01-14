@@ -1,4 +1,7 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.142.0/testing/asserts.ts";
 import { getParseContent } from "./content.ts";
 import { getParseSingle } from "./single.ts";
 import { characterGenerator } from "../../characterGenerator.ts";
@@ -12,6 +15,19 @@ Deno.test(`simple expression`, () => {
       characterGenerator(input),
     ),
     input,
+  );
+});
+
+Deno.test(`simple comment`, () => {
+  const input = "% foobar";
+
+  assertThrows(
+    () =>
+      getParseContent<string>((parts) => parts.join(""))(
+        characterGenerator(input),
+      ),
+    Error,
+    `Skip`,
   );
 });
 
