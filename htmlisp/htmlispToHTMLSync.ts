@@ -1,7 +1,7 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
-import { astToHtmlSync } from "./utilities/astToHtmlSync.ts";
+import { astToHTMLSync } from "./utilities/astToHTMLSync.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
 function htmlispToHTMLSync(
@@ -21,7 +21,7 @@ function htmlispToHTMLSync(
   // astToHtml is async because utilities can be async.
   // If that dependency was lifted, then the whole implementation could
   // become sync.
-  const ret = astToHtmlSync(
+  const ret = astToHTMLSync(
     parseTag(htmlInput),
     htmlispToHTMLSync,
     context,

@@ -1,7 +1,7 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
-import { astToHtml } from "./utilities/astToHtml.ts";
+import { astToHTML } from "./utilities/astToHTML.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
 
 async function htmlispToHTML(
@@ -21,7 +21,7 @@ async function htmlispToHTML(
   // astToHtml is async because utilities can be async.
   // If that dependency was lifted, then the whole implementation could
   // become sync.
-  const ret = await astToHtml(
+  const ret = await astToHTML(
     parseTag(htmlInput),
     htmlispToHTML,
     context,

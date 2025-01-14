@@ -1,4 +1,4 @@
-import { parseExpressionsSync } from "./parseExpressionsSync.ts";
+import { parseExpressions } from "./parseExpressions.ts";
 import { renderElement } from "./renderElement.ts";
 import type {
   Components,
@@ -11,7 +11,7 @@ import type { Utilities } from "../../types.ts";
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
 // TODO: Derive this type from HtmllispToHTMLParameters
-function astToHtmlSync(
+async function astToHTML(
   ast: (string | Element)[],
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
   context?: Context,
@@ -22,8 +22,8 @@ function astToHtmlSync(
   components?: Components,
   // Helper for debugging
   parentAst?: (string | Element)[],
-): string {
-  return ast.map((tag) => {
+): Promise<string> {
+  return (await Promise.all(ast.map(async (tag) => {
     if (typeof tag === "string") {
       return tag;
     }
@@ -39,7 +39,7 @@ function astToHtmlSync(
       !type.split("").every((t) => t.toUpperCase() === t);
     let local = initialLocal;
 
-    const parsedAttributes = parseExpressionsSync(
+    const parsedAttributes = await parseExpressions(
       attributes,
       { context: context || {}, props: props || {}, local },
       isComponent
@@ -64,7 +64,7 @@ function astToHtmlSync(
       return "";
     }
 
-    let renderedChildren = "";
+    let renderedChildren = Promise.resolve("");
     if (parsedAttributes.foreach) {
       const items = parsedAttributes.foreach as unknown[];
 
@@ -76,23 +76,25 @@ function astToHtmlSync(
         throw new Error("foreach - Tried to iterate a non-array!");
       }
 
-      renderedChildren = items.map((p) =>
-        astToHtmlSync(
-          children,
-          htmlispToHTML,
-          context,
-          // @ts-expect-error This is fine
-          { ...props, ...p, value: p },
-          local,
-          utilities,
-          componentUtilities,
-          components,
-          // Pass original ast to help with debugging
-          ast,
-        )
-      ).join("");
+      renderedChildren = Promise.all(
+        items.map((p) =>
+          astToHTML(
+            children,
+            htmlispToHTML,
+            context,
+            // @ts-expect-error This is fine
+            { ...props, ...p, value: p },
+            local,
+            utilities,
+            componentUtilities,
+            components,
+            // Pass original ast to help with debugging
+            ast,
+          )
+        ),
+      ).then((a) => a.join(""));
     } else {
-      renderedChildren = astToHtmlSync(
+      renderedChildren = astToHTML(
         children,
         htmlispToHTML,
         context,
@@ -121,7 +123,7 @@ function astToHtmlSync(
             children: renderedChildren,
             ...attributes,
             ...parsedAttributes,
-            ...slotsToPropsSync(
+            ...await slotsToProps(
               ast,
               tag,
               htmlispToHTML,
@@ -143,11 +145,11 @@ function astToHtmlSync(
       }
     }
 
-    return renderElement(parsedAttributes, tag, renderedChildren);
-  }).join("");
+    return renderElement(parsedAttributes, tag, await renderedChildren);
+  }))).join("");
 }
 
-function slotsToPropsSync(
+async function slotsToProps(
   ast: (string | Element)[],
   tag: Element,
   htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
@@ -161,28 +163,28 @@ function slotsToPropsSync(
   const { children } = tag;
 
   // @ts-expect-error Filter breaks the type here
-  const slots: [string | null, string | null][] = children.filter((o) =>
-    typeof o !== "string" && o.type === "slot"
-  )
-    .map(
-      (o) =>
-        typeof o !== "string" &&
-        [
-          o.attributes?.name,
-          astToHtmlSync(
-            o.children,
-            htmlispToHTML,
-            context,
-            props,
-            local,
-            utilities,
-            componentUtilities,
-            components,
-            // Pass original ast to help with debugging
-            ast,
-          ),
-        ],
-    ).filter(Boolean);
+  const slots: [string | null, string | null][] = await Promise.all(
+    children.filter((o) => typeof o !== "string" && o.type === "slot")
+      .map(
+        async (o) =>
+          typeof o !== "string" &&
+          [
+            o.attributes?.name,
+            await astToHTML(
+              o.children,
+              htmlispToHTML,
+              context,
+              props,
+              local,
+              utilities,
+              componentUtilities,
+              components,
+              // Pass original ast to help with debugging
+              ast,
+            ),
+          ],
+      ).filter(Boolean),
+  );
 
   if (!slots.every((s) => s[0])) {
     throw new Error(`Slot is missing a name!`);
@@ -191,4 +193,4 @@ function slotsToPropsSync(
   return Object.fromEntries(slots);
 }
 
-export { astToHtmlSync };
+export { astToHTML };
