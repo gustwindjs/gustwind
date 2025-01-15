@@ -24,31 +24,31 @@ const singles: Record<string, SingleParser<Element>> = {
 
 const doubles: Record<string, DoubleParser<Element>> = {
   // Url
-  "href": (href: string, children?: string) =>
+  href: (href: string, children?: string) =>
     element("a", [children || ""], href ? { href } : {}),
 };
 
 const blocks: Record<string, BlockParser<Element, string>> = {
-  "verbatim": {
+  verbatim: {
     container: (children) => element("pre", children),
     item: getParseContent<string>((s) => s.join("")),
   },
-  "quote": {
+  quote: {
     container: (children) => element("blockquote", children),
     item: getParseContent<string>((s) => s.join("")),
   },
 };
 
 const lists: Record<string, BlockParser<Element, Element>> = {
-  "enumerate": {
+  enumerate: {
     container: (children) => element("ol", children),
     item: (g) => element("li", [parseListItem(g)]),
   },
-  "itemize": {
+  itemize: {
     container: (children) => element("ul", children),
     item: (g) => element("li", [parseListItem(g)]),
   },
-  "description": {
+  description: {
     container: (children) => element("dl", children),
     item: (g) => {
       const { title, description } = parseDefinitionItem(g);
