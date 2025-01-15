@@ -61,19 +61,19 @@ const lists: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
+let foundFootnotes = 0;
 const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
 ): Record<string, SingleParser<Element>> => ({
-  footnote: (children, matchCounts) => ({
-    type: "sup",
-    attributes: { title: children[0] },
-    children: [
-      (matchCounts.footnote
-        ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
-        : 1)
-        .toString(),
-    ],
-  }),
+  footnote: (children) => {
+    foundFootnotes++;
+
+    return ({
+      type: "sup",
+      attributes: { title: children[0] },
+      children: [foundFootnotes.toString()],
+    });
+  },
   cite: (children, matchCounts) => {
     const ids = children[0].split(",").map((id) => id.trim());
     const entries = ids.map((id) => {
