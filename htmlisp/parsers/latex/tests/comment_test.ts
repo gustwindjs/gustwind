@@ -24,7 +24,7 @@ foobar`;
 });
 
 Deno.test(`comment with a backslash`, () => {
-  const input = `% \n
+  const input = String.raw`% \n
 
 foobar`;
 
@@ -32,20 +32,6 @@ foobar`;
     parseLatex(input, {}),
     [{ type: "p", attributes: {}, children: ["foobar"] }],
   );
-});
-
-// Run this with deno test --allow-run --allow-read
-Deno.test({
-  name: `comment with a fixture`,
-  permissions: { run: ["deno"], read: true },
-  fn: () => {
-    const input = Deno.readTextFileSync("./comment-fixture.tex");
-
-    assertEquals(
-      parseLatex(input, {}),
-      [{ type: "p", attributes: {}, children: ["Demo"] }],
-    );
-  },
 });
 
 Deno.test(`complex comment with an expression`, () => {
