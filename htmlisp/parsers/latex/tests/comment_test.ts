@@ -23,6 +23,31 @@ foobar`;
   );
 });
 
+Deno.test(`comment with a backslash`, () => {
+  const input = `% \n
+
+foobar`;
+
+  assertEquals(
+    parseLatex(input, {}),
+    [{ type: "p", attributes: {}, children: ["foobar"] }],
+  );
+});
+
+// Run this with deno test --allow-run --allow-read
+Deno.test({
+  name: `comment with a fixture`,
+  permissions: { run: ["deno"], read: true },
+  fn: () => {
+    const input = Deno.readTextFileSync("./comment-fixture.tex");
+
+    assertEquals(
+      parseLatex(input, {}),
+      [{ type: "p", attributes: {}, children: ["Demo"] }],
+    );
+  },
+});
+
 Deno.test(`complex comment with an expression`, () => {
   const input = `% \noindent\makebox[\linewidth]{\rule{\textwidth}{1pt}}
 

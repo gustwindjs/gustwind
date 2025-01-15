@@ -14,6 +14,7 @@ function getParseContent<ExpressionReturnType>(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
     let stringBuffer = "";
+    let foundComment = false;
     const parts: ExpressionReturnType[] = [];
     let matchCounts: MatchCounts = {};
 
@@ -24,9 +25,14 @@ function getParseContent<ExpressionReturnType>(
         break;
       }
 
+      // TODO: Allow also whitespace before a comment
+      if (i === 0 && c === "%") {
+        foundComment = true;
+      }
+
       if (c === "\n" && getCharacter.get() === "\n") {
         break;
-      } else if (c === "\\") {
+      } else if (c === "\\" && !foundComment) {
         // @ts-expect-error This is fine
         parts.push(stringBuffer);
         stringBuffer = "";
