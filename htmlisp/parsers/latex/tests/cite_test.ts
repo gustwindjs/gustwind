@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
-import { cites } from "./defaultExpressions.ts";
-import { parseLatex } from "./parseLatex.ts";
+import { cites } from "../defaultExpressions.ts";
+import { parseLatex } from "../parseLatex.ts";
 
 Deno.test(`cite`, () => {
   const input = String.raw`Foobar \cite{test24}`;
