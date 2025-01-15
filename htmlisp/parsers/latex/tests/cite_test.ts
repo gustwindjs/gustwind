@@ -243,5 +243,38 @@ Deno.test(`cite to three different references`, () => {
   );
 });
 
-// TODO: Test \citet, \citep, \fullcite
+Deno.test(`citet`, () => {
+  const input = String.raw`Foobar \citet{test24}`;
+
+  assertEquals(
+    parseLatex(input, {
+      singles: cites({
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "John Doe",
+            title: "Test title",
+            year: "2024",
+          },
+        },
+      }),
+    }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["Foobar ", {
+          type: "span",
+          attributes: { title: "Test title - John Doe" },
+          children: ["Doe (2024)"],
+        }],
+      },
+    ],
+  );
+});
+
+// TODO: Add more complex tests for citet
+
+// TODO: Test \citep, \fullcite
 // TODO: Test \ref, \nameref, \autoref - these need some lookup against labels

@@ -115,17 +115,47 @@ const cites = (
       ],
     };
   },
-  // TODO: Textual citation (needs a bibtex lookup)
-  citet: (children, matchCounts) => ({
-    type: "span",
-    attributes: { title: children[0] },
-    children: [
-      (matchCounts.citet
-        ? matchCounts.citet.findIndex((e) => e === children[0]) + 1
-        : 1)
-        .toString(),
-    ],
-  }),
+  citet: (children) => {
+    const ids = children[0].split(",").map((id) => id.trim());
+    const entries = ids.map((id) => {
+      const e = bibtexEntries[id];
+
+      if (!e) {
+        throw new Error("No matching BibTeX entry was found!");
+      }
+
+      return e;
+    });
+
+    const references = entries.map((entry) => {
+      const title = entry.fields?.title;
+
+      if (!title) {
+        throw new Error("BibTeX entry was missing a title!");
+      }
+
+      const author = entry.fields?.author || "";
+
+      return {
+        title,
+        author,
+        // TODO: How about multiple authors?
+        surname: author.split(" ")[1],
+        year: entry.fields?.year || "",
+      };
+    });
+
+    const title = references.map(({ title, author }) => `${title} - ${author}`)
+      .join(", ");
+    const text = references.map(({ surname, year }) => `${surname} (${year})`)
+      .join(", ");
+
+    return ({
+      type: "span",
+      attributes: { title },
+      children: [text],
+    });
+  },
   // TODO: Textual citation in parentheses (needs a bibtex lookup)
   citep: (children, matchCounts) => ({
     type: "span",
