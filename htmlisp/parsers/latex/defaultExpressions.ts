@@ -61,6 +61,7 @@ const lists: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
+// TODO: Figure out a better spot for this state as it should be per execution, not module
 let foundFootnotes = 0;
 const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
@@ -177,6 +178,25 @@ const cites = (
   }),
 });
 
+const refs = (
+  refEntries: { title: string; label: string; slug: string }[],
+): Record<string, SingleParser<Element>> => ({
+  nameref: (children) => {
+    const id = children[0];
+    const ref = refEntries.find(({ label }) => label === id);
+
+    if (!ref) {
+      throw new Error("No matching ref was found");
+    }
+
+    return ({
+      type: "a",
+      attributes: { href: ref.slug },
+      children: [ref.title],
+    });
+  },
+});
+
 function el(type: string) {
   return function e(children: string[]) {
     return element(type, children);
@@ -195,4 +215,4 @@ function element(
   };
 }
 
-export { blocks, cites, doubles, el, element, lists, singles };
+export { blocks, cites, doubles, el, element, lists, refs, singles };

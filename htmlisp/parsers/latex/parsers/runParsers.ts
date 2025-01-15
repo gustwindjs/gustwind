@@ -39,8 +39,11 @@ function runParsers<ExpressionReturnType>(
       };
     } catch (error) {
       // @ts-expect-error Figure out how to type this
-      if (error.message !== "Skip") {
+      if (error.message === "No matching expression was found") {
         getCharacter.setIndex(characterIndex);
+      } // @ts-expect-error Figure out how to type this
+      else if (error.message !== "Skip") {
+        throw error;
       }
     }
   }
