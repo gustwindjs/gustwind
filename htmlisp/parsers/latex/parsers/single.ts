@@ -55,7 +55,8 @@ function getParseSingle<ExpressionReturnType>(
             stringBuffer = "";
             state = STATES.PARSE_EXPRESSION_CONTENT;
           } else {
-            throw new Error(`Unknown expression: ${stringBuffer}`);
+            throw new Error("No matching expression was found");
+            // throw new Error(`Unknown expression: ${stringBuffer}`);
           }
         } else {
           stringBuffer += c;
