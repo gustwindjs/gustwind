@@ -66,7 +66,8 @@ function getParseDouble<ExpressionReturnType>(
             state = STATES.PARSE_EXPRESSION_SECOND;
             getCharacter.next();
           } else {
-            throw new Error("Argument was missing");
+            throw new Error("No matching expression was found");
+            // throw new Error("Argument was missing");
           }
         } else {
           stringBuffer += c;
