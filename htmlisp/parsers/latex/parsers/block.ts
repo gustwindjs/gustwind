@@ -40,7 +40,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     }
 
     if (!beginValue) {
-      throw new Error("begin was not found");
+      throw new Error("No matching expression was found");
     }
 
     const itemCb = expressions[beginValue].item;
@@ -81,7 +81,8 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       return expressions[beginValue].container(items);
     }
 
-    throw new Error(`Expression matching to ${beginValue} was not found`);
+    throw new Error("No matching expression was found");
+    // throw new Error(`Expression matching to ${beginValue} was not found`);
   };
 }
 
