@@ -1,13 +1,16 @@
 import { getParseDouble } from "./double.ts";
 import { getParseSingle } from "./single.ts";
 import { parseEmpty } from "./empty.ts";
-import { runParsers } from "./runParsers.ts";
+import { type Parse, runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType, ItemReturnValue> = {
   container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
   item: (
-    getCharacter: CharacterGenerator,
+    { getCharacter, parse }: {
+      getCharacter: CharacterGenerator;
+      parse?: Parse<ExpressionReturnType>;
+    },
   ) => ItemReturnValue;
 };
 
@@ -20,15 +23,14 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     BlockParser<ExpressionReturnType, ItemReturnValue>
   >,
 ) {
-  return function parseBlock(
-    getCharacter: CharacterGenerator,
-  ): ExpressionReturnType {
+  return function parseBlock({ getCharacter, parse }: {
+    getCharacter: CharacterGenerator;
+    parse?: Parse<ExpressionReturnType>;
+  }): ExpressionReturnType {
     const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
       [
-        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
         getParseDouble({ begin: (i) => i }),
-        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
         getParseSingle({ begin: joinString }),
       ],
     );
@@ -53,7 +55,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       const characterIndex = getCharacter.getIndex();
 
       try {
-        const item = itemCb(getCharacter);
+        const item = itemCb({ getCharacter, parse });
 
         if (item) {
           if (Array.isArray(item)) {
@@ -71,10 +73,10 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       }
     }
 
-    parseEmpty(getCharacter);
+    parseEmpty({ getCharacter });
 
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
-      getCharacter,
+      { getCharacter },
     );
 
     if (beginValue === end.value) {

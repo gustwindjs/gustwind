@@ -13,7 +13,9 @@ const ITEM_SYNTAX = "item";
 
 // Parses the content within \item[<key>] <value>
 function parseDefinitionItem(
-  getCharacter: CharacterGenerator,
+  { getCharacter }: {
+    getCharacter: CharacterGenerator;
+  },
 ): { title: string; description: string } {
   let state = STATES.IDLE;
   let stringBuffer = "";

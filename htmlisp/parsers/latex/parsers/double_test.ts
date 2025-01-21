@@ -20,7 +20,7 @@ Deno.test(`simple expression`, () => {
         }),
       },
     )(
-      characterGenerator(String.raw`\id{${input}}{${arg}}`),
+      { getCharacter: characterGenerator(String.raw`\id{${input}}{${arg}}`) },
     ).value,
     { type: "div", attributes: { id: arg }, children: [input] },
   );
@@ -40,7 +40,9 @@ Deno.test(`braces in argument`, () => {
         }),
       },
     )(
-      characterGenerator(String.raw`\begin{${input}}{${arg}}`),
+      {
+        getCharacter: characterGenerator(String.raw`\begin{${input}}{${arg}}`),
+      },
     ).value,
     { type: "div", attributes: { id: arg }, children: [input] },
   );
@@ -51,7 +53,9 @@ Deno.test(`throws if argument is missing`, () => {
     () =>
       getParseDouble<Element>(
         { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
-      )(characterGenerator(String.raw`\id{foobar}barfoo`)),
+      )(
+        { getCharacter: characterGenerator(String.raw`\id{foobar}barfoo`) },
+      ),
     Error,
     `Argument was missing`,
   );
@@ -62,7 +66,13 @@ Deno.test(`throws unless first character is a backslash`, () => {
     () =>
       getParseDouble<Element>(
         { id: (i) => ({ type: "div", attributes: {}, children: [i] }) },
-      )(characterGenerator(String.raw`foobar \id{foobar}{barfoo}`)),
+      )(
+        {
+          getCharacter: characterGenerator(
+            String.raw`foobar \id{foobar}{barfoo}`,
+          ),
+        },
+      ),
     Error,
     `No matching expression was found`,
   );

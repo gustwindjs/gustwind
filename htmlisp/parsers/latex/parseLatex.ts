@@ -30,6 +30,9 @@ function parseLatex(
     doubleParsers,
     blockParsers,
     listParsers,
+    // TODO: Do [contentParser, [singleParsers, doubleParsers]]
+    // to constraint to these specific parsers. The same idea would then
+    // work for lists and avoid trouble with blocks since those don't need subparsing
     getParseContent<Element>(
       (children) => ({
         type: "p",

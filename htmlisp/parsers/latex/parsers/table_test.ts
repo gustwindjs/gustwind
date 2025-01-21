@@ -6,7 +6,9 @@ import { characterGenerator } from "../../characterGenerator.ts";
 Deno.test(`empty table`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}\end{table}`),
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}\end{table}`),
+      },
     ),
     {},
   );
@@ -15,9 +17,11 @@ Deno.test(`empty table`, () => {
 Deno.test(`table with label`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}
   \label{table:imrad}
 \end{table}`),
+      },
     ),
     {
       label: "table:imrad",
@@ -28,9 +32,11 @@ Deno.test(`table with label`, () => {
 Deno.test(`table with caption`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}
   \caption{Test}
 \end{table}`),
+      },
     ),
     {
       caption: "Test",
@@ -41,10 +47,12 @@ Deno.test(`table with caption`, () => {
 Deno.test(`table with caption and label`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}
   \label{table:imrad}
   \caption{Test}
 \end{table}`),
+      },
     ),
     {
       caption: "Test",
@@ -56,10 +64,12 @@ Deno.test(`table with caption and label`, () => {
 Deno.test(`table with label and caption`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}
   \caption{Test}
   \label{table:imrad}
 \end{table}`),
+      },
     ),
     {
       caption: "Test",
@@ -72,7 +82,8 @@ Deno.test(`table with label and caption`, () => {
 Deno.test(`complete table`, () => {
   assertEquals(
     parseTable(
-      characterGenerator(String.raw`\begin{table}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{table}
   \begin{tabular}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
     \hline
@@ -81,6 +92,7 @@ Deno.test(`complete table`, () => {
   \caption{Chapter types}
   \label{table:imrad}
 \end{table}`),
+      },
     ),
     {
       caption: "Chapter types",

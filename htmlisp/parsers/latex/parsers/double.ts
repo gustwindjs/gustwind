@@ -18,9 +18,9 @@ const LIMIT = 100000;
 function getParseDouble<ExpressionReturnType>(
   expressions: Record<string, DoubleParser<ExpressionReturnType>>,
 ) {
-  return function parseDouble(
-    getCharacter: CharacterGenerator,
-  ): { match: string; value: ExpressionReturnType } {
+  return function parseDouble({ getCharacter }: {
+    getCharacter: CharacterGenerator;
+  }): { match: string; value: ExpressionReturnType } {
     let state = STATES.IDLE;
     let foundKey = "";
     let foundFirst = "";

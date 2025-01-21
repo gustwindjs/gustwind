@@ -17,7 +17,9 @@ enum STATES {
 const LIMIT = 100000;
 
 function parseBibtex(
-  getCharacter: CharacterGenerator,
+  { getCharacter }: {
+    getCharacter: CharacterGenerator;
+  },
 ): BibtexCollection {
   let state = STATES.IDLE;
   let stringBuffer = "";

@@ -24,7 +24,11 @@ Deno.test(`simple expression`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}${input}\end{${name}}`),
+      {
+        getCharacter: characterGenerator(
+          String.raw`\begin{${name}}${input}\end{${name}}`,
+        ),
+      },
     ),
     { type: "div", attributes: {}, children: [input] },
   );
@@ -47,9 +51,11 @@ Deno.test(`simple expression with a newline`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{${name}}
 ${input}
 \end{${name}}`),
+      },
     ),
     { type: "div", attributes: {}, children: ["\n" + input + "\n"] },
   );
@@ -71,7 +77,11 @@ Deno.test(`begin and end next to each other`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}\end{${name}}`),
+      {
+        getCharacter: characterGenerator(
+          String.raw`\begin{${name}}\end{${name}}`,
+        ),
+      },
     ),
     { type: "div", attributes: {}, children: [] },
   );
@@ -89,14 +99,17 @@ Deno.test(`simple list`, () => {
             attributes: {},
             children,
           }),
+          // @ts-expect-error Figure out how to type this (different return type than Element)
           item: parseListItem,
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{${name}}
         \item Foo
         \item Bar
 \end{${name}}`),
+      },
     ),
     { type: "div", attributes: {}, children: ["Foo", "Bar"] },
   );
@@ -119,10 +132,12 @@ Deno.test(`simple definition list`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}
+      {
+        getCharacter: characterGenerator(String.raw`\begin{${name}}
         \item[Foo] foo
         \item[Bar] bar
 \end{${name}}`),
+      },
     ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
   );
@@ -152,9 +167,13 @@ Deno.test(`tabular list with only header`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
+      {
+        getCharacter: characterGenerator(
+          String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
-\end{${name}}`),
+\end{${name}}`,
+        ),
+      },
     ),
     {
       type: "",
@@ -216,11 +235,15 @@ Deno.test(`tabular list with header and content`, () => {
         },
       },
     )(
-      characterGenerator(String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
+      {
+        getCharacter: characterGenerator(
+          String.raw`\begin{${name}}{l|p{4.0cm}|p{5.0cm}}
     Chapter & Purpose & Writing approach \\
     \hline
     Foo & Bar & Baz \\
-\end{${name}}`),
+\end{${name}}`,
+        ),
+      },
     ),
     {
       type: "",

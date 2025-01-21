@@ -21,10 +21,14 @@ function getParseSingle<ExpressionReturnType>(
     SingleParser<ExpressionReturnType>
   >,
 ) {
-  return function parseSingle(
-    getCharacter: CharacterGenerator,
-    matchCounts?: MatchCounts,
-  ): { match: string; value: ExpressionReturnType; matchCounts?: MatchCounts } {
+  return function parseSingle({ getCharacter, matchCounts }: {
+    getCharacter: CharacterGenerator;
+    matchCounts?: MatchCounts;
+  }): {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  } {
     let state = STATES.IDLE;
     let foundKey = "";
     const parts: unknown[] = [];
@@ -70,7 +74,7 @@ function getParseSingle<ExpressionReturnType>(
 
           getCharacter.previous();
 
-          const ret = parseSingle(getCharacter, matchCounts);
+          const ret = parseSingle({ getCharacter, matchCounts });
 
           if (ret) {
             parts.push(ret.value);

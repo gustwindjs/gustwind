@@ -9,7 +9,7 @@ Deno.test(`simple expression`, () => {
   const input = String.raw`\item foobar`;
 
   assertEquals(
-    parseListItem(characterGenerator(input)),
+    parseListItem({ getCharacter: characterGenerator(input) }),
     "foobar",
   );
 });
@@ -19,7 +19,7 @@ Deno.test(`only single expression`, () => {
 \item barfoo`;
 
   assertEquals(
-    parseListItem(characterGenerator(input)),
+    parseListItem({ getCharacter: characterGenerator(input) }),
     "foobar",
   );
 });
@@ -29,8 +29,10 @@ Deno.test(`does not parse an invalid expression`, () => {
   const generator = characterGenerator(input);
 
   assertThrows(
-    () => parseListItem(generator),
+    () => parseListItem({ getCharacter: generator }),
     Error,
     `No matching expression was found`,
   );
 });
+
+// TODO: Allow list items to contain latex syntax (recursive parsing)

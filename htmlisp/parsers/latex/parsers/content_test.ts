@@ -12,7 +12,7 @@ Deno.test(`simple expression`, () => {
 
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     input,
   );
@@ -24,7 +24,7 @@ Deno.test(`simple comment`, () => {
   assertThrows(
     () =>
       getParseContent<string>((parts) => parts.join(""))(
-        characterGenerator(input),
+        { getCharacter: characterGenerator(input) },
       ),
     Error,
     `Skip`,
@@ -37,7 +37,7 @@ Deno.test(`complex comment`, () => {
   assertThrows(
     () =>
       getParseContent<string>((parts) => parts.join(""))(
-        characterGenerator(input),
+        { getCharacter: characterGenerator(input) },
       ),
     Error,
     `Skip`,
@@ -49,7 +49,7 @@ Deno.test(`simple expression with a forced newline`, () => {
 
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
-      characterGenerator(String.raw`${input}\\`),
+      { getCharacter: characterGenerator(String.raw`${input}\\`) },
     ),
     input,
   );
@@ -63,7 +63,7 @@ barfoo`;
 
   assertEquals(
     getParseContent<string>((parts) => parts.join(""))(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     `foobar
 foobar`,
@@ -77,7 +77,7 @@ Deno.test(`url within paragraph`, () => {
     getParseContent<string>((parts) => parts.join(""), [
       getParseSingle({ url: (children) => children[0] }),
     ])(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     "foobar https://bing.com barfoo",
   );
@@ -98,7 +98,7 @@ Deno.test(`url within paragraph with elements`, () => {
         children,
       }),
     })])(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     {
       type: "p",
@@ -138,7 +138,7 @@ Deno.test(`footnote within paragraph with elements`, () => {
         ],
       }),
     })])(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     {
       type: "p",
@@ -179,7 +179,7 @@ Deno.test(`multiple footnotes`, () => {
         ],
       }),
     })])(
-      characterGenerator(input),
+      { getCharacter: characterGenerator(input) },
     ),
     {
       type: "p",

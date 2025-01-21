@@ -4,10 +4,10 @@ const LIMIT = 100000;
 
 // TODO: Rename parseUntil
 // Moves character cursor until a non-empty character is found
-function parseEmpty(
-  getCharacter: CharacterGenerator,
-  checkRule?: (c: string) => boolean,
-): void {
+function parseEmpty({ getCharacter, checkRule }: {
+  getCharacter: CharacterGenerator;
+  checkRule?: (c: string) => boolean;
+}): void {
   if (!checkRule) {
     checkRule = (c: string) => c === " " || c === `\n`;
   }

@@ -3,14 +3,26 @@ import type { CharacterGenerator } from "../../types.ts";
 // element (cite etc.) -> input[] in discovery order
 type MatchCounts = Record<string, Array<string>>;
 
+type Parse<ExpressionReturnType> = (
+  { getCharacter, matchCounts }: {
+    getCharacter: CharacterGenerator;
+    matchCounts?: MatchCounts;
+  },
+) => {
+  match: string | boolean;
+  value: string | ExpressionReturnType;
+  matchCounts?: MatchCounts;
+} | undefined;
+
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-    matchCounts?: MatchCounts,
-  ) => {
+  parsers: (({ getCharacter, matchCounts, parse }: {
+    getCharacter: CharacterGenerator;
+    matchCounts?: MatchCounts;
+    parse?: Parse<ExpressionReturnType>;
+  }) => {
     match: string;
-    value: ExpressionReturnType;
+    value: string | ExpressionReturnType;
     matchCounts?: MatchCounts;
   })[],
   matchCounts?: MatchCounts,
@@ -24,10 +36,15 @@ function runParsers<ExpressionReturnType>(
 
       // Skip newlines and nulls
       if (c === "\n" || c === null) {
-        return { match: false };
+        return { match: false, value: "" };
       }
 
-      const ret = parser(getCharacter, matchCounts);
+      const ret = parser({
+        getCharacter,
+        matchCounts,
+        // @ts-expect-error Figure out how to type this
+        parse: () => runParsers(getCharacter, matchCounts),
+      });
 
       if (ret.match && ret.value) {
         return ret;
@@ -47,6 +64,8 @@ function runParsers<ExpressionReturnType>(
       }
     }
   }
+
+  return { match: false, value: "" };
 }
 
-export { type MatchCounts, runParsers };
+export { type MatchCounts, type Parse, runParsers };

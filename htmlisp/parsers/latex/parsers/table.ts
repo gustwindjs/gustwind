@@ -15,7 +15,9 @@ type TableParseResult = {
 
 // Parses \begin{table}...\end{table} form
 function parseTable(
-  getCharacter: CharacterGenerator,
+  { getCharacter }: {
+    getCharacter: CharacterGenerator;
+  },
 ): TableParseResult {
   const parsedValues: TableParseResult = {};
 

@@ -42,16 +42,24 @@ const blocks: Record<string, BlockParser<Element, string>> = {
 const lists: Record<string, BlockParser<Element, Element>> = {
   enumerate: {
     container: (children) => element("ol", children),
-    item: (g) => element("li", [parseListItem(g)]),
+    item: (o) =>
+      element("li", [
+        // @ts-expect-error Figure out how to type this
+        parseListItem(o),
+      ]),
   },
   itemize: {
     container: (children) => element("ul", children),
-    item: (g) => element("li", [parseListItem(g)]),
+    item: (o) =>
+      element("li", [
+        // @ts-expect-error Figure out how to type this
+        parseListItem(o),
+      ]),
   },
   description: {
     container: (children) => element("dl", children),
-    item: (g) => {
-      const { title, description } = parseDefinitionItem(g);
+    item: (o) => {
+      const { title, description } = parseDefinitionItem(o);
 
       return element("", [
         element("dt", [title]),

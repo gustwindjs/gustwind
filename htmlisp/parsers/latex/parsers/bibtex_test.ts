@@ -9,7 +9,7 @@ Deno.test(`empty entry`, () => {
   const type = "BOOK";
 
   assertEquals(
-    parseBibtex(characterGenerator(`@${type}{}`)),
+    parseBibtex({ getCharacter: characterGenerator(`@${type}{}`) }),
     { type, id: "", fields: {} },
   );
 });
@@ -19,7 +19,7 @@ Deno.test(`entry with an id`, () => {
   const id = "foobar";
 
   assertEquals(
-    parseBibtex(characterGenerator(`@${type}{${id}}`)),
+    parseBibtex({ getCharacter: characterGenerator(`@${type}{${id}}`) }),
     { type, id, fields: {} },
   );
 });
@@ -32,7 +32,11 @@ Deno.test(`entry with a field in a single line`, () => {
 
   assertEquals(
     parseBibtex(
-      characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
+      {
+        getCharacter: characterGenerator(
+          `@${type}{${id}, ${fieldName} = {${value}}`,
+        ),
+      },
     ),
     { type, id, fields: { [fieldName]: value } },
   );
@@ -46,7 +50,11 @@ Deno.test(`name with an umlaut`, () => {
 
   assertEquals(
     parseBibtex(
-      characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
+      {
+        getCharacter: characterGenerator(
+          `@${type}{${id}, ${fieldName} = {${value}}`,
+        ),
+      },
     ),
     { type, id, fields: { [fieldName]: value } },
   );
@@ -60,7 +68,11 @@ Deno.test(`name with a comma`, () => {
 
   assertEquals(
     parseBibtex(
-      characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
+      {
+        getCharacter: characterGenerator(
+          `@${type}{${id}, ${fieldName} = {${value}}`,
+        ),
+      },
     ),
     { type, id, fields: { [fieldName]: value } },
   );
@@ -73,9 +85,13 @@ Deno.test(`entry with a field in multiple lines`, () => {
   const value = "John Doe";
 
   assertEquals(
-    parseBibtex(characterGenerator(`@${type}{${id},
+    parseBibtex(
+      {
+        getCharacter: characterGenerator(`@${type}{${id},
   ${fieldName} = {${value}}
-}`)),
+}`),
+      },
+    ),
     { type, id, fields: { [fieldName]: value } },
   );
 });
@@ -89,10 +105,14 @@ Deno.test(`entry with fields in multiple lines`, () => {
   const value2 = "Testing book";
 
   assertEquals(
-    parseBibtex(characterGenerator(`@${type}{${id},
+    parseBibtex(
+      {
+        getCharacter: characterGenerator(`@${type}{${id},
   ${fieldName1} = {${value1}},
   ${fieldName2} = {${value2}}
-}`)),
+}`),
+      },
+    ),
     { type, id, fields: { [fieldName1]: value1, [fieldName2]: value2 } },
   );
 });
@@ -110,14 +130,14 @@ Deno.test(`parses only the first entry`, () => {
 }`;
 
   assertEquals(
-    parseBibtex(characterGenerator(input + " " + input)),
+    parseBibtex({ getCharacter: characterGenerator(input + " " + input) }),
     { type, id, fields: { [fieldName1]: value1, [fieldName2]: value2 } },
   );
 });
 
 Deno.test(`throws if argument is missing`, () => {
   assertThrows(
-    () => parseBibtex(characterGenerator("foo")),
+    () => parseBibtex({ getCharacter: characterGenerator("foo") }),
     Error,
     `No matching expression was found`,
   );
@@ -125,7 +145,7 @@ Deno.test(`throws if argument is missing`, () => {
 
 Deno.test(`throws if argument is missing 2`, () => {
   assertThrows(
-    () => parseBibtex(characterGenerator("")),
+    () => parseBibtex({ getCharacter: characterGenerator("") }),
     Error,
     `No matching expression was found`,
   );

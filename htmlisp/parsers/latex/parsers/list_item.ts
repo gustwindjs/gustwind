@@ -1,4 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
+import type { Parse } from "./runParsers.ts";
 
 enum STATES {
   IDLE,
@@ -11,7 +12,10 @@ const ITEM_SYNTAX = "item";
 
 // Parses the content following \item
 function parseListItem(
-  getCharacter: CharacterGenerator,
+  { getCharacter, parse }: {
+    getCharacter: CharacterGenerator;
+    parse?: Parse<string>;
+  },
 ): string {
   let state = STATES.IDLE;
   let stringBuffer = "";
@@ -31,6 +35,8 @@ function parseListItem(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_ITEM) {
+      // TODO: Trigger parse() here if \ is found to see if there's
+      // something that would parse
       if (c === " ") {
         stringBuffer = "";
         state = STATES.PARSE_CONTENT;

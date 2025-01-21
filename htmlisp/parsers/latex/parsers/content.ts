@@ -3,15 +3,17 @@ import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
 
-// Parses content until \ or \n\n or until string to parse ends
+// Parses content until \n\n or string to parse ends
 function getParseContent<ExpressionReturnType>(
   expression: (parts: ExpressionReturnType[]) => ExpressionReturnType,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-  ) => { match: string; value: ExpressionReturnType })[] = [],
+  parsers: (({ getCharacter }: {
+    getCharacter: CharacterGenerator;
+  }) => { match: string; value: ExpressionReturnType })[] = [],
 ) {
   return function parseContent(
-    getCharacter: CharacterGenerator,
+    { getCharacter }: {
+      getCharacter: CharacterGenerator;
+    },
   ): ExpressionReturnType {
     let stringBuffer = "";
     let foundComment = false;
@@ -39,6 +41,7 @@ function getParseContent<ExpressionReturnType>(
 
         getCharacter.previous();
 
+        // TODO: Likely this could use parse() instead (constrain to singles and doubles?)
         const parseResult = runParsers<ExpressionReturnType>(
           getCharacter,
           parsers,
