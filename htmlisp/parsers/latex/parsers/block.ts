@@ -30,8 +30,8 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
       [
-        getParseDouble({ begin: (i) => i }),
-        getParseSingle({ begin: joinString }),
+        [getParseDouble({ begin: (i) => i }), []],
+        [getParseSingle({ begin: joinString }), []],
       ],
     );
 

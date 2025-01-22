@@ -16,7 +16,7 @@ function parseLatex(
   parser: {
     singles?: Record<string, SingleParser<Element>>;
     doubles?: Record<string, DoubleParser<Element>>;
-    blocks?: Record<string, BlockParser<Element, string>>;
+    blocks?: Record<string, BlockParser<Element, Element>>;
     lists?: Record<string, BlockParser<Element, Element>>;
   },
 ): Element[] {
@@ -26,23 +26,19 @@ function parseLatex(
   const blockParsers = parser.blocks && getParseBlock(parser.blocks);
   const listParsers = parser.lists && getParseBlock(parser.lists);
   const allParsers = [
-    singleParsers,
-    doubleParsers,
-    blockParsers,
-    listParsers,
-    // TODO: Do [contentParser, [singleParsers, doubleParsers]]
-    // to constraint to these specific parsers. The same idea would then
-    // work for lists and avoid trouble with blocks since those don't need subparsing
-    getParseContent<Element>(
-      (children) => ({
+    [singleParsers, []],
+    [doubleParsers, []],
+    [blockParsers, []],
+    [listParsers, [singleParsers, doubleParsers].filter(Boolean)],
+    [
+      getParseContent<Element>((children) => ({
         type: "p",
         attributes: {},
         children,
-      }),
-      // @ts-expect-error This is fine for now as it will be fixed in a later TS most likely.
+      })),
       [singleParsers, doubleParsers].filter(Boolean),
-    ),
-  ].filter(Boolean);
+    ],
+  ].filter(([parser]) => parser);
   const ret = [];
 
   for (let i = 0; i < LIMIT; i++) {

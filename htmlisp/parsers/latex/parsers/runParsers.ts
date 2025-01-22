@@ -17,13 +17,14 @@ type Parse<ExpressionReturnType> = (
 
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
-  parsers: Parse<ExpressionReturnType>[],
+  // Tuple of parsers and their possible subparsers
+  parsers: [Parse<ExpressionReturnType>, Parse<ExpressionReturnType>[]][],
   matchCounts?: MatchCounts,
 ) {
   const characterIndex = getCharacter.getIndex();
 
   // For async version this could use Promise.race
-  for (const parser of parsers) {
+  for (const [parser, subparsers] of parsers) {
     try {
       const c = getCharacter.get();
 
@@ -37,7 +38,12 @@ function runParsers<ExpressionReturnType>(
         matchCounts,
         // @ts-expect-error TODO: Figure out how to deal with the return type
         parse: ({ getCharacter, matchCounts }) =>
-          runParsers(getCharacter, parsers, matchCounts),
+          runParsers(
+            getCharacter,
+            // Assume subparsers cannot have subparsers
+            subparsers.map((p) => [p, []]),
+            matchCounts,
+          ),
       });
 
       if (ret.match && ret.value) {

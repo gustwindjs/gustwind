@@ -35,8 +35,14 @@ function parseListItem(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_ITEM) {
-      // TODO: Trigger parse() here if \ is found to see if there's
-      // something that would parse
+      const parseResult = parse && parse({ getCharacter });
+
+      if (parseResult) {
+        // TODO: Do something with the result now
+        // console.log(parseResult);
+      }
+
+      // TODO: Likely this should go into catch
       if (c === " ") {
         stringBuffer = "";
         state = STATES.PARSE_CONTENT;

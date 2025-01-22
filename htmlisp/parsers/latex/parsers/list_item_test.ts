@@ -35,4 +35,4 @@ Deno.test(`does not parse an invalid expression`, () => {
   );
 });
 
-// TODO: Allow list items to contain latex syntax (recursive parsing)
+// TODO: Try parsing singles within list items

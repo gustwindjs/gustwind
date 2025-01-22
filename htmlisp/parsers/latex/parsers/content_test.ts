@@ -74,10 +74,11 @@ Deno.test(`url within paragraph`, () => {
   const input = String.raw`foobar \url{https://bing.com} barfoo`;
 
   assertEquals(
-    getParseContent<string>((parts) => parts.join(""), [
-      getParseSingle({ url: (children) => children[0] }),
-    ])(
-      { getCharacter: characterGenerator(input) },
+    getParseContent<string>((parts) => parts.join(""))(
+      {
+        getCharacter: characterGenerator(input),
+        parse: getParseSingle({ url: (children) => children[0] }),
+      },
     ),
     "foobar https://bing.com barfoo",
   );
@@ -91,14 +92,17 @@ Deno.test(`url within paragraph with elements`, () => {
       type: "p",
       attributes: {},
       children,
-    }), [getParseSingle({
-      url: (children) => ({
-        type: "a",
-        attributes: { href: children[0] },
-        children,
-      }),
-    })])(
-      { getCharacter: characterGenerator(input) },
+    }))(
+      {
+        getCharacter: characterGenerator(input),
+        parse: getParseSingle({
+          url: (children) => ({
+            type: "a",
+            attributes: { href: children[0] },
+            children,
+          }),
+        }),
+      },
     ),
     {
       type: "p",
@@ -126,19 +130,22 @@ Deno.test(`footnote within paragraph with elements`, () => {
       type: "p",
       attributes: {},
       children,
-    }), [getParseSingle({
-      footnote: (children, matchCounts) => ({
-        type: "sup",
-        attributes: { title: children[0] },
-        children: [
-          (matchCounts.footnote
-            ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
-            : 1)
-            .toString(),
-        ],
-      }),
-    })])(
-      { getCharacter: characterGenerator(input) },
+    }))(
+      {
+        getCharacter: characterGenerator(input),
+        parse: getParseSingle({
+          footnote: (children, matchCounts) => ({
+            type: "sup",
+            attributes: { title: children[0] },
+            children: [
+              (matchCounts.footnote
+                ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+                : 1)
+                .toString(),
+            ],
+          }),
+        }),
+      },
     ),
     {
       type: "p",
@@ -167,19 +174,22 @@ Deno.test(`multiple footnotes`, () => {
       type: "p",
       attributes: {},
       children,
-    }), [getParseSingle({
-      footnote: (children, matchCounts) => ({
-        type: "sup",
-        attributes: { title: children[0] },
-        children: [
-          (matchCounts.footnote
-            ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
-            : 1)
-            .toString(),
-        ],
-      }),
-    })])(
-      { getCharacter: characterGenerator(input) },
+    }))(
+      {
+        getCharacter: characterGenerator(input),
+        parse: getParseSingle({
+          footnote: (children, matchCounts) => ({
+            type: "sup",
+            attributes: { title: children[0] },
+            children: [
+              (matchCounts.footnote
+                ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+                : 1)
+                .toString(),
+            ],
+          }),
+        }),
+      },
     ),
     {
       type: "p",
