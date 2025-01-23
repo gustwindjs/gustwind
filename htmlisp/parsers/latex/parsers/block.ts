@@ -4,23 +4,23 @@ import { parseEmpty } from "./empty.ts";
 import { type Parse, runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
-type BlockParser<ExpressionReturnType, ItemReturnValue> = {
-  container: (items: (ItemReturnValue)[]) => ExpressionReturnType;
+type BlockParser<ExpressionReturnType> = {
+  container: (items: (ExpressionReturnType)[]) => ExpressionReturnType;
   item: (
     { getCharacter, parse }: {
       getCharacter: CharacterGenerator;
       parse?: Parse<ExpressionReturnType>;
     },
-  ) => ItemReturnValue;
+  ) => ExpressionReturnType;
 };
 
 const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
-function getParseBlock<ExpressionReturnType, ItemReturnValue>(
+function getParseBlock<ExpressionReturnType>(
   expressions: Record<
     string,
-    BlockParser<ExpressionReturnType, ItemReturnValue>
+    BlockParser<ExpressionReturnType>
   >,
 ) {
   return function parseBlock({ getCharacter, parse }: {
@@ -46,7 +46,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
     }
 
     const itemCb = expressions[beginValue].item;
-    let items: ItemReturnValue[] = [];
+    let items: ExpressionReturnType[] = [];
 
     for (let i = 0; i < LIMIT; i++) {
       if (getCharacter.get() === null) {

@@ -19,7 +19,7 @@ function getParseContent<ExpressionReturnType>(
     let matchCounts: MatchCounts = {};
 
     for (let i = 0; i < LIMIT; i++) {
-      const c = getCharacter.next();
+      const c = getCharacter.get();
 
       if (c === null) {
         break;
@@ -30,20 +30,18 @@ function getParseContent<ExpressionReturnType>(
         foundComment = true;
       }
 
-      if (c === "\n" && getCharacter.get() === "\n") {
+      if (c === "\n" && getCharacter.get(1) === "\n") {
         break;
       } else if (c === "\\" && !foundComment) {
-        parts.push(stringBuffer);
-        stringBuffer = "";
-
-        getCharacter.previous();
-
         const parseResult = parse && parse({
           getCharacter,
           matchCounts: structuredClone(matchCounts),
         });
 
         if (parseResult) {
+          parts.push(stringBuffer);
+          stringBuffer = "";
+
           if (parseResult.matchCounts) {
             matchCounts = parseResult.matchCounts;
           }
@@ -52,10 +50,12 @@ function getParseContent<ExpressionReturnType>(
         } else {
           break;
         }
-      } else if (c === "~" && getCharacter.get() === "\\") {
+      } else if (c === "~" && getCharacter.get(1) === "\\") {
         stringBuffer += " ";
+        getCharacter.next();
       } else {
         stringBuffer += c;
+        getCharacter.next();
       }
     }
 
@@ -68,11 +68,13 @@ function getParseContent<ExpressionReturnType>(
       parts.push(stringBuffer);
     }
 
-    // @ts-expect-error This is fine
-    const value = expression(parts);
+    if (parts.length) {
+      // @ts-expect-error This is fine
+      const value = expression(parts);
 
-    if (!!value) {
-      return value;
+      if (!!value) {
+        return value;
+      }
     }
 
     throw new Error("No matching expression was found");

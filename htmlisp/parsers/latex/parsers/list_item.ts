@@ -35,14 +35,6 @@ function parseListItem(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_ITEM) {
-      const parseResult = parse && parse({ getCharacter });
-
-      if (parseResult) {
-        // TODO: Do something with the result now
-        // console.log(parseResult);
-      }
-
-      // TODO: Likely this should go into catch
       if (c === " ") {
         stringBuffer = "";
         state = STATES.PARSE_CONTENT;
@@ -55,6 +47,14 @@ function parseListItem(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_CONTENT) {
+      // TODO: Apply content parser here instead
+      const parseResult = parse && parse({ getCharacter });
+
+      if (parseResult) {
+        // TODO: Do something with the result now
+        console.log(parseResult);
+      }
+
       if (c === "\n") {
         return stringBuffer;
       }
