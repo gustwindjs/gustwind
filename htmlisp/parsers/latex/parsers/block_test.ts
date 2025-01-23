@@ -21,7 +21,7 @@ Deno.test(`simple expression`, () => {
             children,
           }),
           item: getParseContent<Element>((children) => ({
-            type: "span",
+            type: "",
             attributes: {},
             children,
           })),
@@ -37,7 +37,7 @@ Deno.test(`simple expression`, () => {
     {
       type: "div",
       attributes: {},
-      children: [{ type: "span", attributes: {}, children: ["foobar"] }],
+      children: [{ type: "", attributes: {}, children: ["foobar"] }],
     },
   );
 });
@@ -107,8 +107,6 @@ Deno.test(`begin and end next to each other`, () => {
   );
 });
 
-// TODO: Restore these
-/*
 Deno.test(`simple list`, () => {
   const name = "itemize";
 
@@ -121,8 +119,12 @@ Deno.test(`simple list`, () => {
             attributes: {},
             children,
           }),
-          // @ts-expect-error Figure out how to type this (different return type than Element)
-          item: parseListItem,
+          // TODO: Use similar pattern here as for getParseContent
+          item: (o) => ({
+            type: "",
+            attributes: {},
+            children: parseListItem(o),
+          }),
         },
       },
     )(
@@ -133,7 +135,15 @@ Deno.test(`simple list`, () => {
 \end{${name}}`),
       },
     ),
-    { type: "div", attributes: {}, children: ["Foo", "Bar"] },
+    {
+      type: "div",
+      attributes: {},
+      children: [{ type: "", attributes: {}, children: ["Foo"] }, {
+        type: "",
+        attributes: {},
+        children: ["Bar"],
+      }],
+    },
   );
 });
 
@@ -169,7 +179,7 @@ Deno.test(`tabular list with only header`, () => {
   const name = "tabular";
 
   assertEquals(
-    getParseBlock<Element, string[]>(
+    getParseBlock<Element>(
       {
         [name]: {
           container: ([header]) => ({
@@ -229,7 +239,7 @@ Deno.test(`tabular list with header and content`, () => {
   const name = "tabular";
 
   assertEquals(
-    getParseBlock<Element, string[]>(
+    getParseBlock<Element>(
       {
         [name]: {
           container: ([header, ...rows]) => ({
@@ -314,7 +324,6 @@ Deno.test(`tabular list with header and content`, () => {
     },
   );
 });
-*/
 
 // TODO: Assert that begin/end block names are the same - if not, throw
 // TODO: Test that the logic throws in case a matching expression was not found

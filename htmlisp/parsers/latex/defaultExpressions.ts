@@ -28,20 +28,26 @@ const doubles: Record<string, DoubleParser<Element>> = {
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const blocks: Record<string, BlockParser<Element, Element>> = {
+const blocks: Record<string, BlockParser<Element>> = {
   verbatim: {
     container: (children) => element("pre", children),
-    // @ts-expect-error TODO: Figure out how to type this
-    item: getParseContent<string>((s) => s.join("")),
+    item: getParseContent<Element>((children) => ({
+      type: "",
+      attributes: {},
+      children,
+    })),
   },
   quote: {
     container: (children) => element("blockquote", children),
-    // @ts-expect-error TODO: Figure out how to type this
-    item: getParseContent<string>((s) => s.join("")),
+    item: getParseContent<Element>((children) => ({
+      type: "",
+      attributes: {},
+      children,
+    })),
   },
 };
 
-const lists: Record<string, BlockParser<Element, Element>> = {
+const lists: Record<string, BlockParser<Element>> = {
   enumerate: {
     container: (children) => element("ol", children),
     item: (o) =>

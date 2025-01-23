@@ -11,21 +11,22 @@ const LIMIT = 100000;
 const ITEM_SYNTAX = "item";
 
 // Parses the content following \item
-function parseListItem(
+function parseListItem<ExpressionReturnType>(
   { getCharacter, parse }: {
     getCharacter: CharacterGenerator;
-    parse?: Parse<string>;
+    parse?: Parse<ExpressionReturnType>;
   },
-): string {
+) {
   let state = STATES.IDLE;
   let stringBuffer = "";
+  const parts: (string | ExpressionReturnType)[] = [];
   let itemIndex = 0;
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
 
     if (c === null) {
-      return stringBuffer;
+      break;
     }
 
     if (state === STATES.IDLE) {
@@ -53,14 +54,24 @@ function parseListItem(
       if (parseResult) {
         // TODO: Do something with the result now
         console.log(parseResult);
+
+        // TODO: This should accumulate an array
       }
 
       if (c === "\n") {
-        return stringBuffer;
+        break;
       }
 
       stringBuffer += c;
     }
+  }
+
+  if (stringBuffer) {
+    parts.push(stringBuffer);
+  }
+
+  if (parts.length) {
+    return parts;
   }
 
   throw new Error("No matching expression was found");
