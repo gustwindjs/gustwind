@@ -9,8 +9,8 @@ Deno.test(`simple expression`, () => {
   const input = String.raw`\item foobar`;
 
   assertEquals(
-    parseListItem({ getCharacter: characterGenerator(input) }),
-    "foobar",
+    parseListItem<string>({ getCharacter: characterGenerator(input) }),
+    ["foobar"],
   );
 });
 
@@ -19,8 +19,8 @@ Deno.test(`only single expression`, () => {
 \item barfoo`;
 
   assertEquals(
-    parseListItem({ getCharacter: characterGenerator(input) }),
-    "foobar",
+    parseListItem<string>({ getCharacter: characterGenerator(input) }),
+    ["foobar"],
   );
 });
 
@@ -29,7 +29,7 @@ Deno.test(`does not parse an invalid expression`, () => {
   const generator = characterGenerator(input);
 
   assertThrows(
-    () => parseListItem({ getCharacter: generator }),
+    () => parseListItem<string>({ getCharacter: generator }),
     Error,
     `No matching expression was found`,
   );
