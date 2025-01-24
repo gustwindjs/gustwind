@@ -84,6 +84,21 @@ Deno.test(`url within paragraph`, () => {
   );
 });
 
+Deno.test(`url within paragraph without a match`, () => {
+  const input = String.raw`foobar \url{https://bing.com} barfoo`;
+
+  assertEquals(
+    getParseContent<string>((parts) => parts.join(""))(
+      {
+        getCharacter: characterGenerator(input),
+        // TODO: Wrap this with exception handling somehow (see runParsers)
+        parse: getParseSingle({ url2: (children) => children[0] }),
+      },
+    ),
+    "foobar https://bing.com barfoo",
+  );
+});
+
 Deno.test(`url within paragraph with elements`, () => {
   const input = String.raw`foobar \url{https://bing.com} barfoo`;
 

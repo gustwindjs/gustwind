@@ -1,4 +1,4 @@
-import { type MatchCounts, type Parse } from "./runParsers.ts";
+import { type MatchCounts, type Parse } from "./types.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;

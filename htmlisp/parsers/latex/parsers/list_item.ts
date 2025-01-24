@@ -1,5 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { Parse } from "./runParsers.ts";
+import type { Parse } from "./types.ts";
 
 enum STATES {
   IDLE,
@@ -48,7 +48,6 @@ function parseListItem<ExpressionReturnType>(
         stringBuffer += c;
       }
     } else if (state === STATES.PARSE_CONTENT) {
-      // TODO: Apply content parser here instead
       const parseResult = parse && parse({ getCharacter });
 
       if (parseResult) {

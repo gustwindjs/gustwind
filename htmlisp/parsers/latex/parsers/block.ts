@@ -1,7 +1,8 @@
 import { getParseDouble } from "./double.ts";
 import { getParseSingle } from "./single.ts";
 import { parseEmpty } from "./empty.ts";
-import { type Parse, runParsers } from "./runParsers.ts";
+import { runParsers } from "./runParsers.ts";
+import { type Parse } from "./types.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType> = {

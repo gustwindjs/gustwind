@@ -1,5 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts } from "./runParsers.ts";
+import type { MatchCounts } from "./types.ts";
 
 type SingleParser<ExpressionReturnType> = (
   s: string[],
