@@ -16,8 +16,8 @@ function parseLatex(
   parser: {
     singles?: Record<string, SingleParser<Element>>;
     doubles?: Record<string, DoubleParser<Element>>;
-    blocks?: Record<string, BlockParser<Element, Element>>;
-    lists?: Record<string, BlockParser<Element, Element>>;
+    blocks?: Record<string, BlockParser<Element>>;
+    lists?: Record<string, BlockParser<Element>>;
   },
 ): Element[] {
   const getCharacter = characterGenerator(input);
