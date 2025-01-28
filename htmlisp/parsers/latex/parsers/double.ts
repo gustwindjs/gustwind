@@ -1,4 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
+import type { MatchCounts } from "./types.ts";
 
 type DoubleParser<ExpressionReturnType> = (
   s: string,
@@ -18,9 +19,10 @@ const LIMIT = 100000;
 function getParseDouble<ExpressionReturnType>(
   expressions: Record<string, DoubleParser<ExpressionReturnType>>,
 ) {
-  return function parseDouble({ getCharacter }: {
+  return function parseDouble({ getCharacter, matchCounts }: {
     getCharacter: CharacterGenerator;
-  }): { match: string; value: ExpressionReturnType } {
+    matchCounts: MatchCounts;
+  }): { match: string; value: ExpressionReturnType; matchCounts: MatchCounts } {
     let state = STATES.IDLE;
     let foundKey = "";
     let foundFirst = "";
@@ -82,6 +84,7 @@ function getParseDouble<ExpressionReturnType>(
           } else {
             return {
               match: foundKey,
+              matchCounts,
               value: expressions[foundKey](foundFirst, stringBuffer),
             };
           }

@@ -32,6 +32,7 @@ Deno.test(`simple expression`, () => {
         getCharacter: characterGenerator(
           String.raw`\begin{${name}}${input}\end{${name}}`,
         ),
+        matchCounts: {},
       },
     ),
     {
@@ -67,6 +68,7 @@ Deno.test(`simple expression with a newline`, () => {
         getCharacter: characterGenerator(String.raw`\begin{${name}}
 ${input}
 \end{${name}}`),
+        matchCounts: {},
       },
     ),
     {
@@ -101,6 +103,7 @@ Deno.test(`begin and end next to each other`, () => {
         getCharacter: characterGenerator(
           String.raw`\begin{${name}}\end{${name}}`,
         ),
+        matchCounts: {},
       },
     ),
     { type: "div", attributes: {}, children: [] },
@@ -133,6 +136,7 @@ Deno.test(`simple list`, () => {
         \item Foo
         \item Bar
 \end{${name}}`),
+        matchCounts: {},
       },
     ),
     {
@@ -169,6 +173,7 @@ Deno.test(`simple definition list`, () => {
         \item[Foo] foo
         \item[Bar] bar
 \end{${name}}`),
+        matchCounts: {},
       },
     ),
     { type: "div", attributes: {}, children: ["Foo: foo", "Bar: bar"] },
@@ -205,6 +210,7 @@ Deno.test(`tabular list with only header`, () => {
     Chapter & Purpose & Writing approach \\
 \end{${name}}`,
         ),
+        matchCounts: {},
       },
     ),
     {
@@ -275,6 +281,7 @@ Deno.test(`tabular list with header and content`, () => {
     Foo & Bar & Baz \\
 \end{${name}}`,
         ),
+        matchCounts: {},
       },
     ),
     {

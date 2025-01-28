@@ -2,7 +2,7 @@ import { getParseDouble } from "./double.ts";
 import { getParseSingle } from "./single.ts";
 import { parseEmpty } from "./empty.ts";
 import { runParsers } from "./runParsers.ts";
-import { type Parse } from "./types.ts";
+import type { MatchCounts, Parse } from "./types.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 type BlockParser<ExpressionReturnType> = {
@@ -24,9 +24,10 @@ function getParseBlock<ExpressionReturnType>(
     BlockParser<ExpressionReturnType>
   >,
 ) {
-  return function parseBlock({ getCharacter, parse }: {
+  return function parseBlock({ getCharacter, parse, matchCounts }: {
     getCharacter: CharacterGenerator;
     parse?: Parse<ExpressionReturnType>;
+    matchCounts: MatchCounts;
   }): ExpressionReturnType {
     const parseResult = runParsers<ExpressionReturnType>(
       getCharacter,
@@ -34,6 +35,7 @@ function getParseBlock<ExpressionReturnType>(
         [getParseDouble({ begin: (i) => i }), []],
         [getParseSingle({ begin: joinString }), []],
       ],
+      matchCounts,
     );
 
     let beginValue: string = "";
@@ -77,7 +79,7 @@ function getParseBlock<ExpressionReturnType>(
     parseEmpty({ getCharacter });
 
     const end = getParseSingle<string>({ end: (i) => i.join("") })(
-      { getCharacter },
+      { getCharacter, matchCounts },
     );
 
     if (beginValue === end.value) {

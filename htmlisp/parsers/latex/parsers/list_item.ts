@@ -57,6 +57,7 @@ function parseListItem<ExpressionReturnType>(
         stringBuffer = "";
 
         if (parseResult.matchCounts) {
+          // TODO: Check how matchCounts is used (should be returned most likely)
           matchCounts = parseResult.matchCounts;
         }
 
