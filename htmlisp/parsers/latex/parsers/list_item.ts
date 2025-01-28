@@ -65,7 +65,7 @@ function parseListItem<ExpressionReturnType>(
         stringBuffer += c;
       }
 
-      if (c === "\n") {
+      if (getCharacter.get(1) === "\n") {
         break;
       }
     }
