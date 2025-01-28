@@ -38,7 +38,7 @@ function getParseContent<ExpressionReturnType>(
           matchCounts: structuredClone(matchCounts),
         });
 
-        if (parseResult) {
+        if (parseResult?.match) {
           parts.push(stringBuffer);
           stringBuffer = "";
 

@@ -5,7 +5,7 @@ function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
   // Tuple of parsers and their possible subparsers
   parsers: [Parse<ExpressionReturnType>, Parse<ExpressionReturnType>[]][],
-  matchCounts?: MatchCounts,
+  matchCounts: MatchCounts,
 ) {
   // For async version this could use Promise.race
   for (const [parser, subparsers] of parsers) {
@@ -17,15 +17,15 @@ function runParsers<ExpressionReturnType>(
     });
   }
 
-  return { match: false, value: "" };
+  return { match: false, matchCounts: {}, value: "" };
 }
 
 function runParser<ExpressionReturnType>(
   { getCharacter, parser, subparsers, matchCounts }: {
     getCharacter: CharacterGenerator;
     parser: Parse<ExpressionReturnType>;
-    subparsers: Parse<ExpressionReturnType>[];
-    matchCounts?: MatchCounts;
+    subparsers?: Parse<ExpressionReturnType>[];
+    matchCounts: MatchCounts;
   },
 ) {
   const characterIndex = getCharacter.getIndex();
@@ -35,19 +35,18 @@ function runParser<ExpressionReturnType>(
 
     // Skip newlines and nulls
     if (c === "\n" || c === null) {
-      return { match: false, value: "" };
+      return { match: false, matchCounts, value: "" };
     }
 
     const ret = parser({
       getCharacter,
       matchCounts,
-      // @ts-expect-error TODO: Figure out how to deal with the return type
       parse: ({ getCharacter, matchCounts }) =>
         runParsers(
           getCharacter,
           // Assume subparsers cannot have subparsers
-          subparsers.map((p) => [p, []]),
-          matchCounts,
+          (subparsers || []).map((p) => [p, []]),
+          matchCounts || {},
         ),
     });
 
@@ -57,7 +56,8 @@ function runParser<ExpressionReturnType>(
 
     return {
       match: true,
-      value: ret,
+      matchCounts: ret.matchCounts,
+      value: ret.value,
     };
   } catch (error) {
     // @ts-expect-error Figure out how to type this
@@ -68,6 +68,8 @@ function runParser<ExpressionReturnType>(
       throw error;
     }
   }
+
+  return { match: false, matchCounts, value: "" };
 }
 
 export { runParser, runParsers };

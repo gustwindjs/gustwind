@@ -5,13 +5,13 @@ type MatchCounts = Record<string, Array<string>>;
 type Parse<ExpressionReturnType> = (
   { getCharacter, matchCounts, parse }: {
     getCharacter: CharacterGenerator;
-    matchCounts?: MatchCounts;
+    matchCounts: MatchCounts;
     parse?: Parse<ExpressionReturnType>;
   },
 ) => {
   match: string | boolean;
   value: string | ExpressionReturnType;
-  matchCounts?: MatchCounts;
+  matchCounts: MatchCounts;
 };
 
 export type { MatchCounts, Parse };

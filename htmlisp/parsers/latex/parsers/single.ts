@@ -23,11 +23,11 @@ function getParseSingle<ExpressionReturnType>(
 ) {
   return function parseSingle({ getCharacter, matchCounts }: {
     getCharacter: CharacterGenerator;
-    matchCounts?: MatchCounts;
+    matchCounts: MatchCounts;
   }): {
     match: string;
     value: ExpressionReturnType;
-    matchCounts?: MatchCounts;
+    matchCounts: MatchCounts;
   } {
     let state = STATES.IDLE;
     let foundKey = "";

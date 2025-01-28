@@ -1,4 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
+import type { MatchCounts, Parse } from "./types.ts";
 
 enum STATES {
   IDLE,
@@ -13,8 +14,9 @@ const ITEM_SYNTAX = "item";
 
 // Parses the content within \item[<key>] <value>
 function parseDefinitionItem(
-  { getCharacter }: {
+  { getCharacter, matchCounts }: {
     getCharacter: CharacterGenerator;
+    matchCounts: MatchCounts;
   },
 ): { title: string; description: string } {
   let state = STATES.IDLE;
