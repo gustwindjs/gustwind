@@ -64,6 +64,8 @@ function getParseContent<ExpressionReturnType>(
       // @ts-expect-error This is fine
       const value = expression(parts);
 
+      getCharacter.previous();
+
       if (!!value) {
         return value;
       }
