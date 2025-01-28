@@ -91,7 +91,7 @@ const cites = (
       children: [foundFootnotes.toString()],
     });
   },
-  cite: (children, matchCounts) => {
+  cite: (children) => {
     const ids = children[0].split(",").map((id) => id.trim());
     const entries = ids.map((id) => {
       const e = bibtexEntries[id];
@@ -124,10 +124,8 @@ const cites = (
       },
       children: [
         "[" +
-        (ids.map((id) =>
-          matchCounts.cite ? matchCounts.cite.findIndex((e) => e === id) + 1 : 1
-        )
-          .join(", ").toString()) +
+        // TODO: Check this logic
+        "0" +
         "]",
       ],
     };
@@ -174,15 +172,13 @@ const cites = (
     });
   },
   // TODO: Textual citation in parentheses (needs a bibtex lookup)
-  citep: (children, matchCounts) => ({
+  citep: (children) => ({
     type: "span",
     attributes: { title: children[0] },
     children: [
       "(" +
-      (matchCounts.citep
-        ? matchCounts.citep.findIndex((e) => e === children[0]) + 1
-        : 1)
-        .toString() +
+      // TODO: Check this logic
+      "0" +
       ")",
     ],
   }),

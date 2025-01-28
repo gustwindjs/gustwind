@@ -1,14 +1,13 @@
 import { parseEmpty } from "./empty.ts";
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts, Parse } from "./types.ts";
+import type { Parse } from "./types.ts";
 
 const LIMIT = 100000;
 
 // Parses the content within "Chapter & Purpose & Writing approach \\"
 function parseTabularItem(
-  { getCharacter, matchCounts }: {
+  { getCharacter }: {
     getCharacter: CharacterGenerator;
-    matchCounts: MatchCounts;
   },
 ): string[] {
   const ret: string[] = [];

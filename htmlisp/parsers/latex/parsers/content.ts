@@ -1,4 +1,4 @@
-import { type MatchCounts, type Parse } from "./types.ts";
+import type { Parse } from "./types.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
@@ -16,7 +16,6 @@ function getParseContent<ExpressionReturnType>(
     let stringBuffer = "";
     let foundComment = false;
     const parts: (string | ExpressionReturnType)[] = [];
-    let matchCounts: MatchCounts = {};
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.get();
@@ -33,18 +32,11 @@ function getParseContent<ExpressionReturnType>(
       if (c === "\n" && getCharacter.get(1) === "\n") {
         break;
       } else if (c === "\\" && !foundComment) {
-        const parseResult = parse && parse({
-          getCharacter,
-          matchCounts: structuredClone(matchCounts),
-        });
+        const parseResult = parse && parse({ getCharacter });
 
         if (parseResult?.match) {
           parts.push(stringBuffer);
           stringBuffer = "";
-
-          if (parseResult.matchCounts) {
-            matchCounts = parseResult.matchCounts;
-          }
 
           parts.push(parseResult.value);
         } else {

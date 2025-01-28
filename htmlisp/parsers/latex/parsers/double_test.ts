@@ -22,7 +22,6 @@ Deno.test(`simple expression`, () => {
     )(
       {
         getCharacter: characterGenerator(String.raw`\id{${input}}{${arg}}`),
-        matchCounts: {},
       },
     ).value,
     { type: "div", attributes: { id: arg }, children: [input] },
@@ -45,7 +44,6 @@ Deno.test(`braces in argument`, () => {
     )(
       {
         getCharacter: characterGenerator(String.raw`\begin{${input}}{${arg}}`),
-        matchCounts: {},
       },
     ).value,
     { type: "div", attributes: { id: arg }, children: [input] },
@@ -60,7 +58,6 @@ Deno.test(`throws if argument is missing`, () => {
       )(
         {
           getCharacter: characterGenerator(String.raw`\id{foobar}barfoo`),
-          matchCounts: {},
         },
       ),
     Error,
@@ -78,7 +75,6 @@ Deno.test(`throws unless first character is a backslash`, () => {
           getCharacter: characterGenerator(
             String.raw`foobar \id{foobar}{barfoo}`,
           ),
-          matchCounts: {},
         },
       ),
     Error,

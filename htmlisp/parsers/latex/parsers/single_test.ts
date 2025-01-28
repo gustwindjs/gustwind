@@ -14,7 +14,6 @@ Deno.test(`simple expression`, () => {
       { id: (children) => ({ type: "div", attributes: {}, children }) },
     )({
       getCharacter: characterGenerator(String.raw`\id{${input}}`),
-      matchCounts: {},
     }).value,
     { type: "div", attributes: {}, children: [input] },
   );
@@ -28,7 +27,6 @@ Deno.test(`expression within expression`, () => {
       { id: (children) => ({ type: "div", attributes: {}, children }) },
     )({
       getCharacter: characterGenerator(String.raw`\id{\id{${input}}}`),
-      matchCounts: {},
     })
       .value,
     {
@@ -47,7 +45,6 @@ Deno.test(`expression within expression 2`, () => {
       { id: (children) => ({ type: "div", attributes: {}, children }) },
     )({
       getCharacter: characterGenerator(String.raw`\id{foo \id{${input}} bar}`),
-      matchCounts: {},
     }).value,
     {
       type: "div",
@@ -68,7 +65,6 @@ Deno.test(`throws unless first character is a backslash`, () => {
         { id: (children) => ({ type: "div", attributes: {}, children }) },
       )({
         getCharacter: characterGenerator(String.raw`foobar \id{foobar}`),
-        matchCounts: {},
       })
         .value,
     Error,

@@ -149,15 +149,11 @@ Deno.test(`footnote within paragraph with elements`, () => {
       {
         getCharacter: characterGenerator(input),
         parse: getParseSingle({
-          footnote: (children, matchCounts) => ({
+          footnote: (children) => ({
             type: "sup",
             attributes: { title: children[0] },
-            children: [
-              (matchCounts.footnote
-                ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
-                : 1)
-                .toString(),
-            ],
+            // TODO: Check this out
+            children: ["0"],
           }),
         }),
       },
@@ -193,15 +189,11 @@ Deno.test(`multiple footnotes`, () => {
       {
         getCharacter: characterGenerator(input),
         parse: getParseSingle({
-          footnote: (children, matchCounts) => ({
+          footnote: (children) => ({
             type: "sup",
             attributes: { title: children[0] },
-            children: [
-              (matchCounts.footnote
-                ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
-                : 1)
-                .toString(),
-            ],
+            // TODO: Check this out
+            children: ["0"],
           }),
         }),
       },

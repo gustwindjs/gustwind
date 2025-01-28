@@ -1,9 +1,7 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts } from "./types.ts";
 
 type SingleParser<ExpressionReturnType> = (
   s: string[],
-  matchCounts: MatchCounts,
 ) => ExpressionReturnType;
 
 enum STATES {
@@ -21,13 +19,11 @@ function getParseSingle<ExpressionReturnType>(
     SingleParser<ExpressionReturnType>
   >,
 ) {
-  return function parseSingle({ getCharacter, matchCounts }: {
+  return function parseSingle({ getCharacter }: {
     getCharacter: CharacterGenerator;
-    matchCounts: MatchCounts;
   }): {
     match: string;
     value: ExpressionReturnType;
-    matchCounts: MatchCounts;
   } {
     let state = STATES.IDLE;
     let foundKey = "";
@@ -76,7 +72,7 @@ function getParseSingle<ExpressionReturnType>(
 
           getCharacter.previous();
 
-          const ret = parseSingle({ getCharacter, matchCounts });
+          const ret = parseSingle({ getCharacter });
 
           if (ret) {
             parts.push(ret.value);
@@ -86,21 +82,10 @@ function getParseSingle<ExpressionReturnType>(
             parts.push(stringBuffer);
           }
 
-          if (matchCounts) {
-            if (!matchCounts[foundKey]) {
-              matchCounts[foundKey] = [];
-            }
-
-            stringBuffer.split(",").forEach((s) => {
-              matchCounts[foundKey].push(s.trim());
-            });
-          }
-
           getCharacter.previous();
           return {
             match: foundKey,
-            value: expressions[foundKey](parts as string[], matchCounts || {}),
-            matchCounts,
+            value: expressions[foundKey](parts as string[]),
           };
         } else {
           stringBuffer += c;

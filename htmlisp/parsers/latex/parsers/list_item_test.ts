@@ -13,7 +13,6 @@ Deno.test(`simple expression`, () => {
   assertEquals(
     parseListItem<string>({
       getCharacter: characterGenerator(input),
-      matchCounts: {},
     }),
     ["foobar"],
   );
@@ -26,7 +25,6 @@ Deno.test(`only single expression`, () => {
   assertEquals(
     parseListItem<string>({
       getCharacter: characterGenerator(input),
-      matchCounts: {},
     }),
     ["foobar"],
   );
@@ -37,7 +35,7 @@ Deno.test(`does not parse an invalid expression`, () => {
   const generator = characterGenerator(input);
 
   assertThrows(
-    () => parseListItem<string>({ getCharacter: generator, matchCounts: {} }),
+    () => parseListItem<string>({ getCharacter: generator }),
     Error,
     `No matching expression was found`,
   );
@@ -49,11 +47,9 @@ Deno.test(`url within an expression`, () => {
   assertEquals(
     parseListItem<string>({
       getCharacter: characterGenerator(input),
-      matchCounts: {},
-      parse: ({ getCharacter, matchCounts }) =>
+      parse: ({ getCharacter }) =>
         runParser({
           getCharacter,
-          matchCounts,
           parser: getParseSingle({ url: (children) => children[0] }),
         }),
     }),

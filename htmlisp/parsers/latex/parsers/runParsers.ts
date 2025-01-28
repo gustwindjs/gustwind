@@ -1,11 +1,10 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts, Parse } from "./types.ts";
+import type { Parse } from "./types.ts";
 
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
   // Tuple of parsers and their possible subparsers
   parsers: [Parse<ExpressionReturnType>, Parse<ExpressionReturnType>[]][],
-  matchCounts: MatchCounts,
 ) {
   // For async version this could use Promise.race
   for (const [parser, subparsers] of parsers) {
@@ -13,19 +12,17 @@ function runParsers<ExpressionReturnType>(
       getCharacter,
       parser,
       subparsers,
-      matchCounts,
     });
   }
 
-  return { match: false, matchCounts: {}, value: "" };
+  return { match: false, value: "" };
 }
 
 function runParser<ExpressionReturnType>(
-  { getCharacter, parser, subparsers, matchCounts }: {
+  { getCharacter, parser, subparsers }: {
     getCharacter: CharacterGenerator;
     parser: Parse<ExpressionReturnType>;
     subparsers?: Parse<ExpressionReturnType>[];
-    matchCounts: MatchCounts;
   },
 ) {
   const characterIndex = getCharacter.getIndex();
@@ -35,18 +32,16 @@ function runParser<ExpressionReturnType>(
 
     // Skip newlines and nulls
     if (c === "\n" || c === null) {
-      return { match: false, matchCounts, value: "" };
+      return { match: false, value: "" };
     }
 
     const ret = parser({
       getCharacter,
-      matchCounts,
-      parse: ({ getCharacter, matchCounts }) =>
+      parse: ({ getCharacter }) =>
         runParsers(
           getCharacter,
           // Assume subparsers cannot have subparsers
           (subparsers || []).map((p) => [p, []]),
-          matchCounts || {},
         ),
     });
 
@@ -56,7 +51,6 @@ function runParser<ExpressionReturnType>(
 
     return {
       match: true,
-      matchCounts: ret.matchCounts,
       value: ret.value,
     };
   } catch (error) {
@@ -69,7 +63,7 @@ function runParser<ExpressionReturnType>(
     }
   }
 
-  return { match: false, matchCounts, value: "" };
+  return { match: false, value: "" };
 }
 
 export { runParser, runParsers };

@@ -1,5 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts, Parse } from "./types.ts";
+import type { Parse } from "./types.ts";
 
 enum STATES {
   IDLE,
@@ -12,9 +12,8 @@ const ITEM_SYNTAX = "item";
 
 // Parses the content following \item
 function parseListItem<ExpressionReturnType>(
-  { getCharacter, matchCounts, parse }: {
+  { getCharacter, parse }: {
     getCharacter: CharacterGenerator;
-    matchCounts: MatchCounts;
     parse?: Parse<ExpressionReturnType>;
   },
 ) {
@@ -50,16 +49,11 @@ function parseListItem<ExpressionReturnType>(
       }
     } else if (state === STATES.PARSE_CONTENT) {
       const parseResult = parse &&
-        parse({ getCharacter, matchCounts: structuredClone(matchCounts) });
+        parse({ getCharacter });
 
       if (parseResult?.match) {
         parts.push(stringBuffer);
         stringBuffer = "";
-
-        if (parseResult.matchCounts) {
-          // TODO: Check how matchCounts is used (should be returned most likely)
-          matchCounts = parseResult.matchCounts;
-        }
 
         parts.push(parseResult.value);
       } else {
