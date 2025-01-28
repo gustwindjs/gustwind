@@ -28,7 +28,7 @@ function parseDefinitionItem(
     const c = getCharacter.next();
 
     if (c === null) {
-      return { title, description };
+      throw new Error("Error: No matching expression was found");
     }
 
     if (state === STATES.IDLE) {
