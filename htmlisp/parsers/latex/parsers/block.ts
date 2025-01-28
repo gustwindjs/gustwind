@@ -68,6 +68,8 @@ function getParseBlock<ExpressionReturnType>(
           } else {
             items.push(item);
           }
+
+          getCharacter.next();
         }
       } catch (_error) {
         getCharacter.setIndex(characterIndex);
