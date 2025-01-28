@@ -49,6 +49,8 @@ function getParseBlock<ExpressionReturnType>(
     const itemCb = expressions[beginValue].item;
     let items: ExpressionReturnType[] = [];
 
+    getCharacter.next();
+
     for (let i = 0; i < LIMIT; i++) {
       if (getCharacter.get() === null) {
         break;

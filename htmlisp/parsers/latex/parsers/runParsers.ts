@@ -8,11 +8,15 @@ function runParsers<ExpressionReturnType>(
 ) {
   // For async version this could use Promise.race
   for (const [parser, subparsers] of parsers) {
-    return runParser<ExpressionReturnType>({
+    const ret = runParser<ExpressionReturnType>({
       getCharacter,
       parser,
       subparsers,
     });
+
+    if (ret.match) {
+      return ret;
+    }
   }
 
   return { match: false, value: "" };
