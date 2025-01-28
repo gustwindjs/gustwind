@@ -6,6 +6,7 @@ type CharacterGenerator = {
   next: () => string | null;
   previous: () => string | null;
   slice: (a: number, b: number) => string;
+  rest: () => string;
 };
 
 export type { CharacterGenerator };

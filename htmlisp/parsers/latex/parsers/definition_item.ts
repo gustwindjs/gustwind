@@ -62,6 +62,8 @@ function parseDefinitionItem(
       }
     } else if (state === STATES.PARSE_DESCRIPTION) {
       if (c === "\n") {
+        getCharacter.previous();
+
         return { title, description };
       }
 
