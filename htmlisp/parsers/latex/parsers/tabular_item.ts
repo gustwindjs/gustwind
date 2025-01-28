@@ -16,7 +16,7 @@ function parseTabularItem(
   parseEmpty({ getCharacter });
 
   if (getCharacter.slice(0, 4) === "\\end") {
-    throw new Error("No matching expression was found");
+    throw new Error("Error: No matching expression was found");
   }
 
   if (getCharacter.get()?.trim() === "\\") {
@@ -35,7 +35,7 @@ function parseTabularItem(
     }
 
     if (getCharacter.slice(0, 4) === "\\end") {
-      throw new Error("No matching expression was found");
+      throw new Error("Error: No matching expression was found");
     } else if (c === "\\" && getCharacter.get() === "\\") {
       getCharacter.next();
 
@@ -49,7 +49,7 @@ function parseTabularItem(
     }
   }
 
-  throw new Error("No matching expression was found");
+  throw new Error("Error: No matching expression was found");
 }
 
 export { parseTabularItem };

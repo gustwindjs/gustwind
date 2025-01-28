@@ -42,7 +42,7 @@ function parseDefinitionItem(
         state = STATES.PARSE_TITLE;
       } else {
         if (ITEM_SYNTAX[itemIndex] !== c) {
-          throw new Error("No matching expression was found");
+          throw new Error("Error: No matching expression was found");
         }
 
         itemIndex++;
@@ -69,7 +69,7 @@ function parseDefinitionItem(
     }
   }
 
-  throw new Error("No matching expression was found");
+  throw new Error("Error: No matching expression was found");
 }
 
 export { parseDefinitionItem };

@@ -35,6 +35,6 @@ Deno.test(`does not parse an invalid expression`, () => {
   assertThrows(
     () => parseDefinitionItem({ getCharacter: generator }),
     Error,
-    `No matching expression was found`,
+    `Error: No matching expression was found`,
   );
 });

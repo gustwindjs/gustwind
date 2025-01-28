@@ -43,7 +43,7 @@ function getParseBlock<ExpressionReturnType>(
     }
 
     if (!beginValue) {
-      throw new Error("No matching expression was found");
+      throw new Error("Error: Missing begin statement");
     }
 
     const itemCb = expressions[beginValue].item;
@@ -86,7 +86,7 @@ function getParseBlock<ExpressionReturnType>(
       return expressions[beginValue].container(items);
     }
 
-    throw new Error("No matching expression was found");
+    throw new Error("Error: Matching end statement was not found");
     // throw new Error(`Expression matching to ${beginValue} was not found`);
   };
 }

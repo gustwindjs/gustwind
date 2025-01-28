@@ -41,7 +41,7 @@ function getParseSingle<ExpressionReturnType>(
         if (c === "\\") {
           if (i !== 0) {
             getCharacter.previous();
-            throw new Error("No matching expression was found");
+            throw new Error("Error: No matching expression was found");
           }
 
           stringBuffer = "";
@@ -57,7 +57,7 @@ function getParseSingle<ExpressionReturnType>(
             state = STATES.PARSE_EXPRESSION_CONTENT;
           } else {
             getCharacter.previous();
-            throw new Error("No matching expression was found");
+            throw new Error("Error: No matching expression was found");
             // throw new Error(`Unknown expression: ${stringBuffer}`);
           }
         } else {
@@ -94,7 +94,7 @@ function getParseSingle<ExpressionReturnType>(
     }
 
     getCharacter.previous();
-    throw new Error("No matching expression was found");
+    throw new Error("Error: No matching expression was found");
   };
 }
 

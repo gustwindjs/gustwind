@@ -78,7 +78,7 @@ Deno.test(`throws unless first character is a backslash`, () => {
         },
       ),
     Error,
-    `No matching expression was found`,
+    `Error: No matching expression was found`,
   );
 });
 

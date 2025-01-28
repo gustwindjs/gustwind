@@ -38,7 +38,7 @@ function parseBibtex(
 
     if (state === STATES.IDLE) {
       if (i === 0 && c !== "@") {
-        throw new Error("No matching expression was found");
+        throw new Error("Error: No matching expression was found");
       }
 
       state = STATES.PARSE_TYPE;
@@ -101,7 +101,7 @@ function parseBibtex(
   }
 
   if (!type) {
-    throw new Error("No matching expression was found");
+    throw new Error("Error: No matching expression was found");
   }
 
   return { type, id, fields };

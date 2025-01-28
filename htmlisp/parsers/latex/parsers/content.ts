@@ -69,7 +69,7 @@ function getParseContent<ExpressionReturnType>(
       }
     }
 
-    throw new Error("No matching expression was found");
+    throw new Error("Error: No matching expression was found");
   };
 }
 

@@ -41,7 +41,7 @@ function parseListItem<ExpressionReturnType>(
         state = STATES.PARSE_CONTENT;
       } else {
         if (ITEM_SYNTAX[itemIndex] !== c) {
-          throw new Error("No matching expression was found");
+          throw new Error("Error: No matching expression was found");
         }
 
         itemIndex++;
@@ -76,7 +76,7 @@ function parseListItem<ExpressionReturnType>(
     return parts;
   }
 
-  throw new Error("No matching expression was found");
+  throw new Error("Error: No matching expression was found");
 }
 
 export { parseListItem };

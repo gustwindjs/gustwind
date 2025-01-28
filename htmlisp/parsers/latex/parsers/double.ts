@@ -37,7 +37,7 @@ function getParseDouble<ExpressionReturnType>(
       if (state === STATES.IDLE) {
         if (c === "\\") {
           if (i !== 0) {
-            throw new Error("No matching expression was found");
+            throw new Error("Error: No matching expression was found");
           }
 
           stringBuffer = "";
@@ -52,7 +52,7 @@ function getParseDouble<ExpressionReturnType>(
             stringBuffer = "";
             state = STATES.PARSE_EXPRESSION_FIRST;
           } else {
-            throw new Error("No matching expression was found");
+            throw new Error("Error: No matching expression was found");
             // throw new Error(`Unknown expression: ${stringBuffer}`);
           }
         } else {
@@ -67,7 +67,7 @@ function getParseDouble<ExpressionReturnType>(
             state = STATES.PARSE_EXPRESSION_SECOND;
             getCharacter.next();
           } else {
-            throw new Error("No matching expression was found");
+            throw new Error("Error: No matching expression was found");
             // throw new Error("Argument was missing");
           }
         } else {
@@ -91,7 +91,7 @@ function getParseDouble<ExpressionReturnType>(
       }
     }
 
-    throw new Error("No matching expression was found");
+    throw new Error("Error: No matching expression was found");
   };
 }
 
