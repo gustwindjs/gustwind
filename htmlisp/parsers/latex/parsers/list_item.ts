@@ -24,7 +24,7 @@ function parseListItem<ExpressionReturnType>(
   let itemIndex = 0;
 
   for (let i = 0; i < LIMIT; i++) {
-    const c = getCharacter.next();
+    const c = getCharacter.get();
 
     if (c === null) {
       break;
@@ -61,14 +61,16 @@ function parseListItem<ExpressionReturnType>(
         }
 
         parts.push(parseResult.value);
+      } else {
+        stringBuffer += c;
       }
 
       if (c === "\n") {
         break;
       }
-
-      stringBuffer += c;
     }
+
+    getCharacter.next();
   }
 
   if (stringBuffer) {
