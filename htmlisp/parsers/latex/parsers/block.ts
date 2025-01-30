@@ -5,23 +5,23 @@ import { runParsers } from "./runParsers.ts";
 import type { Parse } from "./types.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
-type BlockParser<ExpressionReturnType> = {
-  container: (items: (ExpressionReturnType)[]) => ExpressionReturnType;
+type BlockParser<ContainerReturnType, ItemReturnType> = {
+  container: (items: (ItemReturnType)[]) => ContainerReturnType;
   item: (
     { getCharacter, parse }: {
       getCharacter: CharacterGenerator;
-      parse?: Parse<ExpressionReturnType>;
+      parse?: Parse<ContainerReturnType>;
     },
-  ) => ExpressionReturnType;
+  ) => ItemReturnType;
 };
 
 const LIMIT = 100000;
 
 // Parses \begin{<type>}...\end{<type>} form
-function getParseBlock<ExpressionReturnType>(
+function getParseBlock<ExpressionReturnType, ItemReturnType>(
   expressions: Record<
     string,
-    BlockParser<ExpressionReturnType>
+    BlockParser<ExpressionReturnType, ItemReturnType>
   >,
 ) {
   return function parseBlock({ getCharacter, parse }: {
@@ -63,9 +63,11 @@ function getParseBlock<ExpressionReturnType>(
         if (item) {
           if (Array.isArray(item)) {
             if (item.length) {
+              // @ts-expect-error Fine for now
               items = items.concat([item]);
             }
           } else {
+            // @ts-expect-error Fine for now
             items.push(item);
           }
 

@@ -12,7 +12,7 @@ Deno.test(`simple expression`, () => {
   const input = "foobar";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, Element>(
       {
         [name]: {
           container: (children) => ({
@@ -47,7 +47,7 @@ Deno.test(`simple expression with a newline`, () => {
   const input = "foobar";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, Element>(
       {
         [name]: {
           container: (children) => ({
@@ -81,7 +81,7 @@ Deno.test(`begin and end next to each other`, () => {
   const name = "verbatim";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, Element>(
       {
         [name]: {
           container: (children) => ({
@@ -111,7 +111,7 @@ Deno.test(`simple list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, Element>(
       {
         [name]: {
           container: (children) => ({
@@ -151,7 +151,7 @@ Deno.test(`simple definition list`, () => {
   const name = "itemize";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, ReturnType<typeof parseDefinitionItem>>(
       {
         [name]: {
           container: (children) => ({
@@ -179,7 +179,7 @@ Deno.test(`tabular list with only header`, () => {
   const name = "tabular";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, ReturnType<typeof parseTabularItem>>(
       {
         [name]: {
           container: ([header]) => ({
@@ -239,7 +239,7 @@ Deno.test(`tabular list with header and content`, () => {
   const name = "tabular";
 
   assertEquals(
-    getParseBlock<Element>(
+    getParseBlock<Element, ReturnType<typeof parseTabularItem>>(
       {
         [name]: {
           container: ([header, ...rows]) => ({
