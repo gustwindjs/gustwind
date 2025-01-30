@@ -87,6 +87,7 @@ function getParseBlock<ExpressionReturnType, ItemReturnType>(
     );
 
     if (beginValue === end.value) {
+      // @ts-expect-error Fine for now
       return expressions[beginValue].container(items);
     }
 
