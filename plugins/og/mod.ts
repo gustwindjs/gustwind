@@ -21,7 +21,10 @@ const plugin: Plugin<{
 
     return {
       beforeEachRender: async ({ url, route, send }) => {
-        if (!url.endsWith(".html") && !url.endsWith(".xml")) {
+        if (
+          !url.endsWith(".html") && !url.endsWith(".html/") &&
+          !url.endsWith(".xml") && !url.endsWith(".xml/")
+        ) {
           const meta = await send("gustwind-meta-plugin", {
             type: "getMeta",
             payload: undefined,
@@ -39,6 +42,7 @@ const plugin: Plugin<{
               meta: {
                 // @ts-expect-error Figure out how to type this
                 ...meta,
+                // @ts-expect-error Figure out how to type this
                 ...route.meta,
               },
             },
