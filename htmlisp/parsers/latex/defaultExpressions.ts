@@ -28,7 +28,7 @@ const doubles: Record<string, DoubleParser<Element>> = {
     element("a", [children || ""], href ? { href } : {}),
 };
 
-const blocks: Record<string, BlockParser<Element>> = {
+const blocks: Record<string, BlockParser<Element, Element>> = {
   verbatim: {
     container: (children) => element("pre", children),
     item: getParseContent<Element>((children) => ({
@@ -47,7 +47,7 @@ const blocks: Record<string, BlockParser<Element>> = {
   },
 };
 
-const lists: Record<string, BlockParser<Element>> = {
+const lists: Record<string, BlockParser<Element, Element>> = {
   enumerate: {
     container: (children) => element("ol", children),
     item: (o) =>
