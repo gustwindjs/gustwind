@@ -48,8 +48,7 @@ const getWebsocketServer = (port = 8080) => {
             JSON.stringify({ type: "log", payload: `received ${type}` }),
           );
 
-          // TODO: Use Deno.Command instead
-          Deno.run({ cmd: ["touch", path] });
+          new Deno.Command("touch", { args: [path] });
         }
       });
 
