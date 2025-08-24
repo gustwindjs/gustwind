@@ -14,5 +14,6 @@
     "watch:build": "deno run --lock=deno.build.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import --watch ./gustwind-cli/mod.ts -b -t cpuHalf -o ./build",
     "build:gustwind-for-npm": "deno run -A build_gustwind_for_npm.ts",
     "build:htmlisp-for-npm": "deno run -A build_htmlisp_for_npm.ts"
-  }
+  },
+  "nodeModulesDir": "auto"
 }

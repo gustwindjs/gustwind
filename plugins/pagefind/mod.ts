@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import * as pagefind from "npm:pagefind@1.1.0";
+import * as pagefind from "npm:pagefind@1.3.0";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{ indexInDev: boolean }> = {
