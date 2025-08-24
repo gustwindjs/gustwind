@@ -23,16 +23,11 @@ const plugin: Plugin<{ wss: ReturnType<typeof getWebsocketServer> }> = {
       DEBUG &&
         console.log(
           "websocket-plugin - sending to wss plugins",
-          wss.clients,
+          wss,
           message,
         );
 
-      wss.clients.forEach((socket) => {
-        // 1 for open, https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
-        if (socket.state === 1) {
-          socket.send(JSON.stringify(message));
-        }
-      });
+      wss.send(JSON.stringify(message));
     }
 
     return {
