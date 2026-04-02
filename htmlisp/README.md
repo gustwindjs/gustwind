@@ -111,6 +111,30 @@ The expression given to `&foreach` should produce an array. For each item, objec
 </ul>
 ```
 
+If you want an explicit alias for the current loop item, use `as`:
+
+```html
+<dl>
+  <noop &foreach="readonlyFields as field">
+    <dd &children="field.text"></dd>
+  </noop>
+</dl>
+```
+
+Alias behavior is additive:
+
+* object fields are still exposed directly for compatibility
+* `value` still points to the current item
+* the alias points to the full current item
+
+That means both of the following remain valid:
+
+```html
+<ul &foreach="blogPosts as post">
+  <li &title="value" &children="post"></li>
+</ul>
+```
+
 ## Visibility
 
 Given there are times when you might want to remove a part of the DOM structure based on an expression, there is `&visibleIf` helper that works as below:

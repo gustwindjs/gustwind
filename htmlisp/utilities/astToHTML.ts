@@ -9,6 +9,7 @@ import type {
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
 import { raw, renderTextValue } from "./runtime.ts";
+import { isForeachBinding } from "./parseForeachExpression.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
@@ -69,7 +70,10 @@ async function astToHTML(
 
     let renderedChildren = Promise.resolve("");
     if (parsedAttributes.foreach) {
-      const items = parsedAttributes.foreach as unknown[];
+      const foreachBinding = isForeachBinding(parsedAttributes.foreach)
+        ? parsedAttributes.foreach
+        : { items: parsedAttributes.foreach as unknown[] };
+      const { items, alias } = foreachBinding;
 
       delete parsedAttributes.foreach;
 
@@ -85,8 +89,7 @@ async function astToHTML(
             children,
             htmlispToHTML,
             context,
-            // @ts-expect-error This is fine
-            { ...props, ...p, value: p },
+            createForeachProps(props, p, alias),
             local,
             utilities,
             componentUtilities,
@@ -223,3 +226,24 @@ async function slotsToProps(
 }
 
 export { astToHTML };
+
+function createForeachProps(
+  props: Context | undefined,
+  item: unknown,
+  alias?: string,
+) {
+  const loopProps: Context = {
+    ...(props || {}),
+    value: item,
+  };
+
+  if (item && typeof item === "object" && !Array.isArray(item)) {
+    Object.assign(loopProps, item);
+  }
+
+  if (alias) {
+    loopProps[alias] = item;
+  }
+
+  return loopProps;
+}

@@ -7,8 +7,9 @@ Status as of the current implementation:
 - phase 0 is complete
 - phase 1 is complete
 - phase 2 is complete for `fragment` and function components
+- phase 3 has started with loop alias syntax
 - a typing gate now exists for the HTMLisp test suite
-- remaining work is parser-heavy syntax expansion only
+- remaining work is block/interpolation syntax only
 
 The target is still the same:
 
@@ -66,8 +67,9 @@ The following items are already implemented:
 4. structured attributes via `&attrs`
 5. `fragment` as a first-class wrapperless composition tag
 6. function components with explicit async/sync behavior
-7. focused ergonomics tests for new behavior
-8. a typing gate through `deno task check:types`
+7. loop alias syntax through `&foreach="items as item"`
+8. focused ergonomics tests for new behavior
+9. a typing gate through `deno task check:types`
 
 The rest of this document describes what shipped, what remains, and the order the remaining work should follow.
 
@@ -358,7 +360,7 @@ Outcome:
 
 This phase should happen only if phase 1 and phase 2 still leave the templates too noisy.
 
-Status: not started
+Status: in progress
 
 #### 6. Loop Alias Syntax
 
@@ -375,6 +377,12 @@ Status: not started
 - this is still realistic because it extends an existing directive
 - it is less invasive than block syntax
 - it should follow shorthand scope lookup, not precede it
+
+Outcome:
+
+- shipped as `&foreach="items as item"`
+- the alias points to the full current item
+- direct field access and `value` remain available for compatibility
 
 #### 7. Block Conditionals And Loops
 
@@ -486,9 +494,9 @@ Status: complete
 
 ### Milestone F: Optional Syntax Work
 
-Status: pending
+Status: in progress
 
-1. Evaluate whether aliasing on `&foreach` is sufficient.
+1. Evaluate whether the shipped `&foreach` aliasing is sufficient.
 2. Only then decide whether block directives are still justified.
 3. Add interpolation syntax only if the cost is still worth it after earlier cleanup.
 
@@ -500,6 +508,8 @@ Implemented additions:
 
 - `htmlisp/html-tests/ergonomics_test.ts`
 - `htmlisp/html-tests-sync/ergonomics_test.ts`
+- alias coverage in `htmlisp/html-tests/foreach_test.ts`
+- alias coverage in `htmlisp/html-tests-sync/foreach_test.ts`
 - `deno task check:types` for typed test coverage without execution
 
 ### Required New Test Areas

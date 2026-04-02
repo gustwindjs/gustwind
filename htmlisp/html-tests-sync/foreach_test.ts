@@ -137,3 +137,90 @@ Deno.test("foreach with access to component props", async () => {
     `<ul><li title="demo">foo</li></ul>`,
   );
 });
+
+Deno.test("foreach alias with an array of objects", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<dl &foreach="readonlyFields as field">
+        <dd &children="field.text"></dd>
+      </dl>
+    `,
+      context: {
+        readonlyFields: [{ text: "foo" }],
+      },
+    }),
+    `<dl><dd>foo</dd></dl>`,
+  );
+});
+
+Deno.test("foreach alias with an array of values", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<ul &foreach="items as item">
+        <li &children="item"></li>
+      </ul>
+    `,
+      context: {
+        items: ["foo"],
+      },
+    }),
+    `<ul><li>foo</li></ul>`,
+  );
+});
+
+Deno.test("foreach alias keeps direct field access compatibility", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<ul &foreach="items as item">
+        <li &title="item.slug" &children="slug"></li>
+      </ul>
+    `,
+      context: {
+        items: [{ slug: "foo" }],
+      },
+    }),
+    `<ul><li title="foo">foo</li></ul>`,
+  );
+});
+
+Deno.test("foreach with alias for object items", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<dl><noop &foreach="readonlyFields as field">
+        <dd &children="field.text"></dd>
+      </noop></dl>`,
+      context: {
+        readonlyFields: [{ text: "foo" }, { text: "bar" }],
+      },
+    }),
+    `<dl><dd>foo</dd><dd>bar</dd></dl>`,
+  );
+});
+
+Deno.test("foreach with alias for primitive items", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<ul &foreach="blogPosts as post">
+        <li &children="post"></li>
+      </ul>`,
+      context: {
+        blogPosts: ["foo", "bar"],
+      },
+    }),
+    `<ul><li>foo</li><li>bar</li></ul>`,
+  );
+});
+
+Deno.test("foreach alias keeps value compatibility", async () => {
+  assertEquals(
+    await htmlispToHTMLSync({
+      htmlInput: `<ul &foreach="blogPosts as post">
+        <li &title="value" &children="post"></li>
+      </ul>`,
+      context: {
+        blogPosts: ["foo"],
+      },
+    }),
+    `<ul><li title="foo">foo</li></ul>`,
+  );
+});

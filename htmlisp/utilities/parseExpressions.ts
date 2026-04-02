@@ -1,8 +1,9 @@
 import { applyUtility } from "./applyUtility.ts";
 import { isUndefined } from "../../utilities/functional.ts";
-import type { Attributes, Context } from "../types.ts";
+import type { Attributes, Context, ForeachBinding } from "../types.ts";
 import type { Utilities, Utility } from "../../types.ts";
 import { parseBoundExpression } from "./parseBoundExpression.ts";
+import { parseForeachExpression } from "./parseForeachExpression.ts";
 
 async function parseExpressions(
   attributes: Attributes | undefined,
@@ -23,6 +24,37 @@ async function parseExpressions(
 
         // Check bindings
         if (name.startsWith("&") && value !== null) {
+          if (name === "&foreach") {
+            const parsedForeach = parseForeachExpression(value.toString());
+
+            if (!parsedForeach) {
+              throw new Error(
+                `Failed to parse ${value} for attribute ${name}!`,
+              );
+            }
+
+            const evaluatedItems = await applyUtility<
+              Utility,
+              Utilities,
+              Context
+            >(
+              parsedForeach.expression,
+              utilities,
+              context,
+            );
+
+            if (isUndefined(evaluatedItems)) {
+              return;
+            }
+
+            const foreachBinding: ForeachBinding = {
+              items: evaluatedItems as unknown[],
+              alias: parsedForeach.alias,
+            };
+
+            return [name.slice(1), foreachBinding];
+          }
+
           const parsedExpression = parseBoundExpression(value.toString());
 
           if (!parsedExpression) {

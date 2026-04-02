@@ -1,6 +1,10 @@
 import type { Context, Utilities } from "../types.ts";
 
 type Attributes = Record<string, string | boolean | null>;
+type ForeachBinding = {
+  items: unknown[];
+  alias?: string;
+};
 type RawHtml = {
   __htmlispRaw: true;
   value: string;
@@ -35,6 +39,7 @@ export type {
   Components,
   Context,
   Element,
+  ForeachBinding,
   HTMLispComponent,
   HtmlispRenderOptions,
   HtmllispToHTMLParameters,
