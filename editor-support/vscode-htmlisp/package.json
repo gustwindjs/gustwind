@@ -1,0 +1,89 @@
+{
+  "name": "htmlisp-language",
+  "displayName": "HTMLisp Language Support",
+  "description": "Syntax highlighting and editor configuration for HTMLisp templates.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "htmlisp",
+    "html",
+    "templating",
+    "lisp",
+    "syntax"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "htmlisp",
+        "aliases": [
+          "HTMLisp",
+          "htmlisp"
+        ],
+        "extensions": [
+          ".htmlisp",
+          ".hisp"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "typescripthtmlisp",
+        "aliases": [
+          "TypeScript HTMLisp",
+          "typescripthtmlisp"
+        ],
+        "extensions": [
+          ".htmlisp.ts"
+        ],
+        "configuration": "./typescripthtmlisp-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "htmlisp",
+        "scopeName": "text.html.htmlisp",
+        "path": "./syntaxes/htmlisp.tmLanguage.json"
+      },
+      {
+        "language": "typescripthtmlisp",
+        "scopeName": "source.typescripthtmlisp",
+        "path": "./syntaxes/typescripthtmlisp.tmLanguage.json"
+      },
+      {
+        "scopeName": "text.html.htmlisp.injection",
+        "path": "./syntaxes/htmlisp-injection.tmLanguage.json",
+        "injectTo": [
+          "source.js",
+          "source.jsx",
+          "source.ts",
+          "source.tsx"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.htmlisp": "htmlisp"
+        },
+        "tokenTypes": {
+          "meta.embedded.block.htmlisp": "other"
+        }
+      },
+      {
+        "scopeName": "text.html.htmlisp.typescripthtmlisp.injection",
+        "path": "./syntaxes/typescripthtmlisp-htmlisp-injection.tmLanguage.json",
+        "injectTo": [
+          "source.typescripthtmlisp"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.htmlisp": "htmlisp"
+        },
+        "tokenTypes": {
+          "meta.embedded.block.htmlisp": "other"
+        }
+      }
+    ]
+  }
+}

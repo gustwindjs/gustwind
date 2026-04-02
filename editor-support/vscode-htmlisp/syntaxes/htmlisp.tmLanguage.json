@@ -1,0 +1,418 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HTMLisp",
+  "scopeName": "text.html.htmlisp",
+  "patterns": [
+    {
+      "include": "#doctype"
+    },
+    {
+      "include": "#tag-special"
+    },
+    {
+      "include": "#tag-component"
+    },
+    {
+      "include": "#tag-html"
+    },
+    {
+      "include": "#entity"
+    }
+  ],
+  "repository": {
+    "doctype": {
+      "name": "meta.tag.sgml.doctype.htmlisp",
+      "match": "<![Dd][Oo][Cc][Tt][Yy][Pp][Ee][^>]*>"
+    },
+    "tag-special": {
+      "name": "meta.tag.htmlisp",
+      "begin": "(</?)(fragment|noop|slot)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.htmlisp"
+        },
+        "2": {
+          "name": "keyword.control.tag.special.htmlisp"
+        }
+      },
+      "end": "(/?>)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#attribute-expression-double"
+        },
+        {
+          "include": "#attribute-expression-single"
+        },
+        {
+          "include": "#attribute-expression-backtick"
+        },
+        {
+          "include": "#attribute-expression-flag"
+        },
+        {
+          "include": "#attribute-comment"
+        },
+        {
+          "include": "#attribute-plain"
+        },
+        {
+          "include": "#string-double"
+        },
+        {
+          "include": "#string-single"
+        },
+        {
+          "include": "#string-backtick"
+        },
+        {
+          "include": "#assignment"
+        }
+      ]
+    },
+    "tag-component": {
+      "name": "meta.tag.htmlisp",
+      "begin": "(</?)([A-Z][\\w:-]*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.htmlisp"
+        },
+        "2": {
+          "name": "entity.name.tag.component.htmlisp"
+        }
+      },
+      "end": "(/?>)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#attribute-expression-double"
+        },
+        {
+          "include": "#attribute-expression-single"
+        },
+        {
+          "include": "#attribute-expression-backtick"
+        },
+        {
+          "include": "#attribute-expression-flag"
+        },
+        {
+          "include": "#attribute-comment"
+        },
+        {
+          "include": "#attribute-plain"
+        },
+        {
+          "include": "#string-double"
+        },
+        {
+          "include": "#string-single"
+        },
+        {
+          "include": "#string-backtick"
+        },
+        {
+          "include": "#assignment"
+        }
+      ]
+    },
+    "tag-html": {
+      "name": "meta.tag.htmlisp",
+      "begin": "(</?)([a-z][\\w:-]*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.htmlisp"
+        },
+        "2": {
+          "name": "entity.name.tag.htmlisp"
+        }
+      },
+      "end": "(/?>)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#attribute-expression-double"
+        },
+        {
+          "include": "#attribute-expression-single"
+        },
+        {
+          "include": "#attribute-expression-backtick"
+        },
+        {
+          "include": "#attribute-expression-flag"
+        },
+        {
+          "include": "#attribute-comment"
+        },
+        {
+          "include": "#attribute-plain"
+        },
+        {
+          "include": "#string-double"
+        },
+        {
+          "include": "#string-single"
+        },
+        {
+          "include": "#string-backtick"
+        },
+        {
+          "include": "#assignment"
+        }
+      ]
+    },
+    "attribute-expression-double": {
+      "name": "meta.attribute.expression.htmlisp",
+      "begin": "(&[A-Za-z_:][\\w:.-]*)(\\s*=\\s*)(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.expression.htmlisp"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.htmlisp"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expression-value"
+        }
+      ]
+    },
+    "attribute-expression-single": {
+      "name": "meta.attribute.expression.htmlisp",
+      "begin": "(&[A-Za-z_:][\\w:.-]*)(\\s*=\\s*)(')",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.expression.htmlisp"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.htmlisp"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expression-value"
+        }
+      ]
+    },
+    "attribute-expression-backtick": {
+      "name": "meta.attribute.expression.htmlisp",
+      "begin": "(&[A-Za-z_:][\\w:.-]*)(\\s*=\\s*)(`)",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.expression.htmlisp"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.htmlisp"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "`",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#expression-value"
+        }
+      ]
+    },
+    "attribute-expression-flag": {
+      "match": "&[A-Za-z_:][\\w:.-]*(?!\\s*=)",
+      "name": "entity.other.attribute-name.expression.htmlisp"
+    },
+    "attribute-comment": {
+      "patterns": [
+        {
+          "match": "__[A-Za-z_:][\\w:.-]*(?=\\s*=)",
+          "name": "comment.line.attribute.htmlisp"
+        },
+        {
+          "match": "__[A-Za-z_:][\\w:.-]*(?!\\s*=)",
+          "name": "comment.line.attribute.htmlisp"
+        }
+      ]
+    },
+    "attribute-plain": {
+      "patterns": [
+        {
+          "match": "\\b[A-Za-z_:][\\w:.-]*(?=\\s*=)",
+          "name": "entity.other.attribute-name.htmlisp"
+        },
+        {
+          "match": "\\b[A-Za-z_:][\\w:.-]*(?!\\s*=)",
+          "name": "entity.other.attribute-name.htmlisp"
+        }
+      ]
+    },
+    "assignment": {
+      "match": "=",
+      "name": "keyword.operator.assignment.htmlisp"
+    },
+    "string-double": {
+      "name": "string.quoted.double.htmlisp",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#entity"
+        }
+      ]
+    },
+    "string-single": {
+      "name": "string.quoted.single.htmlisp",
+      "begin": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#entity"
+        }
+      ]
+    },
+    "string-backtick": {
+      "name": "string.quoted.other.backtick.htmlisp",
+      "begin": "`",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.htmlisp"
+        }
+      },
+      "end": "`",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#entity"
+        }
+      ]
+    },
+    "expression-value": {
+      "patterns": [
+        {
+          "include": "#expression"
+        },
+        {
+          "match": "\\b(?:true|false|null|undefined)\\b",
+          "name": "constant.language.htmlisp"
+        },
+        {
+          "match": "\\b-?\\d+(?:\\.\\d+)?\\b",
+          "name": "constant.numeric.htmlisp"
+        },
+        {
+          "match": "\\bas\\b",
+          "name": "keyword.operator.word.htmlisp"
+        },
+        {
+          "match": "[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*",
+          "name": "variable.other.readwrite.htmlisp"
+        },
+        {
+          "include": "#entity"
+        }
+      ]
+    },
+    "expression": {
+      "name": "meta.expression.htmlisp",
+      "begin": "\\(",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.expression.begin.htmlisp"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.expression.end.htmlisp"
+        }
+      },
+      "patterns": [
+        {
+          "match": "(?<=\\()[-+/*!?=.A-Za-z_:][^()\\s\"']*",
+          "name": "support.function.htmlisp"
+        },
+        {
+          "include": "#expression"
+        },
+        {
+          "match": "'[^']*'",
+          "name": "string.quoted.single.expression.htmlisp"
+        },
+        {
+          "match": "\\b-?\\d+(?:\\.\\d+)?\\b",
+          "name": "constant.numeric.htmlisp"
+        },
+        {
+          "match": "\\b(?:true|false|null|undefined)\\b",
+          "name": "constant.language.htmlisp"
+        },
+        {
+          "match": "[^()\\s\"']+",
+          "name": "variable.other.readwrite.htmlisp"
+        }
+      ]
+    },
+    "entity": {
+      "match": "&(?:[A-Za-z][A-Za-z0-9]+|#\\d+|#x[0-9A-Fa-f]+);",
+      "name": "constant.character.entity.htmlisp"
+    }
+  }
+}

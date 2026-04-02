@@ -1,0 +1,186 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "TypeScript HTMLisp Template Injection",
+  "scopeName": "text.html.htmlisp.typescripthtmlisp.injection",
+  "injectionSelector": "L:string.template.ts",
+  "patterns": [
+    {
+      "include": "#htmlisp-template"
+    }
+  ],
+  "repository": {
+    "htmlisp-template": {
+      "name": "text.html.htmlisp meta.embedded.block.htmlisp",
+      "begin": "(\\G\\s*)(<)(?=[/!A-Za-z])",
+      "beginCaptures": {
+        "2": {
+          "name": "punctuation.definition.tag.begin.htmlisp"
+        }
+      },
+      "end": "(?=\\$\\{|`)",
+      "contentName": "text.html.htmlisp meta.embedded.block.htmlisp",
+      "patterns": [
+        {
+          "include": "#root-tag-after-open-angle"
+        },
+        {
+          "include": "text.html.htmlisp"
+        }
+      ]
+    },
+    "root-tag-after-open-angle": {
+      "patterns": [
+        {
+          "name": "meta.tag.htmlisp",
+          "begin": "(/?)(fragment|noop|slot)\\b",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.htmlisp"
+            },
+            "2": {
+              "name": "keyword.control.tag.special.htmlisp"
+            }
+          },
+          "end": "(/?>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.end.htmlisp"
+            }
+          },
+          "patterns": [
+            {
+              "include": "text.html.htmlisp#attribute-expression-double"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-single"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-flag"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-comment"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-plain"
+            },
+            {
+              "include": "text.html.htmlisp#string-double"
+            },
+            {
+              "include": "text.html.htmlisp#string-single"
+            },
+            {
+              "include": "text.html.htmlisp#string-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#assignment"
+            }
+          ]
+        },
+        {
+          "name": "meta.tag.htmlisp",
+          "begin": "(/?)([A-Z][\\w:-]*)\\b",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.htmlisp"
+            },
+            "2": {
+              "name": "entity.name.tag.component.htmlisp"
+            }
+          },
+          "end": "(/?>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.end.htmlisp"
+            }
+          },
+          "patterns": [
+            {
+              "include": "text.html.htmlisp#attribute-expression-double"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-single"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-flag"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-comment"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-plain"
+            },
+            {
+              "include": "text.html.htmlisp#string-double"
+            },
+            {
+              "include": "text.html.htmlisp#string-single"
+            },
+            {
+              "include": "text.html.htmlisp#string-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#assignment"
+            }
+          ]
+        },
+        {
+          "name": "meta.tag.htmlisp",
+          "begin": "(/?)([a-z][\\w:-]*)\\b",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.begin.htmlisp"
+            },
+            "2": {
+              "name": "entity.name.tag.htmlisp"
+            }
+          },
+          "end": "(/?>)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.tag.end.htmlisp"
+            }
+          },
+          "patterns": [
+            {
+              "include": "text.html.htmlisp#attribute-expression-double"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-single"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-expression-flag"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-comment"
+            },
+            {
+              "include": "text.html.htmlisp#attribute-plain"
+            },
+            {
+              "include": "text.html.htmlisp#string-double"
+            },
+            {
+              "include": "text.html.htmlisp#string-single"
+            },
+            {
+              "include": "text.html.htmlisp#string-backtick"
+            },
+            {
+              "include": "text.html.htmlisp#assignment"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
