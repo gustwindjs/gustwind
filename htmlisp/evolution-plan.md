@@ -6,10 +6,10 @@ Status as of the current implementation:
 
 - phase 0 is complete
 - phase 1 is complete
-- phase 2 is complete for `fragment` and function components
-- phase 3 has started with loop alias syntax
+- phase 2 is complete
+- phase 3 is complete for loop alias syntax evaluation
 - a typing gate now exists for the HTMLisp test suite
-- remaining work is block/interpolation syntax only
+- block/interpolation syntax is deferred and not part of this plan's completion criteria
 
 The target is still the same:
 
@@ -71,7 +71,7 @@ The following items are already implemented:
 8. focused ergonomics tests for new behavior
 9. a typing gate through `deno task check:types`
 
-The rest of this document describes what shipped, what remains, and the order the remaining work should follow.
+The rest of this document describes what shipped, what was intentionally deferred, and why this plan can now be considered complete.
 
 ## Recommended Implementation Order
 
@@ -360,7 +360,7 @@ Outcome:
 
 This phase should happen only if phase 1 and phase 2 still leave the templates too noisy.
 
-Status: in progress
+Status: complete as an evaluation phase
 
 #### 6. Loop Alias Syntax
 
@@ -404,6 +404,11 @@ The current parser is HTML-tag oriented. Block directives would require parser w
 
 This feature is realistic, but it is a parser project, not a small ergonomic patch.
 
+Current decision:
+
+- defer to a separate future design note or RFC if real template pain justifies parser work later
+- do not treat this as unfinished work for the current evolution plan
+
 #### 8. Interpolation Syntax
 
 ##### Candidate Syntax
@@ -416,6 +421,11 @@ This feature is realistic, but it is a parser project, not a small ergonomic pat
 ##### Why Deferred
 
 Interpolation touches text-node parsing, escaping rules, raw handling, and editor support at the same time. It should only happen after escape semantics are stable.
+
+Current decision:
+
+- defer to a separate future design note or RFC if the shorthand and fragment improvements still prove insufficient
+- do not treat this as unfinished work for the current evolution plan
 
 ## Files Likely To Change
 
@@ -494,11 +504,11 @@ Status: complete
 
 ### Milestone F: Optional Syntax Work
 
-Status: in progress
+Status: complete as a decision milestone
 
 1. Evaluate whether the shipped `&foreach` aliasing is sufficient.
-2. Only then decide whether block directives are still justified.
-3. Add interpolation syntax only if the cost is still worth it after earlier cleanup.
+2. Conclude that block directives remain optional and should move to a separate future RFC if needed.
+3. Conclude that interpolation syntax remains optional and should move to a separate future RFC if needed.
 
 ## Testing Plan
 
@@ -575,7 +585,8 @@ Migration should happen in small passes, not one sweep.
 Current status:
 
 - the language/runtime support is in place
-- the repo migration itself is still pending and should happen separately from the runtime work
+- the repo migration itself is intentionally separate from the runtime evolution plan
+- any downstream migration checklist should be tracked in repo-specific work, not as open scope in this document
 
 ## Risks And Mitigations
 
@@ -633,4 +644,24 @@ The first wave has already shipped:
 2. shorthand scoped variable access inside existing `&...` attributes
 3. structured attributes with `&attrs`
 
-Those changes, plus `fragment`, function components, and typed test coverage, solve most of the pain described in the original notes. The remaining decisions are now mostly about whether parser-level syntax expansion is worth the added complexity.
+Those changes, plus `fragment`, function components, loop aliasing, and typed test coverage, solve most of the pain described in the original notes. The remaining parser-level ideas are now separate follow-up questions, not unfinished work for this plan.
+
+## Plan Closure
+
+This evolution plan is complete.
+
+What shipped:
+
+1. escape by default with explicit raw output
+2. shorthand scoped variable access inside existing `&...` attributes
+3. structured attributes with `&attrs`
+4. `fragment` as the default wrapperless composition primitive
+5. typed function components
+6. loop alias syntax through `&foreach="items as item"`
+7. ergonomics and typing coverage for the new behavior
+
+What remains outside this plan:
+
+1. repo-specific migration work
+2. any future RFC for block directives
+3. any future RFC for interpolation syntax
