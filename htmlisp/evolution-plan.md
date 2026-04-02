@@ -2,6 +2,14 @@
 
 This note converts the earlier improvement ideas into an implementation plan grounded in the current HTMLisp codebase.
 
+Status as of the current implementation:
+
+- phase 0 is complete
+- phase 1 is complete
+- phase 2 is complete for `fragment` and function components
+- a typing gate now exists for the HTMLisp test suite
+- remaining work is parser-heavy syntax expansion only
+
 The target is still the same:
 
 - keep HTMLisp server-rendered
@@ -21,7 +29,7 @@ The current HTMLisp implementation has a few properties that strongly affect wha
   - fragment-like output suppression
   - local binding carrier
   - dynamic tag replacement through `&type`
-- components are currently registered as strings
+- components can now be registered as strings or functions
 - async and sync rendering paths are maintained in parallel
 
 That means:
@@ -48,11 +56,28 @@ The following changes are realistic later, but should not be phase 1 work:
 3. block forms such as `{@if}` and `{@for}`
 4. interpolation syntax such as `{value}` in text nodes or attributes
 
+## Implemented Baseline
+
+The following items are already implemented:
+
+1. `RawHtml` support through `raw(...)`
+2. `renderOptions.escapeByDefault`
+3. shorthand scoped lookup inside existing `&...` attributes
+4. structured attributes via `&attrs`
+5. `fragment` as a first-class wrapperless composition tag
+6. function components with explicit async/sync behavior
+7. focused ergonomics tests for new behavior
+8. a typing gate through `deno task check:types`
+
+The rest of this document describes what shipped, what remains, and the order the remaining work should follow.
+
 ## Recommended Implementation Order
 
 ### Phase 0: Refactor For Safe Change
 
 This phase is internal only. It reduces duplication before adding behavior.
+
+Status: complete
 
 #### Goals
 
@@ -87,9 +112,16 @@ If feature work starts without reducing duplication, each later step becomes slo
 - existing HTMLisp tests remain green
 - new helpers are used by both async and sync paths
 
+Outcome:
+
+- shared runtime helpers now handle raw values, escaping, and scoped resolution
+- async and sync renderers use the same compatibility model
+
 ### Phase 1: Safer Output And Less Ceremony
 
 This is the highest-value phase. It should be the first user-visible release.
+
+Status: complete
 
 #### 1. Escape By Default
 
@@ -134,6 +166,12 @@ Rendered child HTML is currently passed through component props as plain strings
 - raw passthrough for trusted child HTML
 - compatibility option for old behavior
 
+Outcome:
+
+- shipped as `RawHtml`, `raw(...)`, and `renderOptions.escapeByDefault`
+- renderer-produced child markup is passed through as trusted raw output where needed
+- compatibility mode remains the default unless escaped output is enabled explicitly
+
 #### 2. Scoped Variable Shorthand
 
 ##### Decision
@@ -171,6 +209,12 @@ That makes template intent predictable and keeps current explicit `(get props ..
 - shared scope resolver helper
 - tests for precedence, nested keys, and compatibility with `(get ...)`
 
+Outcome:
+
+- shipped for `&...` bindings through bare identifiers and dotted paths
+- scope resolution order is `local -> props -> context`
+- Lisp-style forms remain valid
+
 #### 3. Structured Attributes With `&attrs`
 
 ##### Decision
@@ -206,15 +250,27 @@ That avoids accidental overrides in component helpers.
 - support for boolean and optional attributes
 - tests for merge order and omission rules
 
+Outcome:
+
+- shipped as `&attrs`
+- explicit attributes override values coming from `&attrs`
+- boolean and omitted-value behavior is covered by tests
+
 #### Exit Criteria For Phase 1
 
 - HTMLisp can run in compatibility mode and in escaped-output mode
 - common `(get props ...)` usage can be rewritten to shorthand
 - button-like helpers can stop parsing string attributes manually
 
+Outcome:
+
+- all exit criteria are met
+
 ### Phase 2: Composition Improvements
 
 This phase improves template readability without parser-heavy work.
+
+Status: complete
 
 #### 4. First-Class Fragment Alias
 
@@ -245,6 +301,11 @@ and:
 
 - `fragment` tag with output behavior equivalent to `noop` without `&type`
 - docs that reserve `noop` for advanced cases and prefer `fragment` for plain composition
+
+Outcome:
+
+- `fragment` is implemented
+- README now documents `fragment` as the default composition primitive and `noop` as the advanced escape hatch
 
 #### 5. Typed Function Components
 
@@ -278,14 +339,26 @@ The exact sync/async split should stay explicit:
 - runtime support in async and sync renderers
 - tests for string components, sync function components, and async function components
 
+Outcome:
+
+- components now accept strings or functions
+- async component functions are supported in the async renderer
+- sync renderer rejects async component functions explicitly
+
 #### Exit Criteria For Phase 2
 
 - component-heavy templates can use `fragment` instead of child-insertion `noop`
 - TypeScript-authored components no longer require large string dictionaries in all cases
 
+Outcome:
+
+- both exit criteria are met
+
 ### Phase 3: Optional Syntax Expansion
 
 This phase should happen only if phase 1 and phase 2 still leave the templates too noisy.
+
+Status: not started
 
 #### 6. Loop Alias Syntax
 
@@ -353,6 +426,8 @@ Interpolation touches text-node parsing, escaping rules, raw handling, and edito
 - `htmlisp/utilities/astToHTMLSync.ts`
 - `htmlisp/utilities/renderElement.ts`
 - `htmlisp/utilities/getAttributeBindings.ts`
+- `htmlisp/utilities/runtime.ts`
+- `htmlisp/utilities/parseBoundExpression.ts`
 
 ### Parser Work For Later Phases
 
@@ -369,11 +444,15 @@ Interpolation touches text-node parsing, escaping rules, raw handling, and edito
 
 ### Milestone A: Compatibility Infrastructure
 
+Status: complete
+
 1. Introduce shared render-value helpers and remove duplicated normalization logic.
 2. Add `HtmlispRenderOptions` with `escapeByDefault`.
 3. Thread render options through sync and async entry points.
 
 ### Milestone B: Safe Output
+
+Status: complete
 
 1. Add `RawHtml` type and `raw(...)` utility.
 2. Escape text-node values by default when the option is enabled.
@@ -383,11 +462,15 @@ Interpolation touches text-node parsing, escaping rules, raw handling, and edito
 
 ### Milestone C: Scoped Shorthand
 
+Status: complete
+
 1. Extend expression parsing to support bare identifiers and dotted paths.
 2. Add shared scope resolution with `local -> props -> context`.
 3. Add tests for shorthand, precedence, and fallback to `(get ...)`.
 
 ### Milestone D: Structured Attributes
+
+Status: complete
 
 1. Add `&attrs` handling.
 2. Normalize booleans and empty values.
@@ -395,11 +478,15 @@ Interpolation touches text-node parsing, escaping rules, raw handling, and edito
 
 ### Milestone E: Composition
 
+Status: complete
+
 1. Add `fragment` alias.
 2. Update docs to recommend `fragment` for plain insertion/composition.
 3. Add function component registration support.
 
 ### Milestone F: Optional Syntax Work
+
+Status: pending
 
 1. Evaluate whether aliasing on `&foreach` is sufficient.
 2. Only then decide whether block directives are still justified.
@@ -408,6 +495,12 @@ Interpolation touches text-node parsing, escaping rules, raw handling, and edito
 ## Testing Plan
 
 The current HTMLisp test suite is already organized well enough to absorb these changes. New coverage should be added to both async and sync test directories.
+
+Implemented additions:
+
+- `htmlisp/html-tests/ergonomics_test.ts`
+- `htmlisp/html-tests-sync/ergonomics_test.ts`
+- `deno task check:types` for typed test coverage without execution
 
 ### Required New Test Areas
 
@@ -458,7 +551,7 @@ Add compatibility tests based on real templates from this repo before migrating 
 
 ## Migration Plan For This Repo
 
-After phase 1 stabilizes in HTMLisp itself:
+After the completed runtime changes stabilize in downstream use:
 
 1. enable `escapeByDefault` only for this repo
 2. add `raw(...)` where content is already trusted rendered HTML
@@ -468,6 +561,11 @@ After phase 1 stabilizes in HTMLisp itself:
 6. replace child-insertion-only `noop` usage with `fragment`
 
 Migration should happen in small passes, not one sweep.
+
+Current status:
+
+- the language/runtime support is in place
+- the repo migration itself is still pending and should happen separately from the runtime work
 
 ## Risks And Mitigations
 
@@ -519,10 +617,10 @@ Mitigation:
 
 HTMLisp should evolve by making the current syntax safer and shorter before adding a second syntax system.
 
-If only the first wave ships, it should be:
+The first wave has already shipped:
 
 1. escape by default with explicit raw output
 2. shorthand scoped variable access inside existing `&...` attributes
 3. structured attributes with `&attrs`
 
-Those three changes solve most of the pain described in the original notes and fit the current implementation with a manageable amount of change.
+Those changes, plus `fragment`, function components, and typed test coverage, solve most of the pain described in the original notes. The remaining decisions are now mostly about whether parser-level syntax expansion is worth the added complexity.
