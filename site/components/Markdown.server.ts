@@ -5,7 +5,7 @@ function init({ load, render, renderSync }: DataSourcesApi) {
   const markdown = getMarkdown({ load, render, renderSync });
 
   return {
-    processMarkdown: async (input: string) => (await markdown(input)).content,
+    processMarkdown: async (input: unknown) => (await markdown(input)).content,
   };
 }
 

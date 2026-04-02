@@ -9,6 +9,7 @@ import highlightJSON from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/
 import highlightTS from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/typescript.js";
 import highlightXML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/xml.js";
 import highlightYAML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/yaml.js";
+import { isRawHtml } from "../../htmlisp/utilities/runtime.ts";
 import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);
@@ -38,8 +39,10 @@ marked.setOptions({
 install(twindSetup);
 
 function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
-  return async function transformMarkdown(input: string) {
-    if (typeof input !== "string") {
+  return async function transformMarkdown(input: unknown) {
+    const markdownInput = isRawHtml(input) ? input.value : input;
+
+    if (typeof markdownInput !== "string") {
       console.error("input", input);
       throw new Error("transformMarkdown - passed wrong type of input");
     }
@@ -199,7 +202,7 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
     // https://github.com/markedjs/marked/blob/master/src/Renderer.js
     marked.use({ renderer });
 
-    return { content: await marked(input), tableOfContents };
+    return { content: await marked(markdownInput), tableOfContents };
   };
 }
 
