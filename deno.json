@@ -2,6 +2,7 @@
   "lock": false,
   "tasks": {
     "test": "deno test",
+    "check:types": "deno test --no-run htmlisp/html-tests htmlisp/html-tests-sync",
     "watch:test": "deno test --watch",
     "serve": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -s -p 3000 -i ./build",
     "start": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-ffi --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -d -p 3000",

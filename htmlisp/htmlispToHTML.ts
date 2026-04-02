@@ -3,10 +3,18 @@ import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTML } from "./utilities/astToHTML.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
+import { isRawHtml, raw } from "./utilities/runtime.ts";
 
 async function htmlispToHTML(
-  { htmlInput, components, context, props, utilities, componentUtilities }:
-    HtmllispToHTMLParameters,
+  {
+    htmlInput,
+    components,
+    context,
+    props,
+    utilities,
+    componentUtilities,
+    renderOptions,
+  }: HtmllispToHTMLParameters,
 ): Promise<string> {
   if (!htmlInput) {
     throw new Error("convert - Missing html input");
@@ -28,22 +36,29 @@ async function htmlispToHTML(
     props,
     {},
     {
-      render: (htmlInput: string) =>
-        htmlInput
+      render: (htmlInput: unknown) => {
+        const renderedInput = isRawHtml(htmlInput)
+          ? htmlInput.value
+          : htmlInput;
+
+        return renderedInput
           ? htmlispToHTML({
-            htmlInput,
+            htmlInput: String(renderedInput),
             components,
             context,
             props,
             utilities,
             componentUtilities,
-          })
-          : "",
+            renderOptions,
+          }).then(raw)
+          : raw("");
+      },
       ...defaultUtilities,
       ...utilities,
     },
     componentUtilities,
     components || {},
+    renderOptions,
     [],
   );
 

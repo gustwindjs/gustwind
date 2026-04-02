@@ -1,8 +1,8 @@
-import { parseExpression } from "./parseExpression.ts";
 import { applyUtilitySync } from "./applyUtilitySync.ts";
 import { isUndefined } from "../../utilities/functional.ts";
 import type { Attributes, Context } from "../types.ts";
 import type { Utilities, Utility } from "../../types.ts";
+import { parseBoundExpression } from "./parseBoundExpression.ts";
 
 function parseExpressionsSync(
   attributes: Attributes | undefined,
@@ -22,7 +22,7 @@ function parseExpressionsSync(
 
       // Check bindings
       if (name.startsWith("&") && value !== null) {
-        const parsedExpression = parseExpression(value.toString());
+        const parsedExpression = parseBoundExpression(value.toString());
 
         if (!parsedExpression) {
           throw new Error(`Failed to parse ${value} for attribute ${name}!`);

@@ -3,10 +3,18 @@ import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTMLSync } from "./utilities/astToHTMLSync.ts";
 import type { HtmllispToHTMLParameters } from "./types.ts";
+import { isRawHtml, raw } from "./utilities/runtime.ts";
 
 function htmlispToHTMLSync(
-  { htmlInput, components, context, props, utilities, componentUtilities }:
-    HtmllispToHTMLParameters,
+  {
+    htmlInput,
+    components,
+    context,
+    props,
+    utilities,
+    componentUtilities,
+    renderOptions,
+  }: HtmllispToHTMLParameters,
 ): string {
   if (!htmlInput) {
     throw new Error("convert - Missing html input");
@@ -28,22 +36,29 @@ function htmlispToHTMLSync(
     props,
     {},
     {
-      render: (htmlInput: string) =>
-        htmlInput
-          ? htmlispToHTMLSync({
-            htmlInput,
+      render: (htmlInput: unknown) => {
+        const renderedInput = isRawHtml(htmlInput)
+          ? htmlInput.value
+          : htmlInput;
+
+        return renderedInput
+          ? raw(htmlispToHTMLSync({
+            htmlInput: String(renderedInput),
             components,
             context,
             props,
             utilities,
             componentUtilities,
-          })
-          : "",
+            renderOptions,
+          }))
+          : raw("");
+      },
       ...defaultUtilities,
       ...utilities,
     },
     componentUtilities,
     components || {},
+    renderOptions,
     [],
   );
 

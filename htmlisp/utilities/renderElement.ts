@@ -1,25 +1,28 @@
 import { getAttributeBindings } from "./getAttributeBindings.ts";
-import { isString } from "../../utilities/functional.ts";
-import type { Element } from "../types.ts";
+import type { Element, HtmlispRenderOptions } from "../types.ts";
+import { renderTextValue } from "./runtime.ts";
 
 function renderElement(
-  parsedAttributes: Record<string, unknown> & { children?: string },
+  parsedAttributes: Record<string, unknown> & { children?: unknown },
   tag: Element,
   renderedChildren: string,
+  renderOptions?: HtmlispRenderOptions,
 ) {
-  const parsedChildren = parsedAttributes.children || "";
+  const parsedChildren = parsedAttributes.children;
   const { type, closesWith } = tag;
+  const isFragment = type === "noop" || type === "fragment";
 
-  if (type !== "noop" && !parsedChildren && typeof closesWith === "string") {
-    return `<${type}${getAttributeBindings(parsedAttributes)}${closesWith}>`;
+  if (!isFragment && !parsedChildren && typeof closesWith === "string") {
+    return `<${type}${
+      getAttributeBindings(parsedAttributes, renderOptions)
+    }${closesWith}>`;
   }
 
-  // TODO: Should there be a more strict check against parsed children?
-  const content = isString(parsedChildren)
-    ? parsedChildren.concat(renderedChildren)
-    : renderedChildren;
+  const content = renderTextValue(parsedChildren, renderOptions).concat(
+    renderedChildren,
+  );
 
-  if (type === "noop" && !parsedAttributes.type) {
+  if (isFragment && (type === "fragment" || !parsedAttributes.type)) {
     return content;
   }
 
@@ -30,7 +33,9 @@ function renderElement(
       delete parsedAttributes.type;
     }
 
-    return `<${t}${getAttributeBindings(parsedAttributes)}>${content}</${t}>`;
+    return `<${t}${
+      getAttributeBindings(parsedAttributes, renderOptions)
+    }>${content}</${t}>`;
   }
 
   return content;

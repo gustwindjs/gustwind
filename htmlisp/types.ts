@@ -1,7 +1,17 @@
 import type { Context, Utilities } from "../types.ts";
 
 type Attributes = Record<string, string | boolean | null>;
-type Components = Record<string, string>;
+type RawHtml = {
+  __htmlispRaw: true;
+  value: string;
+};
+type HtmlispRenderOptions = {
+  escapeByDefault?: boolean;
+};
+type HTMLispComponent<Props = Context> =
+  | string
+  | ((props: Props) => string | Promise<string>);
+type Components = Record<string, HTMLispComponent>;
 
 type Element = {
   type: string;
@@ -17,6 +27,7 @@ type HtmllispToHTMLParameters = {
   props?: Context;
   utilities?: Utilities;
   componentUtilities?: Record<string, Utilities>;
+  renderOptions?: HtmlispRenderOptions;
 };
 
 export type {
@@ -24,5 +35,8 @@ export type {
   Components,
   Context,
   Element,
+  HTMLispComponent,
+  HtmlispRenderOptions,
   HtmllispToHTMLParameters,
+  RawHtml,
 };

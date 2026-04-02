@@ -4,9 +4,11 @@ import type {
   Components,
   Context,
   Element,
+  HtmlispRenderOptions,
   HtmllispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
+import { raw, renderTextValue } from "./runtime.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
@@ -20,12 +22,13 @@ function astToHTMLSync(
   utilities?: Utilities,
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
+  renderOptions?: HtmlispRenderOptions,
   // Helper for debugging
   parentAst?: (string | Element)[],
 ): string {
   return ast.map((tag) => {
     if (typeof tag === "string") {
-      return tag;
+      return renderTextValue(tag, renderOptions);
     }
 
     const { type, attributes, children } = tag;
@@ -87,6 +90,7 @@ function astToHTMLSync(
           utilities,
           componentUtilities,
           components,
+          renderOptions,
           // Pass original ast to help with debugging
           ast,
         )
@@ -101,6 +105,7 @@ function astToHTMLSync(
         utilities,
         componentUtilities,
         components,
+        renderOptions,
         // Pass original ast to help with debugging
         ast,
       );
@@ -113,37 +118,59 @@ function astToHTMLSync(
           throw new Error(`Component "${type}" was not found!`);
         }
 
+        const componentSlots = slotsToPropsSync(
+          ast,
+          tag,
+          htmlispToHTML,
+          context,
+          props,
+          local,
+          utilities,
+          componentUtilities,
+          components,
+          renderOptions,
+          typeof foundComponent !== "function",
+        );
+        const componentProps = {
+          children: typeof foundComponent === "function"
+            ? renderedChildren
+            : raw(renderedChildren),
+          ...attributes,
+          ...parsedAttributes,
+          ...componentSlots,
+          props,
+          utilities,
+          componentUtilities,
+          components,
+        };
+        const renderedComponent = typeof foundComponent === "function"
+          ? foundComponent(componentProps)
+          : foundComponent;
+
+        if (renderedComponent instanceof Promise) {
+          throw new Error(
+            `Component "${type}" returned a Promise in sync rendering`,
+          );
+        }
+
         return htmlispToHTML({
-          htmlInput: foundComponent,
+          htmlInput: renderedComponent,
           components,
           context,
-          props: {
-            children: renderedChildren,
-            ...attributes,
-            ...parsedAttributes,
-            ...slotsToPropsSync(
-              ast,
-              tag,
-              htmlispToHTML,
-              context,
-              props,
-              local,
-              utilities,
-              componentUtilities,
-              components,
-            ),
-            props,
-            utilities,
-            componentUtilities,
-            components,
-          },
+          props: componentProps,
           utilities: { ...utilities, ...componentUtilities?.[type] },
           componentUtilities,
+          renderOptions,
         });
       }
     }
 
-    return renderElement(parsedAttributes, tag, renderedChildren);
+    return renderElement(
+      parsedAttributes,
+      tag,
+      renderedChildren,
+      renderOptions,
+    );
   }).join("");
 }
 
@@ -157,6 +184,8 @@ function slotsToPropsSync(
   utilities?: Utilities,
   componentUtilities?: Record<string, Utilities>,
   components?: Components,
+  renderOptions?: HtmlispRenderOptions,
+  wrapRenderedOutput?: boolean,
 ) {
   const { children } = tag;
 
@@ -178,6 +207,7 @@ function slotsToPropsSync(
             utilities,
             componentUtilities,
             components,
+            renderOptions,
             // Pass original ast to help with debugging
             ast,
           ),
@@ -188,7 +218,11 @@ function slotsToPropsSync(
     throw new Error(`Slot is missing a name!`);
   }
 
-  return Object.fromEntries(slots);
+  return Object.fromEntries(
+    slots.map((
+      [name, value],
+    ) => [name, wrapRenderedOutput ? raw(value) : value]),
+  );
 }
 
 export { astToHTMLSync };

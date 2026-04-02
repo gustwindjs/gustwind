@@ -1,229 +1,183 @@
 # HTMLisp Evolution Plan
 
-This note documents targeted changes that would make HTMLisp a better fit for this project without changing the underlying application architecture.
+This note converts the earlier improvement ideas into an implementation plan grounded in the current HTMLisp codebase.
 
-The goal is not to turn the app into a client-heavy UI system. The goal is to keep the current small, server-rendered model while reducing template ceremony, repetitive escaping, and helper-layer workarounds in the view/UI code.
+The target is still the same:
 
-## Why Change HTMLisp
+- keep HTMLisp server-rendered
+- preserve backward compatibility where practical
+- reduce template ceremony in real project code
+- avoid turning HTMLisp into a framework or compiler project
 
-The current HTMLisp usage works, but a few pain points appear repeatedly in the codebase:
+The main question is not whether the ideas are desirable. The main question is whether they fit the current parser, evaluator, and renderer shape without causing a rewrite. This plan assumes changes should be incremental and shippable.
 
-- values are escaped manually before being passed into templates
-- templates repeat `(get props ...)` heavily
-- inserting pre-rendered child HTML often requires `<noop &children="..."></noop>`
-- conditional and list rendering are functional but noisy
-- component helpers sometimes need string parsing or token replacement to express normal HTML patterns
+## Current Implementation Constraints
 
-Examples of the current friction are visible in:
+The current HTMLisp implementation has a few properties that strongly affect what is realistic:
 
-- [`src/view/shared.htmlisp.ts`](../src/view/shared.htmlisp.ts)
-- [`src/view/students/panel.htmlisp.ts`](../src/view/students/panel.htmlisp.ts)
-- [`src/view/dashboard/students-table.htmlisp.ts`](../src/view/dashboard/students-table.htmlisp.ts)
-- [`src/ui/button.htmlisp.ts`](../src/ui/button.htmlisp.ts)
-
-## Design Principles
-
-- Keep HTMLisp server-rendered and runtime-light.
-- Prefer incremental, backward-compatible language changes first.
-- Make templates read more like HTML and less like prop plumbing.
-- Escape by default.
-- Make raw HTML insertion explicit.
-- Improve ergonomics without forcing a framework-style component model.
-
-## Recommended Direction
-
-The recommended path is to evolve HTMLisp toward "HTML plus scoped expressions" instead of making it more Lisp-heavy.
+- expressions exist only in `&...` attributes
+- expression evaluation is utility-based and `eval` free
+- `noop` currently serves multiple roles:
+  - fragment-like output suppression
+  - local binding carrier
+  - dynamic tag replacement through `&type`
+- components are currently registered as strings
+- async and sync rendering paths are maintained in parallel
 
 That means:
 
-- HTML remains the primary surface syntax.
-- data expressions become shorter and scope-aware
-- escaped output is the default behavior
-- raw HTML output requires an explicit marker
-- common patterns such as fragments, loops, and attribute spread become first-class
+- expression sugar is cheap if it stays inside existing `&...` attributes
+- renderer changes are cheap if they reuse the current AST shape
+- brand new surface syntax is expensive if it bypasses HTML tag parsing
+- every non-trivial feature must be implemented twice unless common logic is extracted first
 
-## Proposed Changes
+## Concrete Decision Summary
 
-### 1. Escape By Default
+The following changes are realistic and worth implementing:
 
-#### Problem
+1. escape by default with explicit raw output
+2. shorthand scoped variable access inside existing `&...` attributes
+3. structured attributes through `&attrs`
+4. a first-class fragment alias for insertion and composition
+5. typed function components as an additive component API
 
-The app currently escapes most values before they ever reach the template layer. That creates repetitive preparation code and spreads XSS responsibility across many call sites.
+The following changes are realistic later, but should not be phase 1 work:
 
-#### Proposal
+1. loop aliases such as `readonlyFields as field`
+2. dedicated raw insertion syntax beyond a fragment alias
+3. block forms such as `{@if}` and `{@for}`
+4. interpolation syntax such as `{value}` in text nodes or attributes
 
-- Treat normal string output as escaped by default.
-- Add an explicit raw HTML escape hatch for trusted pre-rendered HTML fragments.
+## Recommended Implementation Order
 
-#### Suggested Syntax
+### Phase 0: Refactor For Safe Change
 
-Use one explicit raw helper inside expressions:
+This phase is internal only. It reduces duplication before adding behavior.
+
+#### Goals
+
+- extract shared scope resolution helpers
+- extract shared escaping and raw-value helpers
+- extract shared attribute normalization logic
+- keep async and sync renderers behaviorally aligned
+
+#### Why This Phase Exists
+
+Today the same concepts are duplicated across:
+
+- `htmlisp/utilities/parseExpressions.ts`
+- `htmlisp/utilities/parseExpressionsSync.ts`
+- `htmlisp/utilities/astToHTML.ts`
+- `htmlisp/utilities/astToHTMLSync.ts`
+
+If feature work starts without reducing duplication, each later step becomes slower and easier to break.
+
+#### Deliverables
+
+- a shared helper for resolving identifiers from `{ local, props, context }`
+- a shared helper for normalizing renderable values:
+  - plain text
+  - raw HTML
+  - attribute maps
+- a shared helper for serializing attributes consistently
+
+#### Exit Criteria
+
+- no behavior change
+- existing HTMLisp tests remain green
+- new helpers are used by both async and sync paths
+
+### Phase 1: Safer Output And Less Ceremony
+
+This is the highest-value phase. It should be the first user-visible release.
+
+#### 1. Escape By Default
+
+##### Decision
+
+Normal string output should be escaped by default. Trusted HTML should require an explicit wrapper.
+
+##### Proposed API
+
+Add a raw HTML wrapper and utility:
+
+```ts
+const html = raw("<strong>safe</strong>");
+```
+
+Use inside templates through existing expression slots:
 
 ```html
 <div &children="(raw summaryHtml)"></div>
 ```
 
-or, if text interpolation support is added later:
+##### Implementation Notes
 
-```html
-<div>{raw(summaryHtml)}</div>
-```
+- add a branded `RawHtml` type
+- add a `raw(...)` utility
+- add a renderer option such as `escapeByDefault?: boolean`
+- preserve current behavior by default for the first release
+- enable the new mode in this repo only after tests are in place
 
-#### Result
+##### Important Constraint
 
-- most `escapeHtml(...)` calls in view preparation code can disappear
-- the dangerous path becomes visible and auditable
-- template authors no longer need to remember which values were pre-escaped upstream
+Rendered child HTML is currently passed through component props as plain strings. That means escape-by-default cannot simply escape all strings everywhere. It must distinguish:
 
-#### Compatibility
+- text values that originated from data
+- trusted rendered markup produced by HTMLisp itself
+- explicit raw HTML values from `raw(...)`
 
-- keep existing behavior working during migration
-- add a renderer option such as `escapeByDefault: true`
-- migrate this repo after the feature is stable, then remove most explicit escaping from the view layer
+##### Deliverables
 
-### 2. Scoped Variable Access Without `(get props ...)`
+- `RawHtml` type and constructor
+- renderer-level escaping for text content and attribute values
+- raw passthrough for trusted child HTML
+- compatibility option for old behavior
 
-#### Problem
+#### 2. Scoped Variable Shorthand
 
-Current templates repeatedly spell out `(get props foo)`, even for simple values.
+##### Decision
 
-#### Proposal
+Add shorthand variable lookup only inside existing `&...` expression attributes.
 
-- Allow direct variable references inside expression positions.
-- Keep `props` as the root scope, but expose its keys directly in templates.
-- Inside loops, expose the current item fields directly or by alias.
-
-#### Suggested Syntax
-
-Current:
-
-```html
-<p &class="(get props subtleText)" &children="(get props message)"></p>
-```
-
-Proposed:
+##### Supported Syntax In Phase 1
 
 ```html
 <p &class="subtleText" &children="message"></p>
+<a &href="post.slug"></a>
+<div &visibleIf="topicVisible"></div>
 ```
 
-Current loop:
+##### Scope Resolution Order
 
-```html
-<noop &foreach="(get props readonlyFields)">
-  <dd &children="(get props text)"></dd>
-</noop>
-```
+Use:
 
-Proposed:
+1. `local`
+2. `props`
+3. `context`
 
-```html
-<noop &foreach="readonlyFields as field">
-  <dd &children="field.text"></dd>
-</noop>
-```
+That makes template intent predictable and keeps current explicit `(get props ...)` behavior as the fallback.
 
-#### Result
+##### Implementation Notes
 
-- templates become much easier to scan
-- loop scope becomes clearer
-- the renderer can still keep a simple internal scope model
+- keep existing Lisp-form expressions fully supported
+- treat bare identifiers and dotted paths as shorthand expressions
+- do not add free-form JavaScript evaluation
+- do not add alias syntax yet
 
-#### Compatibility
+##### Deliverables
 
-- preserve `(get props ...)` support
-- treat the shorthand as syntactic sugar over the same runtime lookup
+- parser support for bare identifier and dotted path expression forms
+- shared scope resolver helper
+- tests for precedence, nested keys, and compatibility with `(get ...)`
 
-### 3. First-Class Raw Child Insertion Without `noop`
+#### 3. Structured Attributes With `&attrs`
 
-#### Problem
+##### Decision
 
-A large amount of template code exists only to insert already-rendered HTML:
+Support structured attribute maps before adding spread syntax.
 
-```html
-<noop &children="(get props submitButton)"></noop>
-```
-
-#### Proposal
-
-Add a dedicated fragment or insertion syntax so pre-rendered children do not require a fake tag.
-
-#### Suggested Syntax
-
-Preferred:
-
-```html
-<fragment &children="submitButton"></fragment>
-```
-
-Compact alternative:
-
-```html
-{@html submitButton}
-```
-
-#### Result
-
-- less visual noise in composed page templates
-- better distinction between actual HTML elements and template-only insertion points
-
-#### Compatibility
-
-- keep `noop` working
-- gradually replace `noop` where it is only used as an insertion shim
-
-### 4. Better Conditionals And Loops
-
-#### Problem
-
-`&visibleIf` and `&foreach` are workable, but they are attribute-driven control flow attached to placeholder nodes. That makes larger templates harder to parse mentally.
-
-#### Proposal
-
-Keep the current directives, but add block forms that are easier to read.
-
-#### Suggested Syntax
-
-Conditionals:
-
-```html
-{@if topicVisible}
-  <p &class="topicTextClass">{topic}</p>
-{/if}
-```
-
-Loops:
-
-```html
-{@for field in readonlyFields}
-  <dd>{field.text}</dd>
-{/for}
-```
-
-#### Result
-
-- control flow becomes structurally visible
-- fewer placeholder tags
-- easier syntax highlighting and better future formatter support
-
-#### Compatibility
-
-- keep `&visibleIf` and `&foreach` for existing templates
-- encourage block syntax for new templates after the grammar is ready
-
-### 5. Attribute Spread And Structured Attributes
-
-#### Problem
-
-Some helpers, especially button-like helpers, need to parse string attributes and inject them back into templates. That is extra complexity for a normal HTML use case.
-
-#### Proposal
-
-- support structured attribute maps
-- support attribute spread at render time
-- keep string attributes only as a compatibility path
-
-#### Suggested Syntax
+##### Supported Syntax
 
 ```html
 <button
@@ -234,164 +188,341 @@ Some helpers, especially button-like helpers, need to parse string attributes an
 ></button>
 ```
 
-If block or interpolation syntax expands later, a spread form is even better:
+##### Attribute Map Semantics
+
+- `string` -> rendered as `key="value"` after escaping
+- `true` -> rendered as a boolean attribute
+- `false`, `null`, `undefined` -> omitted
+
+##### Precedence
+
+Use explicit attributes first, `&attrs` second only for missing keys.
+
+That avoids accidental overrides in component helpers.
+
+##### Deliverables
+
+- `attrs` handling in attribute serialization
+- support for boolean and optional attributes
+- tests for merge order and omission rules
+
+#### Exit Criteria For Phase 1
+
+- HTMLisp can run in compatibility mode and in escaped-output mode
+- common `(get props ...)` usage can be rewritten to shorthand
+- button-like helpers can stop parsing string attributes manually
+
+### Phase 2: Composition Improvements
+
+This phase improves template readability without parser-heavy work.
+
+#### 4. First-Class Fragment Alias
+
+##### Decision
+
+Add a dedicated fragment alias, but keep `noop`.
+
+##### Supported Syntax
 
 ```html
-<button type={type} class={className} {...extraAttributes}>{label}</button>
+<fragment &children="submitButton"></fragment>
 ```
 
-#### Result
+and:
 
-- removes the need for token replacement tricks
-- makes helpers like [`src/ui/button.htmlisp.ts`](../src/ui/button.htmlisp.ts) smaller and safer
-- gives the renderer clearer semantics for boolean and optional attributes
+```html
+<fragment>
+  <Button />
+  <Button />
+</fragment>
+```
 
-#### Compatibility
+##### Why Alias Instead Of Replacement
 
-- keep parsing string attributes for older helpers
-- prefer structured attributes in new helper code
+`noop` is overloaded today. It is not only a fragment. It also carries local bindings and dynamic type logic. Replacing it outright would make migration and behavior harder to reason about.
 
-### 6. Typed Function Components Instead Of Template-String Components
+##### Deliverables
 
-#### Problem
+- `fragment` tag with output behavior equivalent to `noop` without `&type`
+- docs that reserve `noop` for advanced cases and prefer `fragment` for plain composition
 
-Local component dictionaries are useful, but large string-defined components nested inside TypeScript files are still awkward to maintain.
+#### 5. Typed Function Components
 
-#### Proposal
+##### Decision
 
-Allow HTMLisp components to be registered as typed functions that return HTMLisp or rendered HTML, not only as raw template strings.
+Expand component registration so components may be strings or functions.
 
-#### Suggested Shape
+##### Proposed Shape
 
 ```ts
-interface MeetingLogEntryProps {
-  timestampText: string;
-  discussed: string;
-  agreedPlan: string;
-  hasDeadline: boolean;
-  deadlineText: string;
-}
-
-const components = {
-  MeetingLogEntry: htmlispComponent<MeetingLogEntryProps>((props) => `
-    <article class="...">
-      <p>${props.timestampText}</p>
-    </article>
-  `),
-};
+type HTMLispComponent<Props> =
+  | string
+  | ((props: Props) => string)
+  | ((props: Props) => Promise<string>);
 ```
 
-The exact API can vary. The important part is that components should be typed and avoid large anonymous template dictionaries where possible.
+The exact sync/async split should stay explicit:
 
-#### Result
+- sync renderer accepts sync component functions only
+- async renderer may accept sync or async component functions
 
-- better editor support from TypeScript
-- easier refactoring
-- fewer deeply nested string literals
+##### Constraints
 
-#### Compatibility
+- keep string component registration working
+- preserve component-local utilities support
+- do not silently allow async behavior in sync rendering
 
-- keep string components supported
-- add function components as an additional registration form
+##### Deliverables
 
-## Priority Order
+- widened `Components` typing
+- runtime support in async and sync renderers
+- tests for string components, sync function components, and async function components
 
-The following implementation order gives the best value without forcing a full language rewrite.
+#### Exit Criteria For Phase 2
 
-### Phase 1: High-Value, Low-Risk
+- component-heavy templates can use `fragment` instead of child-insertion `noop`
+- TypeScript-authored components no longer require large string dictionaries in all cases
 
-- escape by default with explicit raw output
-- shorthand variable access without `(get props ...)`
-- structured attributes and attribute spread support
+### Phase 3: Optional Syntax Expansion
 
-### Phase 2: Ergonomic Template Composition
+This phase should happen only if phase 1 and phase 2 still leave the templates too noisy.
 
-- dedicated raw child insertion instead of `noop`
-- block conditionals and loops
+#### 6. Loop Alias Syntax
 
-### Phase 3: Deeper Authoring Improvements
+##### Candidate Syntax
 
-- typed function components
-- optional interpolation syntax for text and attributes if still needed
+```html
+<noop &foreach="readonlyFields as field">
+  <dd &children="field.text"></dd>
+</noop>
+```
 
-## Suggested Syntax Baseline
+##### Notes
 
-To keep implementation manageable, the recommended baseline is:
+- this is still realistic because it extends an existing directive
+- it is less invasive than block syntax
+- it should follow shorthand scope lookup, not precede it
 
-- keep current HTMLisp valid
-- add shorthand expressions inside existing `&...` expression attributes first
-- add raw output semantics before adding broader syntax sugar
-- add block control flow only after shorthand scope lookup is stable
+#### 7. Block Conditionals And Loops
 
-In other words, this is the preferred order:
+##### Candidate Syntax
 
-1. make existing syntax less noisy
-2. make insertion and control flow cleaner
-3. consider larger syntax upgrades only if the earlier steps still feel insufficient
+```html
+{@if topicVisible}
+  <p &class="topicTextClass" &children="topic"></p>
+{/if}
 
-## Migration Strategy For This Repo
+{@for field in readonlyFields}
+  <dd &children="field.text"></dd>
+{/for}
+```
 
-Once the language changes are available, migrate this repo in small passes:
+##### Why Deferred
 
-1. Enable escape-by-default in HTMLisp and add explicit raw output where needed.
-2. Remove unnecessary `escapeHtml(...)` calls from view and UI modules.
-3. Replace repeated `(get props ...)` usage with shorthand scope access.
-4. Convert child-insertion-only `noop` usage to the new insertion syntax.
-5. Replace string attribute plumbing in helpers with structured attrs.
-6. Convert the densest templates first:
-   - [`src/view/students/panel.htmlisp.ts`](../src/view/students/panel.htmlisp.ts)
-   - [`src/view/dashboard/students-table.htmlisp.ts`](../src/view/dashboard/students-table.htmlisp.ts)
-   - [`src/view/shared.htmlisp.ts`](../src/view/shared.htmlisp.ts)
+The current parser is HTML-tag oriented. Block directives would require parser work that does not fit naturally into the existing tag/attribute model.
 
-## Implementation Checklist For HTMLisp
+This feature is realistic, but it is a parser project, not a small ergonomic patch.
 
-### Parser And Renderer
+#### 8. Interpolation Syntax
 
-- add scoped identifier lookup
-- add escape-by-default behavior
-- add explicit raw value support
-- add structured attribute support
-- add child insertion syntax
-- add block control-flow parsing if chosen
+##### Candidate Syntax
 
-### Types
+```html
+<p>{message}</p>
+<div>{raw(summaryHtml)}</div>
+```
 
-- define a raw HTML wrapper type
-- extend component registration types for structured attrs and function components
-- expose clear renderer options for compatibility mode versus new mode
+##### Why Deferred
 
-### Editor Support
+Interpolation touches text-node parsing, escaping rules, raw handling, and editor support at the same time. It should only happen after escape semantics are stable.
 
-Update the local extension under [`editor-support/vscode-htmlisp/`](../editor-support/vscode-htmlisp):
+## Files Likely To Change
 
-- syntax highlighting for shorthand expressions
-- syntax highlighting for any new block directives
-- syntax highlighting for raw output markers
-- bracket and scope support for the new syntax
+### Core Runtime
 
-### Tests
+- `htmlisp/types.ts`
+- `htmlisp/defaultUtilities.ts`
+- `htmlisp/htmlispToHTML.ts`
+- `htmlisp/htmlispToHTMLSync.ts`
+- `htmlisp/utilities/parseExpression.ts`
+- `htmlisp/utilities/parseExpressions.ts`
+- `htmlisp/utilities/parseExpressionsSync.ts`
+- `htmlisp/utilities/applyUtility.ts`
+- `htmlisp/utilities/applyUtilitySync.ts`
+- `htmlisp/utilities/astToHTML.ts`
+- `htmlisp/utilities/astToHTMLSync.ts`
+- `htmlisp/utilities/renderElement.ts`
+- `htmlisp/utilities/getAttributeBindings.ts`
 
-Add or update coverage for:
+### Parser Work For Later Phases
 
-- escaping behavior
-- raw HTML output
-- shorthand scope lookup
-- loop scoping
-- structured attrs and boolean attrs
-- compatibility with existing HTMLisp templates in this repo
+- `htmlisp/parsers/htmlisp/parseTag.ts`
+- `htmlisp/parsers/htmlisp/parseAttribute.ts`
+- possibly new parser helpers for block directives
+
+### Documentation And Tooling
+
+- `htmlisp/README.md`
+- local editor support under `editor-support/vscode-htmlisp/`
+
+## Proposed Backlog
+
+### Milestone A: Compatibility Infrastructure
+
+1. Introduce shared render-value helpers and remove duplicated normalization logic.
+2. Add `HtmlispRenderOptions` with `escapeByDefault`.
+3. Thread render options through sync and async entry points.
+
+### Milestone B: Safe Output
+
+1. Add `RawHtml` type and `raw(...)` utility.
+2. Escape text-node values by default when the option is enabled.
+3. Escape attribute values consistently.
+4. Preserve trusted rendered child markup without double escaping.
+5. Add compatibility tests for old mode and new mode.
+
+### Milestone C: Scoped Shorthand
+
+1. Extend expression parsing to support bare identifiers and dotted paths.
+2. Add shared scope resolution with `local -> props -> context`.
+3. Add tests for shorthand, precedence, and fallback to `(get ...)`.
+
+### Milestone D: Structured Attributes
+
+1. Add `&attrs` handling.
+2. Normalize booleans and empty values.
+3. Define and test merge precedence with explicit attributes.
+
+### Milestone E: Composition
+
+1. Add `fragment` alias.
+2. Update docs to recommend `fragment` for plain insertion/composition.
+3. Add function component registration support.
+
+### Milestone F: Optional Syntax Work
+
+1. Evaluate whether aliasing on `&foreach` is sufficient.
+2. Only then decide whether block directives are still justified.
+3. Add interpolation syntax only if the cost is still worth it after earlier cleanup.
+
+## Testing Plan
+
+The current HTMLisp test suite is already organized well enough to absorb these changes. New coverage should be added to both async and sync test directories.
+
+### Required New Test Areas
+
+#### Escaping
+
+- text children escape `<`, `>`, `&`, and quotes as expected
+- attribute values escape correctly
+- `raw(...)` bypasses escaping
+- rendered component children do not double escape
+- compatibility mode preserves legacy behavior
+
+#### Scoped Lookup
+
+- bare identifier resolves from `props`
+- dotted path resolves nested values
+- `local` shadows `props`
+- `props` shadows `context`
+- explicit `(get props ...)` still works
+
+#### Structured Attributes
+
+- `&attrs` merges into output attributes
+- `true` becomes a boolean attribute
+- `false`, `null`, and `undefined` are omitted
+- explicit attribute beats `&attrs`
+
+#### Components
+
+- string component registration still works
+- sync function component works in sync renderer
+- async function component works in async renderer
+- sync renderer rejects async components clearly
+
+#### Fragment Behavior
+
+- `fragment` renders children without wrapper output
+- `fragment &children="..."` works for composed markup
+- `noop` behavior remains unchanged
+
+### Migration Safety Tests
+
+Add compatibility tests based on real templates from this repo before migrating them. The highest-value candidates are:
+
+- `src/view/students/panel.htmlisp.ts`
+- `src/view/dashboard/students-table.htmlisp.ts`
+- `src/view/shared.htmlisp.ts`
+- `src/ui/button.htmlisp.ts`
+
+## Migration Plan For This Repo
+
+After phase 1 stabilizes in HTMLisp itself:
+
+1. enable `escapeByDefault` only for this repo
+2. add `raw(...)` where content is already trusted rendered HTML
+3. remove redundant `escapeHtml(...)` calls from view preparation code
+4. replace repeated `(get props ...)` patterns with shorthand
+5. convert helper-level string attribute plumbing to `&attrs`
+6. replace child-insertion-only `noop` usage with `fragment`
+
+Migration should happen in small passes, not one sweep.
+
+## Risks And Mitigations
+
+### Risk: Double Escaping
+
+If rendered component children are treated as plain strings, `escapeByDefault` will break composition.
+
+Mitigation:
+
+- introduce a trusted raw wrapper for renderer-produced HTML
+- test nested component and slot composition early
+
+### Risk: Sync And Async Drift
+
+Feature work can easily diverge between sync and async renderers.
+
+Mitigation:
+
+- extract shared helpers first
+- require equivalent tests for both paths
+
+### Risk: `noop` Semantics Become Confusing
+
+Adding `fragment` can create overlap if the docs are vague.
+
+Mitigation:
+
+- define `fragment` as the default composition primitive
+- keep `noop` documented for advanced local/type behavior only
+
+### Risk: Parser Scope Creep
+
+Block syntax and interpolation can turn into a rewrite.
+
+Mitigation:
+
+- do not start parser work until phase 1 and phase 2 ship
+- re-evaluate whether the remaining pain still justifies the cost
 
 ## Non-Goals
 
-- adding a browser-side reactive runtime
-- replacing the app with React, Vue, or another client framework
-- making HTMLisp depend on JSX or a build-time compiler for normal usage
+- browser-side reactivity
+- JSX adoption
+- a compiler-only architecture
+- arbitrary JavaScript expression evaluation
+- replacing existing HTMLisp syntax wholesale
 
-## Decision Summary
+## Final Recommendation
 
-The most valuable change is not a full rewrite of HTMLisp syntax. The most valuable change is to remove template ceremony while preserving the current server-rendered architecture.
+HTMLisp should evolve by making the current syntax safer and shorter before adding a second syntax system.
 
-If only three things get implemented, they should be:
+If only the first wave ships, it should be:
 
 1. escape by default with explicit raw output
-2. direct scoped variable access
-3. structured attributes plus child insertion without `noop`
+2. shorthand scoped variable access inside existing `&...` attributes
+3. structured attributes with `&attrs`
+
+Those three changes solve most of the pain described in the original notes and fit the current implementation with a manageable amount of change.
