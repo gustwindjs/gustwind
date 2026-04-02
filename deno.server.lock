@@ -2,6 +2,7 @@
   "version": "5",
   "specifiers": {
     "npm:@netlify/functions@^2.4.0": "2.8.2",
+    "npm:@tailwindcss/typography@0.5.15": "0.5.15_tailwindcss@3.4.17__postcss@8.5.6",
     "npm:@tailwindcss/typography@~0.5.15": "0.5.16_tailwindcss@3.4.17__postcss@8.5.6",
     "npm:autoprefixer@10.4.20": "10.4.20_postcss@8.4.49",
     "npm:autoprefixer@^10.4.20": "10.4.21_postcss@8.5.6",
@@ -255,6 +256,16 @@
     },
     "@pkgjs/parseargs@0.11.0": {
       "integrity": "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="
+    },
+    "@tailwindcss/typography@0.5.15_tailwindcss@3.4.17__postcss@8.5.6": {
+      "integrity": "sha512-AqhlCXl+8grUz8uqExv5OTtgpjuVIwFTSXTrh8y9/pw6q2ek7fJ+Y8ZEVw7EB2DCcuCOtEjf9w3+J3rzts01uA==",
+      "dependencies": [
+        "lodash.castarray",
+        "lodash.isplainobject",
+        "lodash.merge",
+        "postcss-selector-parser@6.0.10",
+        "tailwindcss@3.4.17_postcss@8.5.6"
+      ]
     },
     "@tailwindcss/typography@0.5.16_tailwindcss@3.4.17__postcss@8.5.6": {
       "integrity": "sha512-0wDLwCVF5V3x3b1SGXPCDcdsbDHMBe+lkFzBRaHeLvNi+nrrnZ1lA18u+OTWO8iSWU2GxUOCvlXtDuqftc1oiA==",
