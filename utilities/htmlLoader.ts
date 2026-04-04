@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import type { GlobalUtilities } from "../types.ts";
+import { urlJoin } from "./urlJoin.ts";
 
 type ParsedComponents = [
   string,

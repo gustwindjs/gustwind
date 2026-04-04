@@ -1,4 +1,6 @@
-import { tw } from "https://esm.sh/@twind/core@1.1.1";
+function tw(...classNames: string[]) {
+  return classNames.join(" ");
+}
 
 function init() {
   return { tw };

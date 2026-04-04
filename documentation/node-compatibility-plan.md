@@ -106,6 +106,20 @@ This means the migration now has:
 
 The current remaining gap is the real site's remote module graph. A full repository build now gets far enough to start bundling through the Node CLI, but it still depends on fetching `http(s)` imports from the existing source tree. That is acceptable for now, but it means the repository is not yet fully self-contained for offline Node builds.
 
+The next repository-focused cleanup step is now implemented:
+
+- active site build modules no longer depend on remote `http(s)` imports for:
+  - frontmatter parsing
+  - markdown rendering
+  - syntax highlighting
+  - sitemap generation
+  - URL joining helpers
+- the active site path no longer relies on Twind during the Node build
+- a full repository Node build now completes through `gustwind-node/cli.ts`
+- the project quality gate now includes a real Node build smoke check
+
+This means the Node build path is no longer limited to synthetic fixture tests. It now builds the actual repository successfully.
+
 ## Main blockers today
 
 ### Deno-only runtime services
@@ -120,13 +134,13 @@ These depend on Deno process, server, file system, command, signal, and watch AP
 
 ### Remaining remote-import surface
 
-- `site/dataSources.ts`
-- `site/globalUtilities.ts`
-- `site/transforms/markdown.ts`
-- `plugins/sitemap/mod.ts`
-- other build-time modules that still pull `http(s)` dependencies directly
+- `site/unoSetup.ts`
+- `plugins/twind/mod.ts`
+- `plugins/uno/mod.ts`
+- editor-only/browser-only scripts that still intentionally reference remote CDNs
+- other optional modules that are outside the active production build path
 
-These no longer block the existence of a Node build path, but they still prevent a clean offline Node build of the full repository unless they are vendored, rewritten to package imports, or otherwise localized.
+These no longer block the full repository build that is currently in use, but they still exist as compatibility debt in optional or inactive paths.
 
 ## Required abstractions
 
@@ -186,7 +200,8 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Completed for a first working single-process builder in `gustwind-node/build.ts`.
 - Covered by `gustwind-node/build_test.ts`.
 - The shared plugin importer now respects the active runtime loader for path-based plugins, which is required for config-driven Node builds.
-- Remaining work in this phase is now about making the real repository build less dependent on remote `http(s)` imports, not about inventing another build engine.
+- The actual repository now builds successfully through the Node CLI.
+- Remaining work in this phase is now mostly cleanup of optional remote-import paths, not core build viability.
 
 ## Phase 4: Node CLI
 
@@ -198,6 +213,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - A practical Node build CLI now exists in `gustwind-node/cli.ts`.
 - Current scope is intentionally narrow: version output and static build.
 - Full command-surface replacement for `gustwind-cli/mod.ts` is still not a target.
+- The quality gate now verifies that the Node CLI can build the repository.
 
 ## Phase 5: Node dev server on Vite
 
@@ -229,11 +245,11 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 1. Make the render/build core Node-compatible.
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
-4. Reduce the full site's remaining remote-import surface enough for dependable real-project Node builds.
-5. Replace the Deno dev shell with a Vite-based Node dev server.
+4. Replace the Deno dev shell with a Vite-based Node dev server.
+5. Clean up or remove the remaining optional remote-import paths as follow-up debt.
 
 ## Recommendation
 
 Do not start with "full Node compatibility".
 
-Start by making static builds and rendering work under Node. That baseline now exists. The next useful step is not preserving the Deno build shell, and it is not premature dev-server work either. It is reducing the real project's remaining remote-import surface so the Node build path can build the repository itself more directly and with fewer network assumptions. After that, use Vite as the dev shell and let the old Deno-specific watcher/websocket path go away.
+Start by making static builds and rendering work under Node. That baseline now exists, and the actual repository now builds successfully through the Node CLI. The next useful step is no longer build viability. It is replacing the Deno dev shell with a Vite-based Node dev server, while continuing to prune optional Deno-era remote imports as opportunistic cleanup.

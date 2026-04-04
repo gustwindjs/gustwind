@@ -1,8 +1,4 @@
-import {
-  extract,
-  test,
-} from "https://deno.land/std@0.207.0/front_matter/yaml.ts";
-import { parse } from "https://deno.land/std@0.207.0/yaml/parse.ts";
+import matter from "gray-matter";
 import getMarkdown from "./transforms/markdown.ts";
 import { getMemo } from "../utilities/getMemo.ts";
 import type { DataSourcesApi } from "../types.ts";
@@ -52,14 +48,13 @@ function init({ load, render, renderSync }: DataSourcesApi) {
     path: string,
   ): Promise<MarkdownWithFrontmatter> {
     const file = await load.textFile(path);
+    const parsedFile = matter(file);
 
-    if (test(file)) {
-      const { frontMatter, body: content } = extract(file);
-
+    if (Object.keys(parsedFile.data).length) {
       return {
         // TODO: It would be better to handle this with Zod or some other runtime checker
-        data: parse(frontMatter) as MarkdownWithFrontmatter["data"],
-        content,
+        data: parsedFile.data as MarkdownWithFrontmatter["data"],
+        content: parsedFile.content,
       };
     }
 

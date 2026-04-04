@@ -1,16 +1,14 @@
-import { install, tw } from "https://esm.sh/@twind/core@1.1.1";
-import { marked } from "https://unpkg.com/marked@15.0.3/lib/marked.esm.js";
-import type { Renderer } from "https://unpkg.com/marked@15.0.3/lib/marked.d.ts";
+import { marked } from "marked";
+import type { RendererObject, Tokens } from "marked";
 import type { DataSourcesApi } from "../../types.ts";
-import highlight from "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.10.0/es/core.min.js";
-import highlightBash from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/bash.js";
-import highlightJS from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/javascript.js";
-import highlightJSON from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/json.js";
-import highlightTS from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/typescript.js";
-import highlightXML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/xml.js";
-import highlightYAML from "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/yaml.js";
+import highlight from "highlight.js/lib/core";
+import highlightBash from "highlight.js/lib/languages/bash";
+import highlightJS from "highlight.js/lib/languages/javascript";
+import highlightJSON from "highlight.js/lib/languages/json";
+import highlightTS from "highlight.js/lib/languages/typescript";
+import highlightXML from "highlight.js/lib/languages/xml";
+import highlightYAML from "highlight.js/lib/languages/yaml";
 import { isRawHtml } from "../../htmlisp/utilities/runtime.ts";
-import twindSetup from "../twindSetup.ts";
 
 highlight.registerLanguage("bash", highlightBash);
 highlight.registerLanguage("html", highlightXML);
@@ -26,17 +24,7 @@ highlight.registerLanguage("yaml", highlightYAML);
 marked.setOptions({
   gfm: true,
   breaks: false,
-  pedantic: false,
-  sanitize: false,
-  smartLists: true,
-  smartypants: true,
-  highlight: (code: string, language: string) => {
-    return highlight.highlight(code, { language }).value;
-  },
 });
-
-// @ts-expect-error This is fine
-install(twindSetup);
 
 function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
   return async function transformMarkdown(input: unknown) {
@@ -87,47 +75,23 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
       },
     });
 
-    const renderer: Pick<
-      Renderer,
-      "code" | "heading" | "link" | "list"
-    > = {
-      code({ text: code, lang }) {
-        // @ts-ignore How to type this?
-        if (this.options.highlight) {
-          // TODO: Inject highlight.js now through `load.style`
-          // This should replace BaseLayout bits that currently exist.
-          // Furthermore, injection should be unique.
-          // Likely style should be exposed as markdown parameter so it
-          // is easy to change.
+    const renderer: RendererObject<string, string> = {
+      code(token: Tokens.Code): string {
+        let code = token.text;
+        const lang = token.lang;
 
-          // @ts-ignore How to type this?
-          const out = this.options.highlight(code, lang);
-
-          if (out != null && out !== code) {
-            code = out;
-          }
+        if (lang && highlight.getLanguage(lang)) {
+          code = highlight.highlight(code, { language: lang }).value;
         }
 
-        code = code.replace(/\n$/, "") + "\n";
-
-        if (!lang) {
-          return "<pre><code>" +
-            code +
-            "</code></pre>\n";
-        }
-
-        return '<pre class="' +
-          tw("overflow-auto -mx-4 md:mx-0") +
-          '"><code class="' +
-          // @ts-ignore How to type this?
-          (this.options.langPrefix || "") +
-          lang +
-          '">' +
-          code +
-          "</code></pre>\n";
+        return renderCodeBlock({
+          code,
+          lang,
+          // @ts-expect-error Marked keeps renderer options on `this`
+          langPrefix: this.options.langPrefix || "",
+        });
       },
-      heading(token) {
-        // @ts-expect-error Parser will exist
+      heading(token: Tokens.Heading): string {
         const text = this.parser.parseInline(token.tokens);
         const level = token.depth;
         const slug = slugify(token.raw);
@@ -141,7 +105,7 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
           '">' +
           text +
           '<a class="' +
-          tw("ml-2 no-underline text-sm align-middle mask-text") +
+          "ml-2 no-underline text-sm align-middle mask-text" +
           '" href="#' +
           slug +
           '">🔗</a>\n' +
@@ -149,49 +113,49 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
           level +
           ">\n";
       },
-      link({ href, title, tokens }) {
-        // @ts-expect-error Parser will exist
-        const text = this.parser.parseInline(tokens);
+      link(token: Tokens.Link): string | false {
+        const text = this.parser.parseInline(token.tokens);
 
-        if (href === null) {
+        if (token.href === null) {
           return text;
         }
 
         if (text === "<file>") {
           // TODO: Show a nice error in case href is not found in the fs
-          const fileContents = load.textFileSync(href);
+          const fileContents = load.textFileSync(token.href);
 
-          return this.code({
-            type: "code",
-            text: fileContents,
-            lang: href.split(".").at(-1) as string,
-            raw: fileContents,
+          return renderCodeBlock({
+            code: fileContents,
+            lang: token.href.split(".").at(-1),
+            // @ts-expect-error Marked keeps renderer options on `this`
+            langPrefix: this.options.langPrefix || "",
           });
         }
 
-        let out = '<a class="' + tw("underline") + '" href="' + href + '"';
-        if (title) {
-          out += ' title="' + title + '"';
+        let out = '<a class="underline" href="' + token.href + '"';
+        if (token.title) {
+          out += ' title="' + token.title + '"';
         }
         out += ">" + text + "</a>";
         return out;
       },
-      list({ ordered, start, items }) {
+      list(token: Tokens.List): string {
         // Copied from marked source
         let body = "";
-        for (let j = 0; j < items.length; j++) {
-          const item = items[j];
+        for (let j = 0; j < token.items.length; j++) {
+          const item = token.items[j];
 
-          // @ts-expect-error Use default listitem
           body += this.listitem(item);
         }
 
-        const type = ordered ? "ol" : "ul",
-          startatt = (ordered && start !== 1) ? (' start="' + start + '"') : "",
-          klass = ordered
+        const type = token.ordered ? "ol" : "ul",
+          startatt = (token.ordered && token.start !== 1)
+            ? (' start="' + token.start + '"')
+            : "",
+          klass = token.ordered
             ? "list-decimal list-inside"
             : "list-disc list-inside";
-        return "<" + type + startatt + ' class="' + tw(klass) + '">\n' +
+        return "<" + type + startatt + ' class="' + klass + '">\n' +
           body +
           "</" +
           type + ">\n";
@@ -204,6 +168,29 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
 
     return { content: await marked(markdownInput), tableOfContents };
   };
+}
+
+function renderCodeBlock(
+  { code, lang, langPrefix }: {
+    code: string;
+    lang?: string;
+    langPrefix: string;
+  },
+) {
+  const normalizedCode = code.replace(/\n$/, "") + "\n";
+
+  if (!lang) {
+    return "<pre><code>" +
+      normalizedCode +
+      "</code></pre>\n";
+  }
+
+  return '<pre class="overflow-auto -mx-4 md:mx-0"><code class="' +
+    langPrefix +
+    lang +
+    '">' +
+    normalizedCode +
+    "</code></pre>\n";
 }
 
 function slugify(idBase: string) {

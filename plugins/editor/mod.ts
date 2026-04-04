@@ -1,8 +1,8 @@
 import * as path from "node:path";
-import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
 import scriptsToCompile from "./scriptsToCompile.ts";
 import { VERSION } from "../../version.ts";
 import type { Plugin } from "../../types.ts";
+import { urlJoin } from "../../utilities/urlJoin.ts";
 
 const plugin: Plugin = {
   meta: {

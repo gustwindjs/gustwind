@@ -10,19 +10,10 @@ async function getEsbuild(): Promise<EsbuildModule> {
     return esbuildPromise;
   }
 
-  if ("Deno" in globalThis) {
-    esbuildPromise = import("https://deno.land/x/esbuild@v0.19.4/mod.js").then(
-      (module) => ({
-        build: module.build,
-        stop: module.stop,
-      }),
-    );
-  } else {
-    esbuildPromise = import("esbuild").then((module) => ({
-      build: module.build,
-      stop: module.stop,
-    }));
-  }
+  esbuildPromise = import("esbuild").then((module) => ({
+    build: module.build,
+    stop: module.stop,
+  }));
 
   return esbuildPromise;
 }
