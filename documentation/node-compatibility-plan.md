@@ -134,9 +134,6 @@ These depend on Deno process, server, file system, command, signal, and watch AP
 
 ### Remaining remote-import surface
 
-- `site/unoSetup.ts`
-- `plugins/twind/mod.ts`
-- `plugins/uno/mod.ts`
 - editor-only/browser-only scripts that still intentionally reference remote CDNs
 - other optional modules that are outside the active production build path
 

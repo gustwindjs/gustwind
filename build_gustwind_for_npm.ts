@@ -28,7 +28,6 @@ async function buildForNpm(name: string, version: string) {
     // "script",
     "sitemap",
     "stats",
-    "twind",
     // uno is experimental so don't expose it
     // "uno",
     // It doesn't make sense to expose websocket for Node

@@ -10,7 +10,6 @@ const plugin: Plugin = {
     description: "${name} implements a live editor.",
     dependsOn: [
       "htmlisp-renderer-plugin",
-      "gustwind-twind-plugin",
       "gustwind-script-plugin",
     ],
   },
@@ -50,12 +49,6 @@ const plugin: Plugin = {
         // only one styling system is used at a time
         const styleSetupPath = styleSetupPaths[0];
 
-        if (!styleSetupPath) {
-          throw new Error(
-            "gustwind-editor-plugin - Could not find styleSetupPath!",
-          );
-        }
-
         const payload: {
           isExternal?: boolean;
           localPath: string;
@@ -82,14 +75,17 @@ const plugin: Plugin = {
             name: `${name}.js`,
             externals,
           })),
-          {
+        ];
+
+        if (styleSetupPath) {
+          payload.push({
             isExternal: true,
             localPath: styleSetupPath,
             remotePath: styleSetupPath,
             name: "styleSetup.js",
             externals: [],
-          },
-        ];
+          });
+        }
 
         send("gustwind-script-plugin", {
           type: "addScripts",
