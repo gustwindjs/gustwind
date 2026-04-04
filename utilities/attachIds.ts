@@ -1,11 +1,13 @@
 import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
 // import { isObject } from "./functional.ts";
-import type { Element } from "../types.ts";
+import type { Element } from "../htmlisp/types.ts";
+
+type ComponentTree = Element | ComponentTree[];
 
 // TODO: Restore if needed, it might be better to handle this at the AST level
 // TODO: Maybe this should become completely generic (just arrays and objects)
 // Doing this would likely fix the typing as a side effect
-function attachIds<T extends Element>(
+function attachIds<T extends ComponentTree>(
   component: T,
 ): T {
   if (Array.isArray(component)) {
@@ -23,7 +25,9 @@ function attachIds<T extends Element>(
 
   if (Array.isArray(component.children)) {
     // @ts-ignore This will be array anyway
-    ret.children = attachIds(component.children);
+    ret.children = component.children.map((child) =>
+      typeof child === "string" ? child : attachIds(child)
+    );
   }
 
   /*

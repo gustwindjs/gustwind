@@ -39,12 +39,11 @@ async function initRender(
   ) {
     const matched = await router.matchRoute(pathname);
 
-    if (matched && matched.route) {
+    if (matched) {
       const { markup, tasks: routeTasks } = await applyPlugins({
         plugins,
         url: pathname,
-        routes,
-        route: matched.route,
+        route: matched,
         initialContext,
         matchRoute(url: string) {
           return applyMatchRoutes({ plugins, url });

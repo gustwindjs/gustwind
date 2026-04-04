@@ -56,9 +56,14 @@ const plugin: Plugin = {
           );
         }
 
-        send("gustwind-script-plugin", {
-          type: "addScripts",
-          payload: scriptsToCompile.map(({ isExternal, name, externals }) => ({
+        const payload: {
+          isExternal?: boolean;
+          localPath: string;
+          remotePath: string;
+          name: string;
+          externals?: string[];
+        }[] = [
+          ...scriptsToCompile.map(({ isExternal, name, externals }) => ({
             isExternal,
             localPath: path.join(
               cwd,
@@ -76,13 +81,19 @@ const plugin: Plugin = {
             ),
             name: `${name}.js`,
             externals,
-          })).concat({
+          })),
+          {
             isExternal: true,
             localPath: styleSetupPath,
             remotePath: styleSetupPath,
             name: "styleSetup.js",
             externals: [],
-          }),
+          },
+        ];
+
+        send("gustwind-script-plugin", {
+          type: "addScripts",
+          payload,
         });
         send("gustwind-script-plugin", {
           type: "addGlobalScripts",

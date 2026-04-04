@@ -4,10 +4,14 @@ import type { Parse } from "./types.ts";
 function runParsers<ExpressionReturnType>(
   getCharacter: CharacterGenerator,
   // Tuple of parsers and their possible subparsers
-  parsers: [Parse<ExpressionReturnType>, Parse<ExpressionReturnType>[]][],
+  parsers: (
+    | Parse<ExpressionReturnType>
+    | [Parse<ExpressionReturnType>, Parse<ExpressionReturnType>[]]
+  )[],
 ) {
   // For async version this could use Promise.race
-  for (const [parser, subparsers] of parsers) {
+  for (const entry of parsers) {
+    const [parser, subparsers] = Array.isArray(entry) ? entry : [entry, []];
     const ret = runParser<ExpressionReturnType>({
       getCharacter,
       parser,

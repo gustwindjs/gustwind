@@ -74,7 +74,7 @@ type PluginOptions = {
   options: Record<string, unknown>;
 };
 
-type Meta = Record<string, string>;
+type Meta = Record<string, unknown>;
 type Mode = "development" | "production";
 
 // This is the context used when rendering a page
@@ -238,7 +238,14 @@ type SendMessageEvent =
       // event: Deno.FsEvent;
       event: {
         /** The kind/type of the file system event. */
-        kind: "any" | "access" | "create" | "modify" | "remove" | "other";
+        kind:
+          | "any"
+          | "access"
+          | "create"
+          | "modify"
+          | "remove"
+          | "other"
+          | "rename";
         /** An array of paths that are associated with the file system event. */
         paths: string[];
         /** Any additional flags associated with the event. */
@@ -279,6 +286,7 @@ type SendMessageEvent =
 type Routes = Record<string, Route>;
 type Route = {
   context?: DataContext;
+  meta?: Meta;
   // TODO: This should come as an extension from the renderer plugin
   // if it is enabled
   layout: string;

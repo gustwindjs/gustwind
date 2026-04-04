@@ -77,11 +77,9 @@ test("templating playground ships the browser compiler", async ({ page }) => {
   }).compileHTML === "function");
 
   const html = await page.evaluate(() =>
-    (window as Window & {
+    (window as unknown as Window & {
       compileHTML: (input: string) => string;
-    }).compileHTML(
-      `<a class="rounded" &href="(concat / docs)">Docs</a>`,
-    )
+    }).compileHTML(`<a class="rounded" &href="(concat / docs)">Docs</a>`)
   );
 
   expect(html).toContain('href="/docs"');

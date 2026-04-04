@@ -59,15 +59,14 @@ const plugin: Plugin<{
           ...route.context,
         };
 
-        return {
-          context: {
-            ...context,
-            url,
-            ...await applyUtilities<Utility, Utilities, Context>(
-              // @ts-expect-error Figure out how to type this
-              context,
-              defaultUtilities,
-              { context },
+          return {
+            context: {
+              ...context,
+              url,
+              ...await applyUtilities<Utility, Utilities, Context>(
+                context,
+                defaultUtilities,
+                { context },
             ),
           },
         };

@@ -1,3 +1,8 @@
+declare function renderView(
+  template: string,
+  values: Record<string, unknown>,
+): string;
+
 export function renderDashboardTitle(name: string, summaryHtml: string) {
   const plainTypeScriptText = `This should stay plain TypeScript: ${name}`;
 

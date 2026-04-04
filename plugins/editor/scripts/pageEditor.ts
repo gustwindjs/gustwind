@@ -9,19 +9,37 @@ import { traverseComponents } from "../../../utilities/traverseComponents.ts";
 // import breezewind from "../../../breezewind/mod.ts";
 // import * as breezeExtensions from "../../../breezewind/extensions.ts";
 // import { getUrl } from "../../../utilities/getUrl.ts";
-import type { DataContext, Route } from "../../../types.ts";
-/* import type {
-  Component,
-  Components,
-  ComponentUtilities,
-  Utilities,
-} from "../../../breezewind/types.ts"; */
+import type { Element } from "../../../htmlisp/types.ts";
+import type { DataContext, Route, Utilities } from "../../../types.ts";
 
 // TODO: Figure out how to deal with the now missing layout body
 const documentTreeElementId = "document-tree-element";
 const controlsElementId = "controls-element";
 
 type StateName = "editor" | "selected";
+type Component = Element | Component[];
+type Components = Record<string, string | Component>;
+type ComponentUtilities = Record<string, Utilities>;
+type EditorRuntime = {
+  tw: (s: string) => string;
+  globalUtilities: Utilities;
+  componentUtilities: ComponentUtilities;
+};
+type BreezeExtension = unknown;
+
+declare const breezewind: (options: {
+  component: string | Component;
+  components: Components;
+  context: DataContext;
+  extensions: BreezeExtension[];
+  globalUtilities?: Utilities;
+  componentUtilities?: ComponentUtilities;
+}) => Promise<string>;
+declare const breezeExtensions: {
+  visibleIf: BreezeExtension;
+  classShortcut: (tw: (s: string) => string) => BreezeExtension;
+  foreach: BreezeExtension;
+};
 
 // TODO: Consume these types from sidewind somehow (pragma?)
 declare global {
@@ -42,17 +60,29 @@ type PageState = {
   editor: EditorState;
 };
 
+let editorRuntime: EditorRuntime | undefined;
+
 async function createEditor(
-  tw: (s: string) => string,
-  globalUtilities: Utilities,
-  componentUtilities: ComponentUtilities,
+  tw?: (s: string) => string,
+  globalUtilities?: Utilities,
+  componentUtilities?: ComponentUtilities,
 ) {
+  if (tw && globalUtilities && componentUtilities) {
+    editorRuntime = { tw, globalUtilities, componentUtilities };
+  } else if (editorRuntime) {
+    ({ tw, globalUtilities, componentUtilities } = editorRuntime);
+  } else {
+    console.warn("create editor - editor runtime has not been initialized");
+
+    return;
+  }
+
   console.log("create editor");
 
   const [components, context, layout, route]: [
     Components,
     DataContext,
-    Components,
+    Component,
     Route,
   ] = await Promise.all([
     fetch("/components.json").then((res) => res.json()),
@@ -123,7 +153,7 @@ function getElementSelected(editorContainer: HTMLElement) {
 
 // This is likely a bad coupling. It would be better to maintain a separate DOM
 // element for outlines.
-let editedElement: Element;
+let editedElement: HTMLElement;
 
 function validElementSelected(
   editorContainer: HTMLElement,
@@ -215,7 +245,7 @@ function updateElementContent(
   const nextLayout = produce(layout, (draftLayout: Component) => {
     traverseComponents(draftLayout, (p) => {
       if (p?.attributes?.["data-id"] === selectionId) {
-        p.children = newContent;
+        p.children = [newContent];
       }
     });
   });
@@ -234,7 +264,7 @@ function createEditorContainer(layout: Component, route: Route) {
   let editorsElement = document.getElementById(editorsId);
   const initialState: EditorState = {
     layout,
-    meta: route.meta,
+    meta: route.meta ?? {},
     selectionId: undefined,
   };
 
@@ -451,7 +481,7 @@ function contentChanged(
       e.innerHTML = value;
     });
 
-    p.children = value;
+    p.children = [value];
   });
 
   setState({ layout: nextLayout }, { element, parent: "editor" });
@@ -501,7 +531,7 @@ function elementChanged(
 function produceNextLayout(
   layout: Component,
   selectionId: EditorState["selectionId"],
-  matched: (p: Component, elements: HTMLElement[]) => void,
+  matched: (p: Element, elements: HTMLElement[]) => void,
 ) {
   return produce(layout, (draftLayout: Component) => {
     traverseComponents(draftLayout, (p) => {

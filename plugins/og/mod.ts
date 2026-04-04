@@ -42,8 +42,7 @@ const plugin: Plugin<{
               meta: {
                 // @ts-expect-error Figure out how to type this
                 ...meta,
-                // @ts-expect-error Figure out how to type this
-                ...route.meta,
+                ...(route.meta ?? {}),
               },
             },
           });

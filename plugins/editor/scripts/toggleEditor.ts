@@ -17,38 +17,48 @@ function init() {
   toggleButton.style.bottom = "1em";
   toggleButton.innerText = "🐳💨";
   toggleButton.onclick = async () => {
-    const [tw, globalUtilities, componentUtilities] = await Promise.all([
-      import("https://esm.sh/@twind/core@1.1.1"),
-      // This is an external!
-      // TODO: Figure out how to mute Deno linter here
-      import("/styleSetup.js"),
-      import("/globalUtilities.js"),
-      import("/componentUtilities.js"),
-    ]).then(
-      (
-        [
-          { install, tw },
-          styleSetupModule,
-          globalUtilitiesModule,
-          componentUtilitiesModule,
-        ],
-      ) => {
-        const styleSetup = styleSetupModule.default;
+    let tw;
+    let globalUtilities;
+    let componentUtilities;
 
-        // TODO: What to pass for routes here?
-        const globalUtilities = globalUtilitiesModule.init({});
-        const componentUtilities = componentUtilitiesModule.init({});
+    try {
+      [tw, globalUtilities, componentUtilities] = await Promise.all([
+        import("https://esm.sh/@twind/core@1.1.1"),
+        // This is an external!
+        // TODO: Figure out how to mute Deno linter here
+        import("/styleSetup.js"),
+        import("/globalUtilities.js"),
+        import("/componentUtilities.js"),
+      ]).then(
+        (
+          [
+            { install, tw },
+            styleSetupModule,
+            globalUtilitiesModule,
+            componentUtilitiesModule,
+          ],
+        ) => {
+          const styleSetup = styleSetupModule.default;
 
-        console.log("loaded custom twind setup", styleSetup);
-        console.log("loaded global utilities", globalUtilities);
-        console.log("loaded component utilities", componentUtilities);
+          // TODO: What to pass for routes here?
+          const globalUtilities = globalUtilitiesModule.init({});
+          const componentUtilities = componentUtilitiesModule.init({});
 
-        // TODO: Figure out why enabling hash breaks markdown transform styling
-        install({ ...styleSetup, hash: false });
+          console.log("loaded custom twind setup", styleSetup);
+          console.log("loaded global utilities", globalUtilities);
+          console.log("loaded component utilities", componentUtilities);
 
-        return [tw, globalUtilities, componentUtilities];
-      },
-    ).catch((err) => console.error(err));
+          // TODO: Figure out why enabling hash breaks markdown transform styling
+          install({ ...styleSetup, hash: false });
+
+          return [tw, globalUtilities, componentUtilities] as const;
+        },
+      );
+    } catch (err) {
+      console.error(err);
+
+      return;
+    }
 
     // This is an external!
     // TODO: Figure out how to mute Deno linter here

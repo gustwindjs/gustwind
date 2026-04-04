@@ -1,13 +1,15 @@
-import type { Element } from "../types.ts";
+import type { Element } from "../htmlisp/types.ts";
+
+type ComponentTree = Element | ComponentTree[];
 
 function traverseComponents(
-  components: Element,
+  components: ComponentTree,
   operation: (c: Element, index: number) => void,
 ) {
   let i = 0;
 
   function recurse(
-    element: Element,
+    element: ComponentTree,
     operation: (c: Element, index: number) => void,
   ) {
     if (Array.isArray(element)) {
@@ -16,17 +18,12 @@ function traverseComponents(
       operation(element, i);
       i++;
 
-      // TODO: Restore if needed
-      /*
-      if (Array.isArray(element.children)) {
-        recurse(element.children, operation);
-      }
-
-      if (element.props) {
-        // @ts-ignore TODO: Figure out a better type for this
-        recurse(Object.values(element.props), operation);
-      }
-      */
+      recurse(
+        element.children.filter((child): child is Element =>
+          typeof child !== "string"
+        ),
+        operation,
+      );
     }
   }
 

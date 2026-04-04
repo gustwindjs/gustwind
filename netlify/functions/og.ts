@@ -1,15 +1,15 @@
 // http://localhost:8888/.netlify/functions/og
-import { Buffer } from "buffer";
-import { promises as fs } from "fs";
+import { Buffer } from "node:buffer";
+import { promises as fs } from "node:fs";
 import sharp from "sharp";
-import type { Handler, HandlerEvent } from "@netlify/functions";
+import type { Handler } from "@netlify/functions";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
 
 // These paths have to be included at netlify.toml
 const metaPath = __dirname + "/../../site/meta.json";
 const layoutPath = __dirname + "/layouts/og.html";
 
-const handler = async (event: HandlerEvent): Handler => {
+const handler: Handler = async (event) => {
   const meta = JSON.parse(await fs.readFile(metaPath, "utf8"));
   const layoutHtml = await fs.readFile(layoutPath, "utf8");
   const qs = event.queryStringParameters;
@@ -17,7 +17,7 @@ const handler = async (event: HandlerEvent): Handler => {
   const svg = await htmlispToHTML({
     htmlInput: layoutHtml,
     components: {},
-    context: { meta: { ...meta, ...qs } },
+    context: { meta: { ...meta, ...(qs ?? {}) } },
   });
 
   // It would be better to stream the image instead of stringifying first

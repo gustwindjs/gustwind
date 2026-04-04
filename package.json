@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Use deno task test for unit tests or npm run test:e2e for Playwright.\" && exit 1",
+    "typecheck": "deno task check:types",
+    "quality:gate": "deno task quality:gate",
     "test:e2e": "npm --prefix e2e run test",
     "test:e2e:headed": "npm --prefix e2e run test:headed"
   },
