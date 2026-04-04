@@ -1,11 +1,12 @@
 import type { CharacterGenerator } from "../../types.ts";
 import type { Parse } from "./types.ts";
 
-enum STATES {
-  IDLE,
-  PARSE_ITEM,
-  PARSE_CONTENT,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_ITEM: 1,
+  PARSE_CONTENT: 2,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 
 const LIMIT = 100000;
 const ITEM_SYNTAX = "item";
@@ -17,7 +18,7 @@ function parseListItem<ExpressionReturnType>(
     parse?: Parse<ExpressionReturnType>;
   },
 ) {
-  let state = STATES.IDLE;
+  let state: State = STATES.IDLE;
   let stringBuffer = "";
   const parts: (string | ExpressionReturnType)[] = [];
   let itemIndex = 0;

@@ -6,13 +6,14 @@ type BibtexCollection = {
   fields?: Record<string, string>;
 };
 
-enum STATES {
-  IDLE,
-  PARSE_TYPE,
-  PARSE_ID,
-  PARSE_KEY,
-  PARSE_VALUE,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_TYPE: 1,
+  PARSE_ID: 2,
+  PARSE_KEY: 3,
+  PARSE_VALUE: 4,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 
 const LIMIT = 100000;
 
@@ -21,7 +22,7 @@ function parseBibtex(
     getCharacter: CharacterGenerator;
   },
 ): BibtexCollection {
-  let state = STATES.IDLE;
+  let state: State = STATES.IDLE;
   let stringBuffer = "";
   let type = "";
   let id = "";

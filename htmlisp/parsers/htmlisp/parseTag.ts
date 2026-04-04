@@ -4,13 +4,14 @@ import { characterGenerator } from "../characterGenerator.ts";
 import type { CharacterGenerator } from "../types.ts";
 import type { Element } from "../../types.ts";
 
-enum STATES {
-  IDLE,
-  PARSE_END_TAG,
-  PARSE_TAG_TYPE,
-  PARSE_TAG_ATTRIBUTES,
-  PARSE_CHILDREN,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_END_TAG: 1,
+  PARSE_TAG_TYPE: 2,
+  PARSE_TAG_ATTRIBUTES: 3,
+  PARSE_CHILDREN: 4,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 const LIMIT = 100000;
 
 const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
@@ -22,7 +23,7 @@ function parseTag(
   getCharacter: CharacterGenerator,
   isChild?: boolean,
 ): (Element | string)[] {
-  let state = STATES.IDLE;
+  let state: State = STATES.IDLE;
   let currentTag: Element | null = null;
   const capturedTags: (string | Element)[] = [];
   let content = "";

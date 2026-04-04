@@ -5,12 +5,13 @@ type DoubleParser<ExpressionReturnType> = (
   arg: string,
 ) => ExpressionReturnType;
 
-enum STATES {
-  IDLE,
-  PARSE_EXPRESSION,
-  PARSE_EXPRESSION_FIRST,
-  PARSE_EXPRESSION_SECOND,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_EXPRESSION: 1,
+  PARSE_EXPRESSION_FIRST: 2,
+  PARSE_EXPRESSION_SECOND: 3,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 
 const LIMIT = 100000;
 
@@ -21,7 +22,7 @@ function getParseDouble<ExpressionReturnType>(
   return function parseDouble({ getCharacter }: {
     getCharacter: CharacterGenerator;
   }): { match: string; value: ExpressionReturnType } {
-    let state = STATES.IDLE;
+    let state: State = STATES.IDLE;
     let foundKey = "";
     let foundFirst = "";
     let stringBuffer = "";

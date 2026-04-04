@@ -1,13 +1,14 @@
 import type { CharacterGenerator } from "../../types.ts";
 import type { Parse } from "./types.ts";
 
-enum STATES {
-  IDLE,
-  PARSE_ITEM,
-  PARSE_TITLE,
-  PARSE_DESCRIPTION_WHITESPACE,
-  PARSE_DESCRIPTION,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_ITEM: 1,
+  PARSE_TITLE: 2,
+  PARSE_DESCRIPTION_WHITESPACE: 3,
+  PARSE_DESCRIPTION: 4,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 
 const LIMIT = 100000;
 const ITEM_SYNTAX = "item";
@@ -18,7 +19,7 @@ function parseDefinitionItem(
     getCharacter: CharacterGenerator;
   },
 ): { title: string; description: string } {
-  let state = STATES.IDLE;
+  let state: State = STATES.IDLE;
   let stringBuffer = "";
   let title = "";
   let description = "";

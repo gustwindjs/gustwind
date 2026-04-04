@@ -8,7 +8,6 @@ import type { LoadApi, PluginParameters, Tasks } from "../types.ts";
 // deno-lint-ignore no-explicit-any
 type EsbuildBuild = (...args: any[]) => Promise<{ outputFiles?: { text: string }[] }>;
 type EsbuildModule = { build: EsbuildBuild; stop(): void };
-type GlobalEsbuild = typeof globalThis & { __gustwindEsbuild?: EsbuildModule };
 
 let esbuildPromise: Promise<EsbuildModule> | undefined;
 
@@ -97,24 +96,32 @@ async function readTextFile(filePath: string) {
 }
 
 async function importModule<T>(modulePath: string) {
-  if (!shouldBundleModule(modulePath)) {
-    return await import(modulePath) as T;
+  if (await shouldBundleModule(modulePath)) {
+    const bundledSource = await bundleModule(modulePath);
+    const importPath = `data:text/javascript;base64,${
+      Buffer.from(`// cache-bust:${Date.now()}\n${bundledSource}`).toString(
+        "base64",
+      )
+    }`;
+
+    return await import(importPath) as T;
   }
 
-  const bundledSource = await bundleModule(modulePath);
-  const importPath = `data:text/javascript;base64,${
-    Buffer.from(`// cache-bust:${Date.now()}\n${bundledSource}`).toString(
-      "base64",
-    )
-  }`;
-
-  return await import(importPath) as T;
+  return await import(getImportPath(modulePath)) as T;
 }
 
-function shouldBundleModule(modulePath: string) {
-  return modulePath.startsWith("/") || modulePath.startsWith("./") ||
-    modulePath.startsWith("../") || modulePath.startsWith("file:") ||
-    modulePath.startsWith("http://") || modulePath.startsWith("https://");
+async function shouldBundleModule(modulePath: string) {
+  if (modulePath.startsWith("http://") || modulePath.startsWith("https://")) {
+    return true;
+  }
+
+  const normalizedPath = getLocalModulePath(modulePath);
+
+  if (!normalizedPath) {
+    return false;
+  }
+
+  return await hasRemoteModuleDependencies(normalizedPath, new Set());
 }
 
 async function bundleModule(modulePath: string) {
@@ -130,7 +137,7 @@ async function bundleModule(modulePath: string) {
     logLevel: "silent",
     packages: "external",
     platform: "node",
-    target: ["node18"],
+    target: ["node24"],
     write: false,
     plugins: [httpImportPlugin()],
   });
@@ -158,13 +165,6 @@ function normalizeEntryPoint(modulePath: string) {
 
 async function importEsbuild() {
   if (esbuildPromise) {
-    return esbuildPromise;
-  }
-
-  const globalEsbuild = (globalThis as GlobalEsbuild).__gustwindEsbuild;
-
-  if (globalEsbuild) {
-    esbuildPromise = Promise.resolve(globalEsbuild);
     return esbuildPromise;
   }
 
@@ -252,6 +252,107 @@ function httpImportPlugin() {
       );
     },
   };
+}
+
+async function hasRemoteModuleDependencies(
+  modulePath: string,
+  visitedPaths: Set<string>,
+): Promise<boolean> {
+  if (visitedPaths.has(modulePath)) {
+    return false;
+  }
+
+  visitedPaths.add(modulePath);
+
+  const source = await readTextFile(modulePath);
+  const importSpecifiers = getImportSpecifiers(source);
+
+  for (const specifier of importSpecifiers) {
+    if (specifier.startsWith("http://") || specifier.startsWith("https://")) {
+      return true;
+    }
+
+    if (
+      specifier.startsWith("./") || specifier.startsWith("../") ||
+      specifier.startsWith("/") || specifier.startsWith("file:")
+    ) {
+      const dependencyPath = resolveDependencyPath(modulePath, specifier);
+
+      if (dependencyPath && await hasRemoteModuleDependencies(
+        dependencyPath,
+        visitedPaths,
+      )) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function getImportSpecifiers(source: string) {
+  const importSpecifiers = new Set<string>();
+  const staticImportPattern =
+    /(?:import|export)\s+(?:type\s+)?(?:[\s\w{},*$]*?\s+from\s+)?["']([^"']+)["']/g;
+  const dynamicImportPattern = /import\(\s*["']([^"']+)["']\s*\)/g;
+
+  for (const pattern of [staticImportPattern, dynamicImportPattern]) {
+    for (const match of source.matchAll(pattern)) {
+      const specifier = match[1];
+
+      if (specifier) {
+        importSpecifiers.add(specifier);
+      }
+    }
+  }
+
+  return [...importSpecifiers];
+}
+
+function resolveDependencyPath(modulePath: string, specifier: string) {
+  if (specifier.startsWith("file:")) {
+    return fileURLToPath(specifier);
+  }
+
+  if (specifier.startsWith("/")) {
+    return specifier;
+  }
+
+  const resolvedPath = path.resolve(path.dirname(modulePath), specifier);
+
+  return path.extname(resolvedPath) ? resolvedPath : undefined;
+}
+
+function getLocalModulePath(modulePath: string) {
+  if (modulePath.startsWith("file:")) {
+    return fileURLToPath(modulePath);
+  }
+
+  if (
+    modulePath.startsWith("/") || modulePath.startsWith("./") ||
+    modulePath.startsWith("../")
+  ) {
+    return path.resolve(modulePath);
+  }
+
+  return undefined;
+}
+
+function getImportPath(modulePath: string) {
+  if (
+    modulePath.startsWith("http://") || modulePath.startsWith("https://") ||
+    modulePath.startsWith("node:") || modulePath.startsWith("data:")
+  ) {
+    return modulePath;
+  }
+
+  const localModulePath = getLocalModulePath(modulePath);
+
+  if (!localModulePath) {
+    return modulePath;
+  }
+
+  return `${pathToFileURL(localModulePath).href}?cache=${Date.now()}`;
 }
 
 function getLoader(modulePath: string, contentType = "") {

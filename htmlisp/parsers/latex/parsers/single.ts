@@ -4,11 +4,12 @@ type SingleParser<ExpressionReturnType> = (
   s: string[],
 ) => ExpressionReturnType;
 
-enum STATES {
-  IDLE,
-  PARSE_EXPRESSION,
-  PARSE_EXPRESSION_CONTENT,
-}
+const STATES = {
+  IDLE: 0,
+  PARSE_EXPRESSION: 1,
+  PARSE_EXPRESSION_CONTENT: 2,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 
 const LIMIT = 100000;
 
@@ -25,7 +26,7 @@ function getParseSingle<ExpressionReturnType>(
     match: string;
     value: ExpressionReturnType;
   } {
-    let state = STATES.IDLE;
+    let state: State = STATES.IDLE;
     let foundKey = "";
     const parts: unknown[] = [];
     let stringBuffer = "";

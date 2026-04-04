@@ -1,18 +1,19 @@
 import type { CharacterGenerator } from "../types.ts";
 
-enum STATES {
-  FIND_ATTRIBUTE_NAME,
-  FIND_EQUALS,
-  PARSE_ATTRIBUTE_NAME,
-  PARSE_ATTRIBUTE_VALUE,
-  CAPTURE_ATTRIBUTE,
-}
+const STATES = {
+  FIND_ATTRIBUTE_NAME: 0,
+  FIND_EQUALS: 1,
+  PARSE_ATTRIBUTE_NAME: 2,
+  PARSE_ATTRIBUTE_VALUE: 3,
+  CAPTURE_ATTRIBUTE: 4,
+} as const;
+type State = typeof STATES[keyof typeof STATES];
 const LIMIT = 100000;
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
 ): [string, string | boolean | null] {
-  let state = STATES.FIND_ATTRIBUTE_NAME;
+  let state: State = STATES.FIND_ATTRIBUTE_NAME;
   let attributeName = "";
   let attributeValue: string | boolean | null = true;
 
