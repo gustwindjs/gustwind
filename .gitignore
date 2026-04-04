@@ -2,6 +2,8 @@ node_modules/
 build/
 npm
 .gustwind
+playwright-report/
+test-results/
 
 # Local Netlify folder
 .netlify

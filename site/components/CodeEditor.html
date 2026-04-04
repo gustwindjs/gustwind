@@ -12,10 +12,12 @@
     </div>
     <div class="inline-block font-mono relative">
       <pre
+        data-testid="code-editor-highlight"
         class="overflow-hidden mr-16 pr-16 w-full"
         &x="(concat highlight '(`' (get props language) '`,' state.code ')'))"
       ></pre>
       <textarea
+        data-testid="code-editor-input"
         class="overflow-hidden absolute min-w-full min-h-full top-0 left-0 outline-none opacity-50 bg-transparent whitespace-pre resize-none"
         oninput="setState({ code: this.value })"
         x="state.code"
@@ -28,6 +30,7 @@
     </div>
   </div>
   <div
+    data-testid="code-editor-preview"
     class="p-4 bg-gray-200 rounded-b-lg"
     &children="(render (get props children))"
   />
