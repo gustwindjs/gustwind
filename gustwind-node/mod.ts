@@ -1,3 +1,4 @@
+import * as path from "node:path";
 import {
   applyMatchRoutes,
   applyPlugins,
@@ -5,27 +6,26 @@ import {
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initMemoryLoadApi } from "../load-adapters/memory.ts";
-import type { InitLoadApi, Plugin } from "../types.ts";
+import { initLoadApi as initNodeLoadApi } from "../load-adapters/node.ts";
+import type { InitLoadApi, Plugin, Tasks } from "../types.ts";
 
 type PluginDefinition = [Plugin, Record<string, unknown>];
+type NodePluginDefinition = [Plugin | string, Record<string, unknown>];
+type RenderFn = (
+  pathname: string,
+  initialContext: Record<string, unknown>,
+) => Promise<{
+  markup: string;
+  tasks: Tasks;
+}>;
 
 async function initRender(
   initialPlugins: PluginDefinition[],
-): Promise<
-  (pathname: string, initialContext: Record<string, unknown>) => Promise<{
-    markup: string;
-    tasks: import("../types.ts").Tasks;
-  }>
->;
+): Promise<RenderFn>;
 async function initRender(
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
   initialPlugins: PluginDefinition[],
-): Promise<
-  (pathname: string, initialContext: Record<string, unknown>) => Promise<{
-    markup: string;
-    tasks: import("../types.ts").Tasks;
-  }>
->;
+): Promise<RenderFn>;
 async function initRender(
   initLoadApiOrInitialPlugins: InitLoadApi | PluginDefinition[],
   maybeInitialPlugins?: PluginDefinition[],
@@ -41,25 +41,65 @@ async function initRender(
     throw new Error("Missing initial plugins");
   }
 
+  return await createRender({
+    cwd: "",
+    outputDirectory: "",
+    initLoadApi,
+    initialPlugins,
+  });
+}
+
+async function initNodeRender(
+  {
+    cwd,
+    initialPlugins,
+    outputDirectory = "",
+  }: {
+    cwd: string;
+    initialPlugins: NodePluginDefinition[];
+    outputDirectory?: string;
+  },
+): Promise<RenderFn> {
+  return await createRender({
+    cwd,
+    outputDirectory,
+    initLoadApi: initNodeLoadApi,
+    initialPlugins,
+  });
+}
+
+async function createRender(
+  {
+    cwd,
+    outputDirectory,
+    initLoadApi,
+    initialPlugins,
+  }: {
+    cwd: string;
+    outputDirectory: string;
+    initLoadApi: InitLoadApi;
+    initialPlugins: NodePluginDefinition[];
+  },
+) {
+
   const initialImportedPlugins = await Promise.all(
     initialPlugins.map(([plugin, options]) =>
-      importPlugin({
-        cwd: "",
-        pluginModule: plugin,
+      importInitialPlugin({
+        cwd,
+        plugin,
         options,
-        outputDirectory: "",
+        outputDirectory,
         initLoadApi,
-        mode: "production",
       })
     ),
   );
 
   const { plugins, router } = await importPlugins({
-    cwd: "",
+    cwd,
     initialImportedPlugins,
     pluginDefinitions: [],
     initLoadApi,
-    outputDirectory: "",
+    outputDirectory,
     mode: "production",
   });
   const { routes, tasks: initialTasks } = await router.getAllRoutes();
@@ -92,5 +132,75 @@ async function initRender(
   };
 }
 
+async function importInitialPlugin(
+  {
+    cwd,
+    plugin,
+    options,
+    outputDirectory,
+    initLoadApi,
+  }: {
+    cwd: string;
+    plugin: Plugin | string;
+    options: Record<string, unknown>;
+    outputDirectory: string;
+    initLoadApi: InitLoadApi;
+  },
+) {
+  const pluginModule = typeof plugin === "string"
+    ? await loadInitialPluginModule({ cwd, pluginPath: plugin, initLoadApi })
+    : plugin;
+
+  return await importPlugin({
+    cwd,
+    pluginModule,
+    options,
+    outputDirectory,
+    initLoadApi,
+    mode: "production",
+  });
+}
+
+async function loadInitialPluginModule(
+  {
+    cwd,
+    pluginPath,
+    initLoadApi,
+  }: {
+    cwd: string;
+    pluginPath: string;
+    initLoadApi: InitLoadApi;
+  },
+) {
+  if (!cwd) {
+    throw new Error(
+      "String plugin references require a filesystem-backed current working directory",
+    );
+  }
+
+  const exports = await initLoadApi([]).module<{
+    default?: Plugin;
+    plugin?: Plugin;
+  }>({
+    path: resolvePluginPath(cwd, pluginPath),
+    type: "plugins",
+  });
+  const pluginModule = exports.plugin || exports.default;
+
+  if (!pluginModule) {
+    throw new Error(`Failed to load plugin from ${pluginPath}`);
+  }
+
+  return pluginModule;
+}
+
+function resolvePluginPath(cwd: string, pluginPath: string) {
+  return ["file:", "http://", "https://"].some((prefix) =>
+      pluginPath.startsWith(prefix)
+    ) || pluginPath.startsWith("/")
+    ? pluginPath
+    : path.resolve(cwd, pluginPath);
+}
+
 export type * from "../types.ts";
-export { initRender };
+export { initNodeRender, initRender };

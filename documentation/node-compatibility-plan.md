@@ -56,6 +56,32 @@ The first rendering-focused compatibility step is now implemented:
 
 This means the core orchestration and rendering flow can now run in a runtime-neutral, in-memory configuration. The remaining Node work is mostly about file-backed loading, build execution, and development tooling.
 
+The next rendering-focused step is also now implemented:
+
+- `load-adapters/node.ts` provides a file-backed loader using Node APIs
+- the Node loader now bundles authored modules before import so local `.ts` files do not rely on raw Node `import()` support
+- the same loader resolves remote `http(s)` imports during bundling, which covers the Deno-style remote module pattern used in this repository
+- `gustwind-node/mod.ts` exports `initNodeRender(...)` for filesystem-backed rendering
+- `gustwind-node/mod.ts` now accepts Node plugin path references for initial plugins, not only pre-imported plugin modules
+- `gustwind-node/mod.mjs` provides a plain-Node bootstrap entrypoint that bundles the TypeScript render core before exposing the render API
+- `gustwind-node/mod_test.ts` now covers rendering through:
+  - `renderers/htmlisp-renderer/mod.ts`
+  - on-disk HTML components
+  - on-disk utility modules loaded through the Node adapter
+  - local TypeScript utility imports
+  - remote HTTP TypeScript imports
+  - initial plugin modules loaded from filesystem paths
+
+This means Gustwind now supports both:
+
+- in-memory runtime-neutral rendering
+- file-backed rendering through a Node-style load adapter
+- filesystem-backed utility/data-source style modules that need TypeScript transpilation
+- remote module imports in the shared render path
+- Node-friendly bootstrap access to the render API without depending on direct raw-TS imports
+
+for the shared render core.
+
 ## Main blockers today
 
 ### Deno-specific loading
@@ -117,8 +143,13 @@ The design should allow keeping Deno implementations while adding Node implement
 
 ### Notes
 
-- This is still the next meaningful step for file-backed rendering and build compatibility.
-- The current in-memory adapter is enough for edge-style rendering but not for loading routes, components, or utilities from disk under Node.
+- File-backed rendering is now covered by `load-adapters/node.ts` and `initNodeRender(...)`.
+- The Node module loader now bundles local and remote authored modules, which removes the biggest immediate incompatibility for render-time utilities and data sources.
+- The Node render entrypoint can now load initial plugins from paths and can be entered through `gustwind-node/mod.mjs` under plain Node.
+- Remaining work is now mostly about:
+  - carrying the shared core into a real Node build entrypoint
+  - reusing the same Node-aware module loading strategy across config-driven plugin loading and build orchestration
+  - deciding how much Deno-first behavior should remain supported outside the render path
 
 ## Phase 3: Node build path
 
