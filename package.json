@@ -7,6 +7,9 @@
     "test": "echo \"Use deno task test for unit tests or npm run test:e2e for Playwright.\" && exit 1",
     "typecheck": "deno task check:types",
     "quality:gate": "deno task quality:gate",
+    "cf:build": "./build.sh",
+    "cf:deploy": "npm run cf:build && wrangler deploy",
+    "cf:dev": "wrangler dev",
     "test:e2e": "npm --prefix e2e run test",
     "test:e2e:headed": "npm --prefix e2e run test:headed"
   },
@@ -26,6 +29,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@netlify/functions": "^2.4.0"
+    "@netlify/functions": "^2.4.0",
+    "wrangler": "4.80.0"
   }
 }
