@@ -7,14 +7,14 @@ description: 'Phased plan for adding Node.js compatibility to Gustwind'
 
 ## Goal
 
-Add Node.js compatibility to Gustwind in a phased way without trying to port the entire Deno-centric toolchain at once.
+Move Gustwind onto Node.js in phases, starting from the shared render/build core and continuing through the development server only where that work clearly reduces complexity.
 
 The practical target is:
 
-1. Make the render/build core runtime-agnostic.
+1. Make the render/build core Node-compatible.
 2. Add a Node build entrypoint.
-3. Keep Deno-only development mode at first.
-4. Revisit watch/dev-server support later if there is an actual need.
+3. Replace the Deno development shell instead of preserving parity with it.
+4. Use Vite as the preferred development-server foundation if that simplifies watch, reload, and asset serving.
 
 ## Scope
 
@@ -29,7 +29,13 @@ The practical target is:
 - Development server
 - File watching
 - Live reload / websocket tooling
-- Full CLI parity
+- Practical CLI coverage on Node
+
+### Explicit non-targets
+
+- Maintaining long-term Deno compatibility
+- Preserving the current Deno dev server if a Node/Vite path is simpler
+- Achieving one-to-one runtime parity purely for compatibility's sake
 
 ## Existing starting points
 
@@ -54,7 +60,7 @@ The first rendering-focused compatibility step is now implemented:
   - `plugins/meta/mod.ts`
   - `renderers/htmlisp-edge-renderer/mod.ts`
 
-This means the core orchestration and rendering flow can now run in a runtime-neutral, in-memory configuration. The remaining Node work is mostly about file-backed loading, build execution, and development tooling.
+This means the core orchestration and rendering flow can now run in a runtime-neutral, in-memory configuration. The remaining Node work is mostly about build execution and development tooling.
 
 The next rendering-focused step is also now implemented:
 
@@ -84,12 +90,6 @@ for the shared render core.
 
 ## Main blockers today
 
-### Deno-specific loading
-
-- `load-adapters/deno.ts`
-
-This currently owns module loading, JSON loading, text-file loading, and task registration in a Deno-specific way.
-
 ### Deno worker model
 
 - `gustwind-builder/createWorkerPool.ts`
@@ -105,7 +105,7 @@ The build pipeline currently depends on Deno workers and Deno file APIs.
 - `plugins/file-watcher/mod.ts`
 - `utilities/getWebSocketServer.ts`
 
-These depend on Deno process, server, file system, command, signal, and watch APIs.
+These depend on Deno process, server, file system, command, signal, and watch APIs, and they are the main remaining barrier to a practical Node-first workflow.
 
 ## Required abstractions
 
@@ -119,15 +119,15 @@ Introduce runtime abstractions for:
 - HTTP serving
 - optional shell/process integration
 
-The design should allow keeping Deno implementations while adding Node implementations beside them.
+The design should prefer Node implementations and shared interfaces. Deno-specific implementations only matter where they still help the migration and should not drive the shape of the final architecture.
 
 ## Proposed phases
 
 ## Phase 1: Runtime boundary cleanup
 
-- Separate runtime-neutral core logic from Deno entrypoints.
+- Separate shared core logic from Deno entrypoints.
 - Keep plugin orchestration and rendering code free of direct Deno dependencies where possible.
-- Move Deno-specific logic behind narrow interfaces.
+- Move remaining runtime-specific logic behind narrow interfaces that Node can own.
 
 ### Phase 1 progress
 
@@ -150,7 +150,7 @@ The design should allow keeping Deno implementations while adding Node implement
 - Remaining work is now mostly about:
   - carrying the shared core into a real Node build entrypoint
   - reusing the same Node-aware module loading strategy across config-driven plugin loading and build orchestration
-  - deciding how much Deno-first behavior should remain supported outside the render path
+  - removing Deno-first assumptions from the remaining build and dev surfaces
 
 ## Phase 3: Node build path
 
@@ -160,29 +160,46 @@ The design should allow keeping Deno implementations while adding Node implement
   - a simpler single-process fallback first
 - Prefer the simpler fallback if parallelism complicates the first working version.
 
-## Phase 4: Optional Node CLI
+## Phase 4: Node CLI
 
 - Add a Node-facing CLI only after the Node build path works reliably.
-- Do not aim for full feature parity immediately.
+- Cover the workflows that matter in practice instead of targeting Deno-style parity.
 
-## Phase 5: Dev-mode parity
+## Phase 5: Node dev server on Vite
 
-- Port file watching with `chokidar` or `fs.watch`.
-- Port websocket/live-reload utilities.
-- Add a Node dev server.
+- Replace the current Deno dev server with a Node 24 dev server built on Vite middleware mode.
+- Use Vite's watcher and websocket/HMR transport instead of preserving the current custom Deno watcher/websocket stack.
+- Keep Gustwind's route matching and render pipeline, but mount it behind Vite middleware.
+- Let Vite handle dev-only concerns it is already good at:
+  - file watching
+  - websocket transport
+  - reload signaling
+  - asset and client script serving
+  - middleware composition
 
-This phase should be treated as optional unless Node-based development becomes a real requirement.
+### Notes
+
+- The latest Vite docs show this path is viable on Node 24:
+  - `createServer(...)` and `server.middlewareMode` provide a custom-server integration path
+  - `configureServer` allows Gustwind-specific middleware wiring
+  - `handleHotUpdate` and `server.ws` can replace the current custom reload transport
+- This would simplify or replace the current Deno-specific dev code in:
+  - `gustwind-dev-server/mod.ts`
+  - `plugins/file-watcher/mod.ts`
+  - `plugins/websocket/mod.ts`
+  - `utilities/getWebSocketServer.ts`
+- Vite would not replace Gustwind's route matching or plugin-driven rendering. It would replace the surrounding dev shell.
 
 ## Recommended implementation order
 
-1. Make the render/build core runtime-agnostic.
+1. Make the render/build core Node-compatible.
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
-4. Keep Deno dev mode unchanged.
-5. Port watch/dev-server support only if needed.
+4. Add a Node CLI for the practical build workflows.
+5. Replace the Deno dev shell with a Vite-based Node dev server.
 
 ## Recommendation
 
 Do not start with "full Node compatibility".
 
-Start by making static builds and rendering work under Node. That gets most of the practical value with much less risk than porting the entire development toolchain up front.
+Start by making static builds and rendering work under Node. After that, do not try to preserve the Deno dev stack out of inertia. If Node-based development becomes important, use Vite as the new dev shell and let the old Deno-specific watcher/websocket path go away.
