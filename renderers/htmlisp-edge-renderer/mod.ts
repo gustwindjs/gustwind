@@ -1,14 +1,14 @@
-import process from "node:process";
 import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
+import { isDebugEnabled } from "../../utilities/runtime.ts";
 
 // For edge renderer components are directly strings
 type Components = Record<string, string>;
 
-const DEBUG = process.env.DEBUG === "1";
+const DEBUG = isDebugEnabled();
 
 // TODO: See if rendering should be decoupled from routing somehow to allow usage without a router
 const plugin: Plugin<{

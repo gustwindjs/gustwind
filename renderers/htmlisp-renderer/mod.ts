@@ -6,8 +6,9 @@ import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
+import { isDebugEnabled } from "../../utilities/runtime.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
+const DEBUG = isDebugEnabled();
 
 const plugin: Plugin<{
   components: { path: string; selection?: string[] }[];
@@ -47,6 +48,7 @@ const plugin: Plugin<{
           loadDir: load.dir,
           loadModule: (path) =>
             load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
+          readTextFile: load.textFile,
         });
         const [{ components, componentUtilities }, globalUtilities] =
           await Promise.all([

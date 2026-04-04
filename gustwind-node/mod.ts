@@ -4,12 +4,43 @@ import {
   importPlugin,
   importPlugins,
 } from "../gustwind-utilities/plugins.ts";
+import { initLoadApi as initMemoryLoadApi } from "../load-adapters/memory.ts";
 import type { InitLoadApi, Plugin } from "../types.ts";
 
+type PluginDefinition = [Plugin, Record<string, unknown>];
+
+async function initRender(
+  initialPlugins: PluginDefinition[],
+): Promise<
+  (pathname: string, initialContext: Record<string, unknown>) => Promise<{
+    markup: string;
+    tasks: import("../types.ts").Tasks;
+  }>
+>;
 async function initRender(
   initLoadApi: InitLoadApi, // TODO: Add a default implementation of the load api for node
-  initialPlugins: [Plugin, Record<string, unknown>][],
+  initialPlugins: PluginDefinition[],
+): Promise<
+  (pathname: string, initialContext: Record<string, unknown>) => Promise<{
+    markup: string;
+    tasks: import("../types.ts").Tasks;
+  }>
+>;
+async function initRender(
+  initLoadApiOrInitialPlugins: InitLoadApi | PluginDefinition[],
+  maybeInitialPlugins?: PluginDefinition[],
 ) {
+  const initLoadApi = Array.isArray(initLoadApiOrInitialPlugins)
+    ? initMemoryLoadApi
+    : initLoadApiOrInitialPlugins;
+  const initialPlugins = Array.isArray(initLoadApiOrInitialPlugins)
+    ? initLoadApiOrInitialPlugins
+    : maybeInitialPlugins;
+
+  if (!initialPlugins) {
+    throw new Error("Missing initial plugins");
+  }
+
   const initialImportedPlugins = await Promise.all(
     initialPlugins.map(([plugin, options]) =>
       importPlugin({

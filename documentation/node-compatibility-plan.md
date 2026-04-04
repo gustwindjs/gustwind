@@ -1,3 +1,8 @@
+---
+slug: 'node-compatibility-plan'
+title: 'Node Compatibility Plan'
+description: 'Phased plan for adding Node.js compatibility to Gustwind'
+---
 # Node Compatibility Plan
 
 ## Goal
@@ -35,6 +40,21 @@ The repository already has pieces that point toward a non-Deno runtime:
 - `renderers/htmlisp-edge-renderer/mod.ts`
 
 These suggest that the rendering and routing core can be separated from the Deno-specific runtime surface.
+
+## Current status
+
+The first rendering-focused compatibility step is now implemented:
+
+- shared render-path debug/env access no longer assumes only one runtime
+- `gustwind-node/mod.ts` now supports an in-memory plugin setup without requiring a filesystem-backed load adapter
+- `load-adapters/memory.ts` provides the default non-filesystem loader for that path
+- `utilities/htmlLoader.ts` no longer reads component files directly through `Deno.*`
+- `gustwind-node/mod_test.ts` covers in-memory rendering with:
+  - `routers/edge-router/mod.ts`
+  - `plugins/meta/mod.ts`
+  - `renderers/htmlisp-edge-renderer/mod.ts`
+
+This means the core orchestration and rendering flow can now run in a runtime-neutral, in-memory configuration. The remaining Node work is mostly about file-backed loading, build execution, and development tooling.
 
 ## Main blockers today
 
@@ -83,12 +103,22 @@ The design should allow keeping Deno implementations while adding Node implement
 - Keep plugin orchestration and rendering code free of direct Deno dependencies where possible.
 - Move Deno-specific logic behind narrow interfaces.
 
+### Phase 1 progress
+
+- Completed for the shared render path.
+- Still incomplete for build workers, dev server, file watching, and other tooling surfaces.
+
 ## Phase 2: Node load adapter
 
 - Add a Node equivalent for `load-adapters/deno.ts`.
 - Use `fs/promises` for file access.
 - Use dynamic `import()` with file URLs for module loading.
 - Preserve current task registration behavior if build tasks still depend on it.
+
+### Notes
+
+- This is still the next meaningful step for file-backed rendering and build compatibility.
+- The current in-memory adapter is enough for edge-style rendering but not for loading routes, components, or utilities from disk under Node.
 
 ## Phase 3: Node build path
 

@@ -1,5 +1,4 @@
 import { join as joinPath } from "node:path";
-import process from "node:process";
 import type {
   Context,
   InitLoadApi,
@@ -15,8 +14,9 @@ import type {
   Send,
   Tasks,
 } from "../types.ts";
+import { isDebugEnabled } from "../utilities/runtime.ts";
 
-const DEBUG = process.env.DEBUG === "1";
+const DEBUG = isDebugEnabled();
 
 export type PluginDefinition = LoadedPlugin["plugin"];
 

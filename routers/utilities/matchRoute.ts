@@ -1,14 +1,9 @@
 import { trim } from "../../utilities/string.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import type { DataSources, Route } from "../../types.ts";
+import { isDebugEnabled } from "../../utilities/runtime.ts";
 
-let DEBUG = false;
-
-try {
-  DEBUG = Deno.env.get("DEBUG") === "1";
-} catch (_) {
-  // Tests shouldn't require env permissions just to read debug mode.
-}
+const DEBUG = isDebugEnabled();
 
 async function matchRoute(
   routes: Record<string, Route>,

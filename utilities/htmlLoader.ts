@@ -11,7 +11,7 @@ type ParsedComponents = [
 ][];
 
 const initLoader = (
-  { cwd, loadDir, loadModule }: {
+  { cwd, loadDir, loadModule, readTextFile }: {
     cwd: string;
     loadDir: (
       { path, extension, recursive, type }: {
@@ -22,6 +22,7 @@ const initLoader = (
       },
     ) => Promise<{ name: string; path: string }[]>;
     loadModule: (path: string) => Promise<GlobalUtilities>;
+    readTextFile: (path: string) => Promise<string>;
   },
 ) => {
   return async (
@@ -58,8 +59,6 @@ const initLoader = (
         const utilitiesPath = p.replace(extension, ".server.ts");
 
         try {
-          await Deno.lstat(p);
-
           utilities = await loadModule(utilitiesPath);
         } catch (_err) {
           // Nothing to do
@@ -68,7 +67,7 @@ const initLoader = (
         return [
           componentName,
           {
-            component: await Deno.readTextFile(p),
+            component: await readTextFile(p),
             utilities,
           },
         ];
