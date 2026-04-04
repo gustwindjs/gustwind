@@ -77,14 +77,16 @@ async function importPlugins(
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
+    const pluginModuleTasks: Tasks = [];
     const { plugin, tasks } = await importPlugin({
       cwd,
-      pluginModule: pluginDefinition.module || await import(
-        ["file", "http"].some((p) => pluginDefinition.path.startsWith(p))
-          ? pluginDefinition.path
-          : joinPath(cwd, pluginDefinition.path)
-      )
-        .then(({ plugin }) => plugin),
+      pluginModule: pluginDefinition.module ||
+        await loadPluginModule({
+          cwd,
+          initLoadApi,
+          path: pluginDefinition.path,
+          tasks: pluginModuleTasks,
+        }),
       options: pluginDefinition.options,
       outputDirectory,
       renderComponent,
@@ -92,7 +94,7 @@ async function importPlugins(
       initLoadApi,
       mode,
     });
-    initialTasks = initialTasks.concat(tasks);
+    initialTasks = initialTasks.concat(pluginModuleTasks, tasks);
 
     const { dependsOn } = plugin.meta;
     const dependencyIndex = loadedPluginDefinitions.findIndex(
@@ -128,6 +130,39 @@ async function importPlugins(
   };
 
   return { plugins: loadedPluginDefinitions, router };
+}
+
+async function loadPluginModule(
+  {
+    cwd,
+    initLoadApi,
+    path,
+    tasks,
+  }: {
+    cwd: string;
+    initLoadApi: InitLoadApi;
+    path: string;
+    tasks: Tasks;
+  },
+): Promise<Plugin> {
+  const exports = await initLoadApi(tasks).module<{
+    default?: Plugin;
+    plugin?: Plugin;
+  }>({
+    path: ["file:", "http://", "https://"].some((prefix) =>
+        path.startsWith(prefix)
+      ) || path.startsWith("/")
+      ? path
+      : joinPath(cwd, path),
+    type: "plugins",
+  });
+  const pluginModule = exports.plugin || exports.default;
+
+  if (!pluginModule) {
+    throw new Error(`Failed to load plugin from ${path}`);
+  }
+
+  return pluginModule;
 }
 
 async function importPlugin(

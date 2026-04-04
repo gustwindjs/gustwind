@@ -4,12 +4,7 @@ import { readFileSync } from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { LoadApi, PluginParameters, Tasks } from "../types.ts";
-
-// deno-lint-ignore no-explicit-any
-type EsbuildBuild = (...args: any[]) => Promise<{ outputFiles?: { text: string }[] }>;
-type EsbuildModule = { build: EsbuildBuild; stop(): void };
-
-let esbuildPromise: Promise<EsbuildModule> | undefined;
+import { getEsbuild, stopEsbuild } from "../utilities/esbuild.ts";
 
 function initLoadApi(tasks: Tasks): LoadApi {
   return {
@@ -125,7 +120,7 @@ async function shouldBundleModule(modulePath: string) {
 }
 
 async function bundleModule(modulePath: string) {
-  const esbuild = await importEsbuild();
+  const esbuild = await getEsbuild();
   const entryPoint = normalizeEntryPoint(modulePath);
   const result = await esbuild.build({
     absWorkingDir: path.isAbsolute(entryPoint)
@@ -163,39 +158,8 @@ function normalizeEntryPoint(modulePath: string) {
   return modulePath;
 }
 
-async function importEsbuild() {
-  if (esbuildPromise) {
-    return esbuildPromise;
-  }
-
-  if ("Deno" in globalThis) {
-    esbuildPromise = import("https://deno.land/x/esbuild@v0.19.4/mod.js").then(
-      (module) => ({
-        build: module.build,
-        stop: module.stop,
-      }),
-    );
-  } else {
-    esbuildPromise = import("esbuild").then((module) => ({
-      build: module.build,
-      stop: module.stop,
-    }));
-  }
-
-  if (!esbuildPromise) {
-    throw new Error("Failed to initialize esbuild");
-  }
-
-  return esbuildPromise;
-}
-
 async function stopModuleBundler() {
-  if (!esbuildPromise) {
-    return;
-  }
-
-  (await esbuildPromise).stop();
-  esbuildPromise = undefined;
+  await stopEsbuild();
 }
 
 function httpImportPlugin() {

@@ -4,8 +4,9 @@ import {
   stopEsbuild,
 } from "../../utilities/compileTypeScript.ts";
 import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
+import { isDebugEnabled } from "../../utilities/runtime.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
+const DEBUG = isDebugEnabled();
 
 const plugin: Plugin<{
   scripts: Scripts;

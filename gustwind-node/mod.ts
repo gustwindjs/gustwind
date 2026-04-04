@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import { buildNode } from "./build.ts";
 import {
   applyMatchRoutes,
   applyPlugins,
@@ -203,4 +204,4 @@ function resolvePluginPath(cwd: string, pluginPath: string) {
 }
 
 export type * from "../types.ts";
-export { initNodeRender, initRender };
+export { buildNode, initNodeRender, initRender };

@@ -1,0 +1,196 @@
+import * as path from "node:path";
+import {
+  cp,
+  mkdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import {
+  applyMatchRoutes,
+  applyPlugins,
+  cleanUpPlugins,
+  finishPlugins,
+  importPlugins,
+  preparePlugins,
+} from "../gustwind-utilities/plugins.ts";
+import { initLoadApi as initNodeLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
+import { isDebugEnabled } from "../utilities/runtime.ts";
+import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts";
+
+const DEBUG = isDebugEnabled();
+
+async function buildNode(
+  { cwd, outputDirectory, pluginDefinitions }: {
+    cwd: string;
+    outputDirectory: string;
+    pluginDefinitions: PluginOptions[];
+  },
+) {
+  await rm(outputDirectory, { recursive: true, force: true });
+  await mkdir(outputDirectory, { recursive: true });
+
+  const { plugins, router } = await importPlugins({
+    cwd,
+    pluginDefinitions,
+    outputDirectory,
+    initLoadApi: initNodeLoadApi,
+    mode: "production",
+  });
+
+  try {
+    const prepareTasks = await preparePlugins(plugins);
+    const { routes, tasks: routerTasks } = await router.getAllRoutes();
+
+    if (!routes) {
+      throw new Error("No routes found");
+    }
+
+    await runTaskQueue({
+      router,
+      plugins,
+      tasks: prepareTasks
+        .concat(routerTasks)
+        .concat(
+          Object.entries(routes)
+            .filter(([, route]) => Boolean(route.layout))
+            .map(([url, route]) => ({
+              type: "build",
+              payload: {
+                route,
+                dir: path.join(outputDirectory, url),
+                url: url === "/" ? "/" : "/" + url + "/",
+              },
+            })),
+        ),
+    });
+
+    await runTaskQueue({
+      router,
+      plugins,
+      tasks: await finishPlugins(plugins),
+    });
+
+    await cleanUpPlugins(plugins, routes);
+  } finally {
+    await stopModuleBundler();
+  }
+}
+
+async function runTaskQueue(
+  {
+    router,
+    plugins,
+    tasks,
+  }: {
+    router: {
+      matchRoute(url: string): Promise<Route | undefined>;
+    };
+    plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"];
+    tasks: Tasks;
+  },
+) {
+  const queue = [...tasks];
+
+  while (queue.length) {
+    const task = queue.shift();
+
+    if (!task) {
+      continue;
+    }
+
+    DEBUG && console.log("node build - running task", task.type);
+
+    switch (task.type) {
+      case "build": {
+        const matchedRoute = await router.matchRoute(task.payload.url);
+
+        if (!matchedRoute) {
+          throw new Error(
+            `Failed to find route ${task.payload.url} while building`,
+          );
+        }
+
+        const { markup, tasks: routeTasks } = await applyPlugins({
+          plugins,
+          url: task.payload.url,
+          route: matchedRoute,
+          matchRoute(url: string) {
+            return applyMatchRoutes({ plugins, url });
+          },
+        });
+
+        queue.push(...routeTasks);
+        await writeRenderedPage({
+          dir: task.payload.dir,
+          markup,
+          url: task.payload.url,
+        });
+        break;
+      }
+      case "writeFile": {
+        if (!task.payload.outputDirectory.endsWith(".html")) {
+          const filePath = path.join(
+            task.payload.outputDirectory,
+            task.payload.file,
+          );
+
+          await mkdir(path.dirname(filePath), { recursive: true });
+          await writeFile(filePath, task.payload.data);
+        }
+        break;
+      }
+      case "writeTextFile": {
+        if (!task.payload.outputDirectory.endsWith(".html")) {
+          const filePath = path.join(
+            task.payload.outputDirectory,
+            task.payload.file,
+          );
+
+          await mkdir(path.dirname(filePath), { recursive: true });
+          await writeFile(filePath, task.payload.data);
+        }
+        break;
+      }
+      case "copyFiles": {
+        await cp(
+          task.payload.inputDirectory,
+          path.join(task.payload.outputDirectory, task.payload.outputPath),
+          { force: true, recursive: true },
+        );
+        break;
+      }
+      case "loadJSON":
+      case "loadModule":
+      case "listDirectory":
+      case "readTextFile":
+      case "init":
+        break;
+      default: {
+        const _exhaustive: never = task;
+        throw new Error(`Unsupported build task ${_exhaustive}`);
+      }
+    }
+  }
+}
+
+async function writeRenderedPage(
+  { dir, markup, url }: {
+    dir: string;
+    markup: string;
+    url: string;
+  },
+) {
+  if (
+    url.endsWith(".json/") || url.endsWith(".xml/") ||
+    url.endsWith(".html/")
+  ) {
+    await mkdir(path.dirname(dir), { recursive: true });
+    await writeFile(dir, markup);
+    return;
+  }
+
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, "index.html"), markup);
+}
+
+export { buildNode };

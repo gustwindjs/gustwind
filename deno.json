@@ -5,7 +5,7 @@
     "check:types:deno": "deno check --allow-import $(rg --files -g '*.ts' | rg -v '^(e2e/|plugins/.*/compiled-scripts/)')",
     "check:types:e2e": "npm --prefix e2e run typecheck",
     "check:types": "deno task check:types:deno && deno task check:types:e2e",
-    "test:quality": "deno test --allow-read --allow-write --allow-net --allow-env --allow-run gustwind-node/mod_test.ts && deno test htmlisp/html-tests htmlisp/html-tests-sync routers/utilities utilities/watch_test.ts",
+    "test:quality": "deno test --allow-read --allow-write --allow-net --allow-env --allow-run gustwind-node/mod_test.ts gustwind-node/build_test.ts && deno test htmlisp/html-tests htmlisp/html-tests-sync routers/utilities utilities/watch_test.ts",
     "quality:gate": "deno task check:types && deno task test:quality && npm run test:e2e",
     "watch:test": "deno test --watch",
     "serve": "deno run --lock=deno.server.lock --allow-sys --allow-env --allow-read --allow-net --allow-write --allow-run --allow-import ./gustwind-cli/mod.ts -s -p 3000 -i ./build",

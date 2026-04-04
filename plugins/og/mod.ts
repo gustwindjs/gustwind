@@ -1,6 +1,6 @@
 import * as path from "node:path";
 // Note that this depends on --allow-ffi
-import sharp from "npm:sharp@0.34.3";
+import sharp from "sharp";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import type { Plugin } from "../../types.ts";
 

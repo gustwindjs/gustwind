@@ -1,11 +1,13 @@
-import * as esbuild from "https://deno.land/x/esbuild@v0.19.4/mod.js";
 import type { Mode } from "../types.ts";
+import { getEsbuild, stopEsbuild as stopSharedEsbuild } from "./esbuild.ts";
 
 async function compileTypeScript(
   path: string,
   mode: Mode,
   externals?: string[],
 ) {
+  const esbuild = await getEsbuild();
+
   // Reference: https://esbuild.github.io/api/
   const result = await esbuild.build({
     entryPoints: [path],
@@ -28,7 +30,7 @@ async function compileTypeScript(
 
   const output = result.outputFiles;
 
-  if (output.length < 1) {
+  if (!output || output.length < 1) {
     console.error("esbuild didn't output anything!");
 
     return "";
@@ -38,8 +40,7 @@ async function compileTypeScript(
 }
 
 function stopEsbuild() {
-  // https://esbuild.github.io/getting-started/#deno
-  esbuild.stop();
+  return stopSharedEsbuild();
 }
 
 export { compileTypeScript, stopEsbuild };

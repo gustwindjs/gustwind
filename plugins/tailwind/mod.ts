@@ -1,7 +1,7 @@
 import * as path from "node:path";
-import tailwindCss from "npm:tailwindcss@3.4.15";
-import postcss from "npm:postcss@8.4.49";
-import autoprefixer from "npm:autoprefixer@10.4.20";
+import tailwindCss from "tailwindcss";
+import postcss from "postcss";
+import autoprefixer from "autoprefixer";
 import type { Plugin } from "../../types.ts";
 
 const plugin: Plugin<{
@@ -35,7 +35,7 @@ const plugin: Plugin<{
       ];
 
       if (mode === "production") {
-        const { default: cssnano } = await import("npm:cssnano@7.0.6");
+        const { default: cssnano } = await import("cssnano");
         plugins.push(cssnano());
       }
 

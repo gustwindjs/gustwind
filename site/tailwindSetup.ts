@@ -1,5 +1,5 @@
-import typography from "npm:@tailwindcss/typography@0.5.15";
-import { type Config } from "npm:tailwindcss@3.4.15";
+import typography from "@tailwindcss/typography";
+import { type Config } from "tailwindcss";
 
 const colors = {
   "primary": "#3a2fa6",
