@@ -1,12 +1,13 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { getDataSourceContext } from "./getDataSourceContext.ts";
 
-Deno.test("converts empty data source ids to a context", async () => {
-  assertEquals(await getDataSourceContext({}, {}, {}), {});
+test("converts empty data source ids to a context", async () => {
+  assert.deepEqual(await getDataSourceContext({}, {}, {}), {});
 });
 
-Deno.test("converts a single data source id to a context", async () => {
-  assertEquals(
+test("converts a single data source id to a context", async () => {
+  assert.deepEqual(
     await getDataSourceContext(
       {},
       { demo: { operation: "processInput" } },
@@ -18,8 +19,8 @@ Deno.test("converts a single data source id to a context", async () => {
   );
 });
 
-Deno.test("converts multiple data source ids to a context", async () => {
-  assertEquals(
+test("converts multiple data source ids to a context", async () => {
+  assert.deepEqual(
     await getDataSourceContext(
       {},
       {
@@ -35,8 +36,8 @@ Deno.test("converts multiple data source ids to a context", async () => {
   );
 });
 
-Deno.test("converts a single data source id to a context with parameters", async () => {
-  assertEquals(
+test("converts a single data source id to a context with parameters", async () => {
+  assert.deepEqual(
     await getDataSourceContext(
       {},
       { demo: { operation: "processInput", parameters: ["foobar"] } },
@@ -48,8 +49,8 @@ Deno.test("converts a single data source id to a context with parameters", async
   );
 });
 
-Deno.test("passes data from parent data sources to this", async () => {
-  assertEquals(
+test("passes data from parent data sources to this", async () => {
+  assert.deepEqual(
     await getDataSourceContext(
       { foo: "bar" },
       { demo: { operation: "processInput" } },

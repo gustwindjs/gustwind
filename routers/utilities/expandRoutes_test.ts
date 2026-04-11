@@ -1,42 +1,40 @@
-import {
-  assertEquals,
-  assertRejects,
-} from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { expandRoutes } from "./expandRoutes.ts";
 
-Deno.test("converts empty data source ids to a context", async () => {
-  assertEquals(await expandRoutes({ routes: {}, dataSources: {} }), {});
+test("converts empty data source ids to a context", async () => {
+  assert.deepEqual(await expandRoutes({ routes: {}, dataSources: {} }), {});
 });
 
-Deno.test("does not expand a simple root route", async () => {
+test("does not expand a simple root route", async () => {
   const routes = { "/": { layout: "siteIndex" } };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({ routes, dataSources: {} }),
     routes,
   );
 });
 
-Deno.test("does not expand a simple route", async () => {
+test("does not expand a simple route", async () => {
   const routes = { blog: { layout: "siteIndex" } };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({ routes, dataSources: {} }),
     routes,
   );
 });
 
-Deno.test("does not expand routes within routes", async () => {
+test("does not expand routes within routes", async () => {
   const route = { layout: "siteIndex" };
   const routes = { blog: { ...route, routes: { more: route } } };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({ routes, dataSources: {} }),
     routes,
   );
 });
 
-Deno.test("indexer is not found", () => {
+test("indexer is not found", async () => {
   const routes = {
     blog: {
       layout: "siteIndex",
@@ -51,14 +49,13 @@ Deno.test("indexer is not found", () => {
     },
   };
 
-  assertRejects(
+  await assert.rejects(
     () => expandRoutes({ routes, dataSources: {} }),
-    Error,
-    `Missing indexer`,
+    /Missing indexer/,
   );
 });
 
-Deno.test("expand a route", async () => {
+test("expand a route", async () => {
   const routes = {
     blog: {
       layout: "siteIndex",
@@ -73,7 +70,7 @@ Deno.test("expand a route", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({
       routes,
       dataSources: { indexMarkdown: () => [{ slug: "foo" }] },
@@ -97,7 +94,7 @@ Deno.test("expand a route", async () => {
   );
 });
 
-Deno.test("expands a route within routes", async () => {
+test("expands a route within routes", async () => {
   const routes = {
     blog: {
       layout: "blogIndex",
@@ -117,7 +114,7 @@ Deno.test("expands a route within routes", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({
       routes,
       dataSources: { indexMarkdown: () => [{ slug: "foo" }] },
@@ -146,7 +143,7 @@ Deno.test("expands a route within routes", async () => {
   );
 });
 
-Deno.test("child routes inherit data sources", async () => {
+test("child routes inherit data sources", async () => {
   const dataSources = { chapters: { operation: "getChapters" } };
   const routes = {
     blog: {
@@ -163,7 +160,7 @@ Deno.test("child routes inherit data sources", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await expandRoutes({
       routes,
       dataSources: {

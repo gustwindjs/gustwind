@@ -227,6 +227,13 @@ The next test-runner cleanup step is now implemented:
 
 This means the remaining Deno-based test surface is increasingly concentrated in the older shared HTMLisp and router suites rather than in the active Node runtime path.
 
+The next router-test cleanup step is now implemented:
+
+- `routers/utilities/*_test.ts` now runs under `node --test` instead of `Deno.test`
+- the quality gate now exercises router utility coverage through the Node test runner rather than the Deno test runner
+
+This means the remaining Deno-based test surface is now concentrated more narrowly in the older HTMLisp suites and related parsing/utilities coverage, not in the active router/runtime helpers.
+
 The next lockfile cleanup step is now implemented:
 
 - the obsolete Deno lockfiles have been removed
@@ -328,6 +335,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Repository-level build, start, and serve tasks now use the Node path directly.
 - Repository-level command entrypoints now live in `package.json` instead of a separate `deno.json` task file.
 - The Node-specific render/build tests now run under `node --test` instead of the Deno test runner.
+- The router utility tests now run under `node --test` instead of the Deno test runner as well.
 - The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -373,7 +381,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Everyday repository commands now route through `npm run` rather than `deno task`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - removing Deno-based internal tests and packaging helpers that are no longer needed
+  - removing the remaining Deno-based shared tests/checks and packaging helpers that are no longer needed
 
 ## Recommended implementation order
 

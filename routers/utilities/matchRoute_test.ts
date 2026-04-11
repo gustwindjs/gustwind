@@ -1,50 +1,48 @@
-import {
-  assertEquals,
-  assertRejects,
-} from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { matchRoute } from "./matchRoute.ts";
 
-Deno.test("matches a basic route", async () => {
+test("matches a basic route", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(await matchRoute({ foo: route }, "foo", {}), route);
+  assert.deepEqual(await matchRoute({ foo: route }, "foo", {}), route);
 });
 
-Deno.test("matches root route", async () => {
+test("matches root route", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(await matchRoute({ "/": route }, "/", {}), route);
+  assert.deepEqual(await matchRoute({ "/": route }, "/", {}), route);
 });
 
-Deno.test("matches a basic route with a slash prefix", async () => {
+test("matches a basic route with a slash prefix", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(await matchRoute({ foo: route }, "/foo", {}), route);
+  assert.deepEqual(await matchRoute({ foo: route }, "/foo", {}), route);
 });
 
-Deno.test("matches a basic route with a slash suffix", async () => {
+test("matches a basic route with a slash suffix", async () => {
   const route = {
     layout: "fooIndex",
     meta: {},
     context: {},
   };
 
-  assertEquals(await matchRoute({ foo: route }, "foo/", {}), route);
+  assert.deepEqual(await matchRoute({ foo: route }, "foo/", {}), route);
 });
 
-Deno.test("matches a recursive route", async () => {
+test("matches a recursive route", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -57,10 +55,10 @@ Deno.test("matches a recursive route", async () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(await matchRoute({ foo: route1 }, "foo/bar", {}), route2);
+  assert.deepEqual(await matchRoute({ foo: route1 }, "foo/bar", {}), route2);
 });
 
-Deno.test("matches a recursive route with a slash prefix", async () => {
+test("matches a recursive route with a slash prefix", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -73,10 +71,10 @@ Deno.test("matches a recursive route with a slash prefix", async () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(await matchRoute({ foo: route1 }, "/foo/bar", {}), route2);
+  assert.deepEqual(await matchRoute({ foo: route1 }, "/foo/bar", {}), route2);
 });
 
-Deno.test("matches a recursive route with a slash suffix", async () => {
+test("matches a recursive route with a slash suffix", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -89,12 +87,12 @@ Deno.test("matches a recursive route with a slash suffix", async () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(await matchRoute({ foo: route1 }, "foo/bar/", {}), route2);
+  assert.deepEqual(await matchRoute({ foo: route1 }, "foo/bar/", {}), route2);
 });
 
 // This feature is not supported given the same routes could be written
 // directly to configuration root
-Deno.test("does not match a recursive route behind /", async () => {
+test("does not match a recursive route behind /", async () => {
   const route2 = {
     layout: "barIndex",
     meta: {},
@@ -107,14 +105,13 @@ Deno.test("does not match a recursive route behind /", async () => {
     routes: { bar: route2 },
   };
 
-  assertRejects(
+  await assert.rejects(
     () => matchRoute({ "/": route1 }, "bar", {}),
-    Error,
-    `Route "bar" was not found!`,
+    /Route "bar" was not found!/,
   );
 });
 
-Deno.test("matches a two-order recursive route", async () => {
+test("matches a two-order recursive route", async () => {
   const route3 = {
     layout: "bazIndex",
     meta: {},
@@ -132,10 +129,10 @@ Deno.test("matches a two-order recursive route", async () => {
     routes: { bar: route2 },
   };
 
-  assertEquals(await matchRoute({ foo: route1 }, "foo/bar/baz", {}), route2);
+  assert.deepEqual(await matchRoute({ foo: route1 }, "foo/bar/baz", {}), route2);
 });
 
-Deno.test("matches an expanded route", async () => {
+test("matches an expanded route", async () => {
   const route = {
     layout: "blogIndex",
     context: {},
@@ -153,7 +150,7 @@ Deno.test("matches an expanded route", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ blog: route }, "blog/foo", {
       index: () => [{ slug: "foo" }],
     }),
@@ -167,7 +164,7 @@ Deno.test("matches an expanded route", async () => {
   );
 });
 
-Deno.test("expanded route retains data sources", async () => {
+test("expanded route retains data sources", async () => {
   const dataSources = {
     document: {
       operation: "processMarkdown",
@@ -195,7 +192,7 @@ Deno.test("expanded route retains data sources", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ blog: route }, "blog/foo", {
       index: () => [{ slug: "foo" }],
     }),
@@ -214,7 +211,7 @@ Deno.test("expanded route retains data sources", async () => {
   );
 });
 
-Deno.test("matches index of an expanded route", async () => {
+test("matches index of an expanded route", async () => {
   const route = {
     layout: "blogIndex",
     context: {},
@@ -232,7 +229,7 @@ Deno.test("matches index of an expanded route", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ blog: route }, "blog", {
       index: () => [{ slug: "foo" }],
     }),
@@ -240,7 +237,7 @@ Deno.test("matches index of an expanded route", async () => {
   );
 });
 
-Deno.test("matches index of an expanded route while root route exists", async () => {
+test("matches index of an expanded route while root route exists", async () => {
   const blogRoute = {
     layout: "blogIndex",
     context: {},
@@ -274,7 +271,7 @@ Deno.test("matches index of an expanded route while root route exists", async ()
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ blog: blogRoute, "/": indexRoute }, "blog", {
       index: () => [{ slug: "foo" }],
     }),
@@ -282,7 +279,7 @@ Deno.test("matches index of an expanded route while root route exists", async ()
   );
 });
 
-Deno.test("matches an expanded route behind a slash", async () => {
+test("matches an expanded route behind a slash", async () => {
   const route = {
     layout: "blogIndex",
     context: {},
@@ -300,7 +297,7 @@ Deno.test("matches an expanded route behind a slash", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ "/": route }, "foo", { index: () => [{ slug: "foo" }] }),
     {
       layout: "blogPage",
@@ -312,7 +309,7 @@ Deno.test("matches an expanded route behind a slash", async () => {
   );
 });
 
-Deno.test("matches an expanded route of an expanded slash", async () => {
+test("matches an expanded route of an expanded slash", async () => {
   const route = {
     layout: "blogIndex",
     context: {},
@@ -330,13 +327,13 @@ Deno.test("matches an expanded route of an expanded slash", async () => {
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ "/": route }, "/", { index: () => [{ slug: "foo" }] }),
     route,
   );
 });
 
-Deno.test("matches a recursive route when expansion is used on the same route", async () => {
+test("matches a recursive route when expansion is used on the same route", async () => {
   const route2 = {
     layout: "barIndex",
     context: {},
@@ -359,7 +356,7 @@ Deno.test("matches a recursive route when expansion is used on the same route", 
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ foo: route1 }, "foo/bar", {
       index: () => [{ slug: "foo" }],
     }),
@@ -367,7 +364,7 @@ Deno.test("matches a recursive route when expansion is used on the same route", 
   );
 });
 
-Deno.test("matches an expanded route when recursive routes are used on the same route", async () => {
+test("matches an expanded route when recursive routes are used on the same route", async () => {
   const route2 = {
     layout: "barIndex",
     context: {},
@@ -390,7 +387,7 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
     },
   };
 
-  assertEquals(
+  assert.deepEqual(
     await matchRoute({ foo: route1 }, "foo/foo", {
       index: () => [{ slug: "foo" }],
     }),
@@ -404,15 +401,14 @@ Deno.test("matches an expanded route when recursive routes are used on the same 
   );
 });
 
-Deno.test("fails to match", () => {
+test("fails to match", async () => {
   const route = {
     layout: "fooIndex",
     context: {},
   };
 
-  assertRejects(
+  await assert.rejects(
     () => matchRoute({ foo: route }, "bar", {}),
-    Error,
-    `Route "bar" was not found!`,
+    /Route "bar" was not found!/,
   );
 });
