@@ -1,17 +1,20 @@
 import * as path from "node:path";
-import { assertEquals } from "https://deno.land/std@0.207.0/assert/mod.ts";
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import test from "node:test";
 import { buildNode } from "./build.ts";
 
-Deno.test("gustwind-node builds a site from path-based plugins", async () => {
-  const cwd = await Deno.makeTempDir({ prefix: "gustwind-node-build-" });
+test("gustwind-node builds a site from path-based plugins", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-"));
 
   try {
-    await Deno.mkdir(path.join(cwd, "public"), { recursive: true });
-    await Deno.writeTextFile(
+    await mkdir(path.join(cwd, "public"), { recursive: true });
+    await writeFile(
       path.join(cwd, "public", "copied.txt"),
       "copied\n",
     );
-    await Deno.writeTextFile(
+    await writeFile(
       path.join(cwd, "router-plugin.ts"),
       `
 export const plugin = {
@@ -48,7 +51,7 @@ export const plugin = {
 };
 `.trimStart(),
     );
-    await Deno.writeTextFile(
+    await writeFile(
       path.join(cwd, "renderer-plugin.ts"),
       `
 export const plugin = {
@@ -78,7 +81,7 @@ export const plugin = {
 };
 `.trimStart(),
     );
-    await Deno.writeTextFile(
+    await writeFile(
       path.join(cwd, "assets-plugin.ts"),
       `
 import * as path from "node:path";
@@ -128,23 +131,23 @@ export const plugin = {
       ],
     });
 
-    assertEquals(
-      await Deno.readTextFile(path.join(outputDirectory, "index.html")),
+    assert.equal(
+      await readFile(path.join(outputDirectory, "index.html"), "utf8"),
       "<html><body><h1>Page</h1><p>home</p></body></html>",
     );
-    assertEquals(
-      await Deno.readTextFile(path.join(outputDirectory, "feed.xml")),
+    assert.equal(
+      await readFile(path.join(outputDirectory, "feed.xml"), "utf8"),
       "<feed>feed</feed>",
     );
-    assertEquals(
-      await Deno.readTextFile(path.join(outputDirectory, "assets", "hello.txt")),
+    assert.equal(
+      await readFile(path.join(outputDirectory, "assets", "hello.txt"), "utf8"),
       "hello\n",
     );
-    assertEquals(
-      await Deno.readTextFile(path.join(outputDirectory, "copied", "copied.txt")),
+    assert.equal(
+      await readFile(path.join(outputDirectory, "copied", "copied.txt"), "utf8"),
       "copied\n",
     );
   } finally {
-    await Deno.remove(cwd, { recursive: true });
+    await rm(cwd, { recursive: true, force: true });
   }
 });

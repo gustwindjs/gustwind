@@ -1,5 +1,10 @@
 import * as path from "node:path";
-import { assertEquals, assertStringIncludes } from "https://deno.land/std@0.207.0/assert/mod.ts";
+import assert from "node:assert/strict";
+import { once } from "node:events";
+import { createServer } from "node:http";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import test from "node:test";
 import { plugin as metaPlugin } from "../plugins/meta/mod.ts";
 import { plugin as rendererPlugin } from "../renderers/htmlisp-renderer/mod.ts";
 import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer/mod.ts";
@@ -8,7 +13,7 @@ import { stopModuleBundler } from "../load-adapters/node.ts";
 import type { GlobalUtilities, Route } from "../types.ts";
 import { initNodeRender, initRender } from "./mod.ts";
 
-Deno.test("gustwind-node renders with in-memory edge-compatible plugins", async () => {
+test("gustwind-node renders with in-memory edge-compatible plugins", async () => {
   const globalUtilities: GlobalUtilities = {
     init: () => ({
       shout(input: string) {
@@ -42,27 +47,27 @@ Deno.test("gustwind-node renders with in-memory edge-compatible plugins", async 
 
   const { markup, tasks } = await render("/", {});
 
-  assertStringIncludes(markup, "<h1>Home</h1>");
-  assertStringIncludes(markup, "<p>HELLO FROM GUSTWIND</p>");
-  assertStringIncludes(markup, "<small>Gustwind</small>");
-  assertEquals(tasks, []);
+  assert.match(markup, /<h1>Home<\/h1>/);
+  assert.match(markup, /<p>HELLO FROM GUSTWIND<\/p>/);
+  assert.match(markup, /<small>Gustwind<\/small>/);
+  assert.deepEqual(tasks, []);
 });
 
-Deno.test("gustwind-node renders from disk through the node load adapter", async () => {
+test("gustwind-node renders from disk through the node load adapter", async () => {
   await withTempProject(async (cwd) => {
     const componentsDirectory = path.join(cwd, "components");
     const utilitiesDirectory = path.join(cwd, "utilities");
-    await Deno.mkdir(componentsDirectory, { recursive: true });
-    await Deno.mkdir(utilitiesDirectory, { recursive: true });
-    await Deno.writeTextFile(
+    await mkdir(componentsDirectory, { recursive: true });
+    await mkdir(utilitiesDirectory, { recursive: true });
+    await writeFile(
       path.join(componentsDirectory, "Home.html"),
       `<main><h1 &children="meta.title"></h1><p &children="(shout (get context headline))"></p><small &children="meta.siteName"></small></main>`,
     );
-    await Deno.writeTextFile(
+    await writeFile(
       path.join(utilitiesDirectory, "format.ts"),
       `export function format(input: string) { return String(input).toUpperCase(); }`,
     );
-    await Deno.writeTextFile(
+    await writeFile(
       path.join(cwd, "globalUtilities.ts"),
       [
         `import { format } from "./utilities/format.ts";`,
@@ -80,13 +85,13 @@ Deno.test("gustwind-node renders from disk through the node load adapter", async
       title: "Disk Render",
     });
 
-    assertStringIncludes(markup, "<h1>Disk Render</h1>");
-    assertStringIncludes(markup, "<p>LOADED FROM DISK</p>");
-    assertStringIncludes(markup, "<small>Gustwind</small>");
+    assert.match(markup, /<h1>Disk Render<\/h1>/);
+    assert.match(markup, /<p>LOADED FROM DISK<\/p>/);
+    assert.match(markup, /<small>Gustwind<\/small>/);
   });
 });
 
-Deno.test("gustwind-node renders through remote imports in node-loaded modules", async () => {
+test("gustwind-node renders through remote imports in node-loaded modules", async (t) => {
   const remoteModules = new Map<string, string>([
     [
       "/remote/message.ts",
@@ -102,41 +107,54 @@ Deno.test("gustwind-node renders through remote imports in node-loaded modules",
       `export const prefix = "REMOTE:";`,
     ],
   ]);
-  const controller = new AbortController();
-  let serverPromise: Promise<void> | undefined;
+  const server = createServer((request, response) => {
+    const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
+    const source = remoteModules.get(pathname);
+
+    if (!source) {
+      response.writeHead(404, { "content-type": "text/plain" });
+      response.end("Not found");
+      return;
+    }
+
+    response.writeHead(200, { "content-type": "application/typescript" });
+    response.end(source);
+  });
 
   try {
-    const { port } = await new Promise<{ port: number }>((resolve) => {
-      serverPromise = Deno.serve(
-        {
-          hostname: "127.0.0.1",
-          port: 0,
-          signal: controller.signal,
-          onListen: ({ port }) => resolve({ port }),
-        },
-        (request) => {
-          const pathname = new URL(request.url).pathname;
-          const source = remoteModules.get(pathname);
+    try {
+      server.listen(0, "127.0.0.1");
+      await Promise.race([
+        once(server, "listening"),
+        once(server, "error").then(([error]) => Promise.reject(error)),
+      ]);
+    } catch (error) {
+      if (
+        error instanceof Error && "code" in error &&
+        error.code === "EPERM"
+      ) {
+        t.skip("sandbox does not allow opening a localhost test server");
+        return;
+      }
 
-          if (!source) {
-            return new Response("Not found", { status: 404 });
-          }
+      throw error;
+    }
 
-          return new Response(source, {
-            headers: { "content-type": "application/typescript" },
-          });
-        },
-      ).finished;
-    });
+    const address = server.address();
 
+    if (!address || typeof address === "string") {
+      throw new Error("Failed to determine test server port");
+    }
+
+    const { port } = address;
     await withTempProject(async (cwd) => {
       const componentsDirectory = path.join(cwd, "components");
-      await Deno.mkdir(componentsDirectory, { recursive: true });
-      await Deno.writeTextFile(
+      await mkdir(componentsDirectory, { recursive: true });
+      await writeFile(
         path.join(componentsDirectory, "Home.html"),
         `<main><p &children="(shout (get context headline))"></p></main>`,
       );
-      await Deno.writeTextFile(
+      await writeFile(
         path.join(cwd, "globalUtilities.ts"),
         [
           `import { format } from "http://127.0.0.1:${port}/remote/message.ts";`,
@@ -154,18 +172,18 @@ Deno.test("gustwind-node renders through remote imports in node-loaded modules",
         title: "Remote Render",
       });
 
-      assertStringIncludes(markup, "<p>REMOTE:FROM REMOTE IMPORT</p>");
+      assert.match(markup, /<p>REMOTE:FROM REMOTE IMPORT<\/p>/);
     });
   } finally {
-    controller.abort();
-    await serverPromise?.catch(() => undefined);
+    server.close();
+    await once(server, "close");
   }
 });
 
-Deno.test("gustwind-node loads initial plugins from module paths", async () => {
+test("gustwind-node loads initial plugins from module paths", async () => {
   try {
     const render = await initNodeRender({
-      cwd: Deno.cwd(),
+      cwd: process.cwd(),
       initialPlugins: [
         ["./routers/edge-router/mod.ts", {
           routes: {
@@ -197,8 +215,8 @@ Deno.test("gustwind-node loads initial plugins from module paths", async () => {
     });
     const { markup } = await render("/", {});
 
-    assertStringIncludes(markup, "<h1>Path Render</h1>");
-    assertStringIncludes(markup, "<p>PATH LOADED</p>");
+    assert.match(markup, /<h1>Path Render<\/h1>/);
+    assert.match(markup, /<p>PATH LOADED<\/p>/);
   } finally {
     await stopModuleBundler();
   }
@@ -242,12 +260,12 @@ async function renderHome(
 }
 
 async function withTempProject(fn: (cwd: string) => Promise<void>) {
-  const cwd = await Deno.makeTempDir({ prefix: "gustwind-node-" });
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-"));
 
   try {
     await fn(cwd);
   } finally {
     await stopModuleBundler();
-    await Deno.remove(cwd, { recursive: true });
+    await rm(cwd, { recursive: true, force: true });
   }
 }

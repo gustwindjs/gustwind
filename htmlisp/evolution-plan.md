@@ -69,7 +69,7 @@ The following items are already implemented:
 6. function components with explicit async/sync behavior
 7. loop alias syntax through `&foreach="items as item"`
 8. focused ergonomics tests for new behavior
-9. a typing gate through `deno task check:types`
+9. a typing gate through `npm run typecheck`
 
 The rest of this document describes what shipped, what was intentionally deferred, and why this plan can now be considered complete.
 
@@ -520,7 +520,7 @@ Implemented additions:
 - `htmlisp/html-tests-sync/ergonomics_test.ts`
 - alias coverage in `htmlisp/html-tests/foreach_test.ts`
 - alias coverage in `htmlisp/html-tests-sync/foreach_test.ts`
-- `deno task check:types` for typed test coverage without execution
+- `npm run typecheck` for typed test coverage without execution
 
 ### Required New Test Areas
 

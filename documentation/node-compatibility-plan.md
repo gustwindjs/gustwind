@@ -203,11 +203,36 @@ The next compatibility-wrapper cleanup step is now implemented:
 
 This means the remaining Deno surface is now mostly limited to internal testing and packaging helpers rather than user-facing runtime, CLI, or site output.
 
+The next legacy-build cleanup step is now implemented:
+
+- the unused Deno-only worker-based builder has been removed instead of being kept beside the active Node builder
+- the old Deno runtime load adapter has been removed with that dead build path
+- checked-in Netlify build configuration now runs the Node build directly instead of bootstrapping Deno first
+
+This means the remaining Deno surface is now concentrated even further into internal tests, packaging helpers, and a small number of migration-era documents.
+
+The next task-runner cleanup step is now implemented:
+
+- the repository no longer carries a top-level `deno.json` task file for everyday commands
+- project-level build, serve, typecheck, quality, and packaging entrypoints now live in `package.json` under `npm run`
+- the remaining Deno-based checks and packaging helpers are now hidden behind npm scripts instead of being a first-class task runner story
+
+This means the remaining Deno surface is now mostly implementation detail, not a primary command interface exposed by the repository.
+
+The next test-runner cleanup step is now implemented:
+
+- `gustwind-node/mod_test.ts` now runs under `node --test` instead of `Deno.test`
+- `gustwind-node/build_test.ts` now runs under `node --test` instead of `Deno.test`
+- the Node render/build test path now skips only the remote-import listener case when the current sandbox forbids opening a localhost port
+
+This means the remaining Deno-based test surface is increasingly concentrated in the older shared HTMLisp and router suites rather than in the active Node runtime path.
+
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup
 
-- Deno-based internal tooling such as `deno.json` tasks and packaging helpers
+- Deno-based tests and checks that still run through `deno test` and `deno check`
+- Deno-based packaging helpers that still run through `dnt`
 - legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
 - optional or inactive code paths that still describe Gustwind as Deno-first
 
@@ -249,7 +274,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 
 ## Phase 2: Node load adapter
 
-- Add a Node equivalent for `load-adapters/deno.ts`.
+- Add a Node equivalent for the old Deno-specific load adapter.
 - Use `fs/promises` for file access.
 - Use dynamic `import()` with file URLs for module loading.
 - Preserve current task registration behavior if build tasks still depend on it.
@@ -258,6 +283,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 
 - File-backed rendering is now covered by `load-adapters/node.ts` and `initNodeRender(...)`.
 - With Node 24, the local render-path TypeScript can now run directly as ESM after removing the few unsupported runtime constructs that were still present.
+- The old Deno-specific load adapter has now been removed along with the dead Deno builder path that depended on it.
 - The Node module loader now bundles only the cases that still exceed Node 24's built-in support, mainly remote `http(s)` imports.
 - The Node render entrypoint can now load initial plugins from paths directly through `gustwind-node/mod.ts`.
 - Remaining work is now mostly about:
@@ -279,7 +305,8 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Covered by `gustwind-node/build_test.ts`.
 - The shared plugin importer now respects the active runtime loader for path-based plugins, which is required for config-driven Node builds.
 - The actual repository now builds successfully through the Node CLI.
-- Remaining work in this phase is now mostly cleanup of optional remote-import paths, not core build viability.
+- The unused Deno worker-based builder has now been removed.
+- Remaining work in this phase is now mostly cleanup of optional remote-import paths and leftover test/tooling surfaces, not core build viability.
 
 ## Phase 4: Node CLI
 
@@ -292,6 +319,8 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Current scope covers version output, static build, development serving, and static build serving.
 - The old Deno CLI compatibility wrapper has now been removed instead of being kept as a second entrypoint.
 - Repository-level build, start, and serve tasks now use the Node path directly.
+- Repository-level command entrypoints now live in `package.json` instead of a separate `deno.json` task file.
+- The Node-specific render/build tests now run under `node --test` instead of the Deno test runner.
 - The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -333,9 +362,11 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - The obsolete page-editor plugin path has also been removed instead of being preserved as a parity target.
 - Primary user-facing project copy now describes Gustwind as Node.js-powered instead of Deno-powered.
 - The legacy Deno CLI wrapper has now been removed as well.
+- Netlify's checked-in build configuration now uses the Node build directly as well.
+- Everyday repository commands now route through `npm run` rather than `deno task`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - removing Deno-based internal tooling and packaging helpers that are no longer needed
+  - removing Deno-based internal tests and packaging helpers that are no longer needed
 
 ## Recommended implementation order
 
@@ -343,7 +374,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
 4. Replace the Deno dev shell with a Vite-based Node dev server.
-5. Remove the remaining Deno-first project copy and internal tooling now that the Node path covers the practical workflow.
+5. Remove the remaining Deno-first project copy and internal implementation details now that the Node path covers the practical workflow.
 
 ## Recommendation
 

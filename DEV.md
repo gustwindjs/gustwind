@@ -12,6 +12,6 @@ There's [a good overview of Netlify edge functions](https://docs.netlify.com/edg
 
 ## Publishing to npm
 
-1. `deno task build:gustwind-for-npm <VERSION>` where `VERSION` is `0.1.0` for example. This packaging helper is one of the remaining Deno-based internal tools and should be replaced or removed as the migration completes.
+1. `npm run build:npm:gustwind -- <VERSION>` where `VERSION` is `0.1.0` for example. This packaging helper still uses Deno internally today and should be replaced or removed as the migration completes.
 2. `cd gustwind/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)

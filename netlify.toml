@@ -4,4 +4,4 @@
 [build]
   base    = ""
   publish = "build"
-  command = "curl -fsSL https://deno.land/x/install/install.sh | sh -s v2.4.4 && /opt/buildhome/.deno/bin/deno task netlify:build"
+  command = "npm ci && DEBUG=1 node ./gustwind-node/cli.ts --build --output ./build"
