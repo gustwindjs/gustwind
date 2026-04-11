@@ -18,7 +18,7 @@ import { initDevLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 import { contentType } from "../utilities/contentType.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
-import { createServer as createViteServer, type ViteDevServer } from "vite";
+import { createServer as createViteServer, type Plugin, type ViteDevServer } from "vite";
 
 const DEBUG = isDebugEnabled();
 
@@ -48,6 +48,10 @@ async function startDevServer(
     watchPaths?: string[];
   },
 ): Promise<DevServer> {
+  const watchedPaths = new Set<string>();
+  let state = await loadRuntime({ cwd, pluginDefinitions });
+  let closed = false;
+  let reloadPromise = Promise.resolve();
   let requestHandler:
     | ((req: IncomingMessage, res: ServerResponse) => void)
     | undefined;
@@ -56,6 +60,22 @@ async function startDevServer(
   });
   const vite = await createViteServer({
     appType: "custom",
+    plugins: [
+      createRuntimeReloadPlugin({
+        cwd,
+        watchedPaths,
+        getClosed: () => closed,
+        getState: () => state,
+        loadRuntime: () => loadRuntime({ cwd, pluginDefinitions }),
+        setReloadPromise(nextReloadPromise) {
+          reloadPromise = nextReloadPromise;
+        },
+        getReloadPromise: () => reloadPromise,
+        setState(nextState) {
+          state = nextState;
+        },
+      }),
+    ],
     server: {
       host,
       hmr: {
@@ -65,10 +85,6 @@ async function startDevServer(
       middlewareMode: true,
     },
   });
-  const watchedPaths = new Set<string>();
-  let state = await loadRuntime({ cwd, pluginDefinitions });
-  let closed = false;
-  let reloadPromise = Promise.resolve();
 
   await watchTasks(vite, watchedPaths, state.initialTasks);
   await addWatchPaths(vite, watchedPaths, watchPaths);
@@ -103,36 +119,6 @@ async function startDevServer(
   });
 
   requestHandler = vite.middlewares;
-
-  const queueReload = (filePath: string) => {
-    reloadPromise = reloadPromise.then(async () => {
-      if (closed) {
-        return;
-      }
-
-      try {
-        const nextState = await loadRuntime({ cwd, pluginDefinitions });
-        await watchTasks(vite, watchedPaths, nextState.initialTasks);
-        const previousState = state;
-        state = nextState;
-        await cleanUpPlugins(previousState.plugins, previousState.routes);
-        vite.ws.send({ type: "full-reload" });
-        DEBUG && console.log("gustwind-node - reloaded after", filePath);
-      } catch (error) {
-        console.error("Failed to reload Node development runtime", error);
-      }
-    });
-  };
-
-  for (const eventName of ["add", "change", "unlink"] as const) {
-    vite.watcher.on(eventName, (filePath) => {
-      if (shouldIgnoreWatchPath(filePath)) {
-        return;
-      }
-
-      queueReload(filePath);
-    });
-  }
 
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);
@@ -309,6 +295,60 @@ async function addWatchPaths(
 
   await vite.watcher.add(nextPaths);
   DEBUG && console.log("gustwind-node - watching", nextPaths);
+}
+
+function createRuntimeReloadPlugin(
+  {
+    cwd,
+    watchedPaths,
+    getClosed,
+    getState,
+    loadRuntime,
+    setReloadPromise,
+    getReloadPromise,
+    setState,
+  }: {
+    cwd: string;
+    watchedPaths: Set<string>;
+    getClosed(): boolean;
+    getState(): ActiveRuntime;
+    loadRuntime(): Promise<ActiveRuntime>;
+    setReloadPromise(reloadPromise: Promise<void>): void;
+    getReloadPromise(): Promise<void>;
+    setState(state: ActiveRuntime): void;
+  },
+): Plugin {
+  return {
+    name: "gustwind-runtime-reload",
+    async handleHotUpdate({ file, server }) {
+      if (getClosed() || shouldIgnoreWatchPath(file)) {
+        return [];
+      }
+
+      const reloadPromise = getReloadPromise().then(async () => {
+        if (getClosed()) {
+          return;
+        }
+
+        try {
+          const nextState = await loadRuntime();
+          await watchTasks(server, watchedPaths, nextState.initialTasks);
+          const previousState = getState();
+          setState(nextState);
+          await cleanUpPlugins(previousState.plugins, previousState.routes);
+          server.ws.send({ type: "full-reload" });
+          DEBUG && console.log("gustwind-node - reloaded after", file);
+        } catch (error) {
+          console.error("Failed to reload Node development runtime", error);
+        }
+      });
+
+      setReloadPromise(reloadPromise);
+      await reloadPromise;
+
+      return [];
+    },
+  };
 }
 
 function collectWatchPaths(tasks: BuildWorkerEvent[]) {
