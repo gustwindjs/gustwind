@@ -10,6 +10,8 @@
     "build:node:check": "node ./gustwind-node/cli.ts --build --output ./.tmp-node-build",
     "dev:node": "node ./gustwind-node/cli.ts --develop --port 3000",
     "test:node:dev": "node --test ./gustwind-node/dev_test.ts",
+    "test:node:serve": "node --test ./gustwind-node/serve_test.ts",
+    "serve:node": "node ./gustwind-node/cli.ts --serve --input ./build --port 3000",
     "typecheck": "deno task check:types",
     "quality:gate": "deno task quality:gate",
     "cf:build": "./build.sh",

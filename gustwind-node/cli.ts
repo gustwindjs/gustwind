@@ -4,15 +4,18 @@ import { readFile } from "node:fs/promises";
 import { VERSION } from "../version.ts";
 import { buildNode } from "./build.ts";
 import { startDevServer } from "./dev.ts";
+import { startStaticServer } from "./serve.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
 
 type CliArgs = {
   build: boolean;
   develop: boolean;
   help: boolean;
+  input: string;
   output: string;
   port: number;
   plugins: string;
+  serve: boolean;
   version: boolean;
 };
 
@@ -20,10 +23,13 @@ function usage() {
   console.log(`
 Build:   gustwind-node --build [--output <directory>] [--plugins <path>]
 Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
+Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
 
 Options:
   -b, --build          Builds the project.
   -d, --develop        Runs the Node development server.
+  -s, --serve          Serves a static build directory.
+  -i, --input          Input directory for --serve (default: ./build).
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
@@ -40,7 +46,7 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
-  if (args.help || (!args.build && !args.develop)) {
+  if (args.help || (!args.build && !args.develop && !args.serve)) {
     usage();
     return 0;
   }
@@ -76,6 +82,29 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
+  if (args.serve) {
+    const server = await startStaticServer({
+      cwd,
+      input: args.input,
+      port: args.port,
+    });
+    const stop = async () => {
+      process.off("SIGINT", onSigint);
+      process.off("SIGTERM", onSigterm);
+      await server.close();
+      process.exitCode = 0;
+    };
+    const onSigint = () => void stop();
+    const onSigterm = () => void stop();
+
+    process.on("SIGINT", onSigint);
+    process.on("SIGTERM", onSigterm);
+
+    console.log(`Serving static files at ${server.url}`);
+    await new Promise<void>(() => undefined);
+    return 0;
+  }
+
   const evaluatedPluginsDefinition = await readPluginDefinitions();
   await buildNode({
     cwd,
@@ -90,9 +119,11 @@ function parseArgs(cliArgs: string[]): CliArgs {
     build: false,
     develop: false,
     help: false,
+    input: "./build",
     output: "./build",
     port: 3000,
     plugins: "plugins.json",
+    serve: false,
     version: false,
   };
 
@@ -109,9 +140,21 @@ function parseArgs(cliArgs: string[]): CliArgs {
       case "--develop":
         ret.develop = true;
         break;
+      case "-s":
+      case "--serve":
+        ret.serve = true;
+        break;
       case "-h":
       case "--help":
         ret.help = true;
+        break;
+      case "-i":
+      case "--input":
+        if (!next) {
+          throw new Error("Missing input directory");
+        }
+        ret.input = next;
+        index++;
         break;
       case "-p":
       case "--port":

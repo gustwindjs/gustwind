@@ -6,7 +6,8 @@ The Node path now includes:
 
 - a render entrypoint
 - a static build entrypoint
-- a Node CLI for builds
+- a Node CLI for build, develop, and serve workflows
 - a Vite-backed Node development server
+- a Node static server for built output directories
 
 The Node development path intentionally favors a simpler Vite full-reload workflow over preserving the older Deno watcher and websocket stack.
