@@ -227,6 +227,13 @@ The next test-runner cleanup step is now implemented:
 
 This means the remaining Deno-based test surface is increasingly concentrated in the older shared HTMLisp and router suites rather than in the active Node runtime path.
 
+The next lockfile cleanup step is now implemented:
+
+- the obsolete Deno lockfiles have been removed
+- the remaining internal Deno commands now run with `--no-lock` so they do not regenerate fresh lockfiles during normal development
+
+This means npm lockfiles now own dependency pinning for the active workflow, while the shrinking Deno surface no longer leaves behind repository lockfile noise.
+
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup
