@@ -1,5 +1,3 @@
-import { build } from "./gustwind-builder/mod.ts";
-import { gustwindDevServer } from "./gustwind-dev-server/mod.ts";
-import { gustwindServe } from "./gustwind-serve/mod.ts";
-
-export { build, gustwindDevServer, gustwindServe };
+export * from "./gustwind-node/mod.ts";
+export { startDevServer } from "./gustwind-node/dev.ts";
+export { startStaticServer } from "./gustwind-node/serve.ts";

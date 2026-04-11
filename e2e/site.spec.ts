@@ -6,7 +6,7 @@ test("homepage renders the hero, generated content, and primary navigation", asy
   await expect(page).toHaveTitle("Gustwind");
   await expect(page.getByRole("heading", { level: 1, name: /Gustwind/ })).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 2, name: "Deno powered website creator" }),
+    page.getByRole("heading", { level: 2, name: "Node.js-powered website creator" }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toContainText(
     "component-oriented development of large-scale sites",

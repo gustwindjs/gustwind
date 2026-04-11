@@ -9,13 +9,11 @@ Gustwind implements two modes: `development` and `production`. The idea of the `
 
 The development mode of Gustwind has been implemented in a lazy manner. This means the server will boot fast and perform rendering only on request.
 
-The preferred development path is the Node/Vite server through `npm run dev:node` or `gustwind-node --develop`. The legacy `gustwind -d` entrypoint now delegates to that Node path instead of keeping a separate Deno-specific watcher and websocket stack alive.
-
-There's a small, built-in JSON editor on the browser side that's synchronized with your file system. The idea is to allow development directly in the browser and this can be useful for tuning styling of your pages for example.
+The preferred development path is the Node/Vite server through `npm run dev:node` or `gustwind-node --develop`.
 
 ## Production mode
 
-In the production mode, the tool generates HTML at the `./build` directory. The preferred path is `npm run build:node` or `gustwind-node --build`, and the legacy `gustwind -b` entrypoint now delegates to that Node build path. Compared to the development mode, anything development related is removed from the output. At the moment no other optimizations are performed.
+In the production mode, the tool generates HTML at the `./build` directory. The preferred path is `npm run build:node` or `gustwind-node --build`. Compared to the development mode, anything development related is removed from the output. At the moment no other optimizations are performed.
 
 During tests against a large site with over 2000 pages, the build was completed in a few seconds and so far the performance seems promising although it can be still improved and not a lot of thought has been given to it.
 

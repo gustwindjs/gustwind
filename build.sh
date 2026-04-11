@@ -3,5 +3,5 @@
 # https://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#The-Set-Builtin
 set -e
 
-curl -fsSL https://deno.land/x/install/install.sh | sh -s v2.7.7
-/opt/buildhome/.deno/bin/deno task build
+npm ci
+npm run build:node

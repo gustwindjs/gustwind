@@ -794,7 +794,7 @@ Deno.test("integration 3", () => {
             <span>Gustwind</span>
           </h1>
           <h2 class="text-xl md:text-4xl font-extralight">
-            Deno powered website creator
+            Node.js-powered website creator
           </h2>
         </div>
       </div>
@@ -852,7 +852,7 @@ Deno.test("integration 3", () => {
                   },
                   children: [
                     "\n" +
-                    "            Deno powered website creator\n" +
+                    "            Node.js-powered website creator\n" +
                     "          ",
                   ],
                 }],
@@ -879,7 +879,7 @@ Deno.test("simple nested children", () => {
   <slot>
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
       <h2 class="text-xl md:text-4xl font-extralight">
-        Deno powered website creator
+        Node.js-powered website creator
       </h2>
     </header>
     <div
@@ -906,7 +906,7 @@ Deno.test("simple nested children", () => {
               attributes: {
                 class: "text-xl md:text-4xl font-extralight",
               },
-              children: ["\n        Deno powered website creator\n      "],
+              children: ["\n        Node.js-powered website creator\n      "],
             }],
           }, {
             type: "div",

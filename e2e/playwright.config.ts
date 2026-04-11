@@ -21,7 +21,8 @@ export default defineConfig({
   webServer: useExternalServer
     ? undefined
     : {
-      command: `cd .. && deno task build && python3 -m http.server ${port} --directory build`,
+      command:
+        `cd .. && npm run build:node && python3 -m http.server ${port} --directory build`,
       url: `${baseURL}/`,
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",

@@ -4,7 +4,7 @@
     "context": {
       "meta": {
         "title": "Gustwind",
-        "description": "Deno powered website creator"
+        "description": "Node.js-powered website creator"
       }
     },
     "dataSources": {

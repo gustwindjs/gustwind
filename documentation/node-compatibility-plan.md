@@ -165,22 +165,57 @@ The next build-consolidation step is now implemented:
 
 This means the Deno CLI is no longer the default execution path for the main site lifecycle commands.
 
+The next runtime-removal step is now implemented:
+
+- package-root exports now point at the Node API surface instead of the old Deno dev/serve helpers
+- the obsolete Deno dev server, static server, watcher, and websocket modules have been removed
+- the test suite no longer carries dedicated coverage for the removed Deno watcher utility
+
+This means the remaining migration work is no longer about keeping an alternate Deno runtime alive. It is mainly about removing stale Deno-first wording and any optional leftovers that still assume the old runtime.
+
+The next optional-feature cleanup step is now implemented:
+
+- the obsolete page-editor plugin path has been removed instead of being carried forward as broken compatibility code
+- prepublish no longer compiles editor-side compatibility scripts for that removed path
+
+This means the remaining migration work is focused on the active runtime surface, not on reviving experimental editor tooling that is no longer part of the main workflow.
+
+The next project-copy cleanup step is now implemented:
+
+- README, package metadata, and site metadata now describe Gustwind as Node.js-powered instead of Deno-powered
+- deployment guidance now points to the Node build path instead of a Deno install-and-run flow
+- npm script messaging no longer tells users to reach for Deno tasks as the primary workflow
+
+This means the remaining Deno-first messaging is now mostly contained to migration notes and internal tooling, not to the primary user-facing project description.
+
+The next tooling-copy cleanup step is now implemented:
+
+- Playwright e2e setup now builds the site through the Node CLI path instead of `deno task build`
+- developer notes now point contributors at the Node CLI and npm scripts for the main workflow
+
+This means the remaining Deno mentions are increasingly limited to internal packaging helpers and migration notes rather than everyday development commands.
+
+The next compatibility-wrapper cleanup step is now implemented:
+
+- the legacy Deno CLI wrapper has been removed instead of being kept as a pass-through shell around the Node CLI
+- deployment build scripts now run the Node build directly instead of installing Deno first
+- the built site and e2e assertions now use Node.js-powered copy instead of stale Deno-powered wording
+
+This means the remaining Deno surface is now mostly limited to internal testing and packaging helpers rather than user-facing runtime, CLI, or site output.
+
 ## Main cleanup targets today
 
-### Legacy Deno dev/runtime surfaces
+### Remaining Deno-oriented cleanup
 
-- `gustwind-cli/mod.ts`
-- `gustwind-dev-server/mod.ts`
-- `plugins/file-watcher/mod.ts`
-- `utilities/getWebSocketServer.ts`
+- Deno-based internal tooling such as `deno.json` tasks and packaging helpers
+- legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
+- optional or inactive code paths that still describe Gustwind as Deno-first
 
-These depend on Deno process, server, file system, command, signal, and watch APIs. They are no longer the default user-facing path, but they still remain as migration cleanup and compatibility debt.
-
-When the last practical parity gaps are closed, these should be deleted rather than preserved as a secondary runtime.
+These are no longer runtime blockers. They are cleanup targets on the way to removing Deno as a first-class concept from the project.
 
 ### Remaining remote-import surface
 
-- editor-only/browser-only scripts that still intentionally reference remote CDNs
+- browser-only scripts and optional modules that still intentionally reference remote CDNs
 - other optional modules that are outside the active production build path
 
 These no longer block the full repository build that is currently in use, but they still exist as compatibility debt in optional or inactive paths.
@@ -210,7 +245,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 ### Phase 1 progress
 
 - Completed for the shared render path.
-- Still incomplete for build workers, dev server, file watching, and other tooling surfaces.
+- The remaining work in this phase is mostly cleanup of old wrappers and project messaging, not core runtime viability.
 
 ## Phase 2: Node load adapter
 
@@ -255,10 +290,9 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 
 - A practical Node CLI now exists in `gustwind-node/cli.ts`.
 - Current scope covers version output, static build, development serving, and static build serving.
-- The legacy Deno CLI now delegates its `develop` and `serve` workflows to that Node CLI.
-- The legacy Deno CLI now delegates its `build` workflow to that Node CLI as well.
+- The old Deno CLI compatibility wrapper has now been removed instead of being kept as a second entrypoint.
 - Repository-level build, start, and serve tasks now use the Node path directly.
-- Full command-surface replacement for `gustwind-cli/mod.ts` is still not a target.
+- The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
 
 ## Phase 5: Node dev server on Vite
@@ -295,10 +329,13 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Repository-level `build` tasks now use the Node path directly.
 - The Node dev path deliberately uses Vite full reloads instead of reproducing the older custom websocket protocol.
 - Reload handling now runs through Vite's hot-update hook while dynamic watched paths still come from Gustwind task discovery.
+- The old Deno-specific dev server, watcher, and websocket runtime modules have now been removed.
+- The obsolete page-editor plugin path has also been removed instead of being preserved as a parity target.
+- Primary user-facing project copy now describes Gustwind as Node.js-powered instead of Deno-powered.
+- The legacy Deno CLI wrapper has now been removed as well.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - folding or removing obsolete Deno-specific dev helpers
-  - removing or shrinking the remaining legacy Deno CLI/runtime modules that are now only compatibility wrappers
+  - removing Deno-based internal tooling and packaging helpers that are no longer needed
 
 ## Recommended implementation order
 
@@ -306,10 +343,10 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
 4. Replace the Deno dev shell with a Vite-based Node dev server.
-5. Clean up or remove the remaining Deno-specific helpers, wrappers, and Deno-first project copy once the Node path fully covers the practical workflow.
+5. Remove the remaining Deno-first project copy and internal tooling now that the Node path covers the practical workflow.
 
 ## Recommendation
 
 Do not start with "full Node compatibility".
 
-Start by making static builds and rendering work under Node. That baseline exists, the actual repository builds successfully through the Node CLI, and there is now a first Vite-based Node dev server as well. The next useful step is cleanup and consolidation: retire the redundant Deno-specific pieces where the Node path has already taken over, then remove the remaining Deno implementation and Deno-first project messaging once feature parity is reached.
+Start by making static builds and rendering work under Node. That baseline exists, the actual repository builds successfully through the Node CLI, and there is now a Vite-based Node dev server as well. The next useful step is final cleanup: strip the remaining Deno-first wording and internal tooling from the project so Node becomes the only first-class runtime story.

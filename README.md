@@ -1,6 +1,6 @@
 # Gustwind
 
-Gustwind is a [Deno](https://deno.land/)-powered website creator that allows component-oriented development of large-scale sites using HTMLisp, a variant of HTML. Conceptually, it is split as follows:
+Gustwind is a Node.js-powered website creator that allows component-oriented development of large-scale sites using HTMLisp, a variant of HTML. Conceptually, it is split as follows:
 
 * **Development mode** lets you preview the site and modify page definitions to commit later
 * **Production mode** generates pure static HTML with CSS inlined to the files
