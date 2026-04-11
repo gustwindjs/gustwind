@@ -138,6 +138,14 @@ The next CLI-focused step is now implemented:
 
 This means the Node CLI now covers the main practical workflows that previously required the Deno CLI: build output generation, development serving, and static build serving.
 
+The next consolidation-focused step is now implemented:
+
+- repository `start` and `serve` tasks now point directly to the Node CLI path
+- `gustwind-cli/mod.ts` now delegates `develop` and `serve` commands to `gustwind-node/cli.ts`
+- the old Deno watcher/websocket/dev-server stack is no longer the primary user-facing workflow
+
+This means the remaining Deno dev-server code is now mostly compatibility baggage rather than an active first-class path.
+
 ## Main blockers today
 
 ### Deno-only runtime services
@@ -226,6 +234,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 
 - A practical Node CLI now exists in `gustwind-node/cli.ts`.
 - Current scope covers version output, static build, development serving, and static build serving.
+- The legacy Deno CLI now delegates its `develop` and `serve` workflows to that Node CLI.
 - Full command-surface replacement for `gustwind-cli/mod.ts` is still not a target.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -259,6 +268,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - A first Vite-backed Node development server now exists in `gustwind-node/dev.ts`.
 - The Node CLI now exposes `--develop`.
 - The Node CLI now also exposes `--serve`.
+- Repository-level `start` and `serve` tasks now use the Node path directly.
 - The initial Node dev path deliberately uses Vite full reloads instead of reproducing the older custom websocket protocol.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes

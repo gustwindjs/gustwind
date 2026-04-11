@@ -7,14 +7,7 @@ import * as path from "node:path";
 import * as flags from "https://deno.land/std@0.207.0/flags/mod.ts";
 import { VERSION } from "../version.ts";
 import { build as buildProject } from "../gustwind-builder/mod.ts";
-import { gustwindDevServer } from "../gustwind-dev-server/mod.ts";
-import { gustwindServe } from "../gustwind-serve/mod.ts";
-import { cleanUpPlugins, importPlugin } from "../gustwind-utilities/plugins.ts";
-import { getWebsocketServer } from "../utilities/getWebSocketServer.ts";
-import { plugin as fileWatcherPlugin } from "../plugins/file-watcher/mod.ts";
-import { plugin as webSocketPlugin } from "../plugins/websocket/mod.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
-import { initLoadApi } from "../load-adapters/deno.ts";
 
 function usage() {
   console.log(`
@@ -106,89 +99,29 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   const cwd = Deno.cwd();
 
   if (develop) {
-    const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-    const pluginsDefinition = await Deno.readTextFile(pluginsPath).then((d) =>
-      JSON.parse(d)
-    );
-    const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
-    const mode = "development";
-    const startTime = performance.now();
+    const pluginsPath = pluginsLookupPath || "plugins.json";
 
-    console.log("Starting development server");
-
-    const wss = getWebsocketServer();
-    const serve = await gustwindDevServer({
-      cwd,
-      plugins: [
-        await importPlugin({
-          cwd,
-          pluginModule: fileWatcherPlugin,
-          options: { pluginsPath },
-          outputDirectory,
-          initLoadApi,
-          mode,
-        }),
-        await importPlugin({
-          cwd,
-          pluginModule: webSocketPlugin,
-          options: { wss },
-          outputDirectory,
-          initLoadApi,
-          mode,
-        }),
-      ],
-      pluginDefinitions,
-      mode,
-      port: Number(port),
-    });
-
-    const endTime = performance.now();
-    console.log(
-      `Serving at ${port}, took ${
-        (endTime - startTime).toFixed(2)
-      }ms to initialize the server`,
-    );
-
-    await copyToClipboard(`http://localhost:${port}/`);
-    console.log("The server address has been copied to the clipboard");
-
-    const { plugins, routes } = await serve();
-
-    Deno.addSignalListener("SIGINT", async () => {
-      await cleanUpPlugins(plugins, routes);
-
-      Deno.exit();
-    });
-
-    return;
+    return await runNodeCli(cwd, [
+      "--develop",
+      "--plugins",
+      pluginsPath,
+      "--port",
+      port || "3000",
+    ], debug);
   }
 
   if (serve) {
     if (!input) {
       throw new Error("Missing input directory");
     }
-    const startTime = performance.now();
 
-    console.log(`Starting static server against ${input}`);
-
-    const serve = await gustwindServe({
-      cwd,
+    return await runNodeCli(cwd, [
+      "--serve",
+      "--input",
       input,
-      port: Number(port),
-    });
-
-    const endTime = performance.now();
-    console.log(
-      `Serving at ${port}, took ${
-        (endTime - startTime).toFixed(2)
-      }ms to initialize the server`,
-    );
-
-    await copyToClipboard(`http://localhost:${port}/`);
-    console.log("The server address has been copied to the clipboard");
-    await serve();
-
-    return;
+      "--port",
+      port || "3000",
+    ], debug);
   }
 
   if (build) {
@@ -207,20 +140,19 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   return 0;
 }
 
-async function copyToClipboard(input: string) {
-  // https://docs.deno.com/api/deno/~/Deno.Command
-  const command = new Deno.Command("pbcopy", {
-    // args: ["pbcopy"],
-    stdin: "piped",
-    stdout: "piped",
+async function runNodeCli(cwd: string, args: string[], debug: boolean) {
+  const command = new Deno.Command("node", {
+    args: ["./gustwind-node/cli.ts", ...args],
+    cwd,
+    env: debug ? { DEBUG: "1" } : undefined,
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
   });
   const child = command.spawn();
-  const writer = child.stdin.getWriter();
-  writer.write(new TextEncoder().encode(input));
-  await writer.close();
+  const status = await child.status;
 
-  // Safe to skip?
-  // child.stdin.close();
+  return status.code;
 }
 
 if (import.meta.main) {

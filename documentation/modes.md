@@ -7,9 +7,9 @@ Gustwind implements two modes: `development` and `production`. The idea of the `
 
 ## Development mode
 
-The development mode of Gustwind has been implemented in a lazy manner. This means the server will boot fast and perform rendering only on request. The development server maintains a web socket connection to the clients and then keeps their state up to date based on your modifications.
+The development mode of Gustwind has been implemented in a lazy manner. This means the server will boot fast and perform rendering only on request.
 
-The development mode is available through `gustwind -d`. After running, you should head to `localhost:3000` in the browser. It's connected to detect changes made to the project. It then communicates the changes through a web socket to the frontend that's then able to update its state to match the current.
+The preferred development path is the Node/Vite server through `npm run dev:node` or `gustwind-node --develop`. The legacy `gustwind -d` entrypoint now delegates to that Node path instead of keeping a separate Deno-specific watcher and websocket stack alive.
 
 There's a small, built-in JSON editor on the browser side that's synchronized with your file system. The idea is to allow development directly in the browser and this can be useful for tuning styling of your pages for example.
 
