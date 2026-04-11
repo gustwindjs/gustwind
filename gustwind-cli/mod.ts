@@ -3,11 +3,8 @@
 /// <reference lib="dom" />
 /// <reference lib="esnext" />
 // Derived from https://github.com/kt3k/twd
-import * as path from "node:path";
 import * as flags from "https://deno.land/std@0.207.0/flags/mod.ts";
 import { VERSION } from "../version.ts";
-import { build as buildProject } from "../gustwind-builder/mod.ts";
-import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
 
 function usage() {
   console.log(`
@@ -125,14 +122,16 @@ export async function main(cliArgs: string[]): Promise<number | undefined> {
   }
 
   if (build) {
-    const pluginsPath = path.join(cwd, pluginsLookupPath || "plugins.json");
-    const pluginsDefinition = await Deno.readTextFile(pluginsPath).then((d) =>
-      JSON.parse(d)
-    );
-    const pluginDefinitions = evaluatePluginsDefinition(pluginsDefinition);
-    await buildProject({ cwd, outputDirectory, pluginDefinitions, threads });
+    const nodeArgs = ["--build"];
 
-    return 0;
+    if (pluginsLookupPath) {
+      nodeArgs.push("--plugins", pluginsLookupPath);
+    }
+    if (outputDirectory) {
+      nodeArgs.push("--output", outputDirectory);
+    }
+
+    return await runNodeCli(cwd, nodeArgs, debug);
   }
 
   usage();

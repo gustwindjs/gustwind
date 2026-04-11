@@ -147,6 +147,14 @@ The next consolidation-focused step is now implemented:
 
 This means the remaining Deno dev-server code is now mostly compatibility baggage rather than an active first-class path.
 
+The next build-consolidation step is now implemented:
+
+- `gustwind-cli/mod.ts` now delegates `build` to `gustwind-node/cli.ts` as well
+- repository `build` tasks now point directly to the Node CLI path
+- the practical default build, develop, and serve workflows now all route through the Node implementation
+
+This means the Deno CLI is no longer the default execution path for the main site lifecycle commands.
+
 ## Main cleanup targets today
 
 ### Legacy Deno dev/runtime surfaces
@@ -236,7 +244,8 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - A practical Node CLI now exists in `gustwind-node/cli.ts`.
 - Current scope covers version output, static build, development serving, and static build serving.
 - The legacy Deno CLI now delegates its `develop` and `serve` workflows to that Node CLI.
-- Repository-level build tasks still use the Deno CLI path, even though the Node CLI can already perform the build itself.
+- The legacy Deno CLI now delegates its `build` workflow to that Node CLI as well.
+- Repository-level build, start, and serve tasks now use the Node path directly.
 - Full command-surface replacement for `gustwind-cli/mod.ts` is still not a target.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -271,12 +280,13 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - The Node CLI now exposes `--develop`.
 - The Node CLI now also exposes `--serve`.
 - Repository-level `start` and `serve` tasks now use the Node path directly.
+- Repository-level `build` tasks now use the Node path directly.
 - The Node dev path deliberately uses Vite full reloads instead of reproducing the older custom websocket protocol.
 - Reload handling now runs through Vite's hot-update hook while dynamic watched paths still come from Gustwind task discovery.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
   - folding or removing obsolete Deno-specific dev helpers
-  - deciding whether repository-level build tasks should switch to the Node CLI too
+  - removing or shrinking the remaining legacy Deno CLI/runtime modules that are now only compatibility wrappers
 
 ## Recommended implementation order
 
