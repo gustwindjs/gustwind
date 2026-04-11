@@ -1,5 +1,4 @@
 import * as path from "node:path";
-import { contentType } from "https://deno.land/std@0.207.0/media_types/mod.ts";
 import { initLoadApi } from "../load-adapters/deno.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
 import {
@@ -11,6 +10,7 @@ import {
 } from "../gustwind-utilities/plugins.ts";
 import { evaluateTasks } from "./evaluateTasks.ts";
 import type { LoadedPlugin, Mode, PluginOptions } from "../types.ts";
+import { contentType } from "../utilities/contentType.ts";
 
 async function gustwindDevServer({
   cwd,

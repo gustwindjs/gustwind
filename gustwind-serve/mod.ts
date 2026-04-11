@@ -1,6 +1,6 @@
 import * as path from "node:path";
-import { contentType } from "https://deno.land/std@0.207.0/media_types/mod.ts";
 import { respond } from "../gustwind-utilities/respond.ts";
+import { contentType } from "../utilities/contentType.ts";
 
 function gustwindServe({ cwd, input, port }: {
   cwd: string;

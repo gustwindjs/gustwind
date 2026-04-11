@@ -120,6 +120,16 @@ The next repository-focused cleanup step is now implemented:
 
 This means the Node build path is no longer limited to synthetic fixture tests. It now builds the actual repository successfully.
 
+The next development-focused step is now implemented:
+
+- `gustwind-node/dev.ts` provides a Node 24 development server built on Vite middleware mode
+- `gustwind-node/cli.ts` now supports `--develop` for the Node path
+- the Node dev path uses Vite's client, watcher, and websocket transport for full reloads
+- Node development module loading now bundles local module graphs on the dev path so edits reload cleanly without relying on Deno-style import semantics
+- generated build-style assets in development still reuse the shared plugin task pipeline instead of duplicating a second asset system
+
+This means Gustwind now has a practical Node-first development shell in addition to the existing Node render and build entrypoints. The remaining work is mainly cleanup, sharper reload granularity, and retiring older Deno-specific dev surfaces.
+
 ## Main blockers today
 
 ### Deno-only runtime services
@@ -229,7 +239,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - The latest Vite docs show this path is viable on Node 24:
   - `createServer(...)` and `server.middlewareMode` provide a custom-server integration path
   - `configureServer` allows Gustwind-specific middleware wiring
-  - `handleHotUpdate` and `server.ws` can replace the current custom reload transport
+  - `server.ws` can replace the current custom reload transport
 - This would simplify or replace the current Deno-specific dev code in:
   - `gustwind-dev-server/mod.ts`
   - `plugins/file-watcher/mod.ts`
@@ -237,16 +247,26 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
   - `utilities/getWebSocketServer.ts`
 - Vite would not replace Gustwind's route matching or plugin-driven rendering. It would replace the surrounding dev shell.
 
+### Phase 5 progress
+
+- A first Vite-backed Node development server now exists in `gustwind-node/dev.ts`.
+- The Node CLI now exposes `--develop`.
+- The initial Node dev path deliberately uses Vite full reloads instead of reproducing the older custom websocket protocol.
+- Remaining work is mostly:
+  - improving reload precision beyond full-page refreshes
+  - folding or removing obsolete Deno-specific dev helpers
+  - deciding how much of the old Deno dev command surface should remain during migration
+
 ## Recommended implementation order
 
 1. Make the render/build core Node-compatible.
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
 4. Replace the Deno dev shell with a Vite-based Node dev server.
-5. Clean up or remove the remaining optional remote-import paths as follow-up debt.
+5. Clean up or remove the remaining Deno-specific dev helpers and optional remote-import paths as follow-up debt.
 
 ## Recommendation
 
 Do not start with "full Node compatibility".
 
-Start by making static builds and rendering work under Node. That baseline now exists, and the actual repository now builds successfully through the Node CLI. The next useful step is no longer build viability. It is replacing the Deno dev shell with a Vite-based Node dev server, while continuing to prune optional Deno-era remote imports as opportunistic cleanup.
+Start by making static builds and rendering work under Node. That baseline exists, the actual repository builds successfully through the Node CLI, and there is now a first Vite-based Node dev server as well. The next useful step is cleanup and consolidation: retire the redundant Deno-specific dev shell pieces where the Node path has already taken over, and keep pruning optional Deno-era remote imports as opportunistic debt reduction.

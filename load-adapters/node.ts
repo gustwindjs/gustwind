@@ -7,6 +7,17 @@ import type { LoadApi, PluginParameters, Tasks } from "../types.ts";
 import { getEsbuild, stopEsbuild } from "../utilities/esbuild.ts";
 
 function initLoadApi(tasks: Tasks): LoadApi {
+  return initLoadApiWithOptions(tasks, { bundleMode: "auto" });
+}
+
+function initDevLoadApi(tasks: Tasks): LoadApi {
+  return initLoadApiWithOptions(tasks, { bundleMode: "always" });
+}
+
+function initLoadApiWithOptions(
+  tasks: Tasks,
+  options: { bundleMode: "auto" | "always" },
+): LoadApi {
   return {
     async dir({ path: directoryPath, extension, recursive, type }) {
       tasks.push({
@@ -28,7 +39,7 @@ function initLoadApi(tasks: Tasks): LoadApi {
     async module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
       tasks.push({ type: "loadModule", payload });
 
-      return await importModule<T>(payload.path);
+      return await importModule<T>(payload.path, options);
     },
     async textFile(filePath: string) {
       tasks.push({
@@ -90,8 +101,11 @@ async function readTextFile(filePath: string) {
   return await readFile(filePath, "utf8");
 }
 
-async function importModule<T>(modulePath: string) {
-  if (await shouldBundleModule(modulePath)) {
+async function importModule<T>(
+  modulePath: string,
+  options: { bundleMode: "auto" | "always" },
+) {
+  if (await shouldBundleModule(modulePath, options.bundleMode)) {
     const bundledSource = await bundleModule(modulePath);
     const importPath = `data:text/javascript;base64,${
       Buffer.from(`// cache-bust:${Date.now()}\n${bundledSource}`).toString(
@@ -105,7 +119,14 @@ async function importModule<T>(modulePath: string) {
   return await import(getImportPath(modulePath)) as T;
 }
 
-async function shouldBundleModule(modulePath: string) {
+async function shouldBundleModule(
+  modulePath: string,
+  bundleMode: "auto" | "always",
+) {
+  if (bundleMode === "always") {
+    return true;
+  }
+
   if (modulePath.startsWith("http://") || modulePath.startsWith("https://")) {
     return true;
   }
@@ -348,4 +369,4 @@ function getLoader(modulePath: string, contentType = "") {
   }
 }
 
-export { initLoadApi, stopModuleBundler };
+export { initDevLoadApi, initLoadApi, stopModuleBundler };

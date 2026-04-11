@@ -8,6 +8,8 @@
     "test": "echo \"Use deno task test for unit tests or npm run test:e2e for Playwright.\" && exit 1",
     "build:node": "node ./gustwind-node/cli.ts --build --output ./build",
     "build:node:check": "node ./gustwind-node/cli.ts --build --output ./.tmp-node-build",
+    "dev:node": "node ./gustwind-node/cli.ts --develop --port 3000",
+    "test:node:dev": "node --test ./gustwind-node/dev_test.ts",
     "typecheck": "deno task check:types",
     "quality:gate": "deno task quality:gate",
     "cf:build": "./build.sh",
@@ -38,6 +40,7 @@
   "devDependencies": {
     "@netlify/functions": "2.4.0",
     "esbuild": "0.28.0",
+    "vite": "8.0.8",
     "wrangler": "4.80.0"
   }
 }

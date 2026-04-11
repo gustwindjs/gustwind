@@ -1,5 +1,5 @@
 import * as _path from "node:path";
-import { walk } from "https://deno.land/std@0.207.0/fs/walk.ts";
+import { readdir } from "node:fs/promises";
 
 async function dir(
   { path, extension, recursive }: {
@@ -12,20 +12,30 @@ async function dir(
     throw new Error("dir - missing path");
   }
 
-  const files: { path: string; name: string }[] = [];
+  const files = await collectFiles(path, recursive ?? false);
 
-  for await (
-    const entry of walk(path, {
-      exts: extension ? [extension] : undefined,
-      includeDirs: false,
-      maxDepth: recursive ? Infinity : 1,
-    })
-  ) {
-    if (entry.isFile) {
-      files.push({
-        path: entry.path,
-        name: _path.relative(path, entry.path),
-      });
+  return files.filter(({ path: filePath }) =>
+    extension ? filePath.endsWith(extension) : true
+  ).map((entry) => ({
+    path: entry.path,
+    name: _path.relative(path, entry.path),
+  }));
+}
+
+async function collectFiles(directoryPath: string, recursive: boolean) {
+  const entries = await readdir(directoryPath, { withFileTypes: true });
+  const files: { path: string }[] = [];
+
+  for (const entry of entries) {
+    const entryPath = _path.join(directoryPath, entry.name);
+
+    if (entry.isFile()) {
+      files.push({ path: entryPath });
+      continue;
+    }
+
+    if (recursive && entry.isDirectory()) {
+      files.push(...await collectFiles(entryPath, recursive));
     }
   }
 

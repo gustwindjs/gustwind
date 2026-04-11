@@ -1,7 +1,8 @@
 import { dir } from "../utilities/fs.ts";
 import type { Tasks } from "../types.ts";
+import { isDebugEnabled } from "../utilities/runtime.ts";
 
-const DEBUG = Deno.env.get("DEBUG") === "1";
+const DEBUG = isDebugEnabled();
 
 async function evaluateTasks(tasks: Tasks) {
   const ret: Record<
@@ -41,7 +42,9 @@ async function evaluateTasks(tasks: Tasks) {
         }
 
         files.forEach((file) => {
-          ret[`${outputPrefix}${file.name}`] = {
+          const routePath = `${outputPrefix}${file.name}`;
+
+          ret[routePath.startsWith("/") ? routePath : `/${routePath}`] = {
             type: "path",
             path: file.path,
           };
