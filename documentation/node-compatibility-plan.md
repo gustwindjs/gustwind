@@ -37,6 +37,16 @@ The practical target is:
 - Preserving the current Deno dev server if a Node/Vite path is simpler
 - Achieving one-to-one runtime parity purely for compatibility's sake
 
+### Exit criterion
+
+Once the Node implementation reaches practical feature parity with the remaining Deno path, the Deno implementation should be removed instead of maintained in parallel.
+
+That applies both to:
+
+- runtime code paths
+- user-facing commands
+- documentation and project copy that still describe Gustwind as Deno-first
+
 ## Existing starting points
 
 The repository already has pieces that point toward a non-Deno runtime:
@@ -166,6 +176,8 @@ This means the Deno CLI is no longer the default execution path for the main sit
 
 These depend on Deno process, server, file system, command, signal, and watch APIs. They are no longer the default user-facing path, but they still remain as migration cleanup and compatibility debt.
 
+When the last practical parity gaps are closed, these should be deleted rather than preserved as a secondary runtime.
+
 ### Remaining remote-import surface
 
 - editor-only/browser-only scripts that still intentionally reference remote CDNs
@@ -294,10 +306,10 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 2. Add a Node load adapter.
 3. Add a Node build entrypoint.
 4. Replace the Deno dev shell with a Vite-based Node dev server.
-5. Clean up or remove the remaining Deno-specific dev helpers and optional remote-import paths as follow-up debt.
+5. Clean up or remove the remaining Deno-specific helpers, wrappers, and Deno-first project copy once the Node path fully covers the practical workflow.
 
 ## Recommendation
 
 Do not start with "full Node compatibility".
 
-Start by making static builds and rendering work under Node. That baseline exists, the actual repository builds successfully through the Node CLI, and there is now a first Vite-based Node dev server as well. The next useful step is cleanup and consolidation: retire the redundant Deno-specific dev shell pieces where the Node path has already taken over, and keep pruning optional Deno-era remote imports as opportunistic debt reduction.
+Start by making static builds and rendering work under Node. That baseline exists, the actual repository builds successfully through the Node CLI, and there is now a first Vite-based Node dev server as well. The next useful step is cleanup and consolidation: retire the redundant Deno-specific pieces where the Node path has already taken over, then remove the remaining Deno implementation and Deno-first project messaging once feature parity is reached.
