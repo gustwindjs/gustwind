@@ -1,6 +1,7 @@
 node_modules/
 build/
 .tmp-node-build/
+.tmp-node-build-wrapper/
 npm
 .gustwind
 playwright-report/
