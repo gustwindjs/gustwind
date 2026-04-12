@@ -53,7 +53,13 @@ type DataSource = { operation: string; parameters?: unknown[] };
 type DataSources = Record<string, (...args: any) => unknown>;
 
 type LoadedPlugin = {
-  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context; tasks: Tasks };
+  plugin: {
+    meta: Plugin["meta"];
+    api: PluginApi;
+    context: Context;
+    moduleTasks?: Tasks;
+    tasks: Tasks;
+  };
   tasks: Tasks;
 };
 type PluginsDefinition = {
@@ -224,6 +230,7 @@ type SendMessageEvent =
   | { type: "getStyleSetupPath"; payload: undefined }
   | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
+  | { type: "getComponentDependencyGraph"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Element> }
   | { type: "getRenderer"; payload: string }
   // websocket plugin

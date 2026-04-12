@@ -3,8 +3,13 @@ import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
+import {
+  createComponentDependencyGraph,
+  type ComponentDependencyGraph,
+  type ComponentSourceDefinition,
+} from "../../utilities/componentDependencyGraph.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
-import type { GlobalUtilities, Plugin } from "../../types.ts";
+import type { BuildWorkerEvent, GlobalUtilities, Plugin } from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
 
 const DEBUG = isDebugEnabled();
@@ -14,8 +19,11 @@ const plugin: Plugin<{
   globalUtilitiesPath: string;
 }, {
   htmlLoader: ReturnType<typeof initLoader>;
+  componentDefinitions: Record<string, ComponentSourceDefinition>;
+  componentGraph: ComponentDependencyGraph;
   components: Record<string, string>;
   componentUtilities: Record<string, GlobalUtilities | undefined>;
+  globalDependencyTasks: BuildWorkerEvent[];
   globalUtilities: GlobalUtilities;
 }> = {
   meta: {
@@ -49,13 +57,29 @@ const plugin: Plugin<{
             load.module<GlobalUtilities>({ path, type: "globalUtilities" }),
           readTextFile: load.textFile,
         });
-        const [{ components, componentUtilities }, globalUtilities] =
+        const [
+          {
+            componentDefinitions,
+            componentGraph,
+            components,
+            componentUtilities,
+          },
+          globalUtilities,
+        ] =
           await Promise.all([
             loadComponents(htmlLoader),
             loadGlobalUtilities(),
           ]);
 
-        return { htmlLoader, components, componentUtilities, globalUtilities };
+        return {
+          htmlLoader,
+          componentDefinitions,
+          componentGraph,
+          components,
+          componentUtilities,
+          globalDependencyTasks: getGlobalDependencyTasks(),
+          globalUtilities,
+        };
       },
       sendMessages: async () => undefined,
       prepareContext: async ({ url, route, send }) => {
@@ -248,36 +272,41 @@ const plugin: Plugin<{
           case "fileChanged": {
             DEBUG && console.log("htmlisp-renderer - file changed", payload);
 
-            switch (payload.type) {
-              case "components": {
-                const { components } = await loadComponents(
-                  pluginContext.htmlLoader,
-                );
-
-                return {
-                  send: [{ type: "reloadPage", payload: undefined }],
-                  pluginContext: { components },
-                };
-              }
-
-              case "globalUtilities": {
-                const globalUtilities = await loadGlobalUtilities();
-
-                return {
-                  send: [{ type: "reloadPage", payload: undefined }],
-                  pluginContext: { globalUtilities },
-                };
-              }
-              case "paths": {
-                return { send: [{ type: "reloadPage", payload: undefined }] };
-              }
+            if (payload.type === "paths") {
+              return { send: [{ type: "reloadPage", payload: undefined }] };
             }
 
-            // Reload anyway
-            return { send: [{ type: "reloadPage", payload: undefined }] };
+            const nextPluginContext: Partial<typeof pluginContext> = {};
+            const shouldReloadComponents = payload.type === "components" ||
+              isComponentSourcePath(payload.path);
+            const shouldReloadGlobalUtilities = payload.type === "globalUtilities" ||
+              isGlobalUtilitiesPath(payload.path);
+
+            if (shouldReloadComponents) {
+              Object.assign(
+                nextPluginContext,
+                await loadComponents(pluginContext.htmlLoader),
+              );
+            }
+
+            if (shouldReloadGlobalUtilities) {
+              nextPluginContext.globalUtilities = await loadGlobalUtilities();
+            }
+
+            return {
+              send: [{ type: "reloadPage", payload: undefined }],
+              pluginContext: nextPluginContext,
+            };
           }
           case "getComponents":
             return { result: pluginContext.components };
+          case "getComponentDependencyGraph":
+            return {
+              result: {
+                componentGraph: pluginContext.componentGraph,
+                globalDependencyTasks: pluginContext.globalDependencyTasks,
+              },
+            };
           case "getRenderer": {
             return { result: pluginContext.components[payload] };
           }
@@ -289,15 +318,26 @@ const plugin: Plugin<{
     // and finally aggregates them into a single data structure.
     async function loadComponents(
       htmlLoader: ReturnType<typeof initLoader>,
-    ): ReturnType<ReturnType<typeof initLoader>> {
+    ): Promise<{
+      componentDefinitions: Record<string, ComponentSourceDefinition>;
+      componentGraph: ComponentDependencyGraph;
+      components: Record<string, string>;
+      componentUtilities: Record<string, GlobalUtilities | undefined>;
+    }> {
       const loadedComponents = await Promise.all(
         components.map(
           ({ path: componentsPath, selection }) =>
             htmlLoader(componentsPath, selection),
         ),
       );
+      const componentDefinitions = Object.assign(
+        {},
+        ...loadedComponents.map(({ componentDefinitions }) => componentDefinitions),
+      );
 
       return {
+        componentDefinitions,
+        componentGraph: createComponentDependencyGraph(componentDefinitions),
         components: Object.assign(
           {},
           ...loadedComponents.map(({ components }) => components),
@@ -318,6 +358,39 @@ const plugin: Plugin<{
           type: "globalUtilities",
         })
         : { init: () => ({}) };
+    }
+
+    function getGlobalDependencyTasks() {
+      return globalUtilitiesPath
+        ? [{
+          type: "loadModule" as const,
+          payload: {
+            path: path.join(cwd, globalUtilitiesPath),
+            type: "globalUtilities",
+          },
+        }]
+        : [];
+    }
+
+    function isComponentSourcePath(filePath: string) {
+      return components.some(({ path: componentsPath }) =>
+        !componentsPath.startsWith("http") &&
+        isWithinPath(filePath, path.join(cwd, componentsPath))
+      );
+    }
+
+    function isGlobalUtilitiesPath(filePath: string) {
+      return globalUtilitiesPath
+        ? path.resolve(filePath) === path.resolve(path.join(cwd, globalUtilitiesPath))
+        : false;
+    }
+
+    function isWithinPath(filePath: string, directoryPath: string) {
+      const resolvedFilePath = path.resolve(filePath);
+      const resolvedDirectoryPath = path.resolve(directoryPath);
+
+      return resolvedFilePath === resolvedDirectoryPath ||
+        resolvedFilePath.startsWith(resolvedDirectoryPath + path.sep);
     }
   },
 };

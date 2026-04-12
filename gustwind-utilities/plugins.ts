@@ -43,7 +43,7 @@ async function importPlugins(
   if (initialImportedPlugins) {
     initialImportedPlugins.forEach(({ plugin, tasks }) => {
       loadedPluginDefinitions.push(plugin);
-      initialTasks = initialTasks.concat(tasks);
+      initialTasks = initialTasks.concat(plugin.moduleTasks || [], tasks);
     });
   }
 
@@ -95,6 +95,7 @@ async function importPlugins(
       mode,
     });
     initialTasks = initialTasks.concat(pluginModuleTasks, tasks);
+    plugin.moduleTasks = pluginModuleTasks;
 
     const { dependsOn } = plugin.meta;
     const dependencyIndex = loadedPluginDefinitions.findIndex(
@@ -202,6 +203,7 @@ async function importPlugin(
       meta: pluginModule.meta,
       api,
       context: api.initPluginContext ? await api.initPluginContext() : {},
+      moduleTasks: [],
       tasks,
     },
     tasks,
@@ -213,7 +215,7 @@ async function sendMessages(plugins: PluginDefinition[]) {
     { api, context },
   ) => [api.sendMessages, context])
     .filter(Boolean);
-  const send = getSend(plugins);
+  const send = createSend(plugins);
 
   for await (const [sendMessagesFn, pluginContext] of messageSenders) {
     if (sendMessagesFn) {
@@ -229,7 +231,7 @@ async function preparePlugins(plugins: PluginDefinition[]) {
     { api, context },
   ) => [api.prepareBuild, context])
     .filter(Boolean);
-  const send = getSend(plugins);
+  const send = createSend(plugins);
 
   for await (const [prepareBuild, pluginContext] of prepareBuilds) {
     if (prepareBuild) {
@@ -251,7 +253,7 @@ async function finishPlugins(plugins: PluginDefinition[]) {
     { api, context },
   ) => [api.finishBuild, context])
     .filter(Boolean);
-  const send = getSend(plugins);
+  const send = createSend(plugins);
 
   for await (const [finishBuild, pluginContext] of finishBuilds) {
     if (finishBuild) {
@@ -294,7 +296,7 @@ async function applyPlugins(
     matchRoute: MatchRoute;
   },
 ) {
-  const send = getSend(plugins);
+  const send = createSend(plugins);
   const context = {
     ...initialContext,
     ...(await applyPrepareContext({
@@ -532,7 +534,7 @@ async function applyRenderLayouts(
 async function applyOnTasksRegistered(
   { plugins, tasks }: { plugins: PluginDefinition[]; tasks: Tasks },
 ) {
-  const send = getSend(plugins);
+  const send = createSend(plugins);
   const tasksRegistered = plugins.map(({ api }) => api.onTasksRegistered)
     .filter(Boolean);
 
@@ -572,7 +574,7 @@ async function applyAfterEachRenders(
   return markup;
 }
 
-function getSend(plugins: PluginDefinition[]) {
+function createSend(plugins: PluginDefinition[]) {
   const send: Send = async (pluginName, message) => {
     if (pluginName === "*") {
       DEBUG && console.log("Send to all", message);
@@ -678,6 +680,7 @@ export {
   applyPrepareContext,
   applyRenderLayouts,
   cleanUpPlugins,
+  createSend,
   finishPlugins,
   importPlugin,
   importPlugins,

@@ -52,7 +52,7 @@ The same metrics are available through `buildNode({ collectBenchmark: true, ... 
 
 Production builds also reuse prior output by default. Each build now writes its incremental cache manifest to `build/.gustwind/build-cache.json`, so the cache can travel with the published site artifact itself.
 
-When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. Use `gustwind-node --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind-node --build --no-incremental` if you want to force a fully fresh rebuild.
+When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. The cache now tracks layout and component dependencies separately, so changing a component only invalidates the routes that actually render through it instead of forcing a whole-site rebuild. Use `gustwind-node --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind-node --build --no-incremental` if you want to force a fully fresh rebuild.
 
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 

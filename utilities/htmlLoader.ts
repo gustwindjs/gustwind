@@ -1,12 +1,15 @@
 import * as path from "node:path";
 import type { GlobalUtilities } from "../types.ts";
 import { urlJoin } from "./urlJoin.ts";
+import type { ComponentSourceDefinition } from "./componentDependencyGraph.ts";
 
 type ParsedComponents = [
   string,
   {
     component: string;
+    sourcePath: string;
     utilities: GlobalUtilities | undefined;
+    utilitiesPath?: string;
   },
 ][];
 
@@ -29,6 +32,7 @@ const initLoader = (
     componentsPath: string,
     selection?: string[],
   ): Promise<{
+    componentDefinitions: Record<string, ComponentSourceDefinition>;
     components: Record<string, string>;
     componentUtilities: Record<string, GlobalUtilities | undefined>;
   }> => {
@@ -68,13 +72,22 @@ const initLoader = (
           componentName,
           {
             component: await readTextFile(p),
+            sourcePath: p,
             utilities,
+            utilitiesPath: utilities ? utilitiesPath : undefined,
           },
         ];
       }));
     }
 
     return {
+      componentDefinitions: Object.fromEntries(
+        components.map(([k, { component, sourcePath, utilitiesPath }]) => [k, {
+          htmlInput: component,
+          sourcePath,
+          utilitiesPath,
+        }]),
+      ),
       components: Object.fromEntries(
         components.map(([k, { component }]) => [k, component]),
       ),
@@ -107,7 +120,11 @@ function loadRemoteComponents(
         component: await fetch(
           urlJoin(componentsPath, componentName + extension),
         ).then((res) => res.text()),
+        sourcePath: urlJoin(componentsPath, componentName + extension),
         utilities,
+        utilitiesPath: utilities
+          ? urlJoin(componentsPath, componentName + ".server.ts")
+          : undefined,
       }];
     }),
   );

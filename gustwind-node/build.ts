@@ -10,6 +10,7 @@ import {
   applyMatchRoutes,
   applyPlugins,
   cleanUpPlugins,
+  createSend,
   finishPlugins,
   importPlugins,
   preparePlugins,
@@ -32,8 +33,9 @@ import {
 } from "../utilities/incrementalBuildCache.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
-import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts";
+import type { PluginOptions, Route, Tasks } from "../types.ts";
 import type { BuildBenchmark } from "../utilities/buildBenchmark.ts";
+import type { ComponentDependencyGraph } from "../utilities/componentDependencyGraph.ts";
 import type {
   DependencyTask,
   IncrementalBuildCache,
@@ -47,6 +49,11 @@ type BuildNodeResult = {
   cacheHits?: number;
   routesBuilt?: number;
   validation?: Awaited<ReturnType<typeof validateHtmlDirectory>>;
+};
+
+type RendererDependencyInfo = {
+  componentGraph: ComponentDependencyGraph;
+  globalDependencyTasks: DependencyTask[];
 };
 
 async function buildNode(
@@ -80,7 +87,7 @@ async function buildNode(
   await mkdir(outputDirectory, { recursive: true });
   const benchmark = collectBenchmark ? createBuildBenchmark(outputDirectory) : undefined;
 
-  const { initialTasks, plugins, router } = await importPlugins({
+  const { plugins, router } = await importPlugins({
     cwd,
     pluginDefinitions,
     outputDirectory,
@@ -91,8 +98,14 @@ async function buildNode(
   try {
     const prepareTasks = await preparePlugins(plugins);
     const { routes, tasks: routerTasks } = await router.getAllRoutes();
+    const rendererDependencyInfo = await getRendererDependencyInfo(plugins);
     const globalDependencyTasks = normalizeDependencyTasks(
-      initialTasks.concat(prepareTasks, routerTasks),
+      getGlobalDependencyTasks({
+        plugins,
+        prepareTasks,
+        rendererDependencyInfo,
+        routerTasks,
+      }),
     );
 
     if (!routes) {
@@ -117,6 +130,7 @@ async function buildNode(
       incrementalCacheEnabled: incremental,
       nextIncrementalCacheRoutes,
       globalDependencyTasks,
+      rendererDependencyInfo,
       router,
       plugins,
       tasks: prepareTasks
@@ -143,6 +157,7 @@ async function buildNode(
       incrementalCacheSource: incremental ? previousCache?.source : undefined,
       incrementalCacheEnabled: incremental,
       nextIncrementalCacheRoutes,
+      rendererDependencyInfo,
       router,
       plugins,
       tasks: await finishPlugins(plugins),
@@ -183,6 +198,7 @@ async function runTaskQueue(
     incrementalCacheEnabled,
     nextIncrementalCacheRoutes,
     globalDependencyTasks,
+    rendererDependencyInfo,
     router,
     plugins,
     tasks,
@@ -195,6 +211,7 @@ async function runTaskQueue(
     incrementalCacheEnabled: boolean;
     nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
     globalDependencyTasks?: DependencyTask[];
+    rendererDependencyInfo?: RendererDependencyInfo;
     router: {
       matchRoute(url: string): Promise<Route | undefined>;
     };
@@ -282,7 +299,10 @@ async function runTaskQueue(
           renderTaskPositions,
         );
         const dependencyTasks = normalizeDependencyTasks(
-          matchDependencyTasks.concat(renderDependencyTasks),
+          matchDependencyTasks.concat(
+            getComponentDependencyTasks(rendererDependencyInfo, matchedRoute.layout),
+            renderDependencyTasks,
+          ),
         );
 
         queue.push(...routeTasks);
@@ -421,6 +441,52 @@ function collectDependencyTaskDelta(
   taskPositions: number[],
 ) {
   return plugins.flatMap(({ tasks }, index) => tasks.slice(taskPositions[index]));
+}
+
+async function getRendererDependencyInfo(
+  plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"],
+): Promise<RendererDependencyInfo | undefined> {
+  const send = createSend(plugins);
+
+  if (!await send("htmlisp-renderer-plugin", { type: "ping", payload: undefined })) {
+    return;
+  }
+
+  return await send("htmlisp-renderer-plugin", {
+    type: "getComponentDependencyGraph",
+    payload: undefined,
+  }) as RendererDependencyInfo | undefined;
+}
+
+function getGlobalDependencyTasks(
+  {
+    plugins,
+    prepareTasks,
+    rendererDependencyInfo,
+    routerTasks,
+  }: {
+    plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"];
+    prepareTasks: Tasks;
+    rendererDependencyInfo?: RendererDependencyInfo;
+    routerTasks: Tasks;
+  },
+) {
+  return prepareTasks
+    .concat(routerTasks)
+    .concat(
+      plugins.flatMap(({ meta, moduleTasks = [], tasks }) =>
+        meta.name === "htmlisp-renderer-plugin"
+          ? moduleTasks.concat(rendererDependencyInfo?.globalDependencyTasks ?? tasks)
+          : moduleTasks.concat(tasks)
+      ),
+    );
+}
+
+function getComponentDependencyTasks(
+  rendererDependencyInfo: RendererDependencyInfo | undefined,
+  layoutName: string,
+) {
+  return rendererDependencyInfo?.componentGraph[layoutName]?.dependencyTasks ?? [];
 }
 
 function getTaskOutputPaths(tasks: Tasks) {

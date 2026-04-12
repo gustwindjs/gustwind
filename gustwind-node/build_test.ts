@@ -482,3 +482,135 @@ export const plugin = {
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test("gustwind-node incrementally rebuilds only routes affected by component dependency changes", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-components-"));
+
+  try {
+    const componentsDirectory = path.join(cwd, "components");
+    await mkdir(componentsDirectory, { recursive: true });
+    await writeFile(
+      path.join(cwd, "globalUtilities.ts"),
+      [
+        "function init() {",
+        "  return {};",
+        "}",
+        "export { init };",
+      ].join("\n"),
+    );
+    await writeFile(
+      path.join(componentsDirectory, "SharedShell.html"),
+      `<main class="shell" &children="(get props children)"></main>`,
+    );
+    await writeFile(
+      path.join(componentsDirectory, "HomeOnly.html"),
+      `<p>home component</p>`,
+    );
+    await writeFile(
+      path.join(componentsDirectory, "DocsOnly.html"),
+      `<p>docs v1</p>`,
+    );
+    await writeFile(
+      path.join(componentsDirectory, "HomeLayout.html"),
+      `<html><body><SharedShell><HomeOnly></HomeOnly></SharedShell></body></html>`,
+    );
+    await writeFile(
+      path.join(componentsDirectory, "DocsLayout.html"),
+      `<html><body><SharedShell><DocsOnly></DocsOnly></SharedShell></body></html>`,
+    );
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies routes for component dependency invalidation testing.",
+  },
+  init() {
+    const routes = {
+      "/": { layout: "HomeLayout" },
+      docs: { layout: "DocsLayout" },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+
+        if (url === "/docs/") {
+          return routes.docs;
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    const outputDirectory = path.join(cwd, "dist-a");
+    const secondOutputDirectory = path.join(cwd, "dist-b");
+    const pluginDefinitions = [
+      { path: "./router-plugin.ts", options: {}, module: undefined as never },
+      {
+        path: path.resolve("plugins/meta/mod.ts"),
+        options: { meta: { siteName: "Gustwind" } },
+        module: undefined as never,
+      },
+      {
+        path: path.resolve("renderers/htmlisp-renderer/mod.ts"),
+        options: {
+          components: [{ path: "./components" }],
+          globalUtilitiesPath: "./globalUtilities.ts",
+        },
+        module: undefined as never,
+      },
+    ];
+
+    const firstBuild = await buildNode({
+      cwd,
+      outputDirectory,
+      pluginDefinitions,
+    });
+
+    assert.equal(firstBuild.cacheHits, 0);
+    assert.equal(firstBuild.routesBuilt, 2);
+    assert.match(
+      await readFile(path.join(outputDirectory, "index.html"), "utf8"),
+      /home component/,
+    );
+    assert.match(
+      await readFile(path.join(outputDirectory, "docs", "index.html"), "utf8"),
+      /docs v1/,
+    );
+
+    await writeFile(
+      path.join(componentsDirectory, "DocsOnly.html"),
+      `<p>docs v2</p>`,
+    );
+
+    const secondBuild = await buildNode({
+      cwd,
+      cacheFrom: outputDirectory,
+      outputDirectory: secondOutputDirectory,
+      pluginDefinitions,
+    });
+
+    assert.equal(secondBuild.cacheHits, 1);
+    assert.equal(secondBuild.routesBuilt, 1);
+    assert.equal(
+      await readFile(path.join(secondOutputDirectory, "index.html"), "utf8"),
+      await readFile(path.join(outputDirectory, "index.html"), "utf8"),
+    );
+    assert.match(
+      await readFile(path.join(secondOutputDirectory, "docs", "index.html"), "utf8"),
+      /docs v2/,
+    );
+    await readFile(path.join(secondOutputDirectory, CACHE_MANIFEST_PATH), "utf8");
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
