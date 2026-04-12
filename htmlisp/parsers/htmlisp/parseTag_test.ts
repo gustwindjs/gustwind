@@ -1,15 +1,16 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { parseTag } from "./parseTag.ts";
 
-Deno.test("content", () => {
-  assertEquals(
+test("content", () => {
+  assert.deepEqual(
     parseTag(`foobar`),
     ["foobar"],
   );
 });
 
-Deno.test("/ as tag content", () => {
-  assertEquals(
+test("/ as tag content", () => {
+  assert.deepEqual(
     parseTag(`<div>/</div>`),
     [{
       type: "div",
@@ -19,8 +20,8 @@ Deno.test("/ as tag content", () => {
   );
 });
 
-Deno.test("/ as tag content 2", () => {
-  assertEquals(
+test("/ as tag content 2", () => {
+  assert.deepEqual(
     parseTag(`<SiteLink href="/">/</SiteLink>`),
     [{
       type: "SiteLink",
@@ -30,8 +31,8 @@ Deno.test("/ as tag content 2", () => {
   );
 });
 
-Deno.test("retain whitespace in between", () => {
-  assertEquals(
+test("retain whitespace in between", () => {
+  assert.deepEqual(
     parseTag(`<Button>foo <span>foo</span> foo</Button>`),
     [
       {
@@ -47,15 +48,15 @@ Deno.test("retain whitespace in between", () => {
   );
 });
 
-Deno.test("partial tag", () => {
-  assertEquals(
+test("partial tag", () => {
+  assert.deepEqual(
     parseTag(`<div>foo`),
     [{ type: "div", attributes: {}, children: [] }, "foo"],
   );
 });
 
-Deno.test("partial tag 2", () => {
-  assertEquals(
+test("partial tag 2", () => {
+  assert.deepEqual(
     parseTag(`<div>foo<`),
     [{
       type: "div",
@@ -65,8 +66,8 @@ Deno.test("partial tag 2", () => {
   );
 });
 
-Deno.test("empty ending tag", () => {
-  assertEquals(
+test("empty ending tag", () => {
+  assert.deepEqual(
     parseTag(`<div>foo</>`),
     [{ type: "div", attributes: {}, children: ["foo"] }],
   );
@@ -74,15 +75,15 @@ Deno.test("empty ending tag", () => {
 
 // Note that we don't validate end tags right now.
 // Another option would be to throw an error in this case.
-Deno.test("wrong ending tag", () => {
-  assertEquals(
+test("wrong ending tag", () => {
+  assert.deepEqual(
     parseTag(`<div>foo</span>`),
     [{ type: "div", attributes: {}, children: ["foo"] }],
   );
 });
 
-Deno.test("partial tag 3", () => {
-  assertEquals(
+test("partial tag 3", () => {
+  assert.deepEqual(
     parseTag(`<div>foo<f`),
     [{
       type: "div",
@@ -96,22 +97,22 @@ Deno.test("partial tag 3", () => {
   );
 });
 
-Deno.test("self-closing tag 1", () => {
-  assertEquals(
+test("self-closing tag 1", () => {
+  assert.deepEqual(
     parseTag(`<a/>`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
-Deno.test("self-closing tag 2", () => {
-  assertEquals(
+test("self-closing tag 2", () => {
+  assert.deepEqual(
     parseTag(`<a />`),
     [{ type: "a", attributes: {}, children: [] }],
   );
 });
 
-Deno.test("multiple self-closing tags", () => {
-  assertEquals(
+test("multiple self-closing tags", () => {
+  assert.deepEqual(
     parseTag(`<a /><a />`),
     [{ type: "a", attributes: {}, children: [] }, {
       type: "a",
@@ -121,15 +122,15 @@ Deno.test("multiple self-closing tags", () => {
   );
 });
 
-Deno.test("self-closing tag with a single attribute", () => {
-  assertEquals(
+test("self-closing tag with a single attribute", () => {
+  assert.deepEqual(
     parseTag(`<a href="test" />`),
     [{ type: "a", attributes: { href: "test" }, children: [] }],
   );
 });
 
-Deno.test("self-closing tag with attributes", () => {
-  assertEquals(
+test("self-closing tag with attributes", () => {
+  assert.deepEqual(
     parseTag(`<a href="test" title="foobar" />`),
     [{
       type: "a",
@@ -139,8 +140,8 @@ Deno.test("self-closing tag with attributes", () => {
   );
 });
 
-Deno.test("simple tag", () => {
-  assertEquals(
+test("simple tag", () => {
+  assert.deepEqual(
     parseTag(`<span>foobar</span>`),
     [{
       type: "span",
@@ -150,8 +151,8 @@ Deno.test("simple tag", () => {
   );
 });
 
-Deno.test("two tags with a newline in between", () => {
-  assertEquals(
+test("two tags with a newline in between", () => {
+  assert.deepEqual(
     parseTag(`<span>foobar</span>\n<span>foobar</span>`),
     [{
       type: "span",
@@ -165,8 +166,8 @@ Deno.test("two tags with a newline in between", () => {
   );
 });
 
-Deno.test("simple tag with an attribute at the end", () => {
-  assertEquals(
+test("simple tag with an attribute at the end", () => {
+  assert.deepEqual(
     parseTag(`<span title>foobar</span>`),
     [{
       type: "span",
@@ -176,8 +177,8 @@ Deno.test("simple tag with an attribute at the end", () => {
   );
 });
 
-Deno.test("simple tag with attributes", () => {
-  assertEquals(
+test("simple tag with attributes", () => {
+  assert.deepEqual(
     parseTag(`<a href="test" title="foobar"></a>`),
     [{
       type: "a",
@@ -187,8 +188,8 @@ Deno.test("simple tag with attributes", () => {
   );
 });
 
-Deno.test("tag with single quotes in an attribute", () => {
-  assertEquals(
+test("tag with single quotes in an attribute", () => {
+  assert.deepEqual(
     parseTag(`<a href="t'e's't"</a>`),
     [{
       type: "a",
@@ -198,8 +199,8 @@ Deno.test("tag with single quotes in an attribute", () => {
   );
 });
 
-Deno.test("simple tag with attributes and newlines in between", () => {
-  assertEquals(
+test("simple tag with attributes and newlines in between", () => {
+  assert.deepEqual(
     parseTag(`<a
   href="test"
   title="foobar"></a>`),
@@ -211,8 +212,8 @@ Deno.test("simple tag with attributes and newlines in between", () => {
   );
 });
 
-Deno.test("simple tag with content", () => {
-  assertEquals(
+test("simple tag with content", () => {
+  assert.deepEqual(
     parseTag(`<a href="test" title="foobar">barfoo</a>`),
     [{
       type: "a",
@@ -222,8 +223,8 @@ Deno.test("simple tag with content", () => {
   );
 });
 
-Deno.test("simple tag with another tag", () => {
-  assertEquals(
+test("simple tag with another tag", () => {
+  assert.deepEqual(
     parseTag(
       `<a href="test" title="foobar"><span>barfoo</span></a>`,
     ),
@@ -239,8 +240,8 @@ Deno.test("simple tag with another tag", () => {
   );
 });
 
-Deno.test("self-closing siblings", () => {
-  assertEquals(
+test("self-closing siblings", () => {
+  assert.deepEqual(
     parseTag(
       `<a href="test" title="foobar" /><a href="test" title="foobar" />`,
     ),
@@ -259,8 +260,8 @@ Deno.test("self-closing siblings", () => {
   );
 });
 
-Deno.test("multiple siblings", () => {
-  assertEquals(
+test("multiple siblings", () => {
+  assert.deepEqual(
     parseTag(
       `<Button><div>foo</div><div>bar</div></Button>`,
     ),
@@ -285,8 +286,8 @@ Deno.test("multiple siblings", () => {
   );
 });
 
-Deno.test("siblings only with former children", () => {
-  assertEquals(
+test("siblings only with former children", () => {
+  assert.deepEqual(
     parseTag(
       `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
     ),
@@ -315,8 +316,8 @@ Deno.test("siblings only with former children", () => {
   );
 });
 
-Deno.test("sibling tags", () => {
-  assertEquals(
+test("sibling tags", () => {
+  assert.deepEqual(
     parseTag(
       `<a href="test" title="foobar">foo</a><a href="test" title="foobar">bar</a>`,
     ),
@@ -332,8 +333,8 @@ Deno.test("sibling tags", () => {
   );
 });
 
-Deno.test("siblings with only children", () => {
-  assertEquals(
+test("siblings with only children", () => {
+  assert.deepEqual(
     parseTag(
       `<div><span>foo</span></div><div><span>foo</span></div>`,
     ),
@@ -357,8 +358,8 @@ Deno.test("siblings with only children", () => {
   );
 });
 
-Deno.test("simple doctype", () => {
-  assertEquals(
+test("simple doctype", () => {
+  assert.deepEqual(
     parseTag(`<!DOCTYPE html>`),
     [{
       type: "!DOCTYPE",
@@ -369,8 +370,8 @@ Deno.test("simple doctype", () => {
   );
 });
 
-Deno.test("simple doctype and content", () => {
-  assertEquals(
+test("simple doctype and content", () => {
+  assert.deepEqual(
     parseTag(`<!DOCTYPE html>foobar`),
     [{
       type: "!DOCTYPE",
@@ -381,8 +382,8 @@ Deno.test("simple doctype and content", () => {
   );
 });
 
-Deno.test("simple doctype and element", () => {
-  assertEquals(
+test("simple doctype and element", () => {
+  assert.deepEqual(
     parseTag(`<!DOCTYPE html><div>foobar</div>`),
     [{
       type: "!DOCTYPE",
@@ -397,8 +398,8 @@ Deno.test("simple doctype and element", () => {
   );
 });
 
-Deno.test("full doctype", () => {
-  assertEquals(
+test("full doctype", () => {
+  assert.deepEqual(
     parseTag(
       `<!DOCTYPE html>
         <a href="test" title="foobar" /><a href="test" title="foobar" />`,
@@ -420,8 +421,8 @@ Deno.test("full doctype", () => {
   );
 });
 
-Deno.test("xml", () => {
-  assertEquals(
+test("xml", () => {
+  assert.deepEqual(
     parseTag(
       `<?xml version="1.0" encoding="utf-8" ?>`,
     ),
@@ -434,8 +435,8 @@ Deno.test("xml", () => {
   );
 });
 
-Deno.test("xml with a newline", () => {
-  assertEquals(
+test("xml with a newline", () => {
+  assert.deepEqual(
     parseTag(
       `<?xml version="1.0" encoding="utf-8" ?>
 <div>foo</div>`,
@@ -453,8 +454,8 @@ Deno.test("xml with a newline", () => {
   );
 });
 
-Deno.test("content before element", () => {
-  assertEquals(
+test("content before element", () => {
+  assert.deepEqual(
     parseTag(`<div>bar<span>foo</span></div>`),
     [{
       type: "div",
@@ -468,8 +469,8 @@ Deno.test("content before element", () => {
   );
 });
 
-Deno.test("content after element", () => {
-  assertEquals(
+test("content after element", () => {
+  assert.deepEqual(
     parseTag(`<div><span>foo</span>bar</div>`),
     [{
       type: "div",
@@ -483,8 +484,8 @@ Deno.test("content after element", () => {
   );
 });
 
-Deno.test("content before and after element", () => {
-  assertEquals(
+test("content before and after element", () => {
+  assert.deepEqual(
     parseTag(`bar<span>foo</span>bar`),
     ["bar", {
       type: "span",
@@ -494,8 +495,8 @@ Deno.test("content before and after element", () => {
   );
 });
 
-Deno.test("element before and after content", () => {
-  assertEquals(
+test("element before and after content", () => {
+  assert.deepEqual(
     parseTag(`<span>foo</span>bar<span>foo</span>`),
     [
       {
@@ -513,8 +514,8 @@ Deno.test("element before and after content", () => {
   );
 });
 
-Deno.test("content after element 2", () => {
-  assertEquals(
+test("content after element 2", () => {
+  assert.deepEqual(
     parseTag(`<div>foo</div>bar`),
     [{
       type: "div",
@@ -524,8 +525,8 @@ Deno.test("content after element 2", () => {
   );
 });
 
-Deno.test("complex newlines", () => {
-  assertEquals(
+test("complex newlines", () => {
+  assert.deepEqual(
     parseTag(`<BaseLayout>
     <slot name="content">
       <div>hello</div>
@@ -548,8 +549,8 @@ Deno.test("complex newlines", () => {
   );
 });
 
-Deno.test("siblings with a self-closing element 1", () => {
-  assertEquals(
+test("siblings with a self-closing element 1", () => {
+  assert.deepEqual(
     parseTag(`<html>
   <head>
     <a />
@@ -580,8 +581,8 @@ Deno.test("siblings with a self-closing element 1", () => {
   );
 });
 
-Deno.test("siblings with an element", () => {
-  assertEquals(
+test("siblings with an element", () => {
+  assert.deepEqual(
     parseTag(`<html>
   <head>
     <a></a>
@@ -612,8 +613,8 @@ Deno.test("siblings with an element", () => {
   );
 });
 
-Deno.test("siblings with content", () => {
-  assertEquals(
+test("siblings with content", () => {
+  assert.deepEqual(
     parseTag(`<html>
   <head>
     bar
@@ -640,8 +641,8 @@ Deno.test("siblings with content", () => {
   );
 });
 
-Deno.test("integration 1", () => {
-  assertEquals(
+test("integration 1", () => {
+  assert.deepEqual(
     parseTag(`<html &lang="(get context meta.language)">
   <head>
     <link
@@ -685,8 +686,8 @@ Deno.test("integration 1", () => {
   );
 });
 
-Deno.test("integration 2", () => {
-  assertEquals(
+test("integration 2", () => {
+  assert.deepEqual(
     parseTag(`<!DOCTYPE html>
 <html &lang="(get context meta.language)">
   <head>
@@ -782,8 +783,8 @@ Deno.test("integration 2", () => {
   );
 });
 
-Deno.test("integration 3", () => {
-  assertEquals(
+test("integration 3", () => {
+  assert.deepEqual(
     parseTag(`<BaseLayout>
   <slot name="content">
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
@@ -873,8 +874,8 @@ Deno.test("integration 3", () => {
   );
 });
 
-Deno.test("simple nested children", () => {
-  assertEquals(
+test("simple nested children", () => {
+  assert.deepEqual(
     parseTag(`<BaseLayout>
   <slot>
     <header class="bg-gradient-to-br from-purple-200 to-emerald-100 py-8">
@@ -923,8 +924,8 @@ Deno.test("simple nested children", () => {
   );
 });
 
-Deno.test("complex nested children", () => {
-  assertEquals(
+test("complex nested children", () => {
+  assert.deepEqual(
     parseTag(`<header>
   <div>
     <h2></h2>

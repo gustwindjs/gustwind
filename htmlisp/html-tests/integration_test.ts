@@ -1,8 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("head integration", async () => {
-  assertEquals(
+test("head integration", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<!DOCTYPE html>
 <html &lang="(get context meta.language)">
@@ -32,8 +33,8 @@ Deno.test("head integration", async () => {
   );
 });
 
-Deno.test("full integration 1", async () => {
-  assertEquals(
+test("full integration 1", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<!DOCTYPE html>
 <html &lang="(get context meta.language)">
@@ -76,8 +77,8 @@ Deno.test("full integration 1", async () => {
   );
 });
 
-Deno.test("full integration 2", async () => {
-  assertEquals(
+test("full integration 2", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<BaseLayout content="<div>foobar</div>" />`,
       context: { meta: { language: "en", title: "demo" } },
@@ -117,8 +118,8 @@ Deno.test("full integration 2", async () => {
   );
 });
 
-Deno.test("full integration 3", async () => {
-  assertEquals(
+test("full integration 3", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<BaseLayout><slot name="content"><div>foobar</div></slot></BaseLayout>`,
@@ -159,8 +160,8 @@ Deno.test("full integration 3", async () => {
   );
 });
 
-Deno.test("full integration 4", async () => {
-  assertEquals(
+test("full integration 4", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<BaseLayout>
           <slot name="content">

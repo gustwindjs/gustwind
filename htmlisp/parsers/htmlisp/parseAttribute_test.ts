@@ -1,86 +1,87 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { parseAttribute } from "./parseAttribute.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
-Deno.test(`attribute with "`, () => {
-  assertEquals(
+test(`attribute with "`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href="test" `)),
     ["href", "test"],
   );
 });
 
-Deno.test(`attribute with '`, () => {
-  assertEquals(
+test(`attribute with '`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`title='foo' `)),
     ["title", "foo"],
   );
 });
 
-Deno.test(`attribute with backticks`, () => {
-  assertEquals(
+test(`attribute with backticks`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator("title=`foo` ")),
     ["title", "foo"],
   );
 });
 
-Deno.test(`attribute singlequotes within backticks`, () => {
-  assertEquals(
+test(`attribute singlequotes within backticks`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator("title=`f'o'o` ")),
     ["title", "f'o'o"],
   );
 });
 
-Deno.test(`attribute with single quotes in value`, () => {
-  assertEquals(
+test(`attribute with single quotes in value`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`title="f'o'o" `)),
     ["title", "f'o'o"],
   );
 });
 
-Deno.test(`attribute with single backticks in value`, () => {
-  assertEquals(
+test(`attribute with single backticks in value`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator('title="f`o`o" ')),
     ["title", "f`o`o"],
   );
 });
 
-Deno.test(`attribute without a value`, () => {
-  assertEquals(
+test(`attribute without a value`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href `)),
     ["href", true],
   );
 });
 
-Deno.test(`attribute without a value at the end`, () => {
-  assertEquals(
+test(`attribute without a value at the end`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href/`)),
     ["href", true],
   );
 });
 
-Deno.test(`attribute without a value at the end 2`, () => {
-  assertEquals(
+test(`attribute without a value at the end 2`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href?`)),
     ["href", true],
   );
 });
 
-Deno.test(`attribute at the end of a self-closing tag`, () => {
-  assertEquals(
+test(`attribute at the end of a self-closing tag`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href="foobar"/`)),
     ["href", "foobar"],
   );
 });
 
-Deno.test(`attribute at the end of a tag`, () => {
-  assertEquals(
+test(`attribute at the end of a tag`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(`href="foobar">`)),
     ["href", "foobar"],
   );
 });
 
-Deno.test(`tag end`, () => {
-  assertEquals(
+test(`tag end`, () => {
+  assert.deepEqual(
     parseAttribute(characterGenerator(` />`)),
     ["", true],
   );

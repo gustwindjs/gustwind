@@ -1,8 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with a comment", async () => {
-  assertEquals(
+test("element with a comment", async () => {
+  assert.deepEqual(
     await htmlispToHTML(
       {
         htmlInput:

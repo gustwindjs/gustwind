@@ -1,35 +1,36 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { applyUtilitiesSync } from "./applyUtilitiesSync.ts";
 
-Deno.test("does not apply empty", async () => {
-  assertEquals(
+test("does not apply empty", async () => {
+  assert.deepEqual(
     await applyUtilitiesSync({}, {}, {}),
     {},
   );
 });
 
-Deno.test("does not apply a number", async () => {
+test("does not apply a number", async () => {
   const props = { foo: 5 };
 
-  assertEquals(
+  assert.deepEqual(
     await applyUtilitiesSync(props, {}, {}),
     props,
   );
 });
 
-Deno.test("does not apply a string", async () => {
+test("does not apply a string", async () => {
   const props = { foo: "bar" };
 
-  assertEquals(
+  assert.deepEqual(
     await applyUtilitiesSync(props, {}, {}),
     props,
   );
 });
 
-Deno.test("does not apply a date", async () => {
+test("does not apply a date", async () => {
   const props = { foo: new Date() };
 
-  assertEquals(
+  assert.deepEqual(
     await applyUtilitiesSync(props, {}, {}),
     props,
   );

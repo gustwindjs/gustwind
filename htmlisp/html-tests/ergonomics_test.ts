@@ -1,7 +1,5 @@
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML, htmlispToHTMLSync } from "../mod.ts";
 
 function renderButton(props: Record<string, unknown>) {
@@ -12,8 +10,8 @@ async function renderAsyncButton(props: Record<string, unknown>) {
   return `<button>${String(props.children ?? "")}</button>`;
 }
 
-Deno.test("escape by default escapes text children", async () => {
-  assertEquals(
+test("escape by default escapes text children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &children="message"></div>`,
       props: { message: `<em>unsafe</em>` },
@@ -23,8 +21,8 @@ Deno.test("escape by default escapes text children", async () => {
   );
 });
 
-Deno.test("raw utility bypasses escaped children output", async () => {
-  assertEquals(
+test("raw utility bypasses escaped children output", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &children="(raw message)"></div>`,
       context: { message: `<em>safe</em>` },
@@ -34,8 +32,8 @@ Deno.test("raw utility bypasses escaped children output", async () => {
   );
 });
 
-Deno.test("rendered component children do not double escape", async () => {
-  assertEquals(
+test("rendered component children do not double escape", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<Button><span>foo & bar</span></Button>`,
       components: {
@@ -47,8 +45,8 @@ Deno.test("rendered component children do not double escape", async () => {
   );
 });
 
-Deno.test("shorthand lookup resolves local before props before context", async () => {
-  assertEquals(
+test("shorthand lookup resolves local before props before context", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<noop id="local-value"><div &children="id"></div><div &children="message"></div><div &children="post.slug"></div></noop>`,
@@ -59,8 +57,8 @@ Deno.test("shorthand lookup resolves local before props before context", async (
   );
 });
 
-Deno.test("structured attrs merge with explicit attributes winning", async () => {
-  assertEquals(
+test("structured attrs merge with explicit attributes winning", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<button disabled &attrs="buttonAttrs" &title="title"></button>`,
@@ -74,8 +72,8 @@ Deno.test("structured attrs merge with explicit attributes winning", async () =>
   );
 });
 
-Deno.test("fragment renders children without wrapper output", async () => {
-  assertEquals(
+test("fragment renders children without wrapper output", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<fragment><div>foo</div><div &children="(raw html)"></div></fragment>`,
@@ -86,8 +84,8 @@ Deno.test("fragment renders children without wrapper output", async () => {
   );
 });
 
-Deno.test("async renderer accepts function components", async () => {
-  assertEquals(
+test("async renderer accepts function components", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<Button>demo</Button>`,
       components: {
@@ -99,8 +97,8 @@ Deno.test("async renderer accepts function components", async () => {
   );
 });
 
-Deno.test("sync renderer rejects async components", () => {
-  assertThrows(
+test("sync renderer rejects async components", () => {
+  assert.throws(
     () =>
       htmlispToHTMLSync({
         htmlInput: `<Button>demo</Button>`,

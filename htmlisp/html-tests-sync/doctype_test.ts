@@ -1,15 +1,16 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTMLSync } from "../mod.ts";
 
-Deno.test("doctype", async () => {
-  assertEquals(
+test("doctype", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({ htmlInput: "<!DOCTYPE html>" }),
     "<!DOCTYPE html>",
   );
 });
 
-Deno.test("doctype and content", async () => {
-  assertEquals(
+test("doctype and content", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput:
         `<!DOCTYPE html><div &title="(get context meta.siteName)">hello</div>`,
@@ -21,8 +22,8 @@ Deno.test("doctype and content", async () => {
   );
 });
 
-Deno.test("doctype and content with a newline", async () => {
-  assertEquals(
+test("doctype and content with a newline", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<!DOCTYPE html>
     <div &title="(get context meta.siteName)">hello</div>`,

@@ -1,11 +1,9 @@
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTMLSync } from "../mod.ts";
 
-Deno.test("basic component", async () => {
-  assertEquals(
+test("basic component", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button>foo</Button>",
       components: {
@@ -16,8 +14,8 @@ Deno.test("basic component", async () => {
   );
 });
 
-Deno.test("basic component with simple html input", async () => {
-  assertEquals(
+test("basic component with simple html input", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button><span>foo</span></Button>",
       components: {
@@ -28,8 +26,8 @@ Deno.test("basic component with simple html input", async () => {
   );
 });
 
-Deno.test("basic component with html input in between with whitespaces", async () => {
-  assertEquals(
+test("basic component with html input in between with whitespaces", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button>foo <span>foo</span> foo</Button>",
       components: {
@@ -40,11 +38,11 @@ Deno.test("basic component with html input in between with whitespaces", async (
   );
 });
 
-Deno.test("basic component with complex html input", async () => {
+test("basic component with complex html input", async () => {
   const input =
     `<a class="#1utjbpi" href="http://cssinjs.org/plugins">Plugin API</a>`;
 
-  assertEquals(
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Button>${input}</Button>`,
       components: {
@@ -55,7 +53,7 @@ Deno.test("basic component with complex html input", async () => {
   );
 });
 
-Deno.test("complex component with complex html input", async () => {
+test("complex component with complex html input", async () => {
   const input =
     `<a class="#1utjbpi" href="http://cssinjs.org/plugins">Plugin API</a>`;
   const HeadingWithAnchor = `<noop
@@ -68,7 +66,7 @@ Deno.test("complex component with complex html input", async () => {
 </noop>
 `;
 
-  assertEquals(
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput:
         `<HeadingWithAnchor level="3" anchor="test">${input}</HeadingWithAnchor>`,
@@ -80,8 +78,8 @@ Deno.test("complex component with complex html input", async () => {
   );
 });
 
-Deno.test("component with a flag", async () => {
-  assertEquals(
+test("component with a flag", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button showButton>foo</Button>",
       components: {
@@ -93,8 +91,8 @@ Deno.test("component with a flag", async () => {
   );
 });
 
-Deno.test("basic component 2", async () => {
-  assertEquals(
+test("basic component 2", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<SiteLink href="modes">Modes</SiteLink>
 <SiteLink href="configuration">Configuration</SiteLink>`,
@@ -107,16 +105,16 @@ Deno.test("basic component 2", async () => {
   );
 });
 
-Deno.test("throws if a component is not found", () => {
-  assertThrows(
+test("throws if a component is not found", () => {
+  assert.throws(
     () => htmlispToHTMLSync({ htmlInput: "<Button>foo</Button>" }),
     Error,
     `Component "Button" was not found!`,
   );
 });
 
-Deno.test("component with attributes", async () => {
-  assertEquals(
+test("component with attributes", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Button title="demo">foobar</Button>`,
       components: {
@@ -128,8 +126,8 @@ Deno.test("component with attributes", async () => {
   );
 });
 
-Deno.test("component with children", async () => {
-  assertEquals(
+test("component with children", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Button><div>foo</div></Button>`,
       components: {
@@ -140,8 +138,8 @@ Deno.test("component with children", async () => {
   );
 });
 
-Deno.test("component with children attributes", async () => {
-  assertEquals(
+test("component with children attributes", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Button children="foo"></Button>`,
       components: {
@@ -152,8 +150,8 @@ Deno.test("component with children attributes", async () => {
   );
 });
 
-Deno.test("component with multiple children", async () => {
-  assertEquals(
+test("component with multiple children", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Button><div>foo</div><div>bar</div></Button>`,
       components: {
@@ -164,8 +162,8 @@ Deno.test("component with multiple children", async () => {
   );
 });
 
-Deno.test("component with an expression", async () => {
-  assertEquals(
+test("component with an expression", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Link &href="(get context demo)"></Link>`,
       components: {
@@ -179,8 +177,8 @@ Deno.test("component with an expression", async () => {
   );
 });
 
-Deno.test("component with a children expression", async () => {
-  assertEquals(
+test("component with a children expression", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: `<Markdown &children="(get context demo)"></Markdown>`,
       components: {
@@ -194,8 +192,8 @@ Deno.test("component with a children expression", async () => {
   );
 });
 
-Deno.test("passed attributes do not get removed", async () => {
-  assertEquals(
+test("passed attributes do not get removed", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button title>foo</Button>",
       components: {
@@ -207,8 +205,8 @@ Deno.test("passed attributes do not get removed", async () => {
   );
 });
 
-Deno.test("attributes receiving null get removed", async () => {
-  assertEquals(
+test("attributes receiving null get removed", async () => {
+  assert.deepEqual(
     await htmlispToHTMLSync({
       htmlInput: "<Button>foo</Button>",
       components: {

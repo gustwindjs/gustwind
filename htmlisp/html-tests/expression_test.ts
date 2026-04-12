@@ -1,9 +1,10 @@
-import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import { urlJoin } from "../../utilities/urlJoin.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with an expression shortcut for attribute", async () => {
-  assertEquals(
+test("element with an expression shortcut for attribute", async () => {
+  assert.deepEqual(
     await htmlispToHTML(
       {
         htmlInput: `<a &href="(get context href)">foobar</a>`,
@@ -14,8 +15,8 @@ Deno.test("element with an expression shortcut for attribute", async () => {
   );
 });
 
-Deno.test("element with braces inside strings", async () => {
-  assertEquals(
+test("element with braces inside strings", async () => {
+  assert.deepEqual(
     await htmlispToHTML(
       {
         htmlInput: `<a &href="(concat foo '(' bar ')' )" />`,
@@ -25,8 +26,8 @@ Deno.test("element with braces inside strings", async () => {
   );
 });
 
-Deno.test("element with expressions within an expression", async () => {
-  assertEquals(
+test("element with expressions within an expression", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<a &href="(concat (get context demo) (get context href))" />`,
       context: { demo: "foobar", href: "demo" },
@@ -35,8 +36,8 @@ Deno.test("element with expressions within an expression", async () => {
   );
 });
 
-Deno.test("element with a string after an expression after expression", async () => {
-  assertEquals(
+test("element with a string after an expression after expression", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<a &href="(get (get context href) /)" />`,
       context: { href: "context", "/": "foo/bar" },
@@ -45,8 +46,8 @@ Deno.test("element with a string after an expression after expression", async ()
   );
 });
 
-Deno.test("complex expression", async () => {
-  assertEquals(
+test("complex expression", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<a
         &href="(urlJoin (get context meta.url) blog (get context data.slug))"

@@ -1,9 +1,10 @@
-import { urlJoin } from "https://deno.land/x/url_join@1.0.0/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import { urlJoin } from "../../utilities/urlJoin.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("element with an expression shortcut for children", async () => {
-  assertEquals(
+test("element with an expression shortcut for children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &children="(get context href)" />`,
       context: { href: "foobar" },
@@ -12,8 +13,8 @@ Deno.test("element with an expression shortcut for children", async () => {
   );
 });
 
-Deno.test("element with a nested expression shortcut for children", async () => {
-  assertEquals(
+test("element with a nested expression shortcut for children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &children="(concat / (get context href))" />`,
       context: { href: "foobar" },
@@ -22,8 +23,8 @@ Deno.test("element with a nested expression shortcut for children", async () => 
   );
 });
 
-Deno.test("element with a complex nested expression shortcut for children", async () => {
-  assertEquals(
+test("element with a complex nested expression shortcut for children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &children="(urlJoin / (get context href) /)" />`,
       context: { href: "foobar" },

@@ -1,8 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("xml", async () => {
-  assertEquals(
+test("xml", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: '<?xml version="1.0" encoding="utf-8" ?>',
     }),
@@ -10,8 +11,8 @@ Deno.test("xml", async () => {
   );
 });
 
-Deno.test("xml and content", async () => {
-  assertEquals(
+test("xml and content", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<?xml version="1.0" encoding="utf-8" ?>
       <feed

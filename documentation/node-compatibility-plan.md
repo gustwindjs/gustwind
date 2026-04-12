@@ -249,11 +249,19 @@ The next residual-copy cleanup step is now implemented:
 
 This means more of the remaining Deno surface is now confined to deliberate internal tooling and shared legacy tests instead of stray dead code or outdated copy in active modules.
 
+The next shared-test cleanup step is now implemented:
+
+- the HTMLisp async/sync render suites, HTMLisp utility tests, and HTMLisp HTML parser tests now run under `node --test`
+- the default quality gate now exercises the migrated shared tests through the Node test runner
+- the remaining LaTeX parser suites are now isolated as a separate legacy Deno test path instead of being mixed into the main shared test workflow
+
+This means the remaining Deno-based test surface is now mostly limited to the isolated LaTeX parser area plus the separate Deno-based typecheck path, not the general HTMLisp/render test workflow.
+
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup
 
-- Deno-based tests and checks that still run through `deno test` and `deno check`
+- Deno-based tests and checks that still run through `deno test` and `deno check`, now mainly the isolated LaTeX parser suites plus the shared typecheck path
 - Deno-based packaging helpers that still run through `dnt`
 - legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
 - optional or inactive code paths that still describe Gustwind as Deno-first
@@ -344,6 +352,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Repository-level command entrypoints now live in `package.json` instead of a separate `deno.json` task file.
 - The Node-specific render/build tests now run under `node --test` instead of the Deno test runner.
 - The router utility tests now run under `node --test` instead of the Deno test runner as well.
+- The general HTMLisp render/parser test suites now mostly run under `node --test` as well, with the isolated LaTeX parser suites left on Deno for now.
 - The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -389,7 +398,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Everyday repository commands now route through `npm run` rather than `deno task`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - removing the remaining Deno-based shared tests/checks and packaging helpers that are no longer needed
+  - removing the remaining Deno-based LaTeX tests/checks and packaging helpers that are no longer needed
 
 ## Recommended implementation order
 

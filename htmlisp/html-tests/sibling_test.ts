@@ -1,8 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("basic element with siblings as children", async () => {
-  assertEquals(
+test("basic element with siblings as children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<div title="demo"><span>foobar</span><span>barfoo</span></div>`,
@@ -11,8 +12,8 @@ Deno.test("basic element with siblings as children", async () => {
   );
 });
 
-Deno.test("basic element with siblings as children 2", async () => {
-  assertEquals(
+test("basic element with siblings as children 2", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div
       title="demo"
@@ -25,8 +26,8 @@ Deno.test("basic element with siblings as children 2", async () => {
   );
 });
 
-Deno.test("basic element with siblings as children 3", async () => {
-  assertEquals(
+test("basic element with siblings as children 3", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div
       title="demo"
@@ -39,8 +40,8 @@ Deno.test("basic element with siblings as children 3", async () => {
   );
 });
 
-Deno.test("self-closing siblings", async () => {
-  assertEquals(
+test("self-closing siblings", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<head>
   <link rel="icon" />
@@ -52,8 +53,8 @@ Deno.test("self-closing siblings", async () => {
   );
 });
 
-Deno.test("siblings only", async () => {
-  assertEquals(
+test("siblings only", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div class="bar">foo</div><div class="bar">foo</div>`,
     }),
@@ -61,8 +62,8 @@ Deno.test("siblings only", async () => {
   );
 });
 
-Deno.test("siblings only with former children", async () => {
-  assertEquals(
+test("siblings only with former children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<div class="bar"><span>foo</span></div><div class="bar">foo</div>`,
@@ -71,8 +72,8 @@ Deno.test("siblings only with former children", async () => {
   );
 });
 
-Deno.test("siblings only with latter children", async () => {
-  assertEquals(
+test("siblings only with latter children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<div class="bar">foo</div><div class="bar"><span>foo</span></div>`,
@@ -81,8 +82,8 @@ Deno.test("siblings only with latter children", async () => {
   );
 });
 
-Deno.test("siblings only with children", async () => {
-  assertEquals(
+test("siblings only with children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<div class="bar"><span>foo</span></div><div class="bar"><span>foo</span></div>`,

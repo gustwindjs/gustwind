@@ -1,8 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("foreach with an array of objects", async () => {
-  assertEquals(
+test("foreach with an array of objects", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
         <li class="inline" &title="(get props title)" &children="(get props content)"></li>
@@ -16,8 +17,8 @@ Deno.test("foreach with an array of objects", async () => {
   );
 });
 
-Deno.test("foreach with an array of objects and an attribute", async () => {
-  assertEquals(
+test("foreach with an array of objects and an attribute", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)" title="demo">
         <li class="inline" &title="(get props title)" &children="(get props content)"></li>
@@ -31,8 +32,8 @@ Deno.test("foreach with an array of objects and an attribute", async () => {
   );
 });
 
-Deno.test("foreach with an array of objects and an evaluated attribute", async () => {
-  assertEquals(
+test("foreach with an array of objects and an evaluated attribute", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput:
         `<ul &foreach="(get context blogPosts)" &title="(get context demo)">
@@ -48,8 +49,8 @@ Deno.test("foreach with an array of objects and an evaluated attribute", async (
   );
 });
 
-Deno.test("foreach with an array of values", async () => {
-  assertEquals(
+test("foreach with an array of values", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="(get context blogPosts)">
         <li class="inline" &children="(get props value)"></li>
@@ -63,8 +64,8 @@ Deno.test("foreach with an array of values", async () => {
   );
 });
 
-Deno.test("foreach without a type", async () => {
-  assertEquals(
+test("foreach without a type", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<noop &foreach="(get context blogPosts)">
         <div class="inline" &children="(get props content)"></div>
@@ -78,8 +79,8 @@ Deno.test("foreach without a type", async () => {
   );
 });
 
-Deno.test("foreach with nested children", async () => {
-  assertEquals(
+test("foreach with nested children", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &foreach="(get context blogPosts)">
   <a
@@ -97,8 +98,8 @@ Deno.test("foreach with nested children", async () => {
   );
 });
 
-Deno.test("foreach with nested children and a component", async () => {
-  assertEquals(
+test("foreach with nested children and a component", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<div &foreach="(get context blogPosts)">
   <a
@@ -122,8 +123,8 @@ Deno.test("foreach with nested children and a component", async () => {
   );
 });
 
-Deno.test("foreach with access to component props", async () => {
-  assertEquals(
+test("foreach with access to component props", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<Posts prefix="demo" &items="(get context blogPosts)" />`,
       context: {
@@ -138,8 +139,8 @@ Deno.test("foreach with access to component props", async () => {
   );
 });
 
-Deno.test("foreach alias with an array of objects", async () => {
-  assertEquals(
+test("foreach alias with an array of objects", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<dl &foreach="readonlyFields as field">
         <dd &children="field.text"></dd>
@@ -153,8 +154,8 @@ Deno.test("foreach alias with an array of objects", async () => {
   );
 });
 
-Deno.test("foreach alias with an array of values", async () => {
-  assertEquals(
+test("foreach alias with an array of values", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="items as item">
         <li &children="item"></li>
@@ -168,8 +169,8 @@ Deno.test("foreach alias with an array of values", async () => {
   );
 });
 
-Deno.test("foreach alias keeps direct field access compatibility", async () => {
-  assertEquals(
+test("foreach alias keeps direct field access compatibility", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="items as item">
         <li &title="item.slug" &children="slug"></li>
@@ -183,8 +184,8 @@ Deno.test("foreach alias keeps direct field access compatibility", async () => {
   );
 });
 
-Deno.test("foreach with alias for object items", async () => {
-  assertEquals(
+test("foreach with alias for object items", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<dl><noop &foreach="readonlyFields as field">
         <dd &children="field.text"></dd>
@@ -197,8 +198,8 @@ Deno.test("foreach with alias for object items", async () => {
   );
 });
 
-Deno.test("foreach with alias for primitive items", async () => {
-  assertEquals(
+test("foreach with alias for primitive items", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="blogPosts as post">
         <li &children="post"></li>
@@ -211,8 +212,8 @@ Deno.test("foreach with alias for primitive items", async () => {
   );
 });
 
-Deno.test("foreach alias keeps value compatibility", async () => {
-  assertEquals(
+test("foreach alias keeps value compatibility", async () => {
+  assert.deepEqual(
     await htmlispToHTML({
       htmlInput: `<ul &foreach="blogPosts as post">
         <li &title="value" &children="post"></li>

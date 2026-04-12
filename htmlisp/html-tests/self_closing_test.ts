@@ -1,29 +1,30 @@
-import { assertEquals } from "https://deno.land/std@0.142.0/testing/asserts.ts";
+import assert from "node:assert/strict";
+import test from "node:test";
 import { htmlispToHTML } from "../mod.ts";
 
-Deno.test("self-closing element without whitespace", async () => {
-  assertEquals(
+test("self-closing element without whitespace", async () => {
+  assert.deepEqual(
     await htmlispToHTML({ htmlInput: `<hr/>` }),
     `<hr></hr>`,
   );
 });
 
-Deno.test("self-closing element with whitespace", async () => {
-  assertEquals(
+test("self-closing element with whitespace", async () => {
+  assert.deepEqual(
     await htmlispToHTML({ htmlInput: `<hr />` }),
     `<hr></hr>`,
   );
 });
 
-Deno.test("self-closing element with an attribute", async () => {
-  assertEquals(
+test("self-closing element with an attribute", async () => {
+  assert.deepEqual(
     await htmlispToHTML({ htmlInput: `<div title="bar"/>` }),
     `<div title="bar"></div>`,
   );
 });
 
-Deno.test("self-closing element with an attribute and whitespace", async () => {
-  assertEquals(
+test("self-closing element with an attribute and whitespace", async () => {
+  assert.deepEqual(
     await htmlispToHTML({ htmlInput: `<div title="bar" />` }),
     `<div title="bar"></div>`,
   );
