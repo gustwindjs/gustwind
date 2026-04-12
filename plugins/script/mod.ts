@@ -1,3 +1,4 @@
+import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import * as path from "node:path";
 import {
   compileTypeScript,
@@ -5,7 +6,10 @@ import {
 } from "../../utilities/compileTypeScript.ts";
 import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
-import { buildClientAssets } from "../../utilities/vite.ts";
+import {
+  buildClientAssets,
+  createPersistentAssetCacheKey,
+} from "../../utilities/vite.ts";
 
 const DEBUG = isDebugEnabled();
 
@@ -247,6 +251,7 @@ async function buildProductionScripts(
   );
 
   if (localScripts.length > 0) {
+    const persistentCacheKey = await getScriptAssetCacheKey(cwd, localScripts);
     const builtAssets = await buildClientAssets({
       cwd,
       entries: Object.fromEntries(
@@ -256,6 +261,12 @@ async function buildProductionScripts(
         ]),
       ),
       outputDirectory,
+      persistentCache: persistentCacheKey
+        ? {
+          key: persistentCacheKey,
+          namespace: "scripts",
+        }
+        : undefined,
     });
 
     setBuiltEntryAssets(builtAssets.entryAssets);
@@ -338,6 +349,40 @@ async function writeScript(
       data,
     },
   };
+}
+
+async function getScriptAssetCacheKey(
+  cwd: string,
+  localScripts: { name: string; path: string; externals?: string[] }[],
+) {
+  const dependencyFingerprint = await hashDependencyTasks(
+    cwd,
+    localScripts.map(({ path: scriptPath }) => ({
+      type: "loadModule" as const,
+      payload: {
+        path: scriptPath,
+        type: "foundScripts",
+      },
+    })),
+  );
+
+  if (!dependencyFingerprint) {
+    return null;
+  }
+
+  return createPersistentAssetCacheKey({
+    dependencyFingerprint,
+    entries: localScripts
+      .map(({ externals = [], name, path: scriptPath }) => ({
+        externals: [...externals].sort(),
+        name: normalizeScriptName(name),
+        path: path.isAbsolute(scriptPath)
+          ? path.relative(cwd, scriptPath)
+          : scriptPath,
+      }))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+    version: 1,
+  });
 }
 
 export { plugin };

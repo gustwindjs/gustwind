@@ -1,8 +1,15 @@
+import { createHash } from "node:crypto";
 import * as path from "node:path";
 import tailwindCss from "tailwindcss";
 import postcss from "postcss";
 import autoprefixer from "autoprefixer";
+import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import type { Plugin } from "../../types.ts";
+import {
+  persistentAssetExists,
+  readPersistentAssetText,
+  writePersistentAssetText,
+} from "../../utilities/persistentAssetCache.ts";
 
 const plugin: Plugin<{
   cssPath: string;
@@ -19,6 +26,7 @@ const plugin: Plugin<{
     const tailwindSetupPath = path.join(cwd, options.setupPath);
     let compiledCss: string | undefined;
     let compiledCssPromise: Promise<string> | undefined;
+    let cacheKeyPromise: Promise<string | null> | undefined;
 
     async function compileCss() {
       const { default: tailwindSetup } = await import(tailwindSetupPath);
@@ -52,13 +60,80 @@ const plugin: Plugin<{
       }
 
       if (!compiledCssPromise) {
-        compiledCssPromise = compileCss().then((css) => {
-          compiledCss = css;
-          return css;
-        });
+        compiledCssPromise = loadCompiledCssFromCacheOrBuild();
       }
 
       return await compiledCssPromise;
+    }
+
+    async function loadCompiledCssFromCacheOrBuild() {
+      const cacheKey = await getTailwindCacheKey();
+
+      if (
+        cacheKey &&
+        await persistentAssetExists(
+          cwd,
+          "tailwind",
+          cacheKey,
+          "compiled.css",
+        )
+      ) {
+        compiledCss = await readPersistentAssetText(
+          cwd,
+          "tailwind",
+          cacheKey,
+          "compiled.css",
+        );
+
+        return compiledCss;
+      }
+
+      compiledCss = await compileCss();
+
+      if (cacheKey) {
+        await writePersistentAssetText(
+          cwd,
+          "tailwind",
+          cacheKey,
+          "compiled.css",
+          compiledCss,
+        );
+      }
+
+      return compiledCss;
+    }
+
+    async function getTailwindCacheKey() {
+      if (!cacheKeyPromise) {
+        cacheKeyPromise = hashDependencyTasks(cwd, [
+          {
+            type: "readTextFile",
+            payload: {
+              path: tailwindCssPath,
+              type: "styles",
+            },
+          },
+          {
+            type: "loadModule",
+            payload: {
+              path: tailwindSetupPath,
+              type: "styleSetup",
+            },
+          },
+        ]).then((dependencyFingerprint) =>
+          dependencyFingerprint
+            ? createHash("sha256")
+              .update(JSON.stringify({
+                dependencyFingerprint,
+                mode,
+                version: 1,
+              }))
+              .digest("hex")
+            : null
+        );
+      }
+
+      return await cacheKeyPromise;
     }
 
     return {

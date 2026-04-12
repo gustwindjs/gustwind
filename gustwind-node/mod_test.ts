@@ -223,7 +223,7 @@ test("gustwind-node loads initial plugins from module paths", async () => {
   }
 });
 
-test("gustwind tailwind plugin reuses compiled css across repeated renders", async () => {
+test("gustwind tailwind plugin reuses compiled css across cold plugin instances", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-tailwind-plugin-"));
 
   try {
@@ -242,8 +242,8 @@ test("gustwind tailwind plugin reuses compiled css across repeated renders", asy
       ].join("\n"),
     );
 
-    let textFileReads = 0;
-    const api = await tailwindPlugin.init({
+    let firstInstanceReads = 0;
+    const firstApi = await tailwindPlugin.init({
       cwd,
       mode: "production",
       options: {
@@ -264,7 +264,7 @@ test("gustwind tailwind plugin reuses compiled css across repeated renders", asy
           throw new Error("unused");
         },
         async textFile(filePath: string) {
-          textFileReads++;
+          firstInstanceReads++;
           return await readFile(filePath, "utf8");
         },
         textFileSync() {
@@ -273,28 +273,13 @@ test("gustwind tailwind plugin reuses compiled css across repeated renders", asy
       },
     });
 
-    await api.prepareContext?.({
+    await firstApi.prepareContext?.({
       send: async () => undefined,
       route: { layout: "Home" },
       url: "/",
       pluginContext: {},
     });
-    await api.prepareContext?.({
-      send: async () => undefined,
-      route: { layout: "Home" },
-      url: "/",
-      pluginContext: {},
-    });
-
-    const firstMarkup = (await api.afterEachRender?.({
-      markup: "<html><head></head><body></body></html>",
-      context: {},
-      route: { layout: "Home" },
-      send: async () => undefined,
-      url: "/",
-      pluginContext: {},
-    }))?.markup;
-    const secondMarkup = (await api.afterEachRender?.({
+    const firstMarkup = (await firstApi.afterEachRender?.({
       markup: "<html><head></head><body></body></html>",
       context: {},
       route: { layout: "Home" },
@@ -303,7 +288,54 @@ test("gustwind tailwind plugin reuses compiled css across repeated renders", asy
       pluginContext: {},
     }))?.markup;
 
-    assert.equal(textFileReads, 1);
+    let secondInstanceReads = 0;
+    const secondApi = await tailwindPlugin.init({
+      cwd,
+      mode: "production",
+      options: {
+        cssPath: "./tailwind.css",
+        setupPath: "./tailwindSetup.ts",
+      },
+      outputDirectory: "",
+      renderComponent: async () => "",
+      renderComponentSync: () => "",
+      load: {
+        async dir() {
+          return [];
+        },
+        async json() {
+          throw new Error("unused");
+        },
+        async module() {
+          throw new Error("unused");
+        },
+        async textFile(filePath: string) {
+          secondInstanceReads++;
+          return await readFile(filePath, "utf8");
+        },
+        textFileSync() {
+          throw new Error("unused");
+        },
+      },
+    });
+
+    await secondApi.prepareContext?.({
+      send: async () => undefined,
+      route: { layout: "Home" },
+      url: "/",
+      pluginContext: {},
+    });
+    const secondMarkup = (await secondApi.afterEachRender?.({
+      markup: "<html><head></head><body></body></html>",
+      context: {},
+      route: { layout: "Home" },
+      send: async () => undefined,
+      url: "/",
+      pluginContext: {},
+    }))?.markup;
+
+    assert.equal(firstInstanceReads, 1);
+    assert.equal(secondInstanceReads, 0);
     assert.equal(firstMarkup, secondMarkup);
     assert.match(firstMarkup || "", /text-red-500/);
   } finally {

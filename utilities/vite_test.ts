@@ -58,3 +58,53 @@ document.body.append(root);
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test("buildClientAssets reuses a persistent cache across cold runs", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-vite-cache-"));
+
+  try {
+    await mkdir(path.join(cwd, "client"), { recursive: true });
+    await writeFile(
+      path.join(cwd, "client", "hello.ts"),
+      `
+const root = document.createElement("div");
+root.textContent = "hello";
+document.body.append(root);
+`.trimStart(),
+    );
+
+    const firstOutputDirectory = path.join(cwd, "dist-a");
+    const secondOutputDirectory = path.join(cwd, "dist-b");
+    const persistentCache = {
+      key: "test-cache-key",
+      namespace: "vite-test",
+    };
+
+    const firstResult = await buildClientAssets({
+      cwd,
+      entries: {
+        hello: "./client/hello.ts",
+      },
+      minify: false,
+      outputDirectory: firstOutputDirectory,
+      persistentCache,
+    });
+    const secondResult = await buildClientAssets({
+      cwd,
+      entries: {
+        hello: "./client/hello.ts",
+      },
+      minify: false,
+      outputDirectory: secondOutputDirectory,
+      persistentCache,
+    });
+
+    assert.equal(firstResult.cacheHit, false);
+    assert.equal(secondResult.cacheHit, true);
+    assert.equal(firstResult.entryFiles.hello, secondResult.entryFiles.hello);
+    await access(path.join(secondOutputDirectory, secondResult.entryFiles.hello.slice(1)));
+    await access(path.join(secondOutputDirectory, ".vite", "manifest.json"));
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
