@@ -4,4 +4,4 @@
 set -e
 
 npm ci
-npm run build:node
+npm run build

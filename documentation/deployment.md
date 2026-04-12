@@ -13,7 +13,7 @@ The general approach is to first set up a build script to install Node.js depend
 #!/usr/bin/env bash
 
 npm ci
-npm run build:node
+npm run build
 ```
 
 Also make the file executable with `chmod +x` and point your CI environment to use the file when building. Usually there's a field for that in their user interface somewhere.
