@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 
 const PERSISTENT_ASSET_CACHE_ROOT = path.join(".gustwind", "persistent-assets");
 
@@ -53,7 +53,7 @@ async function restorePersistentAssets(
     const targetPath = path.join(outputDirectory, relativePath);
 
     await mkdir(path.dirname(targetPath), { recursive: true });
-    await cp(sourcePath, targetPath, { force: true, recursive: true });
+    await copyFile(sourcePath, targetPath);
   }
 
   return true;
@@ -89,7 +89,7 @@ async function writePersistentAssets(
     const targetPath = getPersistentAssetPath(cwd, namespace, key, relativePath);
 
     await mkdir(path.dirname(targetPath), { recursive: true });
-    await cp(sourcePath, targetPath, { force: true, recursive: true });
+    await copyFile(sourcePath, targetPath);
   }
 }
 

@@ -22,7 +22,7 @@ export default defineConfig({
     ? undefined
     : {
       command:
-        `cd .. && npm run build && python3 -m http.server ${port} --directory build`,
+        `cd .. && npm run build:release && python3 -m http.server ${port} --directory build`,
       url: `${baseURL}/`,
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",

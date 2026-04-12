@@ -56,6 +56,8 @@ When the previous build cache is still valid, `npm run build` rebuilds only the 
 
 Production builds also render independent routes with bounded concurrency, so total build time measures end-to-end wall-clock time while individual route timings can overlap.
 
+This repository now separates fast local builds from release builds. `npm run build` skips Pagefind indexing to keep first builds fast, while `npm run build:release` includes the search index and is the path used for deployment and browser tests.
+
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 
 Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
@@ -63,13 +65,13 @@ Sample benchmark for this repository on April 12, 2026. These numbers are machin
 | Metric | Sample |
 | --- | ---: |
 | Routes built | 14 |
-| Total build time | 254.432 ms |
-| Average route time | 32.799 ms |
-| p50 route time | 24.789 ms |
-| p95 route time | 64.920 ms |
-| Peak RSS memory | 196.4 MB |
-| Fastest route | `/routing/` in 10.952 ms |
-| Slowest route | `/blog/more/` in 64.920 ms |
+| Total build time | 267.234 ms |
+| Average route time | 44.064 ms |
+| p50 route time | 28.255 ms |
+| p95 route time | 93.233 ms |
+| Peak RSS memory | 202.5 MB |
+| Fastest route | `/routing/` in 15.548 ms |
+| Slowest route | `/blog/more/` in 93.233 ms |
 
 ## Earlier related work
 

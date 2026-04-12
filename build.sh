@@ -4,4 +4,4 @@
 set -e
 
 npm ci
-npm run build
+npm run build:release

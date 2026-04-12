@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo \"Use npm run quality:gate for the full verification suite or npm run test:e2e for Playwright.\" && exit 1",
     "build": "node ./gustwind-node/cli.ts --build --output ./build",
+    "build:release": "node ./gustwind-node/cli.ts --build --output ./build --plugins ./plugins.release.json",
     "build:node:check": "node ./gustwind-node/cli.ts --build --validate --output ./.tmp-node-build",
     "build:npm:gustwind": "node ./scripts/build-npm-package.mjs gustwind",
     "build:npm:htmlisp": "node ./scripts/build-npm-package.mjs htmlisp",

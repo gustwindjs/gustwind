@@ -13,7 +13,7 @@ The preferred development path is the Node/Vite server through `npm run dev` or 
 
 ## Production mode
 
-In the production mode, the tool generates HTML at the `./build` directory. The preferred path is `npm run build` or `gustwind-node --build`. Compared to the development mode, anything development related is removed from the output. At the moment no other optimizations are performed.
+In the production mode, the tool generates HTML at the `./build` directory. The preferred local path is `npm run build` or `gustwind-node --build`, while `npm run build:release` generates the additional Pagefind search index intended for deployment. Compared to the development mode, anything development related is removed from the output.
 
 During tests against a large site with over 2000 pages, the build was completed in a few seconds and so far the performance seems promising although it can be still improved and not a lot of thought has been given to it.
 
