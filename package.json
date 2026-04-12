@@ -39,6 +39,7 @@
   "author": "Juho Vepsäläinen",
   "license": "MIT",
   "dependencies": {
+    "@tailwindcss/browser": "4.2.2",
     "@tailwindcss/typography": "0.5.15",
     "autoprefixer": "10.4.20",
     "cssnano": "7.0.6",

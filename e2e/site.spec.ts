@@ -85,3 +85,18 @@ test("templating playground ships the browser compiler", async ({ page }) => {
   expect(html).toContain('href="/docs"');
   expect(html).toContain(">Docs</a>");
 });
+
+test("templating playground applies typed Tailwind utilities in the preview", async ({ page }) => {
+  await page.goto("/templating/");
+
+  const input = page.getByTestId("code-editor-input");
+  const previewLink = page.getByTestId("code-editor-preview").locator("a");
+
+  await input.fill(`<a class="bg-red-400 pt-5 px-7 rounded-lg" &href="(concat / docs)">Docs</a>`);
+  await expect(previewLink).toContainText("Docs");
+  await expect(previewLink).toHaveCSS("padding-top", "20px");
+  await expect(previewLink).toHaveCSS("padding-left", "28px");
+  await expect.poll(async () =>
+    previewLink.evaluate((node) => getComputedStyle(node).backgroundColor)
+  ).not.toBe("rgba(0, 0, 0, 0)");
+});
