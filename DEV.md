@@ -4,7 +4,7 @@ Use the Node CLI and `npm` scripts for the main site lifecycle commands.
 
 To test the CLI locally, use `node ./gustwind-node/cli.ts` with the appropriate flags, or the matching `npm` scripts such as `npm run build`, `npm run dev`, and `npm run serve`.
 
-Generated HTML validation is available through `npm run validate:html -- ./build`, and `npm run build:node:check` runs a build plus validation against `./.tmp-node-build`.
+Generated HTML validation is available through `gustwind-node --validate --input ./build`, and `gustwind-node --build --validate` validates build output directly. The project-level shortcuts are `npm run validate:html` and `npm run build:node:check`.
 
 ## Testing Netlify edge functions
 

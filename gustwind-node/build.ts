@@ -14,6 +14,7 @@ import {
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initNodeLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
+import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts";
@@ -21,10 +22,11 @@ import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts"
 const DEBUG = isDebugEnabled();
 
 async function buildNode(
-  { cwd, outputDirectory, pluginDefinitions }: {
+  { cwd, outputDirectory, pluginDefinitions, validateOutput = false }: {
     cwd: string;
     outputDirectory: string;
     pluginDefinitions: PluginOptions[];
+    validateOutput?: boolean;
   },
 ) {
   await rm(outputDirectory, { recursive: true, force: true });
@@ -72,6 +74,10 @@ async function buildNode(
     });
 
     await cleanUpPlugins(plugins, routes);
+
+    if (validateOutput) {
+      return await validateHtmlDirectory(outputDirectory);
+    }
   } finally {
     await stopModuleBundler();
   }

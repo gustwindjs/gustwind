@@ -252,3 +252,73 @@ export const plugin = {
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test("gustwind-node can validate generated HTML output", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-validate-"));
+
+  try {
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies a route for HTML validation testing.",
+  },
+  init() {
+    const routes = {
+      "/": {
+        layout: "Page",
+      },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders malformed HTML for validation testing.",
+  },
+  init() {
+    return {
+      renderLayout() {
+        return "<html><body><a /></body></html>";
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    await assert.rejects(
+      () =>
+        buildNode({
+          cwd,
+          outputDirectory: path.join(cwd, "dist"),
+          pluginDefinitions: [
+            { path: "./router-plugin.ts", options: {}, module: undefined as never },
+            { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+          ],
+          validateOutput: true,
+        }),
+      /non-void-html-element-start-tag-with-trailing-solidus/,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});

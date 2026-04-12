@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Use npm run quality:gate for the full verification suite or npm run test:e2e for Playwright.\" && exit 1",
     "build": "node ./gustwind-node/cli.ts --build --output ./build",
-    "build:node:check": "node ./gustwind-node/cli.ts --build --output ./.tmp-node-build && npm run validate:html -- ./.tmp-node-build",
+    "build:node:check": "node ./gustwind-node/cli.ts --build --validate --output ./.tmp-node-build",
     "build:npm:gustwind": "node ./scripts/build-npm-package.mjs gustwind",
     "build:npm:htmlisp": "node ./scripts/build-npm-package.mjs htmlisp",
     "dev": "node ./gustwind-node/cli.ts --develop --port 3000",
@@ -21,7 +21,7 @@
     "test:node:validate": "node --test ./gustwind-node/validate_test.ts",
     "test:node:vite": "node --test ./utilities/vite_test.ts",
     "test:unit": "npm run test:node:htmlisp",
-    "validate:html": "node ./gustwind-node/validate.ts",
+    "validate:html": "node ./gustwind-node/cli.ts --validate --input ./build",
     "watch:test": "node --test --watch --test-concurrency=1 ./htmlisp/html-tests/*.ts ./htmlisp/html-tests-sync/*.ts ./htmlisp/utilities/*_test.ts ./htmlisp/parsers/htmlisp/*_test.ts",
     "serve": "node ./gustwind-node/cli.ts --serve --input ./build --port 3000",
     "typecheck:code": "tsc --noEmit -p tsconfig.json",

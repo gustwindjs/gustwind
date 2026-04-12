@@ -8,6 +8,10 @@ import {
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initMemoryLoadApi } from "../load-adapters/memory.ts";
 import { initLoadApi as initNodeLoadApi } from "../load-adapters/node.ts";
+import {
+  validateHtmlDirectory,
+  validateHtmlDocument,
+} from "../utilities/htmlValidation.ts";
 import type { InitLoadApi, Plugin, Tasks } from "../types.ts";
 
 type PluginDefinition = [Plugin, Record<string, unknown>];
@@ -204,4 +208,10 @@ function resolvePluginPath(cwd: string, pluginPath: string) {
 }
 
 export type * from "../types.ts";
-export { buildNode, initNodeRender, initRender };
+export {
+  buildNode,
+  initNodeRender,
+  initRender,
+  validateHtmlDirectory,
+  validateHtmlDocument,
+};

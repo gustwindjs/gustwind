@@ -6,6 +6,7 @@ import { buildNode } from "./build.ts";
 import { startDevServer } from "./dev.ts";
 import { startStaticServer } from "./serve.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
+import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 
 type CliArgs = {
   build: boolean;
@@ -16,14 +17,16 @@ type CliArgs = {
   port: number;
   plugins: string;
   serve: boolean;
+  validate: boolean;
   version: boolean;
 };
 
 function usage() {
   console.log(`
-Build:   gustwind-node --build [--output <directory>] [--plugins <path>]
+Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate]
 Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
+Validate: gustwind-node --validate [--input <directory>]
 
 Options:
   -b, --build          Builds the project.
@@ -33,6 +36,7 @@ Options:
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
+  -V, --validate       Validates generated HTML. With --build, validates the output after build.
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
 `.trim());
@@ -46,7 +50,7 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
-  if (args.help || (!args.build && !args.develop && !args.serve)) {
+  if (args.help || (!args.build && !args.develop && !args.serve && !args.validate)) {
     usage();
     return 0;
   }
@@ -105,12 +109,23 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
+  if (args.validate && !args.build) {
+    const { filesValidated } = await validateHtmlDirectory(path.resolve(cwd, args.input));
+    console.log(`Validated ${filesValidated} HTML files in ${path.resolve(cwd, args.input)}.`);
+    return 0;
+  }
+
   const evaluatedPluginsDefinition = await readPluginDefinitions();
-  await buildNode({
+  const buildResult = await buildNode({
     cwd,
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
+    validateOutput: args.validate,
   });
+
+  if (args.validate && buildResult) {
+    console.log(`Validated ${buildResult.filesValidated} HTML files in ${path.resolve(cwd, args.output)}.`);
+  }
 
   return 0;
 }
@@ -124,6 +139,7 @@ function parseArgs(cliArgs: string[]): CliArgs {
     port: 3000,
     plugins: "plugins.json",
     serve: false,
+    validate: false,
     version: false,
   };
 
@@ -170,6 +186,10 @@ function parseArgs(cliArgs: string[]): CliArgs {
       case "-v":
       case "--version":
         ret.version = true;
+        break;
+      case "-V":
+      case "--validate":
+        ret.validate = true;
         break;
       case "-o":
       case "--output":
