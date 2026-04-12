@@ -15,6 +15,7 @@ import {
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initNodeLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
+import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts";
 
 const DEBUG = isDebugEnabled();
@@ -184,13 +185,16 @@ async function writeRenderedPage(
     url.endsWith(".json/") || url.endsWith(".xml/") ||
     url.endsWith(".html/")
   ) {
+    const output = url.endsWith(".xml/") || url.endsWith(".json/")
+      ? markup
+      : stripVoidElementClosers(markup);
     await mkdir(path.dirname(dir), { recursive: true });
-    await writeFile(dir, markup);
+    await writeFile(dir, output);
     return;
   }
 
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, "index.html"), markup);
+  await writeFile(path.join(dir, "index.html"), stripVoidElementClosers(markup));
 }
 
 export { buildNode };

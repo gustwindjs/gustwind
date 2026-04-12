@@ -18,6 +18,7 @@ import { initDevLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
 import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 import { contentType } from "../utilities/contentType.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
+import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import { createServer as createViteServer, type Plugin, type ViteDevServer } from "vite";
 
 const DEBUG = isDebugEnabled();
@@ -186,7 +187,10 @@ async function handleRequest(
 
     const payload = pathname.endsWith(".xml")
       ? markup
-      : await vite.transformIndexHtml(pathname, markup);
+      : await vite.transformIndexHtml(
+        pathname,
+        stripVoidElementClosers(markup),
+      );
 
     sendResponse(
       res,
