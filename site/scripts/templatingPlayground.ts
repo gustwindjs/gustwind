@@ -1,20 +1,28 @@
-import "@tailwindcss/browser";
+import initUnocssRuntime, { defineConfig } from "@unocss/runtime";
+import { presetWind3 } from "@unocss/preset-wind3";
 import HighlightJS from "highlight.js/lib/core";
 import highlightXML from "highlight.js/lib/languages/xml";
 import { htmlispToHTML } from "../../htmlisp/mod.ts";
 
 HighlightJS.registerLanguage("html", highlightXML);
 
-function enableTailwindPlayground() {
-  if (document.querySelector("[data-tailwind-playground]")) {
-    return;
-  }
+function enableUtilityPlayground() {
+  window.__unocss = {
+    ...defineConfig({
+      presets: [presetWind3()],
+    }),
+    runtime: {
+      rootElement: () =>
+        document.querySelector(".unocss-playground-preview") || undefined,
+      observer: {
+        target: () =>
+          document.querySelector(".unocss-playground-preview") || document.body,
+        attributeFilter: ["class"],
+      },
+    },
+  };
 
-  const style = document.createElement("style");
-
-  style.type = "text/tailwindcss";
-  style.dataset.tailwindPlayground = "true";
-  document.head.append(style);
+  return initUnocssRuntime();
 }
 
 function highlight(language: string, str: string) {
@@ -41,7 +49,7 @@ declare global {
 if (typeof window !== "undefined") {
   console.log("Hello from the templating playground");
 
-  enableTailwindPlayground();
+  void enableUtilityPlayground();
   window.compileHTML = compileHTML;
   window.highlight = highlight;
 }
