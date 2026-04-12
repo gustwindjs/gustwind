@@ -2,7 +2,6 @@ import * as path from "node:path";
 import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
-// import { attachIds } from "../../utilities/attachIds.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
@@ -322,45 +321,5 @@ const plugin: Plugin<{
     }
   },
 };
-
-/*
-function generateComponentUtilitiesSource(components: Components) {
-  const componentsWithUtilities = Object.entries(components).map((
-    [name, { utilitiesPath }],
-  ) => utilitiesPath && [name, utilitiesPath]).filter(Boolean);
-
-  return `${
-    componentsWithUtilities.map(([name, path]) =>
-      `import * as ${name} from "${path}";`
-    ).join("\n")
-  }
-
-const init = (args) => {
-  const componentUtilities = [
-${
-    componentsWithUtilities.map(([name]) =>
-      `    ["${name}", ${name}.init(args)],`
-    )
-      .join("\n")
-  }
-  ].filter(Boolean);
-
-  return Object.fromEntries(componentUtilities);
-}
-
-export { init };`;
-}
-
-function attachIdsToComponents(
-  url: string,
-  components: BreezewindComponents,
-): BreezewindComponents {
-  return Object.fromEntries(
-    Object.entries(components).map((
-      [k, v],
-    ) => [k, url.endsWith(".xml") ? v : attachIds(v)]),
-  );
-}
-*/
 
 export { plugin };
