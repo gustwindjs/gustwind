@@ -110,6 +110,7 @@ async function buildNode(
         rendererDependencyInfo,
         routerTasks,
       }),
+      cwd,
     );
 
     if (!routes) {
@@ -447,6 +448,7 @@ async function processBuildTask(
       getComponentDependencyTasks(rendererDependencyInfo, matchedRoute.layout),
       renderDependencyTasks,
     ),
+    cwd,
   );
 
   await runTaskQueue({

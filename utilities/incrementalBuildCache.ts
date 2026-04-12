@@ -4,7 +4,7 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promi
 import { fileURLToPath } from "node:url";
 import type { BuildWorkerEvent, Route } from "../types.ts";
 
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 const CACHE_MANIFEST_PATH = path.join(".gustwind", "build-cache.json");
 const MISSING_DEPENDENCY_HASH = "(missing)";
 const dependencyTaskTypes = new Set([
@@ -73,7 +73,7 @@ async function fetchCachedOutput(
 async function hashDependencyTasks(cwd: string, tasks: DependencyTask[]) {
   const hash = createHash("sha256");
 
-  for (const task of normalizeDependencyTasks(tasks)) {
+  for (const task of normalizeDependencyTasks(tasks, cwd)) {
     hash.update(task.type);
     hash.update("\n");
 
@@ -149,7 +149,10 @@ async function hashRouteFingerprint(
     .digest("hex");
 }
 
-function normalizeDependencyTasks(tasks: BuildWorkerEvent[]): DependencyTask[] {
+function normalizeDependencyTasks(
+  tasks: BuildWorkerEvent[],
+  cwd?: string,
+): DependencyTask[] {
   const seen = new Set<string>();
 
   return tasks.filter((task): task is DependencyTask => dependencyTaskTypes.has(task.type as never))
@@ -157,7 +160,7 @@ function normalizeDependencyTasks(tasks: BuildWorkerEvent[]): DependencyTask[] {
       ...task,
       payload: {
         ...task.payload,
-        path: task.payload.path,
+        path: cwd ? normalizeDependencyPath(cwd, task.payload.path) : task.payload.path,
       },
     }))
     .sort((a, b) => stableStringify(a).localeCompare(stableStringify(b)))
@@ -454,6 +457,32 @@ function resolveDependencyPath(cwd: string, targetPath: string) {
   }
 
   return path.isAbsolute(targetPath) ? targetPath : path.resolve(cwd, targetPath);
+}
+
+function normalizeDependencyPath(cwd: string, targetPath: string) {
+  if (targetPath.startsWith("http://") || targetPath.startsWith("https://")) {
+    return targetPath;
+  }
+
+  const absolutePath = targetPath.startsWith("file:")
+    ? fileURLToPath(targetPath)
+    : path.isAbsolute(targetPath)
+    ? targetPath
+    : path.resolve(cwd, targetPath);
+  const relativePath = path.relative(cwd, absolutePath);
+
+  if (!relativePath || relativePath === ".") {
+    return ".";
+  }
+
+  if (
+    relativePath === ".." || relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    return absolutePath;
+  }
+
+  return relativePath;
 }
 
 function resolveImportedModulePath(modulePath: string, specifier: string) {

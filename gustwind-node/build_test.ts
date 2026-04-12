@@ -450,7 +450,23 @@ export const plugin = {
       await readFile(path.join(outputDirectory, "markers", "docs.txt"), "utf8"),
       "1",
     );
-    await readFile(path.join(outputDirectory, CACHE_MANIFEST_PATH), "utf8");
+    const firstManifest = JSON.parse(
+      await readFile(path.join(outputDirectory, CACHE_MANIFEST_PATH), "utf8"),
+    );
+
+    assert.equal(firstManifest.schemaVersion, 3);
+    assert.deepEqual(
+      firstManifest.routes["/"].dependencyTasks.map(({ payload }: { payload: { path: string } }) =>
+        payload.path
+      ),
+      ["home.txt"],
+    );
+    assert.deepEqual(
+      firstManifest.routes["/docs/"].dependencyTasks.map(({ payload }: { payload: { path: string } }) =>
+        payload.path
+      ),
+      ["docs.txt"],
+    );
 
     await writeFile(path.join(cwd, "docs.txt"), "docs v2\n");
 
@@ -589,6 +605,21 @@ export const plugin = {
     assert.match(
       await readFile(path.join(outputDirectory, "docs", "index.html"), "utf8"),
       /docs v1/,
+    );
+    const firstManifest = JSON.parse(
+      await readFile(path.join(outputDirectory, CACHE_MANIFEST_PATH), "utf8"),
+    );
+
+    assert.equal(firstManifest.schemaVersion, 3);
+    assert.deepEqual(
+      firstManifest.routes["/docs/"].dependencyTasks.map(({ payload }: { payload: { path: string } }) =>
+        payload.path
+      ),
+      [
+        "components/DocsLayout.html",
+        "components/DocsOnly.html",
+        "components/SharedShell.html",
+      ],
     );
 
     await writeFile(
