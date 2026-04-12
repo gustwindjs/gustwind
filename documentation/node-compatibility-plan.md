@@ -253,9 +253,9 @@ The next shared-test cleanup step is now implemented:
 
 - the HTMLisp async/sync render suites, HTMLisp utility tests, and HTMLisp HTML parser tests now run under `node --test`
 - the default quality gate now exercises the migrated shared tests through the Node test runner
-- the remaining LaTeX parser suites are now isolated as a separate legacy Deno test path instead of being mixed into the main shared test workflow
+- the obsolete LaTeX parser subtree has now been removed instead of being kept as an isolated Deno-only test island
 
-This means the remaining Deno-based test surface is now mostly limited to the isolated LaTeX parser area plus the separate Deno-based typecheck path, not the general HTMLisp/render test workflow.
+This means the remaining Deno-based test surface has been removed from the repository. The only meaningful Deno dependency left is the separate repository-wide typecheck path.
 
 The next packaging-helper cleanup step is now implemented:
 
@@ -263,13 +263,13 @@ The next packaging-helper cleanup step is now implemented:
 - the old Deno-based npm packaging scripts have been removed
 - contributor publishing notes now point at the Node packaging path without caveating Deno internals
 
-This means the remaining Deno surface no longer includes the npm packaging workflow. It is now limited to the shared typecheck path and the isolated legacy LaTeX test area.
+This means the remaining Deno surface no longer includes the npm packaging workflow. It is now limited to the shared typecheck path.
 
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup
 
-- Deno-based tests and checks that still run through `deno test` and `deno check`, now mainly the isolated LaTeX parser suites plus the shared typecheck path
+- Deno-based checks that still run through `deno check`, now mainly the shared typecheck path
 - legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
 - optional or inactive code paths that still describe Gustwind as Deno-first
 
@@ -359,7 +359,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Repository-level command entrypoints now live in `package.json` instead of a separate `deno.json` task file.
 - The Node-specific render/build tests now run under `node --test` instead of the Deno test runner.
 - The router utility tests now run under `node --test` instead of the Deno test runner as well.
-- The general HTMLisp render/parser test suites now mostly run under `node --test` as well, with the isolated LaTeX parser suites left on Deno for now.
+- The general HTMLisp render/parser test suites now run under `node --test`.
 - The npm package build helpers now run through a Node/esbuild path instead of `dnt`.
 - The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
@@ -406,7 +406,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Everyday repository commands now route through `npm run` rather than `deno task`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - removing the remaining Deno-based LaTeX tests/checks and the Deno-based shared typecheck path
+  - replacing the remaining Deno-based shared typecheck path
 
 ## Recommended implementation order
 
