@@ -13,5 +13,5 @@ There's [a good overview of Netlify edge functions](https://docs.netlify.com/edg
 ## Publishing to npm
 
 1. `npm run build:npm:gustwind -- <VERSION>` where `VERSION` is `0.1.0` for example
-2. `cd gustwind/npm`
+2. `cd gustwind-node/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)
