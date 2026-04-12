@@ -25,7 +25,7 @@ declare global {
   }
 }
 
-if (!("Deno" in globalThis)) {
+if (typeof window !== "undefined") {
   console.log("Hello from the templating playground");
 
   window.compileHTML = compileHTML;

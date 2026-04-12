@@ -241,6 +241,14 @@ The next lockfile cleanup step is now implemented:
 
 This means npm lockfiles now own dependency pinning for the active workflow, while the shrinking Deno surface no longer leaves behind repository lockfile noise.
 
+The next residual-copy cleanup step is now implemented:
+
+- the unused filesystem cache helper that still depended on `Deno.*` has been removed
+- dead commented editor/runtime code that still referenced `Deno.*` has been removed from the active renderer path
+- remaining runtime/documentation wording now prefers runtime-neutral or Node-first phrasing over stale Deno-specific references
+
+This means more of the remaining Deno surface is now confined to deliberate internal tooling and shared legacy tests instead of stray dead code or outdated copy in active modules.
+
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup

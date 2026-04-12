@@ -58,49 +58,7 @@ const plugin: Plugin<{
 
         return { htmlLoader, components, componentUtilities, globalUtilities };
       },
-      sendMessages: async ({ send, pluginContext }) => {
-        // TODO: Redo/restore this portion
-        /*
-        const editorExists = await send("gustwind-editor-plugin", {
-          type: "ping",
-          payload: undefined,
-        });
-
-        if (!editorExists) {
-          return;
-        }
-
-        const componentFilePath = await Deno.makeTempFile({ suffix: ".js" });
-        const componentUtilitiesSource = generateComponentUtilitiesSource(
-          pluginContext.components,
-        );
-        await Deno.writeTextFile(componentFilePath, componentUtilitiesSource);
-
-        if (globalUtilitiesPath) {
-          send("gustwind-script-plugin", {
-            type: "addScripts",
-            payload: [{
-              isExternal: true,
-              localPath: globalUtilitiesPath,
-              remotePath: globalUtilitiesPath,
-              name: "globalUtilities.js",
-              externals: [],
-            }],
-          });
-        }
-
-        send("gustwind-script-plugin", {
-          type: "addScripts",
-          payload: [{
-            isExternal: true,
-            localPath: componentFilePath,
-            remotePath: componentFilePath,
-            name: "componentUtilities.js",
-            externals: [],
-          }],
-        });
-        */
-      },
+      sendMessages: async () => undefined,
       prepareContext: async ({ url, route, send }) => {
         const meta = await send("gustwind-meta-plugin", {
           type: "getMeta",
@@ -141,23 +99,6 @@ const plugin: Plugin<{
       renderLayout: ({ matchRoute, route, context, url, pluginContext }) => {
         const { components, componentUtilities, globalUtilities } =
           pluginContext;
-
-        // TODO: Figure out if this needs to be restored
-        /*
-        const editorExists = await send("gustwind-editor-plugin", {
-          type: "ping",
-          payload: undefined,
-        });
-
-
-        if (editorExists) {
-          // TODO: Consider caching this (html + xml separately) to speed things up
-          componentsLookup = attachIdsToComponents(
-            url,
-            componentsLookup,
-          );
-        }
-        */
 
         const layout = components[route.layout];
 

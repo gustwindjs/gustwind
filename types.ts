@@ -234,8 +234,7 @@ type SendMessageEvent =
     type: "fileChanged";
     payload: {
       path: string;
-      // Duplicated from Deno type to avoid shimming with dnt
-      // event: Deno.FsEvent;
+      // Keep the event shape inline so shared types do not depend on a runtime-specific fs event type.
       event: {
         /** The kind/type of the file system event. */
         kind:

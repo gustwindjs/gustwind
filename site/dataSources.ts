@@ -61,9 +61,6 @@ function init({ load, render, renderSync }: DataSourcesApi) {
     throw new Error(`path ${path} did not contain a headmatter`);
   }
 
-  // Interestingly enough caching to fs doesn't result in a speedup
-  // TODO: Investigate why not
-  // const fs = await fsCache(path.join(Deno.cwd(), ".gustwind"));
   const memo = getMemo(new Map());
   function parseMarkdown(lines: string, o?: { skipFirstLine: boolean }) {
     const input = o?.skipFirstLine
