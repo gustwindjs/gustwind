@@ -8,7 +8,7 @@ import highlightJSON from "highlight.js/lib/languages/json";
 import highlightTS from "highlight.js/lib/languages/typescript";
 import highlightXML from "highlight.js/lib/languages/xml";
 import highlightYAML from "highlight.js/lib/languages/yaml";
-import { isRawHtml } from "../../htmlisp/utilities/runtime.ts";
+import { escapeHTML, isRawHtml } from "../../htmlisp/utilities/runtime.ts";
 
 highlight.registerLanguage("bash", highlightBash);
 highlight.registerLanguage("html", highlightXML);
@@ -77,16 +77,9 @@ function getTransformMarkdown({ load, renderSync }: DataSourcesApi) {
 
     const renderer: RendererObject<string, string> = {
       code(token: Tokens.Code): string {
-        let code = token.text;
-        const lang = token.lang;
-
-        if (lang && highlight.getLanguage(lang)) {
-          code = highlight.highlight(code, { language: lang }).value;
-        }
-
         return renderCodeBlock({
-          code,
-          lang,
+          code: token.text,
+          lang: token.lang,
           // @ts-expect-error Marked keeps renderer options on `this`
           langPrefix: this.options.langPrefix || "",
         });
@@ -177,7 +170,10 @@ function renderCodeBlock(
     langPrefix: string;
   },
 ) {
-  const normalizedCode = code.replace(/\n$/, "") + "\n";
+  const renderedCode = lang && highlight.getLanguage(lang)
+    ? highlight.highlight(code, { language: lang }).value
+    : escapeHTML(code);
+  const normalizedCode = renderedCode.replace(/\n$/, "") + "\n";
 
   if (!lang) {
     return "<pre><code>" +

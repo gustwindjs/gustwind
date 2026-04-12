@@ -8,6 +8,7 @@ Gustwind is a Node.js-powered website creator that allows component-oriented dev
 * **Data sources** define how information is brought to a site
 * **Route definition** binds it all together and allows connecting data sources to specific routes
 * **Plugin system** allows replacing any part of the system to fit custom requirements
+* **Generated HTML validation** catches malformed HTML in built output before deployment
 
 Please see the documentation to learn more about the concepts.
 
@@ -26,6 +27,10 @@ It's possible to customize the input formats and it can load data from asynchron
 ## Server-Side Rendering (SSR)
 
 Although Gustwind was designed mainly with Static Site Generation (SSG) in mind, portions of it can be used in a server environment. There's for example a simplified version of the router designed for this purpose, and the default templating solution works both in server and client as it is light by design.
+
+## HTML validation
+
+Gustwind now validates generated HTML as part of its framework checks. Run `npm run validate:html -- ./build` to validate a built site directly, or use `npm run build:node:check` to build and validate output in one step. The default `quality:gate` flow includes this validation automatically.
 
 ## Example sites
 
