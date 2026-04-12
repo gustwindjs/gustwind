@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "publisher": "local",
   "private": true,
+  "type": "module",
   "engines": {
     "vscode": "^1.85.0"
   },

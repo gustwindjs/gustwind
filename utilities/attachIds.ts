@@ -1,4 +1,4 @@
-import { nanoid } from "https://cdn.skypack.dev/nanoid@5.0.2?min";
+import { nanoid } from "nanoid";
 // import { isObject } from "./functional.ts";
 import type { Element } from "../htmlisp/types.ts";
 

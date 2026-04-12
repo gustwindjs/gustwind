@@ -25,9 +25,7 @@ const plugin: Plugin<{
       const { default: tailwindSetup } = await import(tailwindSetupPath);
 
       const plugins = [
-        // deno-lint-ignore no-explicit-any
         tailwindCss(tailwindSetup) as any,
-        // deno-lint-ignore no-explicit-any
         autoprefixer({}) as any,
         // TODO: Consider allowing customizing autoprefixer
         // autoprefixer(options.autoprefixer) as any,

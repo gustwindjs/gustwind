@@ -5,7 +5,6 @@ type Utilities =
     string,
     (
       this: { context: Context; props: Context; local?: Context },
-      // deno-lint-ignore no-explicit-any
       ...args: any
     ) => unknown | Promise<unknown> | void
   >
@@ -19,7 +18,6 @@ type Utility = {
 };
 
 type Props = Record<string, string | undefined>;
-// deno-lint-ignore no-explicit-any
 type Attributes = Record<string, any>;
 type Category = { id: string; title: string; url: string };
 

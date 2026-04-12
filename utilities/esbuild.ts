@@ -1,4 +1,3 @@
-// deno-lint-ignore no-explicit-any
 type EsbuildBuild = (...args: any[]) => Promise<{ outputFiles?: { text: string }[] }>;
 type EsbuildStop = () => void;
 type EsbuildModule = { build: EsbuildBuild; stop: EsbuildStop };

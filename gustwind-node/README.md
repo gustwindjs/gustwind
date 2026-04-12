@@ -10,4 +10,4 @@ The Node path now includes:
 - a Vite-backed Node development server
 - a Node static server for built output directories
 
-The Node development path intentionally favors a simpler Vite full-reload workflow over preserving the older Deno watcher and websocket stack.
+The Node development path intentionally favors a simpler Vite full-reload workflow over preserving the older custom watcher and websocket stack.

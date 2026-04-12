@@ -265,15 +265,21 @@ The next packaging-helper cleanup step is now implemented:
 
 This means the remaining Deno surface no longer includes the npm packaging workflow. It is now limited to the shared typecheck path.
 
-## Main cleanup targets today
+The final toolchain-cleanup step is now implemented:
 
-### Remaining Deno-oriented cleanup
+- repository-wide typechecking now runs through a root `tsconfig.json` and `tsc --noEmit`
+- the old `deno check` path has been removed from the npm scripts
+- active runtime code no longer carries Deno-specific environment fallbacks or lint directives
 
-- Deno-based checks that still run through `deno check`, now mainly the shared typecheck path
-- legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
-- optional or inactive code paths that still describe Gustwind as Deno-first
+This means Deno is no longer required for the active runtime, development workflow, verification flow, or npm packaging path.
 
-These are no longer runtime blockers. They are cleanup targets on the way to removing Deno as a first-class concept from the project.
+## Migration status today
+
+### Node migration end state
+
+- the practical Node feature-parity target has been reached
+- the old Deno runtime, task runner, packaging helpers, and test runner paths have been removed
+- repository-level commands, docs, and package metadata now point at the Node implementation
 
 ### Remaining remote-import surface
 
@@ -403,10 +409,10 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Primary user-facing project copy now describes Gustwind as Node.js-powered instead of Deno-powered.
 - The legacy Deno CLI wrapper has now been removed as well.
 - Netlify's checked-in build configuration now uses the Node build directly as well.
-- Everyday repository commands now route through `npm run` rather than `deno task`.
+- Everyday repository commands now route through `npm run`.
+- Repository-wide typechecking now runs through `tsc` instead of `deno check`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - replacing the remaining Deno-based shared typecheck path
 
 ## Recommended implementation order
 

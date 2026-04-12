@@ -24,7 +24,7 @@
     "watch:test": "node --test --watch --test-concurrency=1 ./htmlisp/html-tests/*.ts ./htmlisp/html-tests-sync/*.ts ./htmlisp/utilities/*_test.ts ./htmlisp/parsers/htmlisp/*_test.ts",
     "serve": "npm run serve:node",
     "serve:node": "node ./gustwind-node/cli.ts --serve --input ./build --port 3000",
-    "typecheck:code": "deno check --no-lock --node-modules-dir=auto --allow-import $(rg --files -g '*.ts' | rg -v '^(e2e/|plugins/.*/compiled-scripts/)')",
+    "typecheck:code": "tsc --noEmit -p tsconfig.json",
     "typecheck:e2e": "npm --prefix e2e run typecheck",
     "typecheck": "npm run typecheck:code && npm run typecheck:e2e",
     "quality:gate": "npm run typecheck && npm run test:unit && npm run test:node:render && npm run test:node:router && npm run build:node:check && npm run test:node:dev && npm run test:node:serve && npm run test:e2e",
@@ -46,6 +46,7 @@
     "highlight.js": "11.11.1",
     "htm": "3.1.1",
     "marked": "16.4.0",
+    "nanoid": "3.3.11",
     "pagefind": "1.3.0",
     "postcss": "8.4.49",
     "sharp": "0.34.3",
@@ -56,7 +57,9 @@
   },
   "devDependencies": {
     "@netlify/functions": "2.4.0",
+    "@types/node": "25.6.0",
     "esbuild": "0.28.0",
+    "typescript": "6.0.2",
     "vite": "8.0.8",
     "wrangler": "4.80.0"
   }

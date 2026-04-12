@@ -9,7 +9,6 @@ async function applyUtility<
   value: U | unknown,
   utilities: US,
   context: C,
-  // deno-lint-ignore no-explicit-any
 ): Promise<any> {
   if (!utilities) {
     throw new Error("applyUtility - No utilities were provided");

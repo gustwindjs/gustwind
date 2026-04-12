@@ -18,7 +18,6 @@ function isUndefined(str?: unknown) {
   return typeof str == "undefined";
 }
 
-// deno-lint-ignore no-explicit-any
 const isObject = (a: any) =>
   a !== null && !Array.isArray(a) && typeof a === "object";
 
