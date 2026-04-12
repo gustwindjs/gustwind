@@ -23,6 +23,18 @@ test("homepage renders the hero, generated content, and primary navigation", asy
   );
 });
 
+test("homepage search loads on demand and returns indexed results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.locator("[data-pagefind-search] summary").click();
+  const input = page.getByPlaceholder("Search Gustwind");
+  await expect(input).toBeVisible();
+  await input.fill("Modes");
+
+  const result = page.locator("[data-pagefind-results]").getByRole("link", { name: /Modes/ }).first();
+  await expect(result).toHaveAttribute("href", "/modes/");
+});
+
 test("documentation route renders expanded markdown with sidebar actions", async ({ page }) => {
   await page.goto("/modes/");
 

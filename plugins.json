@@ -37,7 +37,9 @@
     },
     {
       "path": "./plugins/pagefind/mod.ts",
-      "options": {}
+      "options": {
+        "writeUiAssets": false
+      }
     },
     {
       "path": "./plugins/script/mod.ts",

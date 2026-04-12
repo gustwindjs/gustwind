@@ -1,11 +1,124 @@
-<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
-<script src="/pagefind/pagefind-ui.js"></script>
-<div id="search"></div>
-<script>
-  window.addEventListener("DOMContentLoaded", (event) => {
-    new PagefindUI({
-      element: "#search",
-      showSubResults: true,
+<details class="w-full max-w-xl group" data-pagefind-search>
+  <summary
+    class="list-none cursor-pointer rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-light text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:text-black"
+  >
+    Search the docs
+  </summary>
+  <div
+    class="mt-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-lg"
+  >
+    <label class="sr-only" for="pagefind-search-input">Search the docs</label>
+    <input
+      id="pagefind-search-input"
+      data-pagefind-input
+      class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-400"
+      type="search"
+      placeholder="Search Gustwind"
+      autocomplete="off"
+    />
+    <div class="pt-3 text-sm text-gray-500" data-pagefind-status>
+      Open search to load the index.
+    </div>
+    <div class="mt-3 flex flex-col gap-3" data-pagefind-results></div>
+  </div>
+</details>
+
+<script type="module">
+  const searchRoot = document.querySelector("[data-pagefind-search]");
+
+  if (searchRoot) {
+    const input = searchRoot.querySelector("[data-pagefind-input]");
+    const results = searchRoot.querySelector("[data-pagefind-results]");
+    const status = searchRoot.querySelector("[data-pagefind-status]");
+    let pagefindPromise;
+
+    searchRoot.addEventListener("toggle", () => {
+      if (searchRoot.open) {
+        void ensurePagefind();
+        input?.focus();
+      }
     });
-  });
+
+    input?.addEventListener("input", async (event) => {
+      const query = event.target instanceof HTMLInputElement
+        ? event.target.value.trim()
+        : "";
+
+      if (!query) {
+        setStatus("Type to search the site.");
+        renderResults([]);
+        return;
+      }
+
+      setStatus("Searching...");
+
+      try {
+        const pagefind = await ensurePagefind();
+        const search = pagefind.debouncedSearch
+          ? await pagefind.debouncedSearch(query)
+          : await pagefind.search(query);
+        const searchResults = search?.results || [];
+        const data = await Promise.all(
+          searchResults.slice(0, 6).map((result) => result.data()),
+        );
+
+        renderResults(data);
+        setStatus(
+          data.length
+            ? `${searchResults.length} result${searchResults.length === 1 ? "" : "s"}`
+            : "No results found.",
+        );
+      } catch (error) {
+        console.error("Failed to search with Pagefind", error);
+        setStatus("Search failed to load.");
+      }
+    });
+
+    async function ensurePagefind() {
+      if (!pagefindPromise) {
+        pagefindPromise = import("/pagefind/pagefind.js").then(async (pagefind) => {
+          await pagefind.options({
+            baseUrl: "/",
+            excerptLength: 18,
+          });
+
+          setStatus("Type to search the site.");
+          return pagefind;
+        });
+      }
+
+      return await pagefindPromise;
+    }
+
+    function renderResults(items) {
+      if (!results) {
+        return;
+      }
+
+      results.replaceChildren(
+        ...items.map((item) => {
+          const wrapper = document.createElement("a");
+          const title = document.createElement("strong");
+          const excerpt = document.createElement("div");
+
+          wrapper.href = item.url;
+          wrapper.className =
+            "block rounded-xl border border-gray-200 px-4 py-3 transition hover:border-emerald-300 hover:bg-emerald-50";
+          title.className = "block font-medium text-gray-900";
+          title.textContent = item.meta?.title || item.url;
+          excerpt.className = "mt-1 text-sm text-gray-600";
+          excerpt.innerHTML = item.excerpt || "";
+          wrapper.append(title, excerpt);
+
+          return wrapper;
+        }),
+      );
+    }
+
+    function setStatus(message) {
+      if (status) {
+        status.textContent = message;
+      }
+    }
+  }
 </script>

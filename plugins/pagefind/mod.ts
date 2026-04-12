@@ -2,14 +2,22 @@ import * as path from "node:path";
 import * as pagefind from "pagefind";
 import type { Plugin } from "../../types.ts";
 
-const plugin: Plugin<{ indexInDev: boolean }> = {
+const optionalUiFiles = new Set([
+  "pagefind-highlight.js",
+  "pagefind-modular-ui.css",
+  "pagefind-modular-ui.js",
+  "pagefind-ui.css",
+  "pagefind-ui.js",
+]);
+
+const plugin: Plugin<{ indexInDev: boolean; writeUiAssets?: boolean }> = {
   meta: {
     name: "gustwind-pagefind-plugin",
     description:
       "${name} implements side-wide search using PageFind underneath. Make sure to integrate the results with the <PageFind> component.",
   },
   async init(
-    { cwd, options: { indexInDev }, outputDirectory, mode },
+    { cwd, options: { indexInDev, writeUiAssets = true }, outputDirectory, mode },
   ) {
     let files: pagefind.IndexFile[] = [];
 
@@ -21,7 +29,7 @@ const plugin: Plugin<{ indexInDev: boolean }> = {
 
     return {
       sendMessages: ({ send }) => {
-        files.forEach(({ path: file }) =>
+        getEmittedFiles(files).forEach(({ path: file }) =>
           // TODO: Scope this to router plugins using prefixing (router-)
           // This needs a change at plugins.ts logic
           send("*", {
@@ -34,7 +42,7 @@ const plugin: Plugin<{ indexInDev: boolean }> = {
       finishBuild: async () => {
         const files = await indexBuild();
 
-        return files.map(({ path: file, content: data }) => ({
+        return getEmittedFiles(files).map(({ path: file, content: data }) => ({
           type: "writeFile",
           payload: {
             outputDirectory,
@@ -71,6 +79,14 @@ const plugin: Plugin<{ indexInDev: boolean }> = {
       const { files } = await index.getFiles();
 
       return files;
+    }
+
+    function getEmittedFiles(indexFiles: pagefind.IndexFile[]) {
+      return writeUiAssets
+        ? indexFiles
+        : indexFiles.filter(({ path: filePath }) =>
+          !optionalUiFiles.has(filePath)
+        );
     }
   },
 };
