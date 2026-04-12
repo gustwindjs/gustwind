@@ -61,13 +61,13 @@ Sample benchmark for this repository on April 12, 2026. These numbers are machin
 | Metric | Sample |
 | --- | ---: |
 | Routes built | 14 |
-| Total build time | 1787.611 ms |
-| Average route time | 106.608 ms |
-| p50 route time | 93.107 ms |
-| p95 route time | 205.933 ms |
-| Peak RSS memory | 755105792 bytes |
-| Fastest route | `/deployment/` in 87.208 ms |
-| Slowest route | `/` in 205.933 ms |
+| Total build time | 545.924 ms |
+| Average route time | 5.638 ms |
+| p50 route time | 3.196 ms |
+| p95 route time | 31.965 ms |
+| Peak RSS memory | 380.7 MB |
+| Fastest route | `/atom.xml/` in 0.637 ms |
+| Slowest route | `/` in 31.965 ms |
 
 ## Earlier related work
 
