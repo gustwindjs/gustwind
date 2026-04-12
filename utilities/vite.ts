@@ -15,6 +15,7 @@ type ClientAssetManifestChunk = {
 
 type ClientAssetBuildResult = {
   manifest: Record<string, ClientAssetManifestChunk>;
+  entryAssets: Record<string, { file: string; css: string[] }>;
   entryFiles: Record<string, string>;
 };
 
@@ -66,21 +67,24 @@ async function buildClientAssets(
   const manifest = JSON.parse(
     await readFile(path.join(outputDirectory, ".vite", "manifest.json"), "utf8"),
   ) as Record<string, ClientAssetManifestChunk>;
-  const entryFiles = Object.fromEntries(
+  const entryAssets = Object.fromEntries(
     Object.entries(absoluteEntries).map(([name, filePath]) => [
       name,
-      getEntryFile({
+      getEntryAsset({
         cwd,
         filePath,
         manifest,
       }),
     ]),
   );
+  const entryFiles = Object.fromEntries(
+    Object.entries(entryAssets).map(([name, asset]) => [name, asset.file]),
+  );
 
-  return { manifest, entryFiles };
+  return { manifest, entryAssets, entryFiles };
 }
 
-function getEntryFile(
+function getEntryAsset(
   {
     cwd,
     filePath,
@@ -95,7 +99,7 @@ function getEntryFile(
   const relativePath = normalizeManifestPath(path.relative(cwd, filePath));
   const chunk = manifest[normalizedAbsolutePath] || manifest[relativePath] ||
     Object.values(manifest).find(({ src, isEntry }) =>
-      Boolean(src) &&
+      typeof src === "string" &&
       isEntry &&
       (
         src === normalizedAbsolutePath ||
@@ -110,7 +114,10 @@ function getEntryFile(
     );
   }
 
-  return `/${normalizeManifestPath(chunk.file)}`;
+  return {
+    file: `/${normalizeManifestPath(chunk.file)}`,
+    css: (chunk.css || []).map((assetPath) => `/${normalizeManifestPath(assetPath)}`),
+  };
 }
 
 function normalizeManifestPath(filePath: string) {

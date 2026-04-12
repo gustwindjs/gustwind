@@ -5,6 +5,7 @@ import {
 } from "../../utilities/compileTypeScript.ts";
 import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
+import { buildClientAssets } from "../../utilities/vite.ts";
 
 const DEBUG = isDebugEnabled();
 
@@ -35,6 +36,8 @@ const plugin: Plugin<{
     options: { scripts: globalScripts = [], scriptsPath },
     outputDirectory,
   }) {
+    let builtEntryAssets: Record<string, { file: string; css: string[] }> = {};
+
     return {
       initPluginContext: async () => {
         const foundScripts = await loadScripts();
@@ -44,17 +47,30 @@ const plugin: Plugin<{
       prepareBuild: ({ pluginContext }) => {
         const { foundScripts, receivedScripts } = pluginContext;
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
+        const resolvedScripts = foundScripts.concat(
+          receivedScripts.map((
+            { name, localPath, remotePath, externals },
+          ) => ({
+            name,
+            path: isDevelopingLocally ? localPath : remotePath,
+            externals,
+          })),
+        );
+
+        if (mode === "production") {
+          return buildProductionScripts({
+            cwd,
+            mode,
+            outputDirectory,
+            scripts: resolvedScripts,
+            setBuiltEntryAssets(nextBuiltEntryAssets) {
+              builtEntryAssets = nextBuiltEntryAssets;
+            },
+          });
+        }
 
         return Promise.all(
-          foundScripts.concat(
-            receivedScripts.map((
-              { name, localPath, remotePath, externals },
-            ) => ({
-              name,
-              path: isDevelopingLocally ? localPath : remotePath,
-              externals,
-            })),
-          ).map((
+          resolvedScripts.map((
             { name, path: scriptPath, externals },
           ) =>
             writeScript({
@@ -83,20 +99,33 @@ const plugin: Plugin<{
           throw new Error("Route script is missing from the scripts directory");
         }
 
-        const scripts: { name: string; srcPrefix?: string }[] =
+        const scripts: { name: string; src?: string; srcPrefix?: string }[] =
           (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
             { name },
-          ) => ({ name })).concat(
+          ) => ({
+            name,
+            src: mode === "production"
+              ? builtEntryAssets[normalizeScriptName(name)]?.file
+              : undefined,
+          })).concat(
             routeScripts.map(({ name, ...rest }) => ({
-              name: `${name}.js`,
+              name: `${name}.ts`,
+              src: mode === "production"
+                ? builtEntryAssets[name]?.file
+                : undefined,
               ...rest,
             })),
           );
-        const scriptTags = scripts.map(({ name, srcPrefix, ...rest }) => ({
+        const scriptTags = scripts.map(({ name, src, srcPrefix, ...rest }) => ({
           type: "module",
           ...rest,
-          src: (srcPrefix || "/") + name.replace(".ts", ".js"),
+          src: src || (srcPrefix || "/") + name.replace(".ts", ".js"),
         }));
+        const styles = Array.from(
+          new Set(
+            scripts.flatMap(({ name }) => builtEntryAssets[normalizeScriptName(name)]?.css || []),
+          ),
+        ).map((href) => ({ href, rel: "stylesheet" }));
 
         scripts.forEach(({ name: path }) =>
           // TODO: Scope to router- instead
@@ -107,6 +136,7 @@ const plugin: Plugin<{
         // Global scripts don't need processing since they are in the right format already
         return {
           context: {
+            styles,
             scripts: globalScripts.concat(receivedGlobalScripts).concat(
               scriptTags,
             ),
@@ -178,6 +208,63 @@ const plugin: Plugin<{
     }
   },
 };
+
+async function buildProductionScripts(
+  {
+    cwd,
+    outputDirectory,
+    scripts,
+    setBuiltEntryAssets,
+  }: {
+    cwd: string;
+    mode: Mode;
+    outputDirectory: string;
+    scripts: { name: string; path: string; externals?: string[] }[];
+    setBuiltEntryAssets(
+      builtEntryAssets: Record<string, { file: string; css: string[] }>,
+    ): void;
+  },
+): Promise<BuildWorkerEvent[]> {
+  const localScripts = scripts.filter(({ path: scriptPath }) =>
+    !scriptPath.startsWith("http://") && !scriptPath.startsWith("https://")
+  );
+  const remoteScripts = scripts.filter(({ path: scriptPath }) =>
+    scriptPath.startsWith("http://") || scriptPath.startsWith("https://")
+  );
+
+  if (localScripts.length > 0) {
+    const builtAssets = await buildClientAssets({
+      cwd,
+      entries: Object.fromEntries(
+        localScripts.map(({ name, path: scriptPath }) => [
+          normalizeScriptName(name),
+          scriptPath,
+        ]),
+      ),
+      outputDirectory,
+    });
+
+    setBuiltEntryAssets(builtAssets.entryAssets);
+  } else {
+    setBuiltEntryAssets({});
+  }
+
+  return await Promise.all(
+    remoteScripts.map(({ name, path: scriptPath, externals }) =>
+      writeScript({
+        file: name.replace(".ts", ".js"),
+        scriptPath,
+        externals,
+        mode: "production",
+        outputDirectory,
+      })
+    ),
+  );
+}
+
+function normalizeScriptName(name: string) {
+  return name.endsWith(".ts") ? name.slice(0, -3) : name;
+}
 
 async function writeScript(
   { file, scriptPath, externals, mode, outputDirectory }: {
