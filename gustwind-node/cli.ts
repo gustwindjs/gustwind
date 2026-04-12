@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import process from "node:process";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { VERSION } from "../version.ts";
 import { buildNode } from "./build.ts";
 import { startDevServer } from "./dev.ts";
@@ -9,6 +9,8 @@ import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinitio
 import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 
 type CliArgs = {
+  benchmark: boolean;
+  benchmarkOutput: string;
   build: boolean;
   develop: boolean;
   help: boolean;
@@ -24,11 +26,14 @@ type CliArgs = {
 function usage() {
   console.log(`
 Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate]
+Benchmark: gustwind-node --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
 Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
 Validate: gustwind-node --validate [--input <directory>]
 
 Options:
+  -B, --benchmark      Builds the project and writes benchmark metrics as JSON.
+  --benchmark-output   Benchmark output path (default: ./benchmark-results.json).
   -b, --build          Builds the project.
   -d, --develop        Runs the Node development server.
   -s, --serve          Serves a static build directory.
@@ -50,7 +55,7 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
-  if (args.help || (!args.build && !args.develop && !args.serve && !args.validate)) {
+  if (args.help || (!args.benchmark && !args.build && !args.develop && !args.serve && !args.validate)) {
     usage();
     return 0;
   }
@@ -120,17 +125,34 @@ async function main(cliArgs: string[]): Promise<number> {
     cwd,
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
+    collectBenchmark: args.benchmark,
     validateOutput: args.validate,
   });
 
-  if (args.validate && buildResult) {
-    console.log(`Validated ${buildResult.filesValidated} HTML files in ${path.resolve(cwd, args.output)}.`);
+  if (args.validate && buildResult?.validation) {
+    console.log(`Validated ${buildResult.validation.filesValidated} HTML files in ${path.resolve(cwd, args.output)}.`);
+  }
+
+  if (args.benchmark && buildResult?.benchmark) {
+    const benchmarkOutputPath = path.resolve(cwd, args.benchmarkOutput);
+
+    await writeFile(
+      benchmarkOutputPath,
+      JSON.stringify(buildResult.benchmark, null, 2) + "\n",
+    );
+    console.log(
+      `Benchmarked ${buildResult.benchmark.routesBuilt} routes in ${
+        buildResult.benchmark.totalDurationMs
+      }ms. Results written to ${benchmarkOutputPath}.`,
+    );
   }
 
   return 0;
 }
 function parseArgs(cliArgs: string[]): CliArgs {
   const ret: CliArgs = {
+    benchmark: false,
+    benchmarkOutput: "./benchmark-results.json",
     build: false,
     develop: false,
     help: false,
@@ -150,6 +172,11 @@ function parseArgs(cliArgs: string[]): CliArgs {
     switch (arg) {
       case "-b":
       case "--build":
+        ret.build = true;
+        break;
+      case "-B":
+      case "--benchmark":
+        ret.benchmark = true;
         ret.build = true;
         break;
       case "-d":
@@ -197,6 +224,13 @@ function parseArgs(cliArgs: string[]): CliArgs {
           throw new Error("Missing output directory");
         }
         ret.output = next;
+        index++;
+        break;
+      case "--benchmark-output":
+        if (!next) {
+          throw new Error("Missing benchmark output path");
+        }
+        ret.benchmarkOutput = next;
         index++;
         break;
       case "-P":

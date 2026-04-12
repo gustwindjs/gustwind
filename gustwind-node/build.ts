@@ -14,23 +14,31 @@ import {
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initNodeLoadApi, stopModuleBundler } from "../load-adapters/node.ts";
+import { createBuildBenchmark } from "../utilities/buildBenchmark.ts";
 import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import type { BuildWorkerEvent, PluginOptions, Route, Tasks } from "../types.ts";
+import type { BuildBenchmark } from "../utilities/buildBenchmark.ts";
 
 const DEBUG = isDebugEnabled();
+type BuildNodeResult = {
+  benchmark?: BuildBenchmark;
+  validation?: Awaited<ReturnType<typeof validateHtmlDirectory>>;
+};
 
 async function buildNode(
-  { cwd, outputDirectory, pluginDefinitions, validateOutput = false }: {
+  { cwd, outputDirectory, pluginDefinitions, validateOutput = false, collectBenchmark = false }: {
     cwd: string;
     outputDirectory: string;
     pluginDefinitions: PluginOptions[];
     validateOutput?: boolean;
+    collectBenchmark?: boolean;
   },
-) {
+): Promise<BuildNodeResult> {
   await rm(outputDirectory, { recursive: true, force: true });
   await mkdir(outputDirectory, { recursive: true });
+  const benchmark = collectBenchmark ? createBuildBenchmark(outputDirectory) : undefined;
 
   const { plugins, router } = await importPlugins({
     cwd,
@@ -49,6 +57,7 @@ async function buildNode(
     }
 
     await runTaskQueue({
+      benchmark,
       router,
       plugins,
       tasks: prepareTasks
@@ -68,6 +77,7 @@ async function buildNode(
     });
 
     await runTaskQueue({
+      benchmark,
       router,
       plugins,
       tasks: await finishPlugins(plugins),
@@ -75,9 +85,12 @@ async function buildNode(
 
     await cleanUpPlugins(plugins, routes);
 
-    if (validateOutput) {
-      return await validateHtmlDirectory(outputDirectory);
-    }
+    const validation = validateOutput
+      ? await validateHtmlDirectory(outputDirectory)
+      : undefined;
+    const benchmarkResult = benchmark?.finish();
+
+    return { benchmark: benchmarkResult, validation };
   } finally {
     await stopModuleBundler();
   }
@@ -85,10 +98,12 @@ async function buildNode(
 
 async function runTaskQueue(
   {
+    benchmark,
     router,
     plugins,
     tasks,
   }: {
+    benchmark?: ReturnType<typeof createBuildBenchmark>;
     router: {
       matchRoute(url: string): Promise<Route | undefined>;
     };
@@ -106,9 +121,11 @@ async function runTaskQueue(
     }
 
     DEBUG && console.log("node build - running task", task.type);
+    benchmark?.markTaskProcessed();
 
     switch (task.type) {
       case "build": {
+        const routeStartTime = performance.now();
         const matchedRoute = await router.matchRoute(task.payload.url);
 
         if (!matchedRoute) {
@@ -127,9 +144,16 @@ async function runTaskQueue(
         });
 
         queue.push(...routeTasks);
-        await writeRenderedPage({
+        const writeResult = await writeRenderedPage({
           dir: task.payload.dir,
           markup,
+          url: task.payload.url,
+        });
+        benchmark?.recordRoute({
+          bytesWritten: writeResult.bytesWritten,
+          durationMs: performance.now() - routeStartTime,
+          memoryRssBytes: process.memoryUsage().rss,
+          outputPath: writeResult.outputPath,
           url: task.payload.url,
         });
         break;
@@ -196,11 +220,22 @@ async function writeRenderedPage(
       : stripVoidElementClosers(markup);
     await mkdir(path.dirname(dir), { recursive: true });
     await writeFile(dir, output);
-    return;
+    return {
+      bytesWritten: Buffer.byteLength(output),
+      outputPath: dir,
+    };
   }
 
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, "index.html"), stripVoidElementClosers(markup));
+  const outputPath = path.join(dir, "index.html");
+  const output = stripVoidElementClosers(markup);
+  await writeFile(outputPath, output);
+
+  return {
+    bytesWritten: Buffer.byteLength(output),
+    outputPath,
+  };
 }
 
 export { buildNode };
+export type { BuildBenchmark, BuildNodeResult };

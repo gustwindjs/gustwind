@@ -215,3 +215,4 @@ export {
   validateHtmlDirectory,
   validateHtmlDocument,
 };
+export type { BuildBenchmark, BuildNodeResult } from "./build.ts";

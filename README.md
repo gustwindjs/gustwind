@@ -46,7 +46,24 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 
 ## Performance
 
-In my experience, Gustwind is somewhat performant although I haven't benchmarked it. The main factors contributing to speed are its parallelized build process and light rendering engine. There are still ways to push it further by implementing techniques, like incremental compilation to compile only pages affected by a given change. The underlying architecture has been designed with advanced features in mind, so although they aren't trivial to implement, they aren't impossible if there is time and interest.
+Gustwind can now emit structured build benchmark data through its Node CLI. Run `gustwind-node --benchmark` or `npm run benchmark:build` to build the site and write `benchmark-results.json` with total wall-clock build time, route count, per-route timings, percentile timings, and peak RSS memory usage.
+
+The same metrics are available through `buildNode({ collectBenchmark: true, ... })` in the published Node API, so integrations can capture benchmark data without shelling out.
+
+That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
+
+Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
+
+| Metric | Sample |
+| --- | ---: |
+| Routes built | 14 |
+| Total build time | 1787.611 ms |
+| Average route time | 106.608 ms |
+| p50 route time | 93.107 ms |
+| p95 route time | 205.933 ms |
+| Peak RSS memory | 755105792 bytes |
+| Fastest route | `/deployment/` in 87.208 ms |
+| Slowest route | `/` in 205.933 ms |
 
 ## Earlier related work
 
