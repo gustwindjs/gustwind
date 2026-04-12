@@ -257,12 +257,19 @@ The next shared-test cleanup step is now implemented:
 
 This means the remaining Deno-based test surface is now mostly limited to the isolated LaTeX parser area plus the separate Deno-based typecheck path, not the general HTMLisp/render test workflow.
 
+The next packaging-helper cleanup step is now implemented:
+
+- npm package build scripts now run through a Node/esbuild packager instead of the old Deno/`dnt` helpers
+- the old Deno-based npm packaging scripts have been removed
+- contributor publishing notes now point at the Node packaging path without caveating Deno internals
+
+This means the remaining Deno surface no longer includes the npm packaging workflow. It is now limited to the shared typecheck path and the isolated legacy LaTeX test area.
+
 ## Main cleanup targets today
 
 ### Remaining Deno-oriented cleanup
 
 - Deno-based tests and checks that still run through `deno test` and `deno check`, now mainly the isolated LaTeX parser suites plus the shared typecheck path
-- Deno-based packaging helpers that still run through `dnt`
 - legacy contributor notes and helper scripts that still mention Deno-specific publishing or task flows
 - optional or inactive code paths that still describe Gustwind as Deno-first
 
@@ -353,6 +360,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - The Node-specific render/build tests now run under `node --test` instead of the Deno test runner.
 - The router utility tests now run under `node --test` instead of the Deno test runner as well.
 - The general HTMLisp render/parser test suites now mostly run under `node --test` as well, with the isolated LaTeX parser suites left on Deno for now.
+- The npm package build helpers now run through a Node/esbuild path instead of `dnt`.
 - The package-root runtime exports now point to the Node API surface.
 - The quality gate now verifies that the Node CLI can build the repository.
 
@@ -398,7 +406,7 @@ The design should prefer Node implementations and shared interfaces. Deno-specif
 - Everyday repository commands now route through `npm run` rather than `deno task`.
 - Remaining work is mostly:
   - improving reload precision beyond full-page refreshes
-  - removing the remaining Deno-based LaTeX tests/checks and packaging helpers that are no longer needed
+  - removing the remaining Deno-based LaTeX tests/checks and the Deno-based shared typecheck path
 
 ## Recommended implementation order
 
