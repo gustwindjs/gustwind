@@ -5,6 +5,7 @@ import * as path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { LoadApi, PluginParameters, Tasks } from "../types.ts";
 import { getEsbuild, stopEsbuild } from "../utilities/esbuild.ts";
+import { recordTask } from "../utilities/taskLogContext.ts";
 
 function initLoadApi(tasks: Tasks): LoadApi {
   return initLoadApiWithOptions(tasks, { bundleMode: "auto" });
@@ -20,7 +21,7 @@ function initLoadApiWithOptions(
 ): LoadApi {
   return {
     async dir({ path: directoryPath, extension, recursive, type }) {
-      tasks.push({
+      recordTask(tasks, {
         type: "listDirectory",
         payload: { path: directoryPath, type },
       });
@@ -32,17 +33,17 @@ function initLoadApiWithOptions(
       });
     },
     async json<T>(payload: Parameters<PluginParameters["load"]["json"]>[0]) {
-      tasks.push({ type: "loadJSON", payload });
+      recordTask(tasks, { type: "loadJSON", payload });
 
       return JSON.parse(await readTextFile(payload.path)) as T;
     },
     async module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
-      tasks.push({ type: "loadModule", payload });
+      recordTask(tasks, { type: "loadModule", payload });
 
       return await importModule<T>(payload.path, options);
     },
     async textFile(filePath: string) {
-      tasks.push({
+      recordTask(tasks, {
         type: "readTextFile",
         payload: { path: filePath, type: "" },
       });
@@ -50,7 +51,7 @@ function initLoadApiWithOptions(
       return await readTextFile(filePath);
     },
     textFileSync(filePath: string) {
-      tasks.push({
+      recordTask(tasks, {
         type: "readTextFile",
         payload: { path: filePath, type: "" },
       });

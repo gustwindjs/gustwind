@@ -54,6 +54,8 @@ Production builds also reuse prior output by default. Each build now writes its 
 
 When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. The cache now tracks layout and component dependencies separately, so changing a component only invalidates the routes that actually render through it instead of forcing a whole-site rebuild. Use `gustwind-node --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind-node --build --no-incremental` if you want to force a fully fresh rebuild.
 
+Production builds also render independent routes with bounded concurrency, so total build time measures end-to-end wall-clock time while individual route timings can overlap.
+
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 
 Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
@@ -61,13 +63,13 @@ Sample benchmark for this repository on April 12, 2026. These numbers are machin
 | Metric | Sample |
 | --- | ---: |
 | Routes built | 14 |
-| Total build time | 545.924 ms |
-| Average route time | 5.638 ms |
-| p50 route time | 3.196 ms |
-| p95 route time | 31.965 ms |
-| Peak RSS memory | 380.7 MB |
-| Fastest route | `/atom.xml/` in 0.637 ms |
-| Slowest route | `/` in 31.965 ms |
+| Total build time | 254.432 ms |
+| Average route time | 32.799 ms |
+| p50 route time | 24.789 ms |
+| p95 route time | 64.920 ms |
+| Peak RSS memory | 196.4 MB |
+| Fastest route | `/routing/` in 10.952 ms |
+| Slowest route | `/blog/more/` in 64.920 ms |
 
 ## Earlier related work
 

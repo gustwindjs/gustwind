@@ -2,6 +2,7 @@ import * as path from "node:path";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { performance } from "node:perf_hooks";
 import test from "node:test";
 import { buildNode } from "./build.ts";
 import { CACHE_MANIFEST_PATH } from "../utilities/incrementalBuildCache.ts";
@@ -436,6 +437,7 @@ export const plugin = {
       cwd,
       outputDirectory,
       pluginDefinitions,
+      routeConcurrency: 1,
     });
 
     assert.equal(firstBuild.cacheHits, 0);
@@ -457,6 +459,7 @@ export const plugin = {
       cacheFrom: outputDirectory,
       outputDirectory: secondOutputDirectory,
       pluginDefinitions,
+      routeConcurrency: 1,
     });
 
     assert.equal(secondBuild.cacheHits, 1);
@@ -574,6 +577,7 @@ export const plugin = {
       cwd,
       outputDirectory,
       pluginDefinitions,
+      routeConcurrency: 1,
     });
 
     assert.equal(firstBuild.cacheHits, 0);
@@ -597,6 +601,7 @@ export const plugin = {
       cacheFrom: outputDirectory,
       outputDirectory: secondOutputDirectory,
       pluginDefinitions,
+      routeConcurrency: 1,
     });
 
     assert.equal(secondBuild.cacheHits, 1);
@@ -610,6 +615,119 @@ export const plugin = {
       /docs v2/,
     );
     await readFile(path.join(secondOutputDirectory, CACHE_MANIFEST_PATH), "utf8");
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("gustwind-node builds independent routes faster with route concurrency", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-parallel-"));
+
+  try {
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies multiple routes for concurrency testing.",
+  },
+  init() {
+    const routes = {
+      "/": { layout: "Page", context: { message: "home" } },
+      docs: { layout: "Page", context: { message: "docs" } },
+      blog: { layout: "Page", context: { message: "blog" } },
+      about: { layout: "Page", context: { message: "about" } },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+
+        if (url === "/docs/") {
+          return routes.docs;
+        }
+
+        if (url === "/blog/") {
+          return routes.blog;
+        }
+
+        if (url === "/about/") {
+          return routes.about;
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Adds predictable async route render delay for concurrency testing.",
+  },
+  init() {
+    return {
+      async renderLayout({ context }) {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+
+        return \`<html><body><p>\${context.message}</p></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    const pluginDefinitions = [
+      { path: "./router-plugin.ts", options: {}, module: undefined as never },
+      { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+    ];
+
+    await buildNode({
+      cwd,
+      incremental: false,
+      outputDirectory: path.join(cwd, "warmup"),
+      pluginDefinitions,
+      routeConcurrency: 4,
+    });
+
+    const sequentialStart = performance.now();
+    await buildNode({
+      cwd,
+      incremental: false,
+      outputDirectory: path.join(cwd, "sequential"),
+      pluginDefinitions,
+      routeConcurrency: 1,
+    });
+    const sequentialDuration = performance.now() - sequentialStart;
+
+    const parallelStart = performance.now();
+    await buildNode({
+      cwd,
+      incremental: false,
+      outputDirectory: path.join(cwd, "parallel"),
+      pluginDefinitions,
+      routeConcurrency: 4,
+    });
+    const parallelDuration = performance.now() - parallelStart;
+
+    assert.ok(
+      parallelDuration < sequentialDuration * 0.75,
+      `expected parallel build (${parallelDuration} ms) to improve over sequential build (${sequentialDuration} ms)`,
+    );
+    assert.ok(
+      parallelDuration < sequentialDuration - 120,
+      `expected parallel build (${parallelDuration} ms) to save substantial time over sequential build (${sequentialDuration} ms)`,
+    );
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }
