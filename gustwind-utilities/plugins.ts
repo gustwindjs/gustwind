@@ -129,7 +129,7 @@ async function importPlugins(
     },
   };
 
-  return { plugins: loadedPluginDefinitions, router };
+  return { initialTasks, plugins: loadedPluginDefinitions, router };
 }
 
 async function loadPluginModule(
@@ -202,6 +202,7 @@ async function importPlugin(
       meta: pluginModule.meta,
       api,
       context: api.initPluginContext ? await api.initPluginContext() : {},
+      tasks,
     },
     tasks,
   };

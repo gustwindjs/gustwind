@@ -12,9 +12,11 @@ type CliArgs = {
   benchmark: boolean;
   benchmarkOutput: string;
   build: boolean;
+  cacheFrom: string;
   develop: boolean;
   help: boolean;
   input: string;
+  incremental: boolean;
   output: string;
   port: number;
   plugins: string;
@@ -25,7 +27,7 @@ type CliArgs = {
 
 function usage() {
   console.log(`
-Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate]
+Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental]
 Benchmark: gustwind-node --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
 Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
@@ -35,9 +37,11 @@ Options:
   -B, --benchmark      Builds the project and writes benchmark metrics as JSON.
   --benchmark-output   Benchmark output path (default: ./benchmark-results.json).
   -b, --build          Builds the project.
+  --cache-from         Previous build directory or published site URL to reuse cached route output from (default: output directory).
   -d, --develop        Runs the Node development server.
   -s, --serve          Serves a static build directory.
   -i, --input          Input directory for --serve (default: ./build).
+  --no-incremental     Disables incremental route reuse for --build.
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
@@ -123,14 +127,28 @@ async function main(cliArgs: string[]): Promise<number> {
   const evaluatedPluginsDefinition = await readPluginDefinitions();
   const buildResult = await buildNode({
     cwd,
+    cacheFrom: args.cacheFrom || args.output,
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
     collectBenchmark: args.benchmark,
+    incremental: args.benchmark ? false : args.incremental,
     validateOutput: args.validate,
   });
 
   if (args.validate && buildResult?.validation) {
     console.log(`Validated ${buildResult.validation.filesValidated} HTML files in ${path.resolve(cwd, args.output)}.`);
+  }
+
+  if (args.build && !args.benchmark && typeof buildResult?.routesBuilt === "number") {
+    if (args.incremental) {
+      console.log(
+        `Incremental build reused ${buildResult.cacheHits || 0} routes and rebuilt ${
+          buildResult.routesBuilt
+        }.`,
+      );
+    } else {
+      console.log(`Full build rebuilt ${buildResult.routesBuilt} routes.`);
+    }
   }
 
   if (args.benchmark && buildResult?.benchmark) {
@@ -154,9 +172,11 @@ function parseArgs(cliArgs: string[]): CliArgs {
     benchmark: false,
     benchmarkOutput: "./benchmark-results.json",
     build: false,
+    cacheFrom: "",
     develop: false,
     help: false,
     input: "./build",
+    incremental: true,
     output: "./build",
     port: 3000,
     plugins: "plugins.json",
@@ -179,6 +199,13 @@ function parseArgs(cliArgs: string[]): CliArgs {
         ret.benchmark = true;
         ret.build = true;
         break;
+      case "--cache-from":
+        if (!next) {
+          throw new Error("Missing cache source");
+        }
+        ret.cacheFrom = next;
+        index++;
+        break;
       case "-d":
       case "--develop":
         ret.develop = true;
@@ -198,6 +225,9 @@ function parseArgs(cliArgs: string[]): CliArgs {
         }
         ret.input = next;
         index++;
+        break;
+      case "--no-incremental":
+        ret.incremental = false;
         break;
       case "-p":
       case "--port":

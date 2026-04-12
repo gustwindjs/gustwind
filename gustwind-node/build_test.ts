@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import { buildNode } from "./build.ts";
+import { CACHE_MANIFEST_PATH } from "../utilities/incrementalBuildCache.ts";
 
 test("gustwind-node builds a site from path-based plugins", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-"));
@@ -318,6 +319,165 @@ export const plugin = {
         }),
       /non-void-html-element-start-tag-with-trailing-solidus/,
     );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("gustwind-node incrementally rebuilds only routes affected by changed inputs", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-incremental-"));
+
+  try {
+    await writeFile(path.join(cwd, "home.txt"), "home\n");
+    await writeFile(path.join(cwd, "docs.txt"), "docs v1\n");
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+import * as path from "node:path";
+
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies routes with route-specific file dependencies.",
+  },
+  init({ cwd, load }) {
+    const routes = {
+      "/": { layout: "Page" },
+      docs: { layout: "Page" },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      async matchRoute(url) {
+        if (url === "/") {
+          return {
+            ...routes["/"],
+            context: {
+              marker: "home",
+              message: (await load.textFile(path.join(cwd, "home.txt"))).trim(),
+            },
+          };
+        }
+
+        if (url === "/docs/") {
+          return {
+            ...routes.docs,
+            context: {
+              marker: "docs",
+              message: (await load.textFile(path.join(cwd, "docs.txt"))).trim(),
+            },
+          };
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+import * as path from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Writes per-route markers so incremental rebuilds are observable.",
+  },
+  init({ cwd, outputDirectory }) {
+    const countsPath = path.join(cwd, "render-counts.json");
+
+    return {
+      prepareContext({ route }) {
+        return { context: route.context || {} };
+      },
+      async beforeEachRender({ context }) {
+        let counts = {};
+
+        try {
+          counts = JSON.parse(await readFile(countsPath, "utf8"));
+        } catch {
+          counts = {};
+        }
+
+        const marker = context.marker;
+        counts[marker] = (counts[marker] || 0) + 1;
+        await writeFile(countsPath, JSON.stringify(counts), "utf8");
+
+        return [{
+          type: "writeTextFile",
+          payload: {
+            outputDirectory,
+            file: path.join("markers", marker + ".txt"),
+            data: String(counts[marker]),
+          },
+        }];
+      },
+      renderLayout({ context }) {
+        return \`<html><body><p>\${context.message}</p></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    const outputDirectory = path.join(cwd, "dist-a");
+    const secondOutputDirectory = path.join(cwd, "dist-b");
+    const pluginDefinitions = [
+      { path: "./router-plugin.ts", options: {}, module: undefined as never },
+      { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+    ];
+
+    const firstBuild = await buildNode({
+      cwd,
+      outputDirectory,
+      pluginDefinitions,
+    });
+
+    assert.equal(firstBuild.cacheHits, 0);
+    assert.equal(firstBuild.routesBuilt, 2);
+    assert.equal(
+      await readFile(path.join(outputDirectory, "markers", "home.txt"), "utf8"),
+      "1",
+    );
+    assert.equal(
+      await readFile(path.join(outputDirectory, "markers", "docs.txt"), "utf8"),
+      "1",
+    );
+    await readFile(path.join(outputDirectory, CACHE_MANIFEST_PATH), "utf8");
+
+    await writeFile(path.join(cwd, "docs.txt"), "docs v2\n");
+
+    const secondBuild = await buildNode({
+      cwd,
+      cacheFrom: outputDirectory,
+      outputDirectory: secondOutputDirectory,
+      pluginDefinitions,
+    });
+
+    assert.equal(secondBuild.cacheHits, 1);
+    assert.equal(secondBuild.routesBuilt, 1);
+    assert.equal(
+      await readFile(path.join(secondOutputDirectory, "markers", "home.txt"), "utf8"),
+      "1",
+    );
+    assert.equal(
+      await readFile(path.join(secondOutputDirectory, "markers", "docs.txt"), "utf8"),
+      "2",
+    );
+    assert.match(
+      await readFile(path.join(secondOutputDirectory, "docs", "index.html"), "utf8"),
+      /docs v2/,
+    );
+    assert.match(
+      await readFile(path.join(secondOutputDirectory, "index.html"), "utf8"),
+      /home/,
+    );
+    await readFile(path.join(secondOutputDirectory, CACHE_MANIFEST_PATH), "utf8");
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

@@ -53,7 +53,7 @@ type DataSource = { operation: string; parameters?: unknown[] };
 type DataSources = Record<string, (...args: any) => unknown>;
 
 type LoadedPlugin = {
-  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context };
+  plugin: { meta: Plugin["meta"]; api: PluginApi; context: Context; tasks: Tasks };
   tasks: Tasks;
 };
 type PluginsDefinition = {

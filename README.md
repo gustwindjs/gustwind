@@ -50,6 +50,10 @@ Gustwind can now emit structured build benchmark data through its Node CLI. Run 
 
 The same metrics are available through `buildNode({ collectBenchmark: true, ... })` in the published Node API, so integrations can capture benchmark data without shelling out.
 
+Production builds also reuse prior output by default. Each build now writes its incremental cache manifest to `build/.gustwind/build-cache.json`, so the cache can travel with the published site artifact itself.
+
+When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. Use `gustwind-node --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind-node --build --no-incremental` if you want to force a fully fresh rebuild.
+
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 
 Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
