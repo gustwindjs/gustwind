@@ -5,6 +5,7 @@ import {
   applyPlugins,
   importPlugin,
   importPlugins,
+  preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initMemoryLoadApi } from "../load-adapters/memory.ts";
 import { initLoadApi as initNodeLoadApi } from "../load-adapters/node.ts";
@@ -107,7 +108,9 @@ async function createRender(
     outputDirectory,
     mode: "production",
   });
+  const prepareTasks = await preparePlugins(plugins);
   const { routes, tasks: initialTasks } = await router.getAllRoutes();
+  const startupTasks = prepareTasks.concat(initialTasks);
 
   return async function render(
     pathname: string,
@@ -130,7 +133,7 @@ async function createRender(
       // decide what to do with either. For example on edge you might want to
       // handle the tasks dynamically by writing task results to KV and then
       // map to the database through a router on demand.
-      return { markup, tasks: initialTasks.concat(routeTasks) };
+      return { markup, tasks: startupTasks.concat(routeTasks) };
     }
 
     throw new Error(`Failed to render ${pathname}`);

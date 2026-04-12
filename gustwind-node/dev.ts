@@ -261,11 +261,13 @@ async function loadRuntime(
     mode: "development",
     outputDirectory: "",
   });
+  const prepareTasks = await preparePlugins(plugins);
   const { routes, tasks } = await router.getAllRoutes();
+  const pathFs = await evaluateTasks(prepareTasks);
 
   return {
-    initialTasks: tasks,
-    pathFs: {} as Awaited<ReturnType<typeof evaluateTasks>>,
+    initialTasks: prepareTasks.concat(tasks),
+    pathFs,
     plugins,
     router,
     routes,

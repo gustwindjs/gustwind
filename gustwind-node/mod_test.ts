@@ -2,10 +2,11 @@ import * as path from "node:path";
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createServer } from "node:http";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import { plugin as metaPlugin } from "../plugins/meta/mod.ts";
+import { plugin as tailwindPlugin } from "../plugins/tailwind/mod.ts";
 import { plugin as rendererPlugin } from "../renderers/htmlisp-renderer/mod.ts";
 import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer/mod.ts";
 import { plugin as edgeRouterPlugin } from "../routers/edge-router/mod.ts";
@@ -219,6 +220,94 @@ test("gustwind-node loads initial plugins from module paths", async () => {
     assert.match(markup, /<p>PATH LOADED<\/p>/);
   } finally {
     await stopModuleBundler();
+  }
+});
+
+test("gustwind tailwind plugin reuses compiled css across repeated renders", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-tailwind-plugin-"));
+
+  try {
+    await writeFile(
+      path.join(cwd, "tailwind.css"),
+      "@tailwind utilities;\n",
+    );
+    await writeFile(
+      path.join(cwd, "tailwindSetup.ts"),
+      [
+        "export default {",
+        "  content: [{ raw: '<div class=\"text-red-500\"></div>', extension: 'html' }],",
+        "  theme: { extend: {} },",
+        "  plugins: [],",
+        "};",
+      ].join("\n"),
+    );
+
+    let textFileReads = 0;
+    const api = await tailwindPlugin.init({
+      cwd,
+      mode: "production",
+      options: {
+        cssPath: "./tailwind.css",
+        setupPath: "./tailwindSetup.ts",
+      },
+      outputDirectory: "",
+      renderComponent: async () => "",
+      renderComponentSync: () => "",
+      load: {
+        async dir() {
+          return [];
+        },
+        async json() {
+          throw new Error("unused");
+        },
+        async module() {
+          throw new Error("unused");
+        },
+        async textFile(filePath: string) {
+          textFileReads++;
+          return await readFile(filePath, "utf8");
+        },
+        textFileSync() {
+          throw new Error("unused");
+        },
+      },
+    });
+
+    await api.prepareContext?.({
+      send: async () => undefined,
+      route: { layout: "Home" },
+      url: "/",
+      pluginContext: {},
+    });
+    await api.prepareContext?.({
+      send: async () => undefined,
+      route: { layout: "Home" },
+      url: "/",
+      pluginContext: {},
+    });
+
+    const firstMarkup = (await api.afterEachRender?.({
+      markup: "<html><head></head><body></body></html>",
+      context: {},
+      route: { layout: "Home" },
+      send: async () => undefined,
+      url: "/",
+      pluginContext: {},
+    }))?.markup;
+    const secondMarkup = (await api.afterEachRender?.({
+      markup: "<html><head></head><body></body></html>",
+      context: {},
+      route: { layout: "Home" },
+      send: async () => undefined,
+      url: "/",
+      pluginContext: {},
+    }))?.markup;
+
+    assert.equal(textFileReads, 1);
+    assert.equal(firstMarkup, secondMarkup);
+    assert.match(firstMarkup || "", /text-red-500/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
   }
 });
 

@@ -17,11 +17,10 @@ const plugin: Plugin<{
   init: ({ cwd, options, load, mode }) => {
     const tailwindCssPath = path.join(cwd, options.cssPath);
     const tailwindSetupPath = path.join(cwd, options.setupPath);
-    let processor: ReturnType<typeof postcss>;
-    let tailwindCSS: string;
+    let compiledCss: string | undefined;
+    let compiledCssPromise: Promise<string> | undefined;
 
-    // TODO: Execute this only if needed (not for all files like now)
-    async function preparePlugins() {
+    async function compileCss() {
       const { default: tailwindSetup } = await import(tailwindSetupPath);
 
       const plugins = [
@@ -37,28 +36,47 @@ const plugin: Plugin<{
         plugins.push(cssnano());
       }
 
-      processor = await postcss(plugins);
-      tailwindCSS = await load.textFile(tailwindCssPath);
+      const processor = await postcss(plugins);
+      const tailwindCSS = await load.textFile(tailwindCssPath);
+      const { css } = await processor.process(
+        tailwindCSS,
+        { from: tailwindCssPath },
+      );
+
+      return css;
+    }
+
+    async function ensureCompiledCss() {
+      if (compiledCss) {
+        return compiledCss;
+      }
+
+      if (!compiledCssPromise) {
+        compiledCssPromise = compileCss().then((css) => {
+          compiledCss = css;
+          return css;
+        });
+      }
+
+      return await compiledCssPromise;
     }
 
     return {
-      prepareBuild: preparePlugins,
-      prepareContext: preparePlugins,
+      prepareBuild: async () => {
+        await ensureCompiledCss();
+      },
+      prepareContext: async () => {
+        await ensureCompiledCss();
+      },
       afterEachRender: async ({ markup, url }) => {
         if (url.endsWith(".xml")) {
           return { markup };
         }
 
-        const { css } = await processor.process(
-          tailwindCSS,
-          // TODO: Is this correct?
-          { from: url },
-        );
-
         return {
           markup: markup.replace(
             "</head>",
-            `<style>${css}</style></head>`,
+            `<style>${await ensureCompiledCss()}</style></head>`,
           ),
         };
       },
