@@ -11,7 +11,7 @@ function initLoadApi(tasks: Tasks): LoadApi {
 }
 
 function initDevLoadApi(tasks: Tasks): LoadApi {
-  return initLoadApiWithOptions(tasks, { bundleMode: "always" });
+  return initLoadApiWithOptions(tasks, { bundleMode: "auto" });
 }
 
 function initLoadApiWithOptions(
@@ -151,7 +151,6 @@ async function bundleModule(modulePath: string) {
     bundle: true,
     format: "esm",
     logLevel: "silent",
-    packages: "external",
     platform: "node",
     target: ["node24"],
     write: false,
