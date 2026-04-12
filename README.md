@@ -58,6 +58,8 @@ Production builds also render independent routes with bounded concurrency, so to
 
 This repository now separates fast local builds from release builds. `npm run build` skips Pagefind indexing to keep first builds fast, while `npm run build:release` includes the search index and is the path used for deployment and browser tests.
 
+Independent `prepareBuild` and `finishBuild` hooks now also run in dependency layers, so global plugin work like asset preparation and release-only finishing steps can overlap when they do not depend on each other.
+
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 
 Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
@@ -65,13 +67,13 @@ Sample benchmark for this repository on April 12, 2026. These numbers are machin
 | Metric | Sample |
 | --- | ---: |
 | Routes built | 14 |
-| Total build time | 267.234 ms |
-| Average route time | 44.064 ms |
-| p50 route time | 28.255 ms |
-| p95 route time | 93.233 ms |
-| Peak RSS memory | 202.5 MB |
-| Fastest route | `/routing/` in 15.548 ms |
-| Slowest route | `/blog/more/` in 93.233 ms |
+| Total build time | 259.176 ms |
+| Average route time | 42.124 ms |
+| p50 route time | 32.845 ms |
+| p95 route time | 86.590 ms |
+| Peak RSS memory | 201.3 MB |
+| Fastest route | `/routing/` in 11.530 ms |
+| Slowest route | `/blog/more/` in 86.590 ms |
 
 ## Earlier related work
 

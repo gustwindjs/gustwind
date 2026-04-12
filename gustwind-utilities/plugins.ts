@@ -226,47 +226,23 @@ async function sendMessages(plugins: PluginDefinition[]) {
 }
 
 async function preparePlugins(plugins: PluginDefinition[]) {
-  let prepareTasks: Tasks = [];
-  const prepareBuilds = plugins.map((
-    { api, context },
-  ) => [api.prepareBuild, context])
-    .filter(Boolean);
   const send = createSend(plugins);
-
-  for await (const [prepareBuild, pluginContext] of prepareBuilds) {
-    if (prepareBuild) {
-      // @ts-expect-error It's not clear how to type context
-      const tasksToAdd = await prepareBuild({ send, pluginContext });
-
-      if (tasksToAdd) {
-        prepareTasks = prepareTasks.concat(tasksToAdd);
-      }
-    }
-  }
-
-  return prepareTasks;
+  return await runLifecycleHooksInDependencyLayers({
+    getHook: ({ api }) => api.prepareBuild,
+    plugins,
+    runHook: async (prepareBuild, pluginContext) =>
+      await prepareBuild({ send, pluginContext }),
+  });
 }
 
 async function finishPlugins(plugins: PluginDefinition[]) {
-  let finishTasks: Tasks = [];
-  const finishBuilds = plugins.map((
-    { api, context },
-  ) => [api.finishBuild, context])
-    .filter(Boolean);
   const send = createSend(plugins);
-
-  for await (const [finishBuild, pluginContext] of finishBuilds) {
-    if (finishBuild) {
-      // @ts-expect-error It's not clear how to type context
-      const tasksToAdd = await finishBuild({ send, pluginContext });
-
-      if (tasksToAdd) {
-        finishTasks = finishTasks.concat(tasksToAdd);
-      }
-    }
-  }
-
-  return finishTasks;
+  return await runLifecycleHooksInDependencyLayers({
+    getHook: ({ api }) => api.finishBuild,
+    plugins,
+    runHook: async (finishBuild, pluginContext) =>
+      await finishBuild({ send, pluginContext }),
+  });
 }
 
 async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
@@ -671,6 +647,76 @@ function createSend(plugins: PluginDefinition[]) {
   return send;
 }
 
+async function runLifecycleHooksInDependencyLayers<T>(
+  {
+    getHook,
+    plugins,
+    runHook,
+  }: {
+    getHook(plugin: PluginDefinition): ((args: any) => Promise<Tasks | void> | Tasks | void) | undefined;
+    plugins: PluginDefinition[];
+    runHook(
+      hook: (args: any) => Promise<Tasks | void> | Tasks | void,
+      pluginContext: Context,
+    ): Promise<Tasks | void>;
+  },
+) {
+  let tasks: Tasks = [];
+
+  for (const layer of getDependencyLayers(plugins.filter((plugin) => getHook(plugin)))) {
+    const layerTasks = await Promise.all(
+      layer.map(async (plugin) => {
+        const hook = getHook(plugin);
+
+        if (!hook) {
+          return;
+        }
+
+        return await runHook(hook, plugin.context);
+      }),
+    );
+
+    for (const tasksToAdd of layerTasks) {
+      if (tasksToAdd) {
+        tasks = tasks.concat(tasksToAdd);
+      }
+    }
+  }
+
+  return tasks;
+}
+
+function getDependencyLayers(plugins: PluginDefinition[]) {
+  const remaining = [...plugins];
+  const layers: PluginDefinition[][] = [];
+  const pluginNames = new Set(plugins.map(({ meta }) => meta.name));
+
+  while (remaining.length) {
+    const ready = remaining.filter(({ meta }) =>
+      (meta.dependsOn || []).every((dependencyName) =>
+        !pluginNames.has(dependencyName) ||
+        !remaining.some(({ meta }) => meta.name === dependencyName)
+      )
+    );
+
+    if (!ready.length) {
+      throw new Error(
+        `Failed to resolve plugin lifecycle order for ${
+          remaining.map(({ meta }) => meta.name).join(", ")
+        }`,
+      );
+    }
+
+    layers.push(ready);
+
+    for (const plugin of ready) {
+      remaining.splice(remaining.indexOf(plugin), 1);
+    }
+  }
+
+  return layers;
+}
+
 export {
   applyAfterEachRenders,
   applyBeforeEachRenders,
@@ -682,6 +728,7 @@ export {
   cleanUpPlugins,
   createSend,
   finishPlugins,
+  getDependencyLayers,
   importPlugin,
   importPlugins,
   preparePlugins,
