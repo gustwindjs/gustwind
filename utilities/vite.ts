@@ -1,6 +1,5 @@
 import * as path from "node:path";
 import { readFile } from "node:fs/promises";
-import { build as viteBuild } from "vite";
 
 type ClientAssetManifestChunk = {
   file: string;
@@ -44,6 +43,8 @@ async function buildClientAssets(
       path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath),
     ]),
   );
+
+  const { build: viteBuild } = await import("vite");
 
   await viteBuild({
     appType: "custom",

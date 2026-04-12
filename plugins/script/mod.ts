@@ -70,7 +70,9 @@ const plugin: Plugin<{
         }
 
         return Promise.all(
-          resolvedScripts.map((
+          resolvedScripts.filter(({ path: scriptPath }) =>
+            scriptPath.startsWith("http://") || scriptPath.startsWith("https://")
+          ).map((
             { name, path: scriptPath, externals },
           ) =>
             writeScript({
@@ -89,6 +91,9 @@ const plugin: Plugin<{
         const routeScripts = route.scripts || [];
         const routeScriptNames = routeScripts.map(({ name }) => name);
         const foundScriptNames = foundScripts.map(({ name }) => name);
+        const foundScriptPaths = Object.fromEntries(
+          foundScripts.map(({ name, path }) => [name, path]),
+        );
 
         if (
           !routeScriptNames.every((name) =>
@@ -101,18 +106,21 @@ const plugin: Plugin<{
 
         const scripts: { name: string; src?: string; srcPrefix?: string }[] =
           (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
-            { name },
+            { name, localPath, remotePath },
           ) => ({
             name,
             src: mode === "production"
               ? builtEntryAssets[normalizeScriptName(name)]?.file
-              : undefined,
+              : getDevScriptPath(
+                import.meta.url.startsWith("file:///") ? localPath : remotePath,
+                cwd,
+              ),
           })).concat(
             routeScripts.map(({ name, ...rest }) => ({
               name: `${name}.ts`,
               src: mode === "production"
                 ? builtEntryAssets[name]?.file
-                : undefined,
+                : getDevScriptPath(foundScriptPaths[`${name}.ts`], cwd),
               ...rest,
             })),
           );
@@ -127,10 +135,16 @@ const plugin: Plugin<{
           ),
         ).map((href) => ({ href, rel: "stylesheet" }));
 
-        scripts.forEach(({ name: path }) =>
-          // TODO: Scope to router- instead
-          send("*", { type: "addDynamicRoute", payload: { path } })
-        );
+        scripts.forEach(({ name, src }) => {
+          if (src) {
+            return;
+          }
+
+          send("*", {
+            type: "addDynamicRoute",
+            payload: { path: name.replace(".ts", ".js") },
+          });
+        });
 
         // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
         // Global scripts don't need processing since they are in the right format already
@@ -264,6 +278,32 @@ async function buildProductionScripts(
 
 function normalizeScriptName(name: string) {
   return name.endsWith(".ts") ? name.slice(0, -3) : name;
+}
+
+function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
+  if (!scriptPath) {
+    return undefined;
+  }
+
+  if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+    return undefined;
+  }
+
+  if (path.isAbsolute(scriptPath)) {
+    const relativePath = path.relative(cwd, scriptPath);
+
+    if (!relativePath.startsWith("..")) {
+      return `/${relativePath.split(path.sep).join("/")}`;
+    }
+
+    return `/@fs/${scriptPath.split(path.sep).join("/")}`;
+  }
+
+  const normalizedPath = scriptPath.startsWith("./")
+    ? scriptPath.slice(2)
+    : scriptPath;
+
+  return `/${normalizedPath.split(path.sep).join("/")}`;
 }
 
 async function writeScript(

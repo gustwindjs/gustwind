@@ -60,6 +60,7 @@ async function startDevServer(
   });
   const vite = await createViteServer({
     appType: "custom",
+    root: cwd,
     plugins: [
       createRuntimeReloadPlugin({
         cwd,
