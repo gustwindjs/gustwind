@@ -1,6 +1,6 @@
 import matter from "gray-matter";
 import getMarkdown from "./transforms/markdown.ts";
-import { getMemo } from "../utilities/getMemo.ts";
+import { getAsyncMemo, getMemo } from "../utilities/getMemo.ts";
 import type { DataSourcesApi } from "../types.ts";
 
 type MarkdownWithFrontmatter = {
@@ -15,6 +15,13 @@ type MarkdownWithFrontmatter = {
 
 function init({ load, render, renderSync }: DataSourcesApi) {
   const markdown = getMarkdown({ load, render, renderSync });
+  const memoFile = getAsyncMemo(new Map());
+  const memoHeadmatter = getAsyncMemo(new Map());
+  const memo = getMemo(new Map());
+
+  function readMarkdownFile(path: string) {
+    return memoFile((targetPath) => load.textFile(targetPath), path);
+  }
 
   async function indexMarkdown(
     directory: string,
@@ -41,27 +48,28 @@ function init({ load, render, renderSync }: DataSourcesApi) {
     }
 
     // Markdown also parses toc but it's not needed for now
-    return parseMarkdown(await load.textFile(path), o);
+    return parseMarkdown(await readMarkdownFile(path), o);
   }
 
   async function parseHeadmatter(
     path: string,
   ): Promise<MarkdownWithFrontmatter> {
-    const file = await load.textFile(path);
-    const parsedFile = matter(file);
+    return await memoHeadmatter(async (targetPath) => {
+      const file = await readMarkdownFile(targetPath);
+      const parsedFile = matter(file);
 
-    if (Object.keys(parsedFile.data).length) {
-      return {
-        // TODO: It would be better to handle this with Zod or some other runtime checker
-        data: parsedFile.data as MarkdownWithFrontmatter["data"],
-        content: parsedFile.content,
-      };
-    }
+      if (Object.keys(parsedFile.data).length) {
+        return {
+          // TODO: It would be better to handle this with Zod or some other runtime checker
+          data: parsedFile.data as MarkdownWithFrontmatter["data"],
+          content: parsedFile.content,
+        };
+      }
 
-    throw new Error(`path ${path} did not contain a headmatter`);
+      throw new Error(`path ${targetPath} did not contain a headmatter`);
+    }, path);
   }
 
-  const memo = getMemo(new Map());
   function parseMarkdown(lines: string, o?: { skipFirstLine: boolean }) {
     const input = o?.skipFirstLine
       ? lines.split("\n").slice(1).join("\n")
