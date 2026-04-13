@@ -30,7 +30,7 @@ Although Gustwind was designed mainly with Static Site Generation (SSG) in mind,
 
 ## HTML validation
 
-Gustwind exposes HTML validation directly through its Node integration. Use `gustwind-node --validate --input ./build` to validate an existing build, or `gustwind-node --build --validate` to make validation part of the build itself.
+Gustwind exposes HTML validation directly through its Node integration. Use `gustwind --validate --input ./build` to validate an existing build, or `gustwind --build --validate` to make validation part of the build itself.
 
 The same capability is also available through the published Node API, so integrations built on top of Gustwind can validate generated output without shelling out to a separate tool.
 
@@ -46,13 +46,13 @@ Given Gustwind is still in a rapid development phase, the APIs change every once
 
 ## Performance
 
-Gustwind can now emit structured build benchmark data through its Node CLI. Run `gustwind-node --benchmark` or `npm run benchmark:build` to build the site and write `benchmark-results.json` with total wall-clock build time, route count, per-route timings, percentile timings, and peak RSS memory usage.
+Gustwind can now emit structured build benchmark data through its Node CLI. Run `gustwind --benchmark` or `npm run benchmark:build` to build the site and write `benchmark-results.json` with total wall-clock build time, route count, per-route timings, percentile timings, and peak RSS memory usage.
 
 The same metrics are available through `buildNode({ collectBenchmark: true, ... })` in the published Node API, so integrations can capture benchmark data without shelling out.
 
 Production builds also reuse prior output by default. Each build now writes its incremental cache manifest to `build/.gustwind/build-cache.json`, so the cache can travel with the published site artifact itself.
 
-When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. The cache now tracks layout and component dependencies separately, so changing a component only invalidates the routes that actually render through it instead of forcing a whole-site rebuild. Use `gustwind-node --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind-node --build --no-incremental` if you want to force a fully fresh rebuild.
+When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. The cache now tracks layout and component dependencies separately, so changing a component only invalidates the routes that actually render through it instead of forcing a whole-site rebuild. Use `gustwind --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind --build --no-incremental` if you want to force a fully fresh rebuild.
 
 Production builds also render independent routes with bounded concurrency, so total build time measures end-to-end wall-clock time while individual route timings can overlap.
 

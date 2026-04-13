@@ -1,5 +1,6 @@
 node_modules/
 build/
+.release/
 .tmp-node-build/
 .tmp-node-build-wrapper/
 npm

@@ -11,3 +11,25 @@ The Node path now includes:
 - a Node static server for built output directories
 
 The Node development path intentionally favors a simpler Vite full-reload workflow over preserving the older custom watcher and websocket stack.
+
+## Install
+
+Requires Node.js 24 or newer.
+
+```bash
+npm install gustwind
+```
+
+## Use
+
+Run the packaged CLI:
+
+```bash
+npx gustwind --help
+```
+
+Consume the Node API:
+
+```js
+import { buildNode, initNodeRender, validateHtmlDirectory } from "gustwind";
+```

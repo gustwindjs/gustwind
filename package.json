@@ -11,6 +11,7 @@
     "build:node:check": "node ./gustwind-node/cli.ts --build --validate --output ./.tmp-node-build",
     "build:npm:gustwind": "node ./scripts/build-npm-package.mjs gustwind",
     "build:npm:htmlisp": "node ./scripts/build-npm-package.mjs htmlisp",
+    "release:local": "node ./scripts/release-local.mjs",
     "benchmark:build": "node ./gustwind-node/cli.ts --benchmark --output ./.tmp-benchmark-build --benchmark-output ./benchmark-results.json",
     "dev": "node ./gustwind-node/cli.ts --develop --port 3000",
     "start": "npm run dev",

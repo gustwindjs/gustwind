@@ -30,12 +30,12 @@ type CliArgs = {
 
 function usage() {
   console.log(`
-Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental]
-Benchmark: gustwind-node --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
-Diagnose: gustwind-node --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>]
-Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
-Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
-Validate: gustwind-node --validate [--input <directory>]
+Build:   gustwind --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental]
+Benchmark: gustwind --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
+Diagnose: gustwind --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>]
+Develop: gustwind --develop [--port <port>] [--plugins <path>]
+Serve:   gustwind --serve [--input <directory>] [--port <port>]
+Validate: gustwind --validate [--input <directory>]
 
 Options:
   -B, --benchmark      Builds the project and writes benchmark metrics as JSON.

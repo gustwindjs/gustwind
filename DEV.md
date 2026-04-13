@@ -17,3 +17,10 @@ There's [a good overview of Netlify edge functions](https://docs.netlify.com/edg
 1. `npm run build:npm:gustwind -- <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd gustwind-node/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)
+
+For a local release build that prepares all artifacts at once, run:
+
+1. `npm run release:local -- <VERSION>`
+2. Inspect the site build at `./build`
+3. Inspect the package directories at `./gustwind-node/npm` and `./htmlisp/npm`
+4. Inspect the packed tarballs at `./.release/<VERSION>/`

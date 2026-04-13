@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -61,6 +61,14 @@ if (!targetName || !version) {
 const rootPackage = JSON.parse(
   await readFile(path.join(rootDirectory, "package.json"), "utf8"),
 );
+const rootTypesSource = await readFile(
+  path.join(rootDirectory, "types.ts"),
+  "utf8",
+);
+const htmlispTypesSource = await readFile(
+  path.join(rootDirectory, "htmlisp", "types.ts"),
+  "utf8",
+);
 
 const targets = {
   gustwind: {
@@ -69,11 +77,19 @@ const targets = {
       in: input,
       out,
     })),
+    cliEntryPoint: {
+      in: "./gustwind-node/cli.ts",
+      out: "cli",
+    },
     packageJson: {
       name: "gustwind",
       version,
       type: "module",
       main: "./mod.js",
+      types: "./mod.d.ts",
+      bin: {
+        gustwind: "./cli.js",
+      },
       exports: {
         ".": "./mod.js",
         ...Object.fromEntries(
@@ -85,7 +101,17 @@ const targets = {
             ]),
         ),
       },
-      files: ["mod.js", "plugins/**/*.js", "README.md", "LICENSE"],
+      files: [
+        "cli.js",
+        "mod.js",
+        "mod.d.ts",
+        "types.d.ts",
+        "htmlisp/**/*.d.ts",
+        "plugins/**/*.js",
+        "plugins/**/*.d.ts",
+        "README.md",
+        "LICENSE",
+      ],
       description:
         "Gustwind is a Node.js-powered website creator that allows component-oriented development of large-scale sites.",
       license: "MIT",
@@ -149,6 +175,9 @@ await mkdir(target.outDirectory, { recursive: true });
 await build({
   absWorkingDir: rootDirectory,
   bundle: true,
+  define: {
+    "process.env.GUSTWIND_VERSION": JSON.stringify(version),
+  },
   entryPoints: target.entryPoints,
   format: "esm",
   outdir: target.outDirectory,
@@ -157,9 +186,159 @@ await build({
   target: "node24",
 });
 
+if (target.cliEntryPoint) {
+  await build({
+    absWorkingDir: rootDirectory,
+    banner: {
+      js: "#!/usr/bin/env node",
+    },
+    bundle: true,
+    define: {
+      "process.env.GUSTWIND_VERSION": JSON.stringify(version),
+    },
+    entryPoints: [target.cliEntryPoint],
+    format: "esm",
+    outdir: target.outDirectory,
+    packages: "external",
+    platform: "node",
+    target: "node24",
+  });
+  await chmod(path.join(target.outDirectory, "cli.js"), 0o755);
+}
+
 await writeFile(
   path.join(target.outDirectory, "package.json"),
   `${JSON.stringify(target.packageJson, null, 2)}\n`,
 );
 await cp(path.join(rootDirectory, "LICENSE"), path.join(target.outDirectory, "LICENSE"));
 await cp(target.readmePath, path.join(target.outDirectory, "README.md"));
+
+if (targetName === "gustwind") {
+  await writeGustwindDeclarations(target.outDirectory);
+}
+
+async function writeGustwindDeclarations(outDirectory) {
+  await writeFile(path.join(outDirectory, "mod.d.ts"), createGustwindDeclaration());
+  await writeFile(
+    path.join(outDirectory, "types.d.ts"),
+    rewriteDeclarationImports(rootTypesSource, [["./htmlisp/types.ts", "./htmlisp/types.js"]]),
+  );
+  await mkdir(path.join(outDirectory, "htmlisp"), { recursive: true });
+  await writeFile(
+    path.join(outDirectory, "htmlisp", "types.d.ts"),
+    rewriteDeclarationImports(htmlispTypesSource, [["../types.ts", "../types.js"]]),
+  );
+
+  await Promise.all(
+    gustwindEntries
+      .filter(({ exportPath }) => exportPath)
+      .map(({ out }) =>
+        writeFile(
+          path.join(outDirectory, `${out}.d.ts`),
+          createPluginDeclaration(),
+        )
+      ),
+  );
+}
+
+function rewriteDeclarationImports(source, replacements) {
+  return `${replacements.reduce(
+    (ret, [from, to]) => ret.replaceAll(from, to),
+    source,
+  )}\n`;
+}
+
+function createPluginDeclaration() {
+  return [
+    'import type { Plugin } from "../../types.js";',
+    "",
+    "export declare const plugin: Plugin<Record<string, unknown>, Record<string, unknown>>;",
+    "",
+  ].join("\n");
+}
+
+function createGustwindDeclaration() {
+  return [
+    'import type { InitLoadApi, Plugin, PluginOptions, Tasks } from "./types.js";',
+    "",
+    "type PluginDefinition = [Plugin, Record<string, unknown>];",
+    "type NodePluginDefinition = [Plugin | string, Record<string, unknown>];",
+    "type ValidationResult = { filesValidated: number };",
+    "",
+    "type RenderFn = (",
+    "  pathname: string,",
+    "  initialContext: Record<string, unknown>,",
+    ") => Promise<{",
+    "  markup: string;",
+    "  tasks: Tasks;",
+    "}>;",
+    "",
+    "type BuildRouteBenchmark = {",
+    "  bytesWritten: number;",
+    "  durationMs: number;",
+    "  memoryRssBytes: number;",
+    "  outputPath: string;",
+    "  url: string;",
+    "};",
+    "",
+    "type BuildBenchmark = {",
+    "  averageRouteDurationMs: number;",
+    "  fastestRoute: BuildRouteBenchmark | null;",
+    "  finalMemoryRssBytes: number;",
+    "  finishedAt: string;",
+    "  outputDirectory: string;",
+    "  p50RouteDurationMs: number;",
+    "  p95RouteDurationMs: number;",
+    "  peakMemoryRssBytes: number;",
+    "  routeResults: BuildRouteBenchmark[];",
+    "  routesBuilt: number;",
+    "  schemaVersion: 1;",
+    "  slowestRoute: BuildRouteBenchmark | null;",
+    "  startedAt: string;",
+    "  tasksProcessed: number;",
+    "  totalDurationMs: number;",
+    "};",
+    "",
+    "type BuildNodeResult = {",
+    "  benchmark?: BuildBenchmark;",
+    "  cacheFrom?: string;",
+    "  cacheHits?: number;",
+    "  routesBuilt?: number;",
+    "  validation?: ValidationResult;",
+    "};",
+    "",
+    "export * from \"./types.js\";",
+    "",
+    "export declare function buildNode(args: {",
+    "  cwd: string;",
+    "  outputDirectory: string;",
+    "  pluginDefinitions: PluginOptions[];",
+    "  validateOutput?: boolean;",
+    "  collectBenchmark?: boolean;",
+    "  incremental?: boolean;",
+    "  cacheFrom?: string;",
+    "  routeConcurrency?: number;",
+    "}): Promise<BuildNodeResult>;",
+    "",
+    "export declare function initNodeRender(args: {",
+    "  cwd: string;",
+    "  initialPlugins: NodePluginDefinition[];",
+    "  outputDirectory?: string;",
+    "}): Promise<RenderFn>;",
+    "",
+    "export declare function initRender(initialPlugins: PluginDefinition[]): Promise<RenderFn>;",
+    "export declare function initRender(",
+    "  initLoadApi: InitLoadApi,",
+    "  initialPlugins: PluginDefinition[],",
+    "): Promise<RenderFn>;",
+    "",
+    "export declare function validateHtmlDirectory(directoryPath: string): Promise<ValidationResult>;",
+    "export declare function validateHtmlDocument(args: {",
+    "  filePath: string;",
+    "  html: string;",
+    "}): void;",
+    "",
+    "export type { BuildBenchmark, BuildNodeResult, BuildRouteBenchmark, RenderFn };",
+    "",
+  ].join("\n");
+}
