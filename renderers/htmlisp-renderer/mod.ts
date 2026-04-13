@@ -9,6 +9,7 @@ import {
   type ComponentSourceDefinition,
 } from "../../utilities/componentDependencyGraph.ts";
 import { initLoader } from "../../utilities/htmlLoader.ts";
+import { createRuntimeUtilitiesResolver } from "../../utilities/runtimeUtilitiesCache.ts";
 import type { BuildWorkerEvent, GlobalUtilities, Plugin } from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
 
@@ -40,6 +41,11 @@ const plugin: Plugin<{
     mode,
   }) {
     const { components, globalUtilitiesPath } = options;
+    const getRuntimeUtilities = createRuntimeUtilitiesResolver({
+      load,
+      render: renderComponent,
+      renderSync: renderComponentSync,
+    });
 
     // TODO: Push the check to the plugin system core
     if (!globalUtilitiesPath) {
@@ -132,19 +138,19 @@ const plugin: Plugin<{
         }
 
         const layoutUtilities = componentUtilities[route.layout];
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url,
+        });
 
         return htmlispToHTML({
           htmlInput: layout,
           components,
           context,
           utilities: {
-            ...globalUtilities.init({
-              load,
-              render: renderComponent,
-              renderSync: renderComponentSync,
-              matchRoute,
-              url,
-            }),
+            ...runtimeUtilities.utilities,
             ...(layoutUtilities
               ? layoutUtilities.init({
                 load,
@@ -155,22 +161,7 @@ const plugin: Plugin<{
               })
               : {}),
           },
-          componentUtilities: Object.fromEntries(
-            Object.entries(componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url,
-                })
-                : {},
-            ]),
-          ),
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       renderComponent: (
@@ -189,34 +180,20 @@ const plugin: Plugin<{
           }
         }
 
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url: "",
+        });
+
         return htmlispToHTML({
           htmlInput,
           components,
           context,
           props,
-          utilities: globalUtilities.init({
-            load,
-            render: renderComponent,
-            renderSync: renderComponentSync,
-            matchRoute,
-            url: "",
-          }),
-          componentUtilities: Object.fromEntries(
-            Object.entries(componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url: "",
-                })
-                : {},
-            ]),
-          ),
+          utilities: runtimeUtilities.utilities,
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       renderComponentSync: (
@@ -235,34 +212,20 @@ const plugin: Plugin<{
           }
         }
 
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url: "",
+        });
+
         return htmlispToHTMLSync({
           htmlInput,
           components,
           context,
           props,
-          utilities: globalUtilities.init({
-            load,
-            render: renderComponent,
-            renderSync: renderComponentSync,
-            matchRoute,
-            url: "",
-          }),
-          componentUtilities: Object.fromEntries(
-            Object.entries(componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url: "",
-                })
-                : {},
-            ]),
-          ),
+          utilities: runtimeUtilities.utilities,
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       onMessage: async ({ message, pluginContext }) => {
@@ -392,6 +355,7 @@ const plugin: Plugin<{
       return resolvedFilePath === resolvedDirectoryPath ||
         resolvedFilePath.startsWith(resolvedDirectoryPath + path.sep);
     }
+
   },
 };
 

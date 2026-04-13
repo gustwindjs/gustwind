@@ -3,6 +3,7 @@ import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
 import type { GlobalUtilities, Plugin } from "../../types.ts";
+import { createRuntimeUtilitiesResolver } from "../../utilities/runtimeUtilitiesCache.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
 
 // For edge renderer components are directly strings
@@ -26,6 +27,11 @@ const plugin: Plugin<{
     dependsOn: ["gustwind-meta-plugin"],
   },
   init({ options, mode, load, renderComponent, renderComponentSync }) {
+    const getRuntimeUtilities = createRuntimeUtilitiesResolver({
+      load,
+      render: renderComponent,
+      renderSync: renderComponentSync,
+    });
     // TODO: Push this style check to the plugin system core
     if (!options.globalUtilities) {
       throw new Error(
@@ -82,19 +88,19 @@ const plugin: Plugin<{
         }
 
         const layoutUtilities = options.componentUtilities[route.layout];
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities: options.componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url,
+        });
 
         return htmlispToHTML({
           htmlInput: layout,
           components,
           context,
           utilities: {
-            ...globalUtilities.init({
-              load,
-              render: renderComponent,
-              renderSync: renderComponentSync,
-              matchRoute,
-              url,
-            }),
+            ...runtimeUtilities.utilities,
             ...(layoutUtilities
               ? layoutUtilities.init({
                 load,
@@ -105,22 +111,7 @@ const plugin: Plugin<{
               })
               : {}),
           },
-          componentUtilities: Object.fromEntries(
-            Object.entries(options.componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url,
-                })
-                : {},
-            ]),
-          ),
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       renderComponent: (
@@ -138,34 +129,20 @@ const plugin: Plugin<{
           }
         }
 
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities: options.componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url: "",
+        });
+
         return htmlispToHTML({
           htmlInput,
           components,
           context,
           props,
-          utilities: globalUtilities.init({
-            load,
-            render: renderComponent,
-            renderSync: renderComponentSync,
-            matchRoute,
-            url: "",
-          }),
-          componentUtilities: Object.fromEntries(
-            Object.entries(options.componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url: "",
-                })
-                : {},
-            ]),
-          ),
+          utilities: runtimeUtilities.utilities,
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       renderComponentSync: (
@@ -183,34 +160,20 @@ const plugin: Plugin<{
           }
         }
 
+        const runtimeUtilities = getRuntimeUtilities({
+          componentUtilities: options.componentUtilities,
+          globalUtilities,
+          matchRoute,
+          url: "",
+        });
+
         return htmlispToHTMLSync({
           htmlInput,
           components,
           context,
           props,
-          utilities: globalUtilities.init({
-            load,
-            render: renderComponent,
-            renderSync: renderComponentSync,
-            matchRoute,
-            url: "",
-          }),
-          componentUtilities: Object.fromEntries(
-            Object.entries(options.componentUtilities).map((
-              [k, v],
-            ) => [
-              k,
-              v
-                ? v.init({
-                  load,
-                  render: renderComponent,
-                  renderSync: renderComponentSync,
-                  matchRoute,
-                  url: "",
-                })
-                : {},
-            ]),
-          ),
+          utilities: runtimeUtilities.utilities,
+          componentUtilities: runtimeUtilities.componentUtilities,
         });
       },
       onMessage: ({ message, pluginContext }) => {
@@ -249,6 +212,7 @@ const plugin: Plugin<{
         }
       },
     };
+
   },
 };
 
