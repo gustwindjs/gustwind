@@ -62,18 +62,18 @@ Independent `prepareBuild` and `finishBuild` hooks now also run in dependency la
 
 That gives you a reproducible baseline for your own site instead of relying on generic claims. The current benchmark mode measures production builds; warm-cache runs and larger synthetic fixtures are still worth adding if you want tighter regression tracking over time.
 
-Sample benchmark for this repository on April 12, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
+Sample benchmark for this repository on April 13, 2026. These numbers are machine-dependent and should be treated as an example, not a guarantee:
 
 | Metric | Sample |
 | --- | ---: |
 | Routes built | 14 |
-| Total build time | 259.176 ms |
-| Average route time | 42.124 ms |
-| p50 route time | 32.845 ms |
-| p95 route time | 86.590 ms |
-| Peak RSS memory | 201.3 MB |
-| Fastest route | `/routing/` in 11.530 ms |
-| Slowest route | `/blog/more/` in 86.590 ms |
+| Total build time | 206.669 ms |
+| Average route time | 26.698 ms |
+| p50 route time | 12.426 ms |
+| p95 route time | 59.364 ms |
+| Peak RSS memory | 175.7 MB |
+| Fastest route | `/routing/` in 1.999 ms |
+| Slowest route | `/blog/more/` in 59.364 ms |
 
 ## Earlier related work
 
