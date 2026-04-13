@@ -1,6 +1,6 @@
 {
   "name": "gustwind",
-  "version": "0.0.0",
+  "version": "0.90.0",
   "type": "module",
   "description": "Gustwind is a Node.js-powered website creator that allows component-oriented development of large-scale sites.",
   "main": "index.js",
