@@ -6,6 +6,7 @@ import { buildNode } from "./build.ts";
 import { startDevServer } from "./dev.ts";
 import { startStaticServer } from "./serve.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
+import { formatRouteDiagnostics } from "../utilities/buildBenchmark.ts";
 import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 
 type CliArgs = {
@@ -14,6 +15,8 @@ type CliArgs = {
   build: boolean;
   cacheFrom: string;
   develop: boolean;
+  diagnoseRoutes: boolean;
+  diagnosticsTop: number;
   help: boolean;
   input: string;
   incremental: boolean;
@@ -29,6 +32,7 @@ function usage() {
   console.log(`
 Build:   gustwind-node --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental]
 Benchmark: gustwind-node --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
+Diagnose: gustwind-node --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>]
 Develop: gustwind-node --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind-node --serve [--input <directory>] [--port <port>]
 Validate: gustwind-node --validate [--input <directory>]
@@ -39,6 +43,8 @@ Options:
   -b, --build          Builds the project.
   --cache-from         Previous build directory or published site URL to reuse cached route output from (default: output directory).
   -d, --develop        Runs the Node development server.
+  --diagnose-routes    Builds the project and prints the slowest route timings.
+  --diagnostics-top    Number of routes to show in --diagnose-routes output (default: 5).
   -s, --serve          Serves a static build directory.
   -i, --input          Input directory for --serve (default: ./build).
   --no-incremental     Disables incremental route reuse for --build.
@@ -59,7 +65,11 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
-  if (args.help || (!args.benchmark && !args.build && !args.develop && !args.serve && !args.validate)) {
+  if (
+    args.help ||
+    (!args.benchmark && !args.build && !args.develop && !args.diagnoseRoutes &&
+      !args.serve && !args.validate)
+  ) {
     usage();
     return 0;
   }
@@ -130,8 +140,8 @@ async function main(cliArgs: string[]): Promise<number> {
     cacheFrom: args.cacheFrom || args.output,
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
-    collectBenchmark: args.benchmark,
-    incremental: args.benchmark ? false : args.incremental,
+    collectBenchmark: args.benchmark || args.diagnoseRoutes,
+    incremental: (args.benchmark || args.diagnoseRoutes) ? false : args.incremental,
     validateOutput: args.validate,
   });
 
@@ -165,6 +175,12 @@ async function main(cliArgs: string[]): Promise<number> {
     );
   }
 
+  if (args.diagnoseRoutes && buildResult?.benchmark) {
+    formatRouteDiagnostics(buildResult.benchmark, args.diagnosticsTop).lines.forEach((line) =>
+      console.log(line)
+    );
+  }
+
   return 0;
 }
 function parseArgs(cliArgs: string[]): CliArgs {
@@ -174,6 +190,8 @@ function parseArgs(cliArgs: string[]): CliArgs {
     build: false,
     cacheFrom: "",
     develop: false,
+    diagnoseRoutes: false,
+    diagnosticsTop: 5,
     help: false,
     input: "./build",
     incremental: true,
@@ -198,6 +216,20 @@ function parseArgs(cliArgs: string[]): CliArgs {
       case "--benchmark":
         ret.benchmark = true;
         ret.build = true;
+        break;
+      case "--diagnose-routes":
+        ret.diagnoseRoutes = true;
+        ret.build = true;
+        break;
+      case "--diagnostics-top":
+        if (!next) {
+          throw new Error("Missing diagnostics top count");
+        }
+        ret.diagnosticsTop = Number(next);
+        if (!Number.isInteger(ret.diagnosticsTop) || ret.diagnosticsTop <= 0) {
+          throw new Error(`Invalid diagnostics top count ${next}`);
+        }
+        index++;
         break;
       case "--cache-from":
         if (!next) {

@@ -176,3 +176,104 @@ export const plugin = {
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+test("gustwind-node CLI can print route diagnostics", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-diagnostics-"));
+  const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
+
+  try {
+    await writeFile(
+      path.join(cwd, "plugins.json"),
+      JSON.stringify({
+        env: {},
+        plugins: [
+          {
+            path: "./router-plugin.ts",
+            options: {},
+          },
+          {
+            path: "./renderer-plugin.ts",
+            options: {},
+          },
+        ],
+      }, null, 2),
+    );
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies routes for CLI diagnostics testing.",
+  },
+  init() {
+    const routes = {
+      "/": { layout: "Page", context: { message: "home" } },
+      docs: { layout: "Page", context: { message: "docs" } },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+        if (url === "/docs/") {
+          return routes.docs;
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders HTML for CLI diagnostics testing.",
+  },
+  init() {
+    return {
+      async renderLayout({ context }) {
+        if (context.message === "docs") {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+
+        return \`<html><body><h1>\${context.message}</h1></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    process.chdir(cwd);
+    console.log = (...args) => {
+      logs.push(args.join(" "));
+    };
+
+    const exitCode = await main([
+      "--diagnose-routes",
+      "--diagnostics-top",
+      "1",
+      "--output",
+      "./dist",
+    ]);
+
+    assert.equal(exitCode, 0);
+    assert.match(logs.join("\n"), /Top 1 slow routes/);
+    assert.match(logs.join("\n"), /\/docs\//);
+    assert.match(logs.join("\n"), /route timings can overlap/i);
+  } finally {
+    console.log = previousLog;
+    process.chdir(previousCwd);
+    await rm(cwd, { recursive: true, force: true });
+  }
+});

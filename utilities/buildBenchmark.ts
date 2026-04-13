@@ -26,6 +26,11 @@ type BuildBenchmark = {
   totalDurationMs: number;
 };
 
+type RouteDiagnostics = {
+  lines: string[];
+  topRoutes: BuildRouteBenchmark[];
+};
+
 function createBuildBenchmark(outputDirectory: string) {
   const routeResults: BuildRouteBenchmark[] = [];
   const startMemory = process.memoryUsage().rss;
@@ -113,5 +118,37 @@ function roundMetric(value: number) {
   return Math.round(value * 1000) / 1000;
 }
 
+function formatRouteDiagnostics(
+  benchmark: BuildBenchmark,
+  topCount = 5,
+): RouteDiagnostics {
+  const topRoutes = [...benchmark.routeResults]
+    .sort((a, b) => b.durationMs - a.durationMs)
+    .slice(0, Math.max(1, topCount));
+
+  return {
+    topRoutes,
+    lines: [
+      `Top ${topRoutes.length} slow routes by wall-clock render time:`,
+      ...topRoutes.map((routeResult, index) =>
+        `${index + 1}. ${routeResult.url} ${roundMetric(routeResult.durationMs)} ms | ${
+          formatBytes(routeResult.bytesWritten)
+        } | ${routeResult.outputPath}`
+      ),
+      `Average ${benchmark.averageRouteDurationMs} ms | p50 ${benchmark.p50RouteDurationMs} ms | p95 ${benchmark.p95RouteDurationMs} ms`,
+      "Note: route timings can overlap because production builds render routes concurrently.",
+    ],
+  };
+}
+
+function formatBytes(byteCount: number) {
+  if (byteCount < 1024) {
+    return `${byteCount} B`;
+  }
+
+  return `${roundMetric(byteCount / 1024)} kB`;
+}
+
 export { createBuildBenchmark };
-export type { BuildBenchmark, BuildRouteBenchmark };
+export { formatRouteDiagnostics };
+export type { BuildBenchmark, BuildRouteBenchmark, RouteDiagnostics };
