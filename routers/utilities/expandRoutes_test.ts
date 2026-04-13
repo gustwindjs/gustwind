@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { performance } from "node:perf_hooks";
 import test from "node:test";
 import { expandRoutes } from "./expandRoutes.ts";
 
@@ -194,4 +195,51 @@ test("child routes inherit data sources", async () => {
       },
     },
   );
+});
+
+test("expands sibling routes in parallel", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          name: "blogPages",
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        layout: "blogPage",
+      },
+    },
+    docs: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          name: "docPages",
+          indexer: { operation: "indexDocs" },
+          slug: "slug",
+        },
+        layout: "docPage",
+      },
+    },
+  };
+
+  const startTime = performance.now();
+  const expandedRoutes = await expandRoutes({
+    routes,
+    dataSources: {
+      indexBlog: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        return [{ slug: "hello" }];
+      },
+      indexDocs: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        return [{ slug: "intro" }];
+      },
+    },
+  });
+  const duration = performance.now() - startTime;
+
+  assert.ok(duration < 140, `expected sibling expansion to overlap, received ${duration} ms`);
+  assert.deepEqual(Object.keys(expandedRoutes.blog.routes || {}), ["hello"]);
+  assert.deepEqual(Object.keys(expandedRoutes.docs.routes || {}), ["intro"]);
 });

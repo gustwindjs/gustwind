@@ -5,21 +5,18 @@ async function expandRoutes({ routes, dataSources }: {
   routes: Record<string, Route>;
   dataSources: DataSources;
 }): Promise<Record<string, Route>> {
-  const allRoutes: Record<string, Route> = {};
-
-  // Resolve promises in series to avoid race conditions in resolving
-  for (
-    const [url, route] of Object.entries(routes)
-  ) {
-    const [expandedUrl, expandedRoute] = await expandRoute({
-      url,
-      route,
-      dataSources,
-      recurse: true,
-    });
-
-    allRoutes[expandedUrl] = expandedRoute;
-  }
+  const allRoutes = Object.fromEntries(
+    await Promise.all(
+      Object.entries(routes).map(([url, route]) =>
+        expandRoute({
+          url,
+          route,
+          dataSources,
+          recurse: true,
+        })
+      ),
+    ),
+  );
 
   // / is an exception. If it has an expansion, then it has to be added
   // to the root as otherwise the router won't find it later.
@@ -61,7 +58,6 @@ async function expandRoute(
       throw new Error("Data source is not a function");
     }
 
-    const expandedRoutes: Record<string, Route> = {};
     const dataSourceIndexer = matchBy.indexer;
     const indexResults = await indexer.apply(
       undefined,
@@ -72,44 +68,46 @@ async function expandRoute(
     // Construct individual routes based on the results of indexing
     const { slug } = matchBy;
     if (Array.isArray(indexResults)) {
-      await Promise.all(indexResults.map((match) => {
-        const url = get(match, slug) as string;
+      const expandedRoutes = Object.fromEntries(
+        await Promise.all(indexResults.map(async (match) => {
+          const url = get(match, slug) as string;
 
-        if (!url) {
-          throw new Error(
-            `Route ${matchBy.slug} is missing from ${
-              JSON.stringify(match, null, 2)
-            } with slug ${matchBy.slug} within ${url} route`,
-          );
-        }
+          if (!url) {
+            throw new Error(
+              `Route ${matchBy.slug} is missing from ${
+                JSON.stringify(match, null, 2)
+              } with slug ${matchBy.slug} within ${url} route`,
+            );
+          }
 
-        // @ts-ignore route.expand exists by now for sure
-        const { layout, scripts, context } = route.expand;
+          // @ts-ignore route.expand exists by now for sure
+          const { layout, scripts, context } = route.expand;
 
-        if (!matchBy.name) {
-          throw new Error(`Expand route ${url} is missing a name!`);
-        }
+          if (!matchBy.name) {
+            throw new Error(`Expand route ${url} is missing a name!`);
+          }
 
-        expandedRoutes[url] = {
-          layout,
-          scripts,
-          context: context || {},
-          parentDataSources: { [matchBy.name]: indexResults },
-          dataSources: {
-            ...Object.fromEntries(
-              // @ts-ignore route.expand exists by now for sure
-              Object.entries(route.expand?.dataSources || {}).map((
-                [k, v]: [string, DataSource],
-              ) => [k, {
-                ...v,
-                parameters: [match].concat(v.parameters),
-              }]),
-            ),
-          },
-        };
+          return [url, {
+            layout,
+            scripts,
+            context: context || {},
+            parentDataSources: { [matchBy.name]: indexResults },
+            dataSources: {
+              ...Object.fromEntries(
+                // @ts-ignore route.expand exists by now for sure
+                Object.entries(route.expand?.dataSources || {}).map((
+                  [k, v]: [string, DataSource],
+                ) => [k, {
+                  ...v,
+                  parameters: [match].concat(v.parameters),
+                }]),
+              ),
+            },
+          }];
+        })),
+      );
 
-        ret = { ...route, routes: expandedRoutes };
-      }));
+      ret = { ...route, routes: expandedRoutes };
     } else {
       throw new Error("Data source results are not an array");
     }
