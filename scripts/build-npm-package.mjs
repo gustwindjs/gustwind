@@ -58,6 +58,11 @@ const gustwindEntries = [
     out: "plugins/stats/mod",
     exportPath: "./plugins/stats",
   },
+  {
+    in: "./plugins/tailwind/mod.ts",
+    out: "plugins/tailwind/mod",
+    exportPath: "./plugins/tailwind",
+  },
 ];
 
 const rootDirectory = path.resolve(
