@@ -576,7 +576,7 @@ async function runWithConcurrency<T>(
 }
 
 function getDefaultRouteConcurrency() {
-  return Math.max(1, Math.min(8, availableParallelism() - 1));
+  return Math.max(1, availableParallelism() - 1);
 }
 
 export { buildNode };

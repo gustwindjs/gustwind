@@ -54,7 +54,7 @@ Production builds also reuse prior output by default. Each build now writes its 
 
 When the previous build cache is still valid, `npm run build` rebuilds only the routes whose observed inputs changed and keeps unaffected route output in place. The cache now tracks layout and component dependencies separately, so changing a component only invalidates the routes that actually render through it instead of forcing a whole-site rebuild. Use `gustwind --build --cache-from ./previous-build` to import cached route output from another local build directory, or point `--cache-from` at a published site URL that exposes the same `/.gustwind/build-cache.json` file. Use `gustwind --build --no-incremental` if you want to force a fully fresh rebuild.
 
-Production builds also render independent routes with bounded concurrency, so total build time measures end-to-end wall-clock time while individual route timings can overlap.
+Production builds also render independent routes with bounded concurrency, defaulting to `available CPUs - 1` to keep the machine responsive without underutilizing it. Use `gustwind --route-concurrency <count>` or `buildNode({ routeConcurrency: <count>, ... })` when you want a fixed benchmark setting across machines.
 
 This repository now separates fast local builds from release builds. `npm run build` skips Pagefind indexing to keep first builds fast, while `npm run build:release` includes the search index and is the path used for deployment and browser tests.
 

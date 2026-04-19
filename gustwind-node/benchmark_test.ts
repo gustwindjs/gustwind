@@ -177,6 +177,104 @@ export const plugin = {
   }
 });
 
+test("gustwind-node CLI accepts route concurrency override", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-route-concurrency-"));
+  const previousCwd = process.cwd();
+
+  try {
+    await writeFile(
+      path.join(cwd, "plugins.json"),
+      JSON.stringify({
+        env: {},
+        plugins: [
+          {
+            path: "./router-plugin.ts",
+            options: {},
+          },
+          {
+            path: "./renderer-plugin.ts",
+            options: {},
+          },
+        ],
+      }, null, 2),
+    );
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies routes for CLI route concurrency testing.",
+  },
+  init() {
+    const routes = {
+      "/": { layout: "Page", context: { message: "home" } },
+      docs: { layout: "Page", context: { message: "docs" } },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+        if (url === "/docs/") {
+          return routes.docs;
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders HTML for CLI route concurrency testing.",
+  },
+  init() {
+    return {
+      renderLayout({ context }) {
+        return \`<html><body><h1>\${context.message}</h1></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    process.chdir(cwd);
+
+    const exitCode = await main([
+      "--benchmark",
+      "--output",
+      "./dist",
+      "--benchmark-output",
+      "./bench.json",
+      "--route-concurrency",
+      "1",
+    ]);
+
+    assert.equal(exitCode, 0);
+
+    const benchmark = JSON.parse(await readFile(path.join(cwd, "bench.json"), "utf8"));
+
+    assert.equal(benchmark.routesBuilt, 2);
+    assert.deepEqual(
+      benchmark.routeResults.map(({ url }: { url: string }) => url).sort(),
+      ["/", "/docs/"],
+    );
+  } finally {
+    process.chdir(previousCwd);
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("gustwind-node CLI can print route diagnostics", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-diagnostics-"));
   const previousCwd = process.cwd();

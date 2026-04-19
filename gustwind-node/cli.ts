@@ -23,6 +23,7 @@ type CliArgs = {
   output: string;
   port: number;
   plugins: string;
+  routeConcurrency?: number;
   serve: boolean;
   validate: boolean;
   version: boolean;
@@ -30,9 +31,9 @@ type CliArgs = {
 
 function usage() {
   console.log(`
-Build:   gustwind --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental]
-Benchmark: gustwind --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>]
-Diagnose: gustwind --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>]
+Build:   gustwind --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental] [--route-concurrency <count>]
+Benchmark: gustwind --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>] [--route-concurrency <count>]
+Diagnose: gustwind --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>] [--route-concurrency <count>]
 Develop: gustwind --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind --serve [--input <directory>] [--port <port>]
 Validate: gustwind --validate [--input <directory>]
@@ -51,6 +52,7 @@ Options:
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
+  --route-concurrency  Max number of routes to build in parallel (default: available CPUs - 1).
   -V, --validate       Validates generated HTML. With --build, validates the output after build.
   -v, --version        Shows the version number.
   -h, --help           Shows the help message.
@@ -142,6 +144,7 @@ async function main(cliArgs: string[]): Promise<number> {
     pluginDefinitions: evaluatedPluginsDefinition,
     collectBenchmark: args.benchmark || args.diagnoseRoutes,
     incremental: (args.benchmark || args.diagnoseRoutes) ? false : args.incremental,
+    routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
 
@@ -198,6 +201,7 @@ function parseArgs(cliArgs: string[]): CliArgs {
     output: "./build",
     port: 3000,
     plugins: "plugins.json",
+    routeConcurrency: undefined,
     serve: false,
     validate: false,
     version: false,
@@ -269,6 +273,18 @@ function parseArgs(cliArgs: string[]): CliArgs {
         ret.port = Number(next);
         if (!Number.isInteger(ret.port) || ret.port < 0) {
           throw new Error(`Invalid port ${next}`);
+        }
+        index++;
+        break;
+      case "--route-concurrency":
+        if (!next) {
+          throw new Error("Missing route concurrency");
+        }
+        ret.routeConcurrency = Number(next);
+        if (
+          !Number.isInteger(ret.routeConcurrency) || ret.routeConcurrency <= 0
+        ) {
+          throw new Error(`Invalid route concurrency ${next}`);
         }
         index++;
         break;
