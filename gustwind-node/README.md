@@ -37,6 +37,7 @@ import { buildNode, initNodeRender, validateHtmlDirectory } from "gustwind";
 Consume packaged plugins:
 
 ```js
+import { plugin as htmlispRendererPlugin } from "gustwind/plugins/htmlisp-renderer";
 import { plugin as scriptPlugin } from "gustwind/plugins/script";
 ```
 

@@ -9,6 +9,11 @@ const gustwindEntries = [
     out: "mod",
   },
   {
+    in: "./renderers/htmlisp-renderer/mod.ts",
+    out: "plugins/htmlisp-renderer/mod",
+    exportPath: "./plugins/htmlisp-renderer",
+  },
+  {
     in: "./renderers/htmlisp-edge-renderer/mod.ts",
     out: "plugins/htmlisp-edge-renderer/mod",
     exportPath: "./plugins/htmlisp-edge-renderer",
