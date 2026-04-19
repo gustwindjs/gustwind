@@ -287,6 +287,10 @@ test("gustwind tailwind plugin reuses compiled css across cold plugin instances"
       url: "/",
       pluginContext: {},
     }))?.markup;
+    const firstFinishTasks = await firstApi.finishBuild?.({
+      send: async () => undefined,
+      pluginContext: {},
+    });
 
     let secondInstanceReads = 0;
     const secondApi = await tailwindPlugin.init({
@@ -333,11 +337,20 @@ test("gustwind tailwind plugin reuses compiled css across cold plugin instances"
       url: "/",
       pluginContext: {},
     }))?.markup;
+    const emittedCssFile = firstFinishTasks?.[0]?.type === "writeFile"
+      ? firstFinishTasks[0].payload.file
+      : "";
+    const emittedCss = firstFinishTasks?.[0]?.type === "writeFile"
+      ? String(firstFinishTasks[0].payload.data)
+      : "";
 
     assert.equal(firstInstanceReads, 1);
     assert.equal(secondInstanceReads, 0);
     assert.equal(firstMarkup, secondMarkup);
-    assert.match(firstMarkup || "", /text-red-500/);
+    assert.match(emittedCssFile, /^tailwind-[0-9a-f]{12}\.css$/);
+    assert.match(firstMarkup || "", new RegExp(`href="/${emittedCssFile}"`));
+    assert.doesNotMatch(firstMarkup || "", /<style/);
+    assert.match(emittedCss, /text-red-500/);
   } finally {
     await rm(cwd, { recursive: true, force: true });
   }

@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
 import * as path from "node:path";
-import tailwindCss from "tailwindcss";
-import postcss from "postcss";
+import { pathToFileURL } from "node:url";
 import autoprefixer from "autoprefixer";
+import postcss from "postcss";
+import tailwindCss from "tailwindcss";
 import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import type { Plugin } from "../../types.ts";
 import {
@@ -11,32 +12,34 @@ import {
   writePersistentAssetText,
 } from "../../utilities/persistentAssetCache.ts";
 
-const plugin: Plugin<{
+type TailwindPluginOptions = {
   cssPath: string;
   setupPath: string;
-}> = {
+};
+
+const plugin: Plugin<TailwindPluginOptions> = {
   meta: {
     name: "gustwind-tailwind-plugin",
     description:
-      "${name} implements Tailwind styling integration to the site giving access to Tailwind semantics.",
+      "Compiles Tailwind once and links a shared stylesheet in production.",
     dependsOn: [],
   },
-  init: ({ cwd, options, load, mode }) => {
-    const tailwindCssPath = path.join(cwd, options.cssPath);
-    const tailwindSetupPath = path.join(cwd, options.setupPath);
+  init({ cwd, load, mode, options, outputDirectory }) {
+    const cssPath = path.join(cwd, options.cssPath);
+    const setupPath = path.join(cwd, options.setupPath);
     let compiledCss: string | undefined;
     let compiledCssPromise: Promise<string> | undefined;
     let cacheKeyPromise: Promise<string | null> | undefined;
+    let stylesheetFile: string | undefined;
 
     async function compileCss() {
-      const { default: tailwindSetup } = await import(tailwindSetupPath);
-
+      const [{ default: tailwindSetup }, tailwindSource] = await Promise.all([
+        import(pathToFileURL(setupPath).href),
+        load.textFile(cssPath),
+      ]);
       const plugins = [
         tailwindCss(tailwindSetup) as any,
-        autoprefixer({}) as any,
-        // TODO: Consider allowing customizing autoprefixer
-        // autoprefixer(options.autoprefixer) as any,
-        // TODO: Consider adding postcss-import as a default plugin
+        autoprefixer({}),
       ];
 
       if (mode === "production") {
@@ -44,12 +47,9 @@ const plugin: Plugin<{
         plugins.push(cssnano());
       }
 
-      const processor = await postcss(plugins);
-      const tailwindCSS = await load.textFile(tailwindCssPath);
-      const { css } = await processor.process(
-        tailwindCSS,
-        { from: tailwindCssPath },
-      );
+      const { css } = await postcss(plugins).process(tailwindSource, {
+        from: cssPath,
+      });
 
       return css;
     }
@@ -109,14 +109,14 @@ const plugin: Plugin<{
           {
             type: "readTextFile",
             payload: {
-              path: tailwindCssPath,
+              path: cssPath,
               type: "styles",
             },
           },
           {
             type: "loadModule",
             payload: {
-              path: tailwindSetupPath,
+              path: setupPath,
               type: "styleSetup",
             },
           },
@@ -126,7 +126,7 @@ const plugin: Plugin<{
               .update(JSON.stringify({
                 dependencyFingerprint,
                 mode,
-                version: 1,
+                version: 2,
               }))
               .digest("hex")
             : null
@@ -136,6 +136,24 @@ const plugin: Plugin<{
       return await cacheKeyPromise;
     }
 
+    async function getStylesheetFile() {
+      if (stylesheetFile) {
+        return stylesheetFile;
+      }
+
+      const css = await ensureCompiledCss();
+      const hash = createHash("sha256").update(css).digest("hex").slice(0, 12);
+      stylesheetFile = `tailwind-${hash}.css`;
+
+      return stylesheetFile;
+    }
+
+    function injectIntoHead(markup: string, injected: string) {
+      return markup.includes("</head>")
+        ? markup.replace("</head>", `${injected}</head>`)
+        : markup;
+    }
+
     return {
       prepareBuild: async () => {
         await ensureCompiledCss();
@@ -143,23 +161,46 @@ const plugin: Plugin<{
       prepareContext: async () => {
         await ensureCompiledCss();
       },
-      afterEachRender: async ({ markup, url }) => {
+      async afterEachRender({ markup, url }) {
         if (url.endsWith(".xml")) {
           return { markup };
         }
 
+        if (mode === "production") {
+          const stylesheetHref = "/" + await getStylesheetFile();
+
+          return {
+            markup: injectIntoHead(
+              markup,
+              `<link rel="stylesheet" href="${stylesheetHref}">`,
+            ),
+          };
+        }
+
         return {
-          markup: markup.replace(
-            "</head>",
-            `<style>${await ensureCompiledCss()}</style></head>`,
+          markup: injectIntoHead(
+            markup,
+            `<style data-tailwind>${await ensureCompiledCss()}</style>`,
           ),
         };
       },
-      onMessage: ({ message }) => {
-        const { type } = message;
+      async finishBuild() {
+        if (mode !== "production") {
+          return;
+        }
 
-        if (type === "getStyleSetupPath") {
-          return { result: tailwindSetupPath };
+        return [{
+          type: "writeFile",
+          payload: {
+            outputDirectory,
+            file: await getStylesheetFile(),
+            data: await ensureCompiledCss(),
+          },
+        }];
+      },
+      onMessage({ message }) {
+        if (message.type === "getStyleSetupPath") {
+          return { result: setupPath };
         }
       },
     };

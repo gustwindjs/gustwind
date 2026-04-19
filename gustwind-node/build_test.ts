@@ -255,6 +255,128 @@ export const plugin = {
   }
 });
 
+test("gustwind-node tailwind plugin emits a shared production stylesheet", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-tailwind-build-"));
+
+  try {
+    await writeFile(
+      path.join(cwd, "tailwind.css"),
+      "@tailwind utilities;\n",
+    );
+    await writeFile(
+      path.join(cwd, "tailwindSetup.ts"),
+      [
+        "export default {",
+        "  content: [{ raw: '<div class=\"text-red-500\"></div>', extension: 'html' }],",
+        "  theme: { extend: {} },",
+        "  plugins: [],",
+        "};",
+      ].join("\n"),
+    );
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies static routes for Tailwind build testing.",
+  },
+  init() {
+    const routes = {
+      "/": {
+        layout: "Page",
+        context: { message: "home" },
+      },
+      "docs": {
+        layout: "Page",
+        context: { message: "docs" },
+      },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+        if (url === "/docs/") {
+          return routes.docs;
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders HTML output for Tailwind build testing.",
+  },
+  init() {
+    return {
+      prepareContext({ route, url }) {
+        return {
+          context: {
+            ...(route.context || {}),
+            url,
+          },
+        };
+      },
+      renderLayout({ context }) {
+        return \`<html><head></head><body><div class="text-red-500">\${context.message}</div></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    const outputDirectory = path.join(cwd, "dist");
+
+    await buildNode({
+      cwd,
+      outputDirectory,
+      pluginDefinitions: [
+        { path: "./router-plugin.ts", options: {}, module: undefined as never },
+        { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+        {
+          path: path.resolve("plugins/tailwind/mod.ts"),
+          options: {
+            cssPath: "./tailwind.css",
+            setupPath: "./tailwindSetup.ts",
+          },
+          module: undefined as never,
+        },
+      ],
+      routeConcurrency: 1,
+    });
+
+    const homeMarkup = await readFile(path.join(outputDirectory, "index.html"), "utf8");
+    const docsMarkup = await readFile(path.join(outputDirectory, "docs", "index.html"), "utf8");
+    const stylesheetHref = homeMarkup.match(/href="\/(tailwind-[0-9a-f]{12}\.css)"/)?.[1];
+
+    assert.ok(stylesheetHref);
+    assert.equal(
+      docsMarkup.match(/href="\/(tailwind-[0-9a-f]{12}\.css)"/)?.[1],
+      stylesheetHref,
+    );
+    assert.doesNotMatch(homeMarkup, /<style/);
+    assert.doesNotMatch(docsMarkup, /<style/);
+    assert.match(
+      await readFile(path.join(outputDirectory, stylesheetHref), "utf8"),
+      /text-red-500/,
+    );
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("gustwind-node can validate generated HTML output", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-validate-"));
 
