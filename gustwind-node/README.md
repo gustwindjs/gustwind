@@ -34,6 +34,12 @@ Consume the Node API:
 import { buildNode, initNodeRender, validateHtmlDirectory } from "gustwind";
 ```
 
+Consume packaged plugins:
+
+```js
+import { plugin as scriptPlugin } from "gustwind/plugins/script";
+```
+
 Consume the packaged routers:
 
 ```js
