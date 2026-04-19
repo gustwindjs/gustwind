@@ -33,3 +33,10 @@ Consume the Node API:
 ```js
 import { buildNode, initNodeRender, validateHtmlDirectory } from "gustwind";
 ```
+
+Consume the packaged routers:
+
+```js
+import { plugin as configRouterPlugin } from "gustwind/routers/config-router";
+import { plugin as edgeRouterPlugin } from "gustwind/routers/edge-router";
+```

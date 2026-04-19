@@ -19,9 +19,14 @@ const gustwindEntries = [
     exportPath: "./plugins/copy",
   },
   {
+    in: "./routers/config-router/mod.ts",
+    out: "routers/config-router/mod",
+    exportPaths: ["./routers/config-router"],
+  },
+  {
     in: "./routers/edge-router/mod.ts",
-    out: "plugins/edge-router/mod",
-    exportPath: "./plugins/edge-router",
+    out: "routers/edge-router/mod",
+    exportPaths: ["./routers/edge-router", "./plugins/edge-router"],
   },
   {
     in: "./plugins/meta/mod.ts",
@@ -94,11 +99,14 @@ const targets = {
         ".": "./mod.js",
         ...Object.fromEntries(
           gustwindEntries
-            .filter(({ exportPath }) => exportPath)
-            .map(({ exportPath, out }) => [
-              exportPath,
-              `./${out}.js`,
-            ]),
+            .flatMap(({ exportPath, exportPaths, out }) =>
+              [exportPath, ...(exportPaths || [])]
+                .filter(Boolean)
+                .map((currentExportPath) => [
+                  currentExportPath,
+                  `./${out}.js`,
+                ])
+            ),
         ),
       },
       files: [
@@ -109,6 +117,8 @@ const targets = {
         "htmlisp/**/*.d.ts",
         "plugins/**/*.js",
         "plugins/**/*.d.ts",
+        "routers/**/*.js",
+        "routers/**/*.d.ts",
         "README.md",
         "LICENSE",
       ],
@@ -231,7 +241,7 @@ async function writeGustwindDeclarations(outDirectory) {
 
   await Promise.all(
     gustwindEntries
-      .filter(({ exportPath }) => exportPath)
+      .filter(({ exportPath, exportPaths }) => exportPath || exportPaths?.length)
       .map(({ out }) =>
         writeFile(
           path.join(outDirectory, `${out}.d.ts`),
