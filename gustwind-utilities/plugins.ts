@@ -1,4 +1,3 @@
-import { join as joinPath } from "node:path";
 import type {
   Context,
   InitLoadApi,
@@ -150,11 +149,7 @@ async function loadPluginModule(
     default?: Plugin;
     plugin?: Plugin;
   }>({
-    path: ["file:", "http://", "https://"].some((prefix) =>
-        path.startsWith(prefix)
-      ) || path.startsWith("/")
-      ? path
-      : joinPath(cwd, path),
+    path: await resolvePluginPath(cwd, path),
     type: "plugins",
   });
   const pluginModule = exports.plugin || exports.default;
@@ -164,6 +159,18 @@ async function loadPluginModule(
   }
 
   return pluginModule;
+}
+
+async function resolvePluginPath(cwd: string, path: string) {
+  if (
+    ["file:", "http://", "https://"].some((prefix) => path.startsWith(prefix)) ||
+    path.startsWith("/")
+  ) {
+    return path;
+  }
+
+  const { join } = await import("node:path");
+  return join(cwd, path);
 }
 
 async function importPlugin(

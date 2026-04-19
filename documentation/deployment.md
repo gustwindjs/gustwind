@@ -34,6 +34,40 @@ The related build command would install dependencies and run the Node build. Alt
 
 For Vercel, point to `build.sh` through their user interface.
 
+## Cloudflare Workers
+
+For Worker deployments, Gustwind now exposes a Cloudflare adapter through `gustwind/workers/cloudflare`. It wraps the edge-compatible render path into a Worker `fetch()` handler and can optionally serve built assets from the standard `ASSETS` binding.
+
+```js
+import { createCloudflareWorker } from "gustwind/workers/cloudflare";
+import { plugin as metaPlugin } from "gustwind/plugins/meta";
+import { plugin as edgeRendererPlugin } from "gustwind/plugins/htmlisp-edge-renderer";
+import { plugin as edgeRouterPlugin } from "gustwind/routers/edge-router";
+
+export default createCloudflareWorker({
+  initialPlugins: [
+    [edgeRouterPlugin, {
+      routes: {
+        "/": {
+          layout: "Home",
+          context: { headline: "Hello from Gustwind" },
+        },
+      },
+    }],
+    [metaPlugin, { meta: { title: "Cloudflare Worker" } }],
+    [edgeRendererPlugin, {
+      components: {
+        Home: "<html><body><h1 &children=\"meta.title\"></h1><p &children=\"context.headline\"></p></body></html>",
+      },
+      componentUtilities: {},
+      globalUtilities: { init: () => ({}) },
+    }],
+  ],
+});
+```
+
+If you are also publishing a static `build/` directory, keep Wrangler assets enabled so CSS, JS, images, and other emitted files are served directly by the `ASSETS` binding while page requests fall through to Gustwind rendering.
+
 ## GitHub Pages
 
 For GitHub Pages, it's a good idea to [follow Pagic documentation](https://pagic.org/docs/deployment.html). You can point to the build script within GitHub YAML configuration.

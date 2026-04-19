@@ -48,3 +48,24 @@ Consume the packaged routers:
 import { plugin as configRouterPlugin } from "gustwind/routers/config-router";
 import { plugin as edgeRouterPlugin } from "gustwind/routers/edge-router";
 ```
+
+Deploy to Cloudflare Workers with the packaged adapter:
+
+```js
+import { createCloudflareWorker } from "gustwind/workers/cloudflare";
+import { plugin as metaPlugin } from "gustwind/plugins/meta";
+import { plugin as edgeRendererPlugin } from "gustwind/plugins/htmlisp-edge-renderer";
+import { plugin as edgeRouterPlugin } from "gustwind/routers/edge-router";
+
+export default createCloudflareWorker({
+  initialPlugins: [
+    [edgeRouterPlugin, { routes: { "/": { layout: "Home" } } }],
+    [metaPlugin, { meta: { title: "Home" } }],
+    [edgeRendererPlugin, {
+      components: { Home: "<html><body><h1 &children=\"meta.title\"></h1></body></html>" },
+      componentUtilities: {},
+      globalUtilities: { init: () => ({}) },
+    }],
+  ],
+});
+```

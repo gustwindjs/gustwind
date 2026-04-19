@@ -9,6 +9,12 @@ const gustwindEntries = [
     out: "mod",
   },
   {
+    declaration: "cloudflareWorker",
+    in: "./cloudflare-worker/mod.ts",
+    out: "workers/cloudflare/mod",
+    exportPaths: ["./workers/cloudflare", "./cloudflare-worker"],
+  },
+  {
     in: "./renderers/htmlisp-renderer/mod.ts",
     out: "plugins/htmlisp-renderer/mod",
     exportPath: "./plugins/htmlisp-renderer",
@@ -134,6 +140,8 @@ const targets = {
         "plugins/**/*.d.ts",
         "routers/**/*.js",
         "routers/**/*.d.ts",
+        "workers/**/*.js",
+        "workers/**/*.d.ts",
         "README.md",
         "LICENSE",
       ],
@@ -257,10 +265,12 @@ async function writeGustwindDeclarations(outDirectory) {
   await Promise.all(
     gustwindEntries
       .filter(({ exportPath, exportPaths }) => exportPath || exportPaths?.length)
-      .map(({ out }) =>
+      .map(({ declaration, out }) =>
         writeFile(
           path.join(outDirectory, `${out}.d.ts`),
-          createPluginDeclaration(),
+          declaration === "cloudflareWorker"
+            ? createCloudflareWorkerDeclaration()
+            : createPluginDeclaration(),
         )
       ),
   );
@@ -278,6 +288,72 @@ function createPluginDeclaration() {
     'import type { Plugin } from "../../types.js";',
     "",
     "export declare const plugin: Plugin<Record<string, unknown>, Record<string, unknown>>;",
+    "",
+  ].join("\n");
+}
+
+function createCloudflareWorkerDeclaration() {
+  return [
+    'import type { Plugin, Tasks } from "../../types.js";',
+    "",
+    "type PluginDefinition = [Plugin, Record<string, unknown>];",
+    "type RenderFn = (",
+    "  pathname: string,",
+    "  initialContext: Record<string, unknown>,",
+    ") => Promise<{",
+    "  markup: string;",
+    "  tasks: Tasks;",
+    "}>;",
+    "",
+    "type CloudflareAssetFetcher = {",
+    "  fetch(input: Request | URL | string, init?: RequestInit): Promise<Response>;",
+    "};",
+    "",
+    "type CloudflareExecutionContext = {",
+    "  waitUntil(promise: Promise<unknown>): void;",
+    "  passThroughOnException?(): void;",
+    "};",
+    "",
+    "type CloudflareWorkerContext<E> = {",
+    "  ctx: CloudflareExecutionContext;",
+    "  env: E;",
+    "  request: Request;",
+    "};",
+    "",
+    "type CloudflareWorker<E> = {",
+    "  fetch(",
+    "    request: Request,",
+    "    env: E,",
+    "    ctx: CloudflareExecutionContext,",
+    "  ): Response | Promise<Response>;",
+    "};",
+    "",
+    "type CloudflareWorkerOptions<E extends Record<string, unknown>> = {",
+    "  assetsBinding?: keyof E & string;",
+    "  getRenderContext?(",
+    "    context: CloudflareWorkerContext<E>,",
+    "  ): Record<string, unknown> | Promise<Record<string, unknown>>;",
+    "  handleTasks?(",
+    "    context: CloudflareWorkerContext<E> & { tasks: Tasks },",
+    "  ): void | Promise<void>;",
+    "  initialPlugins?: PluginDefinition[];",
+    "  onError?(",
+    "    context: CloudflareWorkerContext<E> & { error: unknown },",
+    "  ): Response | Promise<Response>;",
+    "  render?: RenderFn;",
+    "};",
+    "",
+    "export declare function createCloudflareWorker<E extends Record<string, unknown>>(",
+    "  options: CloudflareWorkerOptions<E>,",
+    "): CloudflareWorker<E>;",
+    "",
+    "export type {",
+    "  CloudflareAssetFetcher,",
+    "  CloudflareExecutionContext,",
+    "  CloudflareWorker,",
+    "  CloudflareWorkerContext,",
+    "  CloudflareWorkerOptions,",
+    "};",
     "",
   ].join("\n");
 }
