@@ -3,9 +3,13 @@ import assert from "node:assert/strict";
 import process from "node:process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { build as buildBundle } from "esbuild";
 import { buildNode } from "./build.ts";
 import { main } from "./cli.ts";
+
+const rootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 test("gustwind-node can collect structured build benchmarks", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-benchmark-"));
@@ -373,5 +377,39 @@ export const plugin = {
     console.log = previousLog;
     process.chdir(previousCwd);
     await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("gustwind-node packaged CLI does not use top-level await", async () => {
+  const outDirectory = await mkdtemp(path.join(tmpdir(), "gustwind-node-packaged-cli-"));
+
+  try {
+    await buildBundle({
+      absWorkingDir: rootDirectory,
+      banner: {
+        js: "#!/usr/bin/env node",
+      },
+      bundle: true,
+      define: {
+        "process.env.GUSTWIND_VERSION": JSON.stringify("0.0.0-test"),
+      },
+      entryPoints: [{
+        in: "./gustwind-node/cli.ts",
+        out: "cli",
+      }],
+      format: "esm",
+      outdir: outDirectory,
+      packages: "external",
+      platform: "node",
+      target: "node24",
+    });
+
+    const cliSource = await readFile(path.join(outDirectory, "cli.js"), "utf8");
+
+    assert.doesNotMatch(cliSource, /await main\(/);
+    assert.match(cliSource, /function runCli\(\)/);
+    assert.match(cliSource, /void main\(/);
+  } finally {
+    await rm(outDirectory, { recursive: true, force: true });
   }
 });

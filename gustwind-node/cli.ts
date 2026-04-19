@@ -327,9 +327,20 @@ function parseArgs(cliArgs: string[]): CliArgs {
   return ret;
 }
 
+function runCli() {
+  void main(process.argv.slice(2)).then(
+    (ret) => {
+      process.exitCode = ret;
+    },
+    (error) => {
+      console.error(error);
+      process.exitCode = 1;
+    },
+  );
+}
+
 if (import.meta.main) {
-  const ret = await main(process.argv.slice(2));
-  process.exitCode = ret;
+  runCli();
 }
 
 export { main };
