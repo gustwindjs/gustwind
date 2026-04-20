@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            e2e/package-lock.json
+
+      - name: Read release version
+        id: version
+        run: |
+          VERSION="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; console.log(JSON.parse(readFileSync("package.json", "utf8")).version)')"
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Inspect release state
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          if npm view "gustwind@${VERSION}" version --json >/dev/null 2>&1; then
+            echo "gustwind_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "gustwind_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if npm view "htmlisp@${VERSION}" version --json >/dev/null 2>&1; then
+            echo "htmlisp_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "htmlisp_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "github_release_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "github_release_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.state.outputs.gustwind_published != 'true' || steps.state.outputs.htmlisp_published != 'true' || steps.state.outputs.github_release_exists != 'true'
+        run: npm ci
+
+      - name: Install e2e dependencies
+        if: steps.state.outputs.gustwind_published != 'true' || steps.state.outputs.htmlisp_published != 'true' || steps.state.outputs.github_release_exists != 'true'
+        run: npm ci
+        working-directory: e2e
+
+      - name: Install Playwright browser
+        if: steps.state.outputs.gustwind_published != 'true' || steps.state.outputs.htmlisp_published != 'true' || steps.state.outputs.github_release_exists != 'true'
+        run: npx playwright install --with-deps chromium
+        working-directory: e2e
+
+      - name: Run release gate and build artifacts
+        if: steps.state.outputs.gustwind_published != 'true' || steps.state.outputs.htmlisp_published != 'true' || steps.state.outputs.github_release_exists != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          npm run quality:gate
+          npm run release:local -- "${VERSION}"
+
+      - name: Publish gustwind
+        if: steps.state.outputs.gustwind_published != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: npm publish ".release/${VERSION}/gustwind-${VERSION}.tgz" --provenance --access public
+
+      - name: Publish htmlisp
+        if: steps.state.outputs.htmlisp_published != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: npm publish ".release/${VERSION}/htmlisp-${VERSION}.tgz" --provenance --access public
+
+      - name: Create GitHub release
+        if: steps.state.outputs.github_release_exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          gh release create "v${VERSION}" \
+            ".release/${VERSION}/gustwind-${VERSION}.tgz" \
+            ".release/${VERSION}/htmlisp-${VERSION}.tgz" \
+            --target "${GITHUB_SHA}" \
+            --title "v${VERSION}" \
+            --generate-notes

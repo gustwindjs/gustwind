@@ -77,16 +77,17 @@ const rootDirectory = path.resolve(
 );
 
 const targetName = process.argv[2];
-const version = process.argv[3];
-
-if (!targetName || !version) {
-  console.error("Usage: node ./scripts/build-npm-package.mjs <gustwind|htmlisp> <version>");
+if (!targetName) {
+  console.error(
+    "Usage: node ./scripts/build-npm-package.mjs <gustwind|htmlisp> [version-from-package.json]",
+  );
   process.exit(1);
 }
 
 const rootPackage = JSON.parse(
   await readFile(path.join(rootDirectory, "package.json"), "utf8"),
 );
+const version = process.argv[3] ?? rootPackage.version;
 const rootTypesSource = await readFile(
   path.join(rootDirectory, "types.ts"),
   "utf8",
@@ -147,15 +148,10 @@ const targets = {
       ],
       description:
         "Gustwind is a Node.js-powered website creator that allows component-oriented development of large-scale sites.",
-      license: "MIT",
-      repository: {
-        type: "git",
-        url: "git+https://github.com/survivejs/gustwind.git",
-      },
-      bugs: {
-        url: "https://github.com/survivejs/gustwind/issues",
-      },
-      homepage: "https://gustwind.js.org/",
+      license: rootPackage.license,
+      repository: rootPackage.repository,
+      bugs: rootPackage.bugs,
+      homepage: rootPackage.homepage,
       keywords: ["ssg", "site-generation", "static-site-generator"],
       engines: {
         node: ">=24",
@@ -177,15 +173,10 @@ const targets = {
       },
       files: ["mod.js", "README.md", "LICENSE"],
       description: "HTML combined with Lisp for fun and profit",
-      license: "MIT",
-      repository: {
-        type: "git",
-        url: "git+https://github.com/survivejs/gustwind.git",
-      },
-      bugs: {
-        url: "https://github.com/survivejs/gustwind/issues",
-      },
-      homepage: "https://gustwind.js.org/",
+      license: rootPackage.license,
+      repository: rootPackage.repository,
+      bugs: rootPackage.bugs,
+      homepage: rootPackage.homepage,
       keywords: ["templating", "html", "templating-engine"],
       engines: {
         node: ">=24",

@@ -1,4 +1,4 @@
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -9,10 +9,13 @@ const rootDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const version = process.argv[2];
+const rootPackage = JSON.parse(
+  await readFile(path.join(rootDirectory, "package.json"), "utf8"),
+);
+const version = process.argv[2] ?? rootPackage.version;
 
 if (!version) {
-  console.error("Usage: node ./scripts/release-local.mjs <version>");
+  console.error("Usage: node ./scripts/release-local.mjs [version-from-package.json]");
   process.exit(1);
 }
 

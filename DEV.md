@@ -14,13 +14,39 @@ There's [a good overview of Netlify edge functions](https://docs.netlify.com/edg
 
 ## Publishing to npm
 
+`package.json` is now the release source of truth for both the local CLI version and the published `gustwind`/`htmlisp` package version.
+
+### Automated release from `main`
+
+When `.github/workflows/release.yml` runs on a push to `main`, it will:
+
+1. Read the version from `package.json`
+2. Skip the run if `gustwind@<version>`, `htmlisp@<version>`, and GitHub release `v<version>` already exist
+3. Run `npm run quality:gate`
+4. Build release tarballs through `npm run release:local -- <VERSION>`
+5. Publish any missing npm packages
+6. Create GitHub release `v<VERSION>` and attach both tarballs
+
+The intended flow is therefore:
+
+1. Update `package.json` with the next release version in the PR that should ship
+2. Merge that PR to `main`
+3. Let the release workflow publish the version once
+
+One-time setup required on npm/GitHub:
+
+1. Configure npm trusted publishing for `gustwind` and `htmlisp` to trust this repository workflow
+2. If you want a fallback path, add repository secret `NPM_TOKEN`; the workflow will use it if present
+
+### Manual release
+
 1. `npm run build:npm:gustwind -- <VERSION>` where `VERSION` is `0.1.0` for example
 2. `cd gustwind-node/npm`
 3. `npm publish`. You may need to pass `--otp` here as well (preferred for security)
 
 For a local release build that prepares all artifacts at once, run:
 
-1. `npm run release:local -- <VERSION>`
+1. `npm run release:local -- <VERSION>` or `npm run release:local` to use the version from `package.json`
 2. Inspect the site build at `./build`
 3. Inspect the package directories at `./gustwind-node/npm` and `./htmlisp/npm`
 4. Inspect the packed tarballs at `./.release/<VERSION>/`

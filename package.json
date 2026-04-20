@@ -4,6 +4,14 @@
   "type": "module",
   "description": "Gustwind is a Node.js-powered website creator that allows component-oriented development of large-scale sites.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gustwindjs/gustwind.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gustwindjs/gustwind/issues"
+  },
+  "homepage": "https://gustwind.js.org/",
   "scripts": {
     "test": "echo \"Use npm run quality:gate for the full verification suite or npm run test:e2e for Playwright.\" && exit 1",
     "build": "node ./gustwind-node/cli.ts --build --output ./build",
