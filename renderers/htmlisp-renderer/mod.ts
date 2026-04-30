@@ -107,6 +107,7 @@ const plugin: Plugin<{
             ...runtimeMeta,
             // @ts-expect-error This is fine
             ...meta,
+            ...route.meta,
             // @ts-expect-error This is fine
             ...route.context?.meta,
           },

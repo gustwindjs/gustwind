@@ -57,22 +57,25 @@ const plugin: Plugin<{
         }
 
         const context = {
+          ...route.context,
           meta: {
             ...runtimeMeta,
             // @ts-expect-error Figure out how to type this
             ...meta,
+            ...route.meta,
+            // @ts-expect-error Figure out how to type this
+            ...route.context?.meta,
           },
-          ...route.context,
         };
 
-          return {
-            context: {
-              ...context,
-              url,
-              ...await applyUtilities<Utility, Utilities, Context>(
-                context,
-                defaultUtilities,
-                { context },
+        return {
+          context: {
+            ...context,
+            url,
+            ...await applyUtilities<Utility, Utilities, Context>(
+              context,
+              defaultUtilities,
+              { context },
             ),
           },
         };

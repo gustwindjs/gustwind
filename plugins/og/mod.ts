@@ -5,6 +5,10 @@ import { htmlispToHTML } from "../../htmlisp/mod.ts";
 import type { Plugin } from "../../types.ts";
 
 const encoder = new TextEncoder();
+const toRecord = (value: unknown) =>
+  value && typeof value === "object"
+    ? value as Record<string, unknown>
+    : {};
 
 const plugin: Plugin<{
   layout: string;
@@ -20,15 +24,15 @@ const plugin: Plugin<{
     const ogLayout = await load.textFile(layout);
 
     return {
-      beforeEachRender: async ({ url, route, send }) => {
+      beforeEachRender: async ({ url, context, send }) => {
         if (
           !url.endsWith(".html") && !url.endsWith(".html/") &&
           !url.endsWith(".xml") && !url.endsWith(".xml/")
         ) {
-          const meta = await send("gustwind-meta-plugin", {
+          const meta = toRecord(await send("gustwind-meta-plugin", {
             type: "getMeta",
             payload: undefined,
-          });
+          }));
           const components = await send("htmlisp-renderer-plugin", {
             type: "getComponents",
             payload: undefined,
@@ -39,11 +43,8 @@ const plugin: Plugin<{
             // @ts-expect-error It would be better to type this somehow but this will do
             components,
             context: {
-              meta: {
-                // @ts-expect-error Figure out how to type this
-                ...meta,
-                ...(route.meta ?? {}),
-              },
+              ...context,
+              meta: { ...meta, ...toRecord(context.meta) },
             },
           });
 

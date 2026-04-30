@@ -5,7 +5,7 @@ import {
   preparePlugins,
 } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initMemoryLoadApi } from "../load-adapters/memory.ts";
-import type { InitLoadApi, Plugin, Tasks } from "../types.ts";
+import type { InitLoadApi, LoadedPlugin, Plugin, Tasks } from "../types.ts";
 
 type PluginDefinition = [Plugin, Record<string, unknown>];
 type RenderFn = (
@@ -66,7 +66,7 @@ async function createRender(
     cwd: string;
     outputDirectory: string;
     initLoadApi: InitLoadApi;
-    initialImportedPlugins: Awaited<ReturnType<typeof importInitialPlugin>>[];
+    initialImportedPlugins: LoadedPlugin[];
   },
 ) {
   const { plugins, router } = await importPlugins({
@@ -119,7 +119,7 @@ async function importInitialPlugin(
     outputDirectory: string;
     initLoadApi: InitLoadApi;
   },
-) {
+): Promise<LoadedPlugin> {
   const tasks: Tasks = [];
   const api = await plugin.init({
     cwd,

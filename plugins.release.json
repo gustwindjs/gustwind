@@ -29,6 +29,12 @@
       }
     },
     {
+      "path": "./plugins/og/mod.ts",
+      "options": {
+        "layout": "./netlify/functions/layouts/og.html"
+      }
+    },
+    {
       "path": "./plugins/copy/mod.ts",
       "options": {
         "inputPath": "./assets",
