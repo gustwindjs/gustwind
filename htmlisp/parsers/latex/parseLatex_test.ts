@@ -164,6 +164,64 @@ test(`url within paragraph`, () => {
   );
 });
 
+test(`url before paragraph without a blank line`, () => {
+  const input = String.raw`\url{https://bing.com}
+foobar`;
+
+  assert.deepEqual(
+    parseLatex(input, { singles }),
+    [{
+      type: "p",
+      attributes: {},
+      children: [{
+        type: "a",
+        attributes: { href: "https://bing.com" },
+        children: ["https://bing.com"],
+      }, "foobar"],
+    }],
+  );
+});
+
+test(`escaped percent in content`, () => {
+  const input = String.raw`100\% ready`;
+
+  assert.deepEqual(
+    parseLatex(input, {}),
+    [{ type: "p", attributes: {}, children: ["100% ready"] }],
+  );
+});
+
+test(`escaped latex delimiters in a single expression`, () => {
+  const input = String.raw`\textbf{\{value\}}`;
+
+  assert.deepEqual(
+    parseLatex(input, { singles }),
+    [{ type: "b", attributes: {}, children: ["{value}"] }],
+  );
+});
+
+test(`unknown nested latex command is retained`, () => {
+  const input = String.raw`\textbf{before \unknown{value} after}`;
+
+  assert.deepEqual(
+    parseLatex(input, { singles }),
+    [{
+      type: "b",
+      attributes: {},
+      children: ["before ", String.raw`\unknown{value} after`],
+    }],
+  );
+});
+
+test(`no-argument single expression`, () => {
+  const input = String.raw`\textbackslash`;
+
+  assert.deepEqual(
+    parseLatex(input, { singles }),
+    ["\\"],
+  );
+});
+
 test(`multiple single blocks with a newline between`, () => {
   const input = String.raw`\chapter{Introduction}
 \label{ch:introduction}

@@ -46,3 +46,50 @@ test(`nameref not found`, () => {
     `No matching ref was found`,
   );
 });
+
+test(`ref`, () => {
+  const input = String.raw`Foobar \ref{ch:test}`;
+  const ref = {
+    title: "Test",
+    label: "ch:test",
+    slug: "test",
+  };
+
+  assert.deepEqual(
+    parseLatex(input, {
+      singles: refs([ref]),
+    }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["Foobar ", {
+          type: "a",
+          attributes: { href: ref.slug },
+          children: [ref.title],
+        }],
+      },
+    ],
+  );
+});
+
+test(`autoref fallback`, () => {
+  const input = String.raw`See \autoref{fig:overview}`;
+
+  assert.deepEqual(
+    parseLatex(input, {
+      singles: refs([]),
+    }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["See ", {
+          type: "a",
+          attributes: { href: "#fig-overview" },
+          children: ["fig"],
+        }],
+      },
+    ],
+  );
+});

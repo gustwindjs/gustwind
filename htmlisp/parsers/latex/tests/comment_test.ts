@@ -35,6 +35,33 @@ foobar`;
   );
 });
 
+test(`escaped percent is retained`, () => {
+  const input = String.raw`100\% ready % comment`;
+
+  assert.deepEqual(
+    parseLatex(input, {}),
+    [{ type: "p", attributes: {}, children: ["100% ready"] }],
+  );
+});
+
+test(`comment environment is stripped`, () => {
+  const input = String.raw`before
+
+\begin{comment}
+commented
+\end{comment}
+
+after`;
+
+  assert.deepEqual(
+    parseLatex(input, {}),
+    [
+      { type: "p", attributes: {}, children: ["before"] },
+      { type: "p", attributes: {}, children: ["after"] },
+    ],
+  );
+});
+
 test(`complex comment with an expression`, () => {
   const input = `% \noindent\makebox[\linewidth]{\rule{\textwidth}{1pt}}
 

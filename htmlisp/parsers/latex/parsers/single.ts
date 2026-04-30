@@ -35,6 +35,14 @@ function getParseSingle<ExpressionReturnType>(
       const c = getCharacter.next();
 
       if (c === null) {
+        if (state === STATES.PARSE_EXPRESSION && expressions[stringBuffer]) {
+          return {
+            match: stringBuffer,
+            value: expressions[stringBuffer]([], matchCounts || {}),
+            matchCounts,
+          };
+        }
+
         break;
       }
 
@@ -59,11 +67,26 @@ function getParseSingle<ExpressionReturnType>(
             throw new Error("No matching expression was found");
             // throw new Error(`Unknown expression: ${stringBuffer}`);
           }
+        } else if (expressions[stringBuffer] && !isCommandNameCharacter(c)) {
+          if (c !== " ") {
+            getCharacter.previous();
+          }
+
+          return {
+            match: stringBuffer,
+            value: expressions[stringBuffer]([], matchCounts || {}),
+            matchCounts,
+          };
         } else {
           stringBuffer += c;
         }
       } else if (state === STATES.PARSE_EXPRESSION_CONTENT) {
-        if (c === "\\") {
+        if (c === "\\" && ["%", "{", "}"].includes(getCharacter.get() || "")) {
+          stringBuffer += getCharacter.get();
+          getCharacter.next();
+        } else if (c === "\\") {
+          const characterIndex = getCharacter.getIndex();
+
           if (stringBuffer) {
             parts.push(stringBuffer);
             stringBuffer = "";
@@ -71,10 +94,22 @@ function getParseSingle<ExpressionReturnType>(
 
           getCharacter.previous();
 
-          const ret = parseSingle(getCharacter, matchCounts);
+          try {
+            const ret = parseSingle(getCharacter, matchCounts);
 
-          if (ret) {
-            parts.push(ret.value);
+            if (ret) {
+              parts.push(ret.value);
+            }
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.message === "No matching expression was found"
+            ) {
+              getCharacter.setIndex(characterIndex - 1);
+              stringBuffer += readLatexCommand(getCharacter);
+            } else {
+              throw error;
+            }
           }
         } else if (c === "}") {
           if (stringBuffer) {
@@ -104,6 +139,69 @@ function getParseSingle<ExpressionReturnType>(
 
     throw new Error("No matching expression was found");
   };
+}
+
+function isCommandNameCharacter(value: string) {
+  return /[A-Za-z]/.test(value);
+}
+
+function readLatexCommand(getCharacter: CharacterGenerator) {
+  let ret = "";
+  const first = getCharacter.next();
+
+  if (first !== "\\") {
+    return first || "";
+  }
+
+  ret += first;
+
+  for (let i = 0; i < LIMIT; i++) {
+    const c = getCharacter.next();
+
+    if (c === null) {
+      return ret;
+    }
+
+    if (isCommandNameCharacter(c)) {
+      ret += c;
+    } else {
+      getCharacter.previous();
+      break;
+    }
+  }
+
+  for (let i = 0; i < LIMIT && getCharacter.get() === "{"; i++) {
+    ret += readBalancedGroup(getCharacter);
+  }
+
+  return ret;
+}
+
+function readBalancedGroup(getCharacter: CharacterGenerator) {
+  let ret = "";
+  let depth = 0;
+
+  for (let i = 0; i < LIMIT; i++) {
+    const c = getCharacter.next();
+
+    if (c === null) {
+      return ret;
+    }
+
+    ret += c;
+
+    if (c === "{") {
+      depth++;
+    } else if (c === "}") {
+      depth--;
+
+      if (depth === 0) {
+        return ret;
+      }
+    }
+  }
+
+  return ret;
 }
 
 export { getParseSingle, type SingleParser };

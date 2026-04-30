@@ -5,7 +5,9 @@ const LIMIT = 100000;
 
 // Parses content until \ or \n\n or until string to parse ends
 function getParseContent<ExpressionReturnType>(
-  expression: (parts: ExpressionReturnType[]) => ExpressionReturnType,
+  expression: (
+    parts: ExpressionReturnType[],
+  ) => ExpressionReturnType | undefined,
   parsers: ((
     getCharacter: CharacterGenerator,
   ) => { match: string; value: ExpressionReturnType })[] = [],
@@ -33,6 +35,9 @@ function getParseContent<ExpressionReturnType>(
 
       if (c === "\n" && getCharacter.get() === "\n") {
         break;
+      } else if (c === "\\" && getCharacter.get() === "%") {
+        stringBuffer += "%";
+        getCharacter.next();
       } else if (c === "\\" && !foundComment) {
         // @ts-expect-error This is fine
         parts.push(stringBuffer);

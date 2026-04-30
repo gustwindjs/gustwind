@@ -7,7 +7,9 @@ import { parseDefinitionItem } from "./parsers/definition_item.ts";
 import { parseListItem } from "./parsers/list_item.ts";
 import type { Element } from "../../types.ts";
 
-const singles: Record<string, SingleParser<Element>> = {
+type LatexNode = Element | string;
+
+const singles: Record<string, SingleParser<LatexNode>> = {
   // Url
   url: (children) => element("a", children, { href: children[0] }),
   // Titles
@@ -16,6 +18,8 @@ const singles: Record<string, SingleParser<Element>> = {
   subsection: el("h3"),
   subsubsection: el("h4"),
   paragraph: el("b"),
+  label: () => element("", []),
+  textbackslash: () => "\\",
   // Formatting
   texttt: el("code"),
   textbf: el("b"),
@@ -63,7 +67,7 @@ const lists: Record<string, BlockParser<Element, Element>> = {
 
 const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
-): Record<string, SingleParser<Element>> => ({
+): Record<string, SingleParser<LatexNode>> => ({
   footnote: (children, matchCounts) => {
     return ({
       type: "sup",
@@ -140,8 +144,7 @@ const cites = (
       return {
         title,
         author,
-        // TODO: How about multiple authors?
-        surname: author.split(" ")[1],
+        surname: getFirstAuthorSurname(author),
         year: entry.fields?.year || "",
       };
     });
@@ -178,9 +181,37 @@ const cites = (
   }),
 });
 
+function getFirstAuthorSurname(author: string) {
+  const firstAuthor = author.split(/\s+and\s+/i)[0]?.trim() || "";
+
+  if (firstAuthor.includes(",")) {
+    return firstAuthor.split(",")[0].trim();
+  }
+
+  return firstAuthor.split(/\s+/).at(-1) || firstAuthor;
+}
+
 const refs = (
   refEntries: { title: string; label: string; slug: string }[],
-): Record<string, SingleParser<Element>> => ({
+): Record<string, SingleParser<LatexNode>> => ({
+  autoref: (children, matchCounts) => {
+    const id = children.join("") || matchCounts.autoref?.at(-1) || "";
+    const ref = refEntries.find(({ label }) => label === id);
+
+    if (ref) {
+      return {
+        type: "a",
+        attributes: { href: ref.slug },
+        children: [ref.title],
+      };
+    }
+
+    return {
+      type: "a",
+      attributes: { href: `#${slugify(id)}` },
+      children: [getAutorefLabel(id) || id],
+    };
+  },
   nameref: (children) => {
     const id = children[0];
     const ref = refEntries.find(({ label }) => label === id);
@@ -195,7 +226,31 @@ const refs = (
       children: [ref.title],
     });
   },
+  ref: (children) => {
+    const id = children[0];
+    const ref = refEntries.find(({ label }) => label === id);
+
+    if (!ref) {
+      throw new Error("No matching ref was found");
+    }
+
+    return ({
+      type: "a",
+      attributes: { href: ref.slug },
+      children: [ref.title],
+    });
+  },
 });
+
+function getAutorefLabel(id: string) {
+  const [kind] = id.split(":");
+
+  return kind || id;
+}
+
+function slugify(idBase: string) {
+  return idBase.toLowerCase().replace(/`/g, "").replace(/[^\w]+/g, "-");
+}
 
 function el(type: string) {
   return function e(children: string[]) {

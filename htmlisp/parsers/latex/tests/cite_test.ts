@@ -275,7 +275,36 @@ test(`citet`, () => {
   );
 });
 
-// TODO: Add more complex tests for citet
+test(`citet surname from multiple authors`, () => {
+  const input = String.raw`Foobar \citet{test24}`;
+
+  assert.deepEqual(
+    parseLatex(input, {
+      singles: cites({
+        test24: {
+          type: "ARTICLE",
+          id: "test24",
+          fields: {
+            author: "Doe, John and Jane Smith",
+            title: "Test title",
+            year: "2024",
+          },
+        },
+      }),
+    }),
+    [
+      {
+        type: "p",
+        attributes: {},
+        children: ["Foobar ", {
+          type: "span",
+          attributes: { title: "Test title - Doe, John and Jane Smith" },
+          children: ["Doe (2024)"],
+        }],
+      },
+    ],
+  );
+});
 
 // TODO: Test \citep, \fullcite
 // TODO: Test \ref, \nameref, \autoref - these need some lookup against labels

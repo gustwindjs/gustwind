@@ -60,7 +60,10 @@ function getParseDouble<ExpressionReturnType>(
           stringBuffer += c;
         }
       } else if (state === STATES.PARSE_EXPRESSION_FIRST) {
-        if (c === "}") {
+        if (c === "\\" && getCharacter.get() === "%") {
+          stringBuffer += "%";
+          getCharacter.next();
+        } else if (c === "}") {
           foundFirst = stringBuffer;
 
           if (getCharacter.get() === "{") {
@@ -75,7 +78,10 @@ function getParseDouble<ExpressionReturnType>(
           stringBuffer += c;
         }
       } else if (state === STATES.PARSE_EXPRESSION_SECOND) {
-        if (c === "{") {
+        if (c === "\\" && getCharacter.get() === "%") {
+          stringBuffer += "%";
+          getCharacter.next();
+        } else if (c === "{") {
           bracesFound++;
         } else if (c === "}") {
           if (bracesFound) {
