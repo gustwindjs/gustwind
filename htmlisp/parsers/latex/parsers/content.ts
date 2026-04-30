@@ -38,6 +38,9 @@ function getParseContent<ExpressionReturnType>(
       } else if (c === "\\" && getCharacter.get() === "%") {
         stringBuffer += "%";
         getCharacter.next();
+      } else if (c === "\\" && getCharacter.get() === "-") {
+        // LaTeX discretionary hyphen. It only marks a possible break point.
+        getCharacter.next();
       } else if (c === "\\" && !foundComment) {
         // @ts-expect-error This is fine
         parts.push(stringBuffer);

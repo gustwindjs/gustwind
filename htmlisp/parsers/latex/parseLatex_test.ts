@@ -12,6 +12,15 @@ test(`id expression`, () => {
   );
 });
 
+test(`discretionary hyphen`, () => {
+  const input = String.raw`dis\-cretionary`;
+
+  assert.deepEqual(
+    parseLatex(input, {}),
+    [{ type: "p", attributes: {}, children: ["discretionary"] }],
+  );
+});
+
 test(`multiple paragraphs`, () => {
   const input = `foobar
 

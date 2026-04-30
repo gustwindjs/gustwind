@@ -264,6 +264,24 @@ const plugin: Plugin<{
           }
           case "getComponents":
             return { result: pluginContext.components };
+          case "getRenderContext": {
+            const { components, componentUtilities, globalUtilities } =
+              pluginContext;
+            const runtimeUtilities = getRuntimeUtilities({
+              componentUtilities,
+              globalUtilities,
+              matchRoute: payload.matchRoute,
+              url: payload.url,
+            });
+
+            return {
+              result: {
+                components,
+                componentUtilities: runtimeUtilities.componentUtilities,
+                utilities: runtimeUtilities.utilities,
+              },
+            };
+          }
           case "getComponentDependencyGraph":
             return {
               result: {

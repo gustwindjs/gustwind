@@ -152,6 +152,7 @@ type PluginApi<C = Context> = {
     | void;
   beforeEachRender?(o: {
     context: Context;
+    matchRoute: MatchRoute;
     send: Send;
     route: Route;
     url: string;
@@ -230,6 +231,10 @@ type SendMessageEvent =
   | { type: "getStyleSetupPath"; payload: undefined }
   | { type: "getMeta"; payload: undefined }
   | { type: "getComponents"; payload: undefined }
+  | {
+    type: "getRenderContext";
+    payload: { matchRoute: MatchRoute; url: string };
+  }
   | { type: "getComponentDependencyGraph"; payload: undefined }
   | { type: "updateComponents"; payload: Record<string, Element> }
   | { type: "getRenderer"; payload: string }

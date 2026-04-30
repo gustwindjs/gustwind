@@ -292,6 +292,7 @@ async function applyPlugins(
 
   const { tasks } = await applyBeforeEachRenders({
     context,
+    matchRoute,
     plugins,
     route,
     send,
@@ -391,8 +392,9 @@ async function applyPrepareContext(
 }
 
 async function applyBeforeEachRenders(
-  { context, plugins, route, send, url }: {
+  { context, matchRoute, plugins, route, send, url }: {
     context: Context;
+    matchRoute: MatchRoute;
     plugins: PluginDefinition[];
     route: Route;
     send: Send;
@@ -406,7 +408,7 @@ async function applyBeforeEachRenders(
   for await (const beforeEachRender of beforeEachRenders) {
     const tasksToAdd =
       // @ts-expect-error We know beforeEachRender should be defined by now
-      await beforeEachRender({ context, route, send, url });
+      await beforeEachRender({ context, matchRoute, route, send, url });
 
     if (tasksToAdd) {
       tasks = tasks.concat(tasksToAdd);
