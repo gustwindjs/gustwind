@@ -22,6 +22,26 @@ test("converts nested routes", () => {
   });
 });
 
+test("nested routes inherit parent scripts", () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      scripts: [{ name: "theme" }],
+      routes: {
+        more: {
+          layout: "blogPage",
+          scripts: [{ name: "search" }],
+        },
+      },
+    },
+  };
+
+  assert.deepEqual(flattenRoutes(routes)["blog/more"], {
+    layout: "blogPage",
+    scripts: [{ name: "theme" }, { name: "search" }],
+  });
+});
+
 test("converts three times nested routes", () => {
   const route2 = { layout: "anotherIndex" };
   const route1 = { layout: "siteIndex", routes: { even: route2 } };

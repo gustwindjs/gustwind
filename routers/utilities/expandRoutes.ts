@@ -1,10 +1,12 @@
 import { get } from "../../utilities/functional.ts";
 import type { DataSource, DataSources, Route } from "../../types.ts";
 import { getDataSourceContext } from "./getDataSourceContext.ts";
+import { mergeRouteScripts } from "./routeScripts.ts";
 
-async function expandRoutes({ routes, dataSources }: {
+async function expandRoutes({ routes, dataSources, inheritedScripts }: {
   routes: Record<string, Route>;
   dataSources: DataSources;
+  inheritedScripts?: Route["scripts"];
 }): Promise<Record<string, Route>> {
   const allRoutes = Object.fromEntries(
     await Promise.all(
@@ -13,6 +15,7 @@ async function expandRoutes({ routes, dataSources }: {
           url,
           route,
           dataSources,
+          inheritedScripts,
           recurse: true,
         })
       ),
@@ -33,14 +36,16 @@ async function expandRoutes({ routes, dataSources }: {
 }
 
 async function expandRoute(
-  { url, route, dataSources, recurse }: {
+  { url, route, dataSources, inheritedScripts, recurse }: {
     url: string;
     route: Route;
     dataSources: DataSources;
+    inheritedScripts?: Route["scripts"];
     recurse: boolean;
   },
 ): Promise<[string, Route]> {
   let ret = { ...route };
+  const routeScripts = mergeRouteScripts(inheritedScripts, route.scripts);
 
   if (route.expand) {
     const { matchBy } = route.expand;
@@ -62,8 +67,7 @@ async function expandRoute(
     const dataSourceIndexer = matchBy.indexer;
     const indexResults = await indexer.apply(
       undefined,
-      // @ts-expect-error This is fine.
-      dataSourceIndexer.parameters,
+      dataSourceIndexer.parameters || [],
     );
 
     // Construct individual routes based on the results of indexing
@@ -98,7 +102,7 @@ async function expandRoute(
 
           return [url, {
             layout,
-            scripts,
+            scripts: mergeRouteScripts(routeScripts, scripts),
             context: context || {},
             parentDataSources: {
               ...inheritedParentDataSources,
@@ -131,10 +135,11 @@ async function expandRoute(
     const expandedRouteRoutes = await expandRoutes({
       routes: route.routes || {},
       dataSources,
+      inheritedScripts: routeScripts,
     });
 
     ret = {
-      ...route,
+      ...ret,
       routes: { ...ret.routes, ...expandedRouteRoutes },
     };
   }

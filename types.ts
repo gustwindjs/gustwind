@@ -314,6 +314,7 @@ type Route = {
     };
     dataSources?: Record<string, DataSource>;
     layout: string;
+    scripts?: { name: string }[];
   };
 };
 type Scripts = Script[];

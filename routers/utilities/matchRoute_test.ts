@@ -129,7 +129,10 @@ test("matches a two-order recursive route", async () => {
     routes: { bar: route2 },
   };
 
-  assert.deepEqual(await matchRoute({ foo: route1 }, "foo/bar/baz", {}), route2);
+  assert.deepEqual(
+    await matchRoute({ foo: route1 }, "foo/bar/baz", {}),
+    route2,
+  );
 });
 
 test("matches an expanded route", async () => {
@@ -160,6 +163,61 @@ test("matches an expanded route", async () => {
       dataSources: {},
       parentDataSources: { blogPosts: [{ slug: "foo" }] },
       scripts: undefined,
+    },
+  );
+});
+
+test("matched expanded routes inherit parent scripts", async () => {
+  const route = {
+    layout: "blogIndex",
+    context: {},
+    scripts: [{ name: "theme" }],
+    expand: {
+      matchBy: {
+        name: "blogPosts",
+        indexer: {
+          operation: "index",
+          parameters: [],
+        },
+        slug: "slug",
+      },
+      dataSources: {},
+      layout: "blogPage",
+      scripts: [{ name: "search" }],
+    },
+  };
+
+  assert.deepEqual(
+    await matchRoute({ blog: route }, "blog/foo", {
+      index: () => [{ slug: "foo" }],
+    }),
+    {
+      layout: "blogPage",
+      context: {},
+      dataSources: {},
+      parentDataSources: { blogPosts: [{ slug: "foo" }] },
+      scripts: [{ name: "theme" }, { name: "search" }],
+    },
+  );
+});
+
+test("matched nested routes inherit parent scripts", async () => {
+  const route = {
+    layout: "blogIndex",
+    scripts: [{ name: "theme" }],
+    routes: {
+      more: {
+        layout: "blogPage",
+        scripts: [{ name: "search" }],
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await matchRoute({ blog: route }, "blog/more", {}),
+    {
+      layout: "blogPage",
+      scripts: [{ name: "theme" }, { name: "search" }],
     },
   );
 });

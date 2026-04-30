@@ -2,6 +2,7 @@ import { trim } from "../../utilities/string.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import type { DataSources, Route } from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
+import { mergeRouteScripts } from "./routeScripts.ts";
 
 const DEBUG = isDebugEnabled();
 
@@ -9,6 +10,7 @@ async function matchRoute(
   routes: Record<string, Route>,
   url: string,
   dataSources: DataSources,
+  inheritedScripts?: Route["scripts"],
 ): Promise<Route> {
   if (!routes) {
     throw new Error("No routes were provided!");
@@ -16,6 +18,7 @@ async function matchRoute(
 
   const parts = url === "/" ? ["/"] : trim(url, "/").split("/");
   const match = routes[url] || routes[parts[0]];
+  const matchScripts = mergeRouteScripts(inheritedScripts, match?.scripts);
 
   if (match && parts.length > 1) {
     let recursiveMatch;
@@ -26,6 +29,7 @@ async function matchRoute(
           match.routes,
           parts.slice(1).join("/"),
           dataSources,
+          matchScripts,
         );
       } catch (_error) {
         // Nothing to do
@@ -41,6 +45,7 @@ async function matchRoute(
         url,
         route: match,
         dataSources,
+        inheritedScripts,
         recurse: false,
       });
 
@@ -49,13 +54,14 @@ async function matchRoute(
           expandedRoute.routes,
           parts.slice(1).join("/"),
           dataSources,
+          inheritedScripts,
         );
       }
     }
   }
 
   if (match) {
-    return match;
+    return matchScripts ? { ...match, scripts: matchScripts } : match;
   }
 
   // Root / is a special case. Ideally it could be folded to the code above
@@ -65,6 +71,7 @@ async function matchRoute(
       url,
       route: routes["/"],
       dataSources,
+      inheritedScripts,
       recurse: false,
     });
 
@@ -73,6 +80,7 @@ async function matchRoute(
         expandedRoute.routes,
         url,
         dataSources,
+        inheritedScripts,
       );
     }
   }

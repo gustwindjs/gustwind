@@ -199,6 +199,49 @@ test("child routes inherit data sources", async () => {
   );
 });
 
+test("expanded routes inherit parent scripts", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      scripts: [{ name: "theme" }],
+      expand: {
+        matchBy: {
+          name: "documentationPages",
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        layout: "documentationPage",
+        scripts: [{ name: "search" }],
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await expandRoutes({
+      routes,
+      dataSources: {
+        indexBlog: () => [{ slug: "foo" }],
+      },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          foo: {
+            context: {},
+            dataSources: {},
+            layout: "documentationPage",
+            parentDataSources: {
+              documentationPages: [{ slug: "foo" }],
+            },
+            scripts: [{ name: "theme" }, { name: "search" }],
+          },
+        },
+      },
+    },
+  );
+});
+
 test("expanded routes inherit parent data sources and resolved data source context", async () => {
   const routes = {
     blog: {
@@ -295,7 +338,10 @@ test("expands sibling routes in parallel", async () => {
   });
   const duration = performance.now() - startTime;
 
-  assert.ok(duration < 140, `expected sibling expansion to overlap, received ${duration} ms`);
+  assert.ok(
+    duration < 140,
+    `expected sibling expansion to overlap, received ${duration} ms`,
+  );
   assert.deepEqual(Object.keys(expandedRoutes.blog.routes || {}), ["hello"]);
   assert.deepEqual(Object.keys(expandedRoutes.docs.routes || {}), ["intro"]);
 });
