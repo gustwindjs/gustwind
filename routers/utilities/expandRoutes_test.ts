@@ -178,6 +178,7 @@ test("child routes inherit data sources", async () => {
             dataSources: {},
             layout: "documentationPage",
             parentDataSources: {
+              chapters: "foo",
               documentationPages: [{ slug: "foo" }, { slug: "bar" }],
             },
             scripts: undefined,
@@ -187,7 +188,62 @@ test("child routes inherit data sources", async () => {
             dataSources: {},
             layout: "documentationPage",
             parentDataSources: {
+              chapters: "foo",
               documentationPages: [{ slug: "foo" }, { slug: "bar" }],
+            },
+            scripts: undefined,
+          },
+        },
+      },
+    },
+  );
+});
+
+test("expanded routes inherit parent data sources and resolved data source context", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      parentDataSources: {
+        section: { slug: "guides" },
+      },
+      dataSources: {
+        sectionPosts: { operation: "getSectionPosts" },
+      },
+      expand: {
+        matchBy: {
+          name: "documentationPages",
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        layout: "documentationPage",
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await expandRoutes({
+      routes,
+      dataSources: {
+        getSectionPosts: function (
+          this: { parentDataSources: { section: { slug: string } } },
+        ) {
+          return this.parentDataSources.section.slug;
+        },
+        indexBlog: () => [{ slug: "foo" }],
+      },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          foo: {
+            context: {},
+            dataSources: {},
+            layout: "documentationPage",
+            parentDataSources: {
+              section: { slug: "guides" },
+              sectionPosts: "guides",
+              documentationPages: [{ slug: "foo" }],
             },
             scripts: undefined,
           },

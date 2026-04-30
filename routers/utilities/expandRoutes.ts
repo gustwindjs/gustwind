@@ -1,5 +1,6 @@
 import { get } from "../../utilities/functional.ts";
 import type { DataSource, DataSources, Route } from "../../types.ts";
+import { getDataSourceContext } from "./getDataSourceContext.ts";
 
 async function expandRoutes({ routes, dataSources }: {
   routes: Record<string, Route>;
@@ -68,6 +69,14 @@ async function expandRoute(
     // Construct individual routes based on the results of indexing
     const { slug } = matchBy;
     if (Array.isArray(indexResults)) {
+      const inheritedParentDataSources = {
+        ...route.parentDataSources,
+        ...await getDataSourceContext(
+          route.parentDataSources,
+          route.dataSources,
+          dataSources,
+        ),
+      };
       const expandedRoutes = Object.fromEntries(
         await Promise.all(indexResults.map(async (match) => {
           const url = get(match, slug) as string;
@@ -91,7 +100,10 @@ async function expandRoute(
             layout,
             scripts,
             context: context || {},
-            parentDataSources: { [matchBy.name]: indexResults },
+            parentDataSources: {
+              ...inheritedParentDataSources,
+              [matchBy.name]: indexResults,
+            },
             dataSources: {
               ...Object.fromEntries(
                 // @ts-ignore route.expand exists by now for sure
