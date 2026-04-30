@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { htmlispToHTML, htmlispToHTMLSync } from "../mod.ts";
+import { htmlispToHTML, htmlispToHTMLSync, raw, unwrapRawHtml } from "../mod.ts";
 
 function renderButton(props: Record<string, unknown>) {
   return `<button>${String(props.children ?? "")}</button>`;
@@ -30,6 +30,15 @@ test("raw utility bypasses escaped children output", async () => {
     }),
     `<div><em>safe</em></div>`,
   );
+});
+
+test("unwrapRawHtml unwraps raw wrappers and stringifies plain values", () => {
+  assert.deepEqual(
+    unwrapRawHtml(raw("<strong>safe</strong>")),
+    "<strong>safe</strong>",
+  );
+  assert.deepEqual(unwrapRawHtml("plain"), "plain");
+  assert.deepEqual(unwrapRawHtml(null), "");
 });
 
 test("rendered component children do not double escape", async () => {

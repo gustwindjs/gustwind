@@ -65,6 +65,7 @@ import {
   parseLatex,
   refs,
   singles,
+  unwrapRawHtml,
 } from "gustwind/htmlisp";
 ```
 
@@ -78,14 +79,13 @@ raw string or `{ value: string }`.
 
 Rendered htmlisp component children are passed as trusted raw HTML wrappers, not
 plain strings. The wrapper shape is `{ __htmlispRaw: true, value: string }`.
-Utilities that need text or markup can unwrap both forms explicitly:
+Utilities that need text or markup can use `unwrapRawHtml` to accept both raw
+wrappers and plain values:
 
 ```js
-import { isRawHtml } from "gustwind/htmlisp";
+import { unwrapRawHtml } from "gustwind/htmlisp";
 
-function unwrapHtml(value) {
-  return isRawHtml(value) ? value.value : String(value ?? "");
-}
+processMarkdown: async (input) => markdown(unwrapRawHtml(input));
 ```
 
 Projects migrating from the old Deno Twind plugin should use the packaged

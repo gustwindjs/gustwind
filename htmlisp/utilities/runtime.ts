@@ -29,6 +29,14 @@ function isRawHtml(value: unknown): value is RawHtml {
     typeof candidate.value === "string";
 }
 
+function unwrapRawHtml(value: unknown) {
+  if (isRawHtml(value)) {
+    return value.value;
+  }
+
+  return value === null || isUndefined(value) ? "" : String(value);
+}
+
 function escapeHTML(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -101,4 +109,5 @@ export {
   renderAttributeValue,
   renderTextValue,
   resolveScopedValue,
+  unwrapRawHtml,
 };

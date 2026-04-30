@@ -431,6 +431,7 @@ function createHtmlispDeclaration() {
     "export declare function htmlispToHTML(args: HtmlispToHTMLParameters): Promise<string>;",
     "export declare function isRawHtml(value: unknown): value is RawHtml;",
     "export declare function raw(value: unknown): RawHtml;",
+    "export declare function unwrapRawHtml(value: unknown): string;",
     "",
   ].join("\n");
 }
