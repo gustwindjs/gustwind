@@ -45,6 +45,11 @@ const gustwindEntries = [
     exportPath: "./plugins/meta",
   },
   {
+    in: "./plugins/og/mod.ts",
+    out: "plugins/og/mod",
+    exportPath: "./plugins/og",
+  },
+  {
     in: "./plugins/pagefind/mod.ts",
     out: "plugins/pagefind/mod",
     exportPath: "./plugins/pagefind",
