@@ -51,6 +51,11 @@ const plugin: Plugin<{
         return { foundScripts, receivedScripts: [], receivedGlobalScripts: [] };
       },
       prepareBuild: ({ pluginContext }) => {
+        if (mode === "production" && scriptAssets) {
+          builtEntryAssets = normalizeScriptEntryAssets(scriptAssets);
+          return [];
+        }
+
         const { foundScripts, receivedScripts } = pluginContext;
         const isDevelopingLocally = import.meta.url.startsWith("file:///");
         const resolvedScripts = foundScripts.concat(
@@ -62,11 +67,6 @@ const plugin: Plugin<{
             externals,
           })),
         );
-
-        if (mode === "production" && scriptAssets) {
-          builtEntryAssets = normalizeScriptEntryAssets(scriptAssets);
-          return [];
-        }
 
         if (mode === "production") {
           return buildProductionScripts({

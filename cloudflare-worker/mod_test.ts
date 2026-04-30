@@ -4,7 +4,7 @@ import { plugin as metaPlugin } from "../plugins/meta/mod.ts";
 import { plugin as scriptPlugin } from "../plugins/script/mod.ts";
 import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer/mod.ts";
 import { plugin as edgeRouterPlugin } from "../routers/edge-router/mod.ts";
-import type { Route, Tasks } from "../types.ts";
+import type { Plugin, Route, Tasks } from "../types.ts";
 import { createCloudflareWorker } from "./mod.ts";
 
 function createExecutionContext() {
@@ -125,6 +125,82 @@ test("cloudflare worker injects route scripts from script asset manifest", async
     /<script type="text\/javascript" src="https:\/\/unpkg\.com\/sidewind@8\.0\.0\/dist\/sidewind\.umd\.production\.min\.js"><\/script>/,
   );
   assert.match(markup, /<script type="module" src="\/assets\/theme-toggle-abc123\.js"><\/script>/);
+});
+
+test("cloudflare worker script manifest path skips build-time script resolution", async () => {
+  const routes: Record<string, Route> = {
+    "/": {
+      layout: "Home",
+    },
+  };
+  const workerUnsafeScript: {
+    isExternal: boolean;
+    name: string;
+    localPath: string;
+    remotePath: string;
+  } = {
+    isExternal: true,
+    name: "analytics.ts",
+    get localPath(): string {
+      throw new Error("Worker script assets should not read localPath");
+    },
+    remotePath: "https://example.com/analytics.js",
+  };
+  const scriptSenderPlugin: Plugin = {
+    meta: {
+      name: "script-sender",
+      description: "Registers a script during Worker startup",
+    },
+    init() {
+      return {
+        sendMessages: async ({ send }) => {
+          await send("gustwind-script-plugin", {
+            type: "addScripts",
+            payload: [workerUnsafeScript],
+          });
+        },
+      };
+    },
+  };
+  const worker = createCloudflareWorker({
+    initialPlugins: [
+      [edgeRouterPlugin, { routes }],
+      [
+        scriptPlugin,
+        {
+          scriptAssets: {
+            "theme-toggle": {
+              file: "/assets/theme-toggle-abc123.js",
+            },
+          },
+        },
+      ],
+      [scriptSenderPlugin, {}],
+      [metaPlugin, { meta: { title: "Worker Render" } }],
+      [
+        edgeRendererPlugin,
+        {
+          components: {
+            Home: "<html><body>ok</body></html>",
+          },
+          componentUtilities: {},
+          globalUtilities: { init: () => ({}) },
+        },
+      ],
+    ],
+    onError({ error }) {
+      throw error;
+    },
+  });
+  const { ctx } = createExecutionContext();
+  const response = await worker.fetch(
+    new Request("https://example.com/"),
+    {},
+    ctx,
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), "<html><body>ok</body></html>");
 });
 
 test("cloudflare worker prefers bound assets for file requests", async () => {
