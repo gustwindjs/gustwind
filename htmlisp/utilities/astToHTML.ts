@@ -5,7 +5,7 @@ import type {
   Context,
   Element,
   HtmlispRenderOptions,
-  HtmllispToHTMLParameters,
+  HtmlispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
 import { raw, renderTextValue } from "./runtime.ts";
@@ -13,10 +13,10 @@ import { isForeachBinding } from "./parseForeachExpression.ts";
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
-// TODO: Derive this type from HtmllispToHTMLParameters
+// TODO: Derive this type from HtmlispToHTMLParameters
 async function astToHTML(
   ast: (string | Element)[],
-  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
+  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
   initialLocal?: Context,
@@ -177,7 +177,7 @@ async function astToHTML(
 async function slotsToProps(
   ast: (string | Element)[],
   tag: Element,
-  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,
+  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown,
   context?: Context,
   props?: Context,
   local?: Context,

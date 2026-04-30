@@ -2,7 +2,7 @@ import { htmlispToHTML } from "./htmlispToHTML.ts";
 import { htmlispToHTMLSync } from "./htmlispToHTMLSync.ts";
 import { parseBibtexCollection } from "./parsers/latex/parseBibtexCollection.ts";
 import { parseLatex } from "./parsers/latex/parseLatex.ts";
-import { raw } from "./utilities/runtime.ts";
+import { isRawHtml, raw } from "./utilities/runtime.ts";
 import { astToHTMLSync } from "./utilities/astToHTMLSync.ts";
 import {
   blocks,
@@ -24,6 +24,7 @@ export {
   element,
   htmlispToHTML,
   htmlispToHTMLSync,
+  isRawHtml,
   lists,
   parseBibtexCollection,
   parseLatex,

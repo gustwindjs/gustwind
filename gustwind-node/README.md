@@ -59,6 +59,7 @@ import {
   doubles,
   el,
   htmlispToHTMLSync,
+  isRawHtml,
   lists,
   parseBibtexCollection,
   parseLatex,
@@ -74,6 +75,18 @@ Component utilities receive the evaluated expression parameters. If a utility is
 called with a component props object, foreach input is exposed through
 `props.value`; utilities that support migrated Deno projects can accept either a
 raw string or `{ value: string }`.
+
+Rendered htmlisp component children are passed as trusted raw HTML wrappers, not
+plain strings. The wrapper shape is `{ __htmlispRaw: true, value: string }`.
+Utilities that need text or markup can unwrap both forms explicitly:
+
+```js
+import { isRawHtml } from "gustwind/htmlisp";
+
+function unwrapHtml(value) {
+  return isRawHtml(value) ? value.value : String(value ?? "");
+}
+```
 
 Projects migrating from the old Deno Twind plugin should use the packaged
 Tailwind plugin:

@@ -426,9 +426,10 @@ function createHtmlispDeclaration() {
     'export { parseLatex } from "./parsers/latex/parseLatex.js";',
     'export { parseBibtexCollection } from "./parsers/latex/parseBibtexCollection.js";',
     'export { blocks, cites, doubles, el, element, lists, refs, singles } from "./parsers/latex/defaultExpressions.js";',
-    'import type { HtmllispToHTMLParameters, RawHtml } from "./types.js";',
+    'import type { HtmlispToHTMLParameters, RawHtml } from "./types.js";',
     "",
-    "export declare function htmlispToHTML(args: HtmllispToHTMLParameters): Promise<string>;",
+    "export declare function htmlispToHTML(args: HtmlispToHTMLParameters): Promise<string>;",
+    "export declare function isRawHtml(value: unknown): value is RawHtml;",
     "export declare function raw(value: unknown): RawHtml;",
     "",
   ].join("\n");
@@ -436,9 +437,9 @@ function createHtmlispDeclaration() {
 
 function createHtmlispToHTMLSyncDeclaration() {
   return [
-    'import type { HtmllispToHTMLParameters } from "./types.js";',
+    'import type { HtmlispToHTMLParameters } from "./types.js";',
     "",
-    "export declare function htmlispToHTMLSync(args: HtmllispToHTMLParameters): string;",
+    "export declare function htmlispToHTMLSync(args: HtmlispToHTMLParameters): string;",
     "",
   ].join("\n");
 }
@@ -446,11 +447,11 @@ function createHtmlispToHTMLSyncDeclaration() {
 function createAstToHTMLSyncDeclaration() {
   return [
     'import type { Utilities } from "../../types.js";',
-    'import type { Components, Context, Element, HtmlispRenderOptions, HtmllispToHTMLParameters } from "../types.js";',
+    'import type { Components, Context, Element, HtmlispRenderOptions, HtmlispToHTMLParameters } from "../types.js";',
     "",
     "export declare function astToHTMLSync(",
     "  ast: (string | Element)[],",
-    "  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,",
+    "  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown,",
     "  context?: Context,",
     "  props?: Context,",
     "  initialLocal?: Context,",

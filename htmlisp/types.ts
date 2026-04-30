@@ -24,7 +24,7 @@ type Element = {
   closesWith?: string | null;
 };
 
-type HtmllispToHTMLParameters = {
+type HtmlispToHTMLParameters = {
   htmlInput?: string;
   components?: Components;
   context?: Context;
@@ -33,6 +33,8 @@ type HtmllispToHTMLParameters = {
   componentUtilities?: Record<string, Utilities>;
   renderOptions?: HtmlispRenderOptions;
 };
+/** @deprecated Use HtmlispToHTMLParameters instead. */
+type HtmllispToHTMLParameters = HtmlispToHTMLParameters;
 
 export type {
   Attributes,
@@ -42,6 +44,7 @@ export type {
   ForeachBinding,
   HTMLispComponent,
   HtmlispRenderOptions,
+  HtmlispToHTMLParameters,
   HtmllispToHTMLParameters,
   RawHtml,
 };

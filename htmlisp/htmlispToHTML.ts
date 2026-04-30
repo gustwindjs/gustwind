@@ -2,7 +2,7 @@ import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTML } from "./utilities/astToHTML.ts";
-import type { HtmllispToHTMLParameters } from "./types.ts";
+import type { HtmlispToHTMLParameters } from "./types.ts";
 import { isRawHtml, raw } from "./utilities/runtime.ts";
 
 async function htmlispToHTML(
@@ -14,7 +14,7 @@ async function htmlispToHTML(
     utilities,
     componentUtilities,
     renderOptions,
-  }: HtmllispToHTMLParameters,
+  }: HtmlispToHTMLParameters,
 ): Promise<string> {
   if (!htmlInput) {
     throw new Error("convert - Missing html input");

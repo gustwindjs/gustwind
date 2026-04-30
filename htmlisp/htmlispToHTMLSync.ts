@@ -2,7 +2,7 @@ import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTMLSync } from "./utilities/astToHTMLSync.ts";
-import type { HtmllispToHTMLParameters } from "./types.ts";
+import type { HtmlispToHTMLParameters } from "./types.ts";
 import { isRawHtml, raw } from "./utilities/runtime.ts";
 
 function htmlispToHTMLSync(
@@ -14,7 +14,7 @@ function htmlispToHTMLSync(
     utilities,
     componentUtilities,
     renderOptions,
-  }: HtmllispToHTMLParameters,
+  }: HtmlispToHTMLParameters,
 ): string {
   if (!htmlInput) {
     throw new Error("convert - Missing html input");
