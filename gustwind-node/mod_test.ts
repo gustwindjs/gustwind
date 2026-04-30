@@ -229,13 +229,12 @@ test("gustwind tailwind plugin reuses compiled css across cold plugin instances"
   try {
     await writeFile(
       path.join(cwd, "tailwind.css"),
-      "@tailwind utilities;\n",
+      '@import "tailwindcss";\n@source inline("text-red-500");\n',
     );
     await writeFile(
       path.join(cwd, "tailwindSetup.ts"),
       [
         "export default {",
-        "  content: [{ raw: '<div class=\"text-red-500\"></div>', extension: 'html' }],",
         "  theme: { extend: {} },",
         "  plugins: [],",
         "};",

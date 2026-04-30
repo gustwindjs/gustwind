@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import * as path from "node:path";
-import { pathToFileURL } from "node:url";
 import autoprefixer from "autoprefixer";
 import postcss from "postcss";
-import tailwindCss from "tailwindcss";
+import tailwindCss from "@tailwindcss/postcss";
 import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import type { Plugin } from "../../types.ts";
 import {
@@ -16,6 +16,9 @@ type TailwindPluginOptions = {
   cssPath: string;
   setupPath: string;
 };
+
+const require = createRequire(import.meta.url);
+const tailwindStylesheetPath = require.resolve("tailwindcss/index.css");
 
 const plugin: Plugin<TailwindPluginOptions> = {
   meta: {
@@ -33,12 +36,9 @@ const plugin: Plugin<TailwindPluginOptions> = {
     let stylesheetFile: string | undefined;
 
     async function compileCss() {
-      const [{ default: tailwindSetup }, tailwindSource] = await Promise.all([
-        import(pathToFileURL(setupPath).href),
-        load.textFile(cssPath),
-      ]);
+      const tailwindSource = await load.textFile(cssPath);
       const plugins = [
-        tailwindCss(tailwindSetup) as any,
+        tailwindCss({ base: cwd }),
         autoprefixer({}),
       ];
 
@@ -47,9 +47,12 @@ const plugin: Plugin<TailwindPluginOptions> = {
         plugins.push(cssnano());
       }
 
-      const { css } = await postcss(plugins).process(tailwindSource, {
-        from: cssPath,
-      });
+      const { css } = await postcss(plugins).process(
+        `@config "${setupPath}";\n${normalizeTailwindSource(tailwindSource)}`,
+        {
+          from: cssPath,
+        },
+      );
 
       return css;
     }
@@ -206,5 +209,31 @@ const plugin: Plugin<TailwindPluginOptions> = {
     };
   },
 };
+
+function normalizeTailwindSource(source: string) {
+  let hasTailwindImport = false;
+
+  const withResolvedImports = source.replace(
+    /@import\s+["']tailwindcss["'];/g,
+    () => {
+      hasTailwindImport = true;
+
+      return `@import "${tailwindStylesheetPath}";`;
+    },
+  );
+
+  return withResolvedImports.replace(
+    /^\s*@tailwind\s+(?:base|components|utilities)\s*;\s*$/gm,
+    () => {
+      if (hasTailwindImport) {
+        return "";
+      }
+
+      hasTailwindImport = true;
+
+      return `@import "${tailwindStylesheetPath}";`;
+    },
+  );
+}
 
 export { plugin };
