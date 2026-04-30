@@ -6,27 +6,89 @@ type BibtexCollection = {
   fields?: Record<string, string>;
 };
 
-const STATES = {
-  IDLE: "IDLE",
-  PARSE_TYPE: "PARSE_TYPE",
-  PARSE_ID: "PARSE_ID",
-  PARSE_KEY: "PARSE_KEY",
-  PARSE_VALUE: "PARSE_VALUE",
-} as const;
-type State = typeof STATES[keyof typeof STATES];
-
 const LIMIT = 100000;
 
 function parseBibtex(
   getCharacter: CharacterGenerator,
 ): BibtexCollection {
-  let state: State = STATES.IDLE;
-  let stringBuffer = "";
-  let type = "";
-  let id = "";
-  let key = "";
-  let bracesFound = 0;
+  const startIndex = getCharacter.getIndex();
+
+  if (getCharacter.next() !== "@") {
+    getCharacter.setIndex(startIndex);
+    throw new Error("No matching expression was found");
+  }
+
+  const type = readWhile(getCharacter, (c) => /[A-Za-z]/.test(c)).trim();
+
+  skipWhitespace(getCharacter);
+
+  if (getCharacter.next() !== "{") {
+    getCharacter.setIndex(startIndex);
+    throw new Error("No matching expression was found");
+  }
+
+  const id = readUntil(getCharacter, [",", "}"]).trim();
+
+  if (!type) {
+    getCharacter.setIndex(startIndex);
+    throw new Error("No matching expression was found");
+  }
+
   const fields: Record<string, string> = {};
+  let current = getCharacter.get();
+
+  if (current === "}") {
+    getCharacter.next();
+    return { type, id, fields };
+  }
+
+  while (current !== null) {
+    skipWhitespaceAndCommas(getCharacter);
+    current = getCharacter.get();
+
+    if (current === "}") {
+      getCharacter.next();
+      break;
+    }
+
+    const key = readWhile(getCharacter, (c) => /[A-Za-z0-9_-]/.test(c)).trim();
+
+    skipWhitespace(getCharacter);
+
+    if (!key || getCharacter.next() !== "=") {
+      throw new Error("No matching expression was found");
+    }
+
+    skipWhitespace(getCharacter);
+
+    fields[key] = readBibtexValue(getCharacter).trim();
+    current = getCharacter.get();
+  }
+
+  return { type, id, fields };
+}
+
+function readBibtexValue(
+  getCharacter: CharacterGenerator,
+) {
+  const first = getCharacter.get();
+
+  if (first === "{") {
+    return readBalancedValue(getCharacter);
+  }
+
+  if (first === '"') {
+    return readQuotedValue(getCharacter);
+  }
+
+  return readUntil(getCharacter, [",", "}"]).trim();
+}
+
+function readBalancedValue(
+  getCharacter: CharacterGenerator,
+) {
+  let depth = 0;
+  let value = "";
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -35,75 +97,85 @@ function parseBibtex(
       break;
     }
 
-    if (state === STATES.IDLE) {
-      if (i === 0 && c !== "@") {
-        throw new Error("No matching expression was found");
+    if (c === "{") {
+      if (depth > 0) {
+        value += c;
       }
-
-      state = STATES.PARSE_TYPE;
-    }
-    if (state === STATES.PARSE_TYPE) {
-      if (c === "{") {
-        type = stringBuffer.trim();
-        stringBuffer = "";
-
-        state = STATES.PARSE_ID;
-      } else if (c !== "@") {
-        stringBuffer += c;
-      }
-    }
-    if (state === STATES.PARSE_ID) {
-      if (c === "," || c === "}") {
-        id = stringBuffer.trim();
-        stringBuffer = "";
-
-        state = STATES.PARSE_KEY;
-      } else if (c !== "{") {
-        stringBuffer += c;
-      }
-    }
-    if (state === STATES.PARSE_KEY) {
-      if (c === "}") {
+      depth++;
+    } else if (c === "}") {
+      depth--;
+      if (depth === 0) {
         break;
-      } else if (c === "=") {
-        key = stringBuffer.trim();
-        stringBuffer = "";
-        bracesFound = 0;
-
-        state = STATES.PARSE_VALUE;
-      } else if (c !== ",") {
-        stringBuffer += c;
       }
-    }
-    if (state === STATES.PARSE_VALUE) {
-      if (c === "{") {
-        if (bracesFound > 0) {
-          stringBuffer += c;
-        }
-
-        bracesFound++;
-      } else if (c === "}") {
-        bracesFound--;
-
-        if (bracesFound === 0) {
-          fields[key] = stringBuffer.trim();
-          stringBuffer = "";
-
-          state = STATES.PARSE_KEY;
-        } else {
-          stringBuffer += c;
-        }
-      } else if (c !== "=" && c !== "{") {
-        stringBuffer += c;
-      }
+      value += c;
+    } else {
+      value += c;
     }
   }
 
-  if (!type) {
-    throw new Error("No matching expression was found");
+  return value;
+}
+
+function readQuotedValue(
+  getCharacter: CharacterGenerator,
+) {
+  let value = "";
+
+  getCharacter.next();
+
+  for (let i = 0; i < LIMIT; i++) {
+    const c = getCharacter.next();
+
+    if (c === null) {
+      break;
+    }
+
+    if (c === '"') {
+      break;
+    }
+
+    value += c;
   }
 
-  return { type, id, fields };
+  return value;
+}
+
+function skipWhitespace(
+  getCharacter: CharacterGenerator,
+) {
+  readWhile(getCharacter, (c) => /\s/.test(c));
+}
+
+function skipWhitespaceAndCommas(
+  getCharacter: CharacterGenerator,
+) {
+  readWhile(getCharacter, (c) => /[\s,]/.test(c));
+}
+
+function readUntil(
+  getCharacter: CharacterGenerator,
+  endCharacters: string[],
+) {
+  return readWhile(getCharacter, (c) => !endCharacters.includes(c));
+}
+
+function readWhile(
+  getCharacter: CharacterGenerator,
+  predicate: (c: string) => boolean,
+) {
+  let value = "";
+
+  for (let i = 0; i < LIMIT; i++) {
+    const c = getCharacter.get();
+
+    if (c === null || !predicate(c)) {
+      break;
+    }
+
+    value += getCharacter.next();
+  }
+
+  return value;
 }
 
 export { type BibtexCollection, parseBibtex };

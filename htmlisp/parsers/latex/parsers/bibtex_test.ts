@@ -64,6 +64,63 @@ test(`name with a comma`, () => {
   );
 });
 
+test(`entry with quoted fields`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@article{Knuth92,
+  author = "D.E. Knuth",
+  title = "Two notes on notation",
+  journal = "Amer. Math. Monthly",
+  volume = "99",
+  year = "1992",
+  pages = "403--422",
+}`)),
+    {
+      type: "article",
+      id: "Knuth92",
+      fields: {
+        author: "D.E. Knuth",
+        title: "Two notes on notation",
+        journal: "Amer. Math. Monthly",
+        volume: "99",
+        year: "1992",
+        pages: "403--422",
+      },
+    },
+  );
+});
+
+test(`entry with bare fields`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@article{Knuth92,
+  volume = 99,
+  year = 1992
+}`)),
+    {
+      type: "article",
+      id: "Knuth92",
+      fields: {
+        volume: "99",
+        year: "1992",
+      },
+    },
+  );
+});
+
+test(`preserves nested braces in field values`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@article{Knuth92,
+  title = {{T}wo notes on notation}
+}`)),
+    {
+      type: "article",
+      id: "Knuth92",
+      fields: {
+        title: "{T}wo notes on notation",
+      },
+    },
+  );
+});
+
 test(`entry with a field in multiple lines`, () => {
   const type = "BOOK";
   const id = "foobar";

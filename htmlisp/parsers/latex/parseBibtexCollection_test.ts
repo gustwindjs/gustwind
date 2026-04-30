@@ -113,6 +113,56 @@ test(`author ä umlaut`, () => {
   );
 });
 
+test(`quoted bibtex values`, () => {
+  const input = `@article{Knuth92,
+  author = "D.E. Knuth",
+  title = "Two notes on notation",
+  journal = "Amer. Math. Monthly",
+  volume = "99",
+  year = "1992",
+  pages = "403--422",
+}`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {
+      Knuth92: {
+        type: "ARTICLE",
+        id: "Knuth92",
+        fields: {
+          author: "D.E. Knuth",
+          title: "Two notes on notation",
+          journal: "Amer. Math. Monthly",
+          volume: "99",
+          year: "1992",
+          pages: "403--422",
+        },
+      },
+    },
+  );
+});
+
+test(`latex accents in all fields`, () => {
+  const input = `@article{zhou2012,
+  title={Quantifica{\\c{c}}{\\~a}o},
+  author={Veps{\\"a}l{\\"a}inen, Juho and Hellas, Arto and Vuorimaa, Petri}
+}`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {
+      zhou2012: {
+        type: "ARTICLE",
+        id: "zhou2012",
+        fields: {
+          title: "Quantificação",
+          author: "Vepsäläinen, Juho and Hellas, Arto and Vuorimaa, Petri",
+        },
+      },
+    },
+  );
+});
+
 test(`author ö umlaut`, () => {
   const input = `@article{zhou2012,
   title={Quantifying},
