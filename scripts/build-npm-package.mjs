@@ -71,6 +71,47 @@ const gustwindEntries = [
   },
 ];
 
+const gustwindHtmlispEntries = [
+  {
+    declaration: "htmlisp",
+    exportPath: "./htmlisp",
+    in: "./htmlisp/mod.ts",
+    out: "htmlisp/mod",
+  },
+  {
+    declaration: "htmlispToHTMLSync",
+    exportPath: "./htmlisp/htmlispToHTMLSync",
+    in: "./htmlisp/htmlispToHTMLSync.ts",
+    out: "htmlisp/htmlispToHTMLSync",
+  },
+  {
+    declaration: "astToHTMLSync",
+    exportPath: "./htmlisp/utilities/astToHTMLSync",
+    in: "./htmlisp/utilities/astToHTMLSync.ts",
+    out: "htmlisp/utilities/astToHTMLSync",
+  },
+  {
+    declaration: "parseLatex",
+    exportPath: "./htmlisp/parsers/latex/parseLatex",
+    in: "./htmlisp/parsers/latex/parseLatex.ts",
+    out: "htmlisp/parsers/latex/parseLatex",
+  },
+  {
+    declaration: "parseBibtexCollection",
+    exportPath: "./htmlisp/parsers/latex/parseBibtexCollection",
+    in: "./htmlisp/parsers/latex/parseBibtexCollection.ts",
+    out: "htmlisp/parsers/latex/parseBibtexCollection",
+  },
+  {
+    declaration: "defaultExpressions",
+    exportPath: "./htmlisp/parsers/latex/defaultExpressions",
+    in: "./htmlisp/parsers/latex/defaultExpressions.ts",
+    out: "htmlisp/parsers/latex/defaultExpressions",
+  },
+];
+
+const gustwindPackageEntries = [...gustwindEntries, ...gustwindHtmlispEntries];
+
 const rootDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -100,7 +141,7 @@ const htmlispTypesSource = await readFile(
 const targets = {
   gustwind: {
     outDirectory: path.join(rootDirectory, "gustwind-node", "npm"),
-    entryPoints: gustwindEntries.map(({ in: input, out }) => ({
+    entryPoints: gustwindPackageEntries.map(({ in: input, out }) => ({
       in: input,
       out,
     })),
@@ -120,7 +161,7 @@ const targets = {
       exports: {
         ".": "./mod.js",
         ...Object.fromEntries(
-          gustwindEntries
+          gustwindPackageEntries
             .flatMap(({ exportPath, exportPaths, out }) =>
               [exportPath, ...(exportPaths || [])]
                 .filter(Boolean)
@@ -136,6 +177,7 @@ const targets = {
         "mod.js",
         "mod.d.ts",
         "types.d.ts",
+        "htmlisp/**/*.js",
         "htmlisp/**/*.d.ts",
         "plugins/**/*.js",
         "plugins/**/*.d.ts",
@@ -265,6 +307,14 @@ async function writeGustwindDeclarations(outDirectory) {
         )
       ),
   );
+  await Promise.all(
+    gustwindHtmlispEntries.map(({ declaration, out }) =>
+      writeFile(
+        path.join(outDirectory, `${out}.d.ts`),
+        createHtmlispEntryDeclaration(declaration),
+      )
+    ),
+  );
 }
 
 function rewriteDeclarationImports(source, replacements) {
@@ -345,6 +395,139 @@ function createCloudflareWorkerDeclaration() {
     "  CloudflareWorkerContext,",
     "  CloudflareWorkerOptions,",
     "};",
+    "",
+  ].join("\n");
+}
+
+function createHtmlispEntryDeclaration(declaration) {
+  switch (declaration) {
+    case "htmlisp":
+      return createHtmlispDeclaration();
+    case "htmlispToHTMLSync":
+      return createHtmlispToHTMLSyncDeclaration();
+    case "astToHTMLSync":
+      return createAstToHTMLSyncDeclaration();
+    case "parseLatex":
+      return createParseLatexDeclaration();
+    case "parseBibtexCollection":
+      return createParseBibtexCollectionDeclaration();
+    case "defaultExpressions":
+      return createDefaultExpressionsDeclaration();
+    default:
+      throw new Error(`Unknown htmlisp declaration "${declaration}"`);
+  }
+}
+
+function createHtmlispDeclaration() {
+  return [
+    'export type * from "./types.js";',
+    'export { htmlispToHTMLSync } from "./htmlispToHTMLSync.js";',
+    'export { astToHTMLSync } from "./utilities/astToHTMLSync.js";',
+    'export { parseLatex } from "./parsers/latex/parseLatex.js";',
+    'export { parseBibtexCollection } from "./parsers/latex/parseBibtexCollection.js";',
+    'export { blocks, cites, doubles, el, element, lists, refs, singles } from "./parsers/latex/defaultExpressions.js";',
+    'import type { HtmllispToHTMLParameters, RawHtml } from "./types.js";',
+    "",
+    "export declare function htmlispToHTML(args: HtmllispToHTMLParameters): Promise<string>;",
+    "export declare function raw(value: unknown): RawHtml;",
+    "",
+  ].join("\n");
+}
+
+function createHtmlispToHTMLSyncDeclaration() {
+  return [
+    'import type { HtmllispToHTMLParameters } from "./types.js";',
+    "",
+    "export declare function htmlispToHTMLSync(args: HtmllispToHTMLParameters): string;",
+    "",
+  ].join("\n");
+}
+
+function createAstToHTMLSyncDeclaration() {
+  return [
+    'import type { Utilities } from "../../types.js";',
+    'import type { Components, Context, Element, HtmlispRenderOptions, HtmllispToHTMLParameters } from "../types.js";',
+    "",
+    "export declare function astToHTMLSync(",
+    "  ast: (string | Element)[],",
+    "  htmlispToHTML: (args: HtmllispToHTMLParameters) => unknown,",
+    "  context?: Context,",
+    "  props?: Context,",
+    "  initialLocal?: Context,",
+    "  utilities?: Utilities,",
+    "  componentUtilities?: Record<string, Utilities>,",
+    "  components?: Components,",
+    "  renderOptions?: HtmlispRenderOptions,",
+    "  parentAst?: (string | Element)[],",
+    "): string;",
+    "",
+  ].join("\n");
+}
+
+function createParseLatexDeclaration() {
+  return [
+    'import type { Element } from "../../types.js";',
+    "",
+    "type MatchCounts = Record<string, string[]>;",
+    "type SingleParser<T> = (children: string[], matchCounts: MatchCounts) => T;",
+    "type DoubleParser<T> = (first: string, second?: string) => T;",
+    "type BlockParser<T, U> = {",
+    "  container: (children: U[]) => T;",
+    "  item: (getCharacter: unknown) => U;",
+    "};",
+    "",
+    "export declare function parseLatex(",
+    "  input: string,",
+    "  parser: {",
+    "    singles?: Record<string, SingleParser<Element>>;",
+    "    doubles?: Record<string, DoubleParser<Element>>;",
+    "    blocks?: Record<string, BlockParser<Element, string>>;",
+    "    lists?: Record<string, BlockParser<Element, Element>>;",
+    "  },",
+    "): Element[];",
+    "",
+  ].join("\n");
+}
+
+function createParseBibtexCollectionDeclaration() {
+  return [
+    "type BibtexCollection = {",
+    "  fields?: Record<string, string>;",
+    "  id: string;",
+    "  type: string;",
+    "};",
+    "",
+    "export declare function parseBibtexCollection(input: string): Record<string, BibtexCollection>;",
+    "export type { BibtexCollection };",
+    "",
+  ].join("\n");
+}
+
+function createDefaultExpressionsDeclaration() {
+  return [
+    'import type { Element } from "../../types.js";',
+    "",
+    "type BibtexCollection = {",
+    "  fields?: Record<string, string>;",
+    "  id: string;",
+    "  type: string;",
+    "};",
+    "type MatchCounts = Record<string, string[]>;",
+    "type SingleParser<T> = (children: string[], matchCounts: MatchCounts) => T;",
+    "type DoubleParser<T> = (first: string, second?: string) => T;",
+    "type BlockParser<T, U> = {",
+    "  container: (children: U[]) => T;",
+    "  item: (getCharacter: unknown) => U;",
+    "};",
+    "",
+    "export declare const singles: Record<string, SingleParser<Element>>;",
+    "export declare const doubles: Record<string, DoubleParser<Element>>;",
+    "export declare const blocks: Record<string, BlockParser<Element, string>>;",
+    "export declare const lists: Record<string, BlockParser<Element, Element>>;",
+    "export declare const cites: (bibtexEntries: Record<string, BibtexCollection>) => Record<string, SingleParser<Element>>;",
+    "export declare const refs: (refEntries: { title: string; label: string; slug: string }[]) => Record<string, SingleParser<Element>>;",
+    "export declare function el(type: string): (children: string[]) => Element;",
+    "export declare function element(type: string, children: (Element | string)[], attributes?: Record<string, string>): Element;",
     "",
   ].join("\n");
 }
