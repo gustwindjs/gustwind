@@ -61,18 +61,18 @@ const lists: Record<string, BlockParser<Element, Element>> = {
   },
 };
 
-// TODO: Figure out a better spot for this state as it should be per execution, not module
-let foundFootnotes = 0;
 const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
 ): Record<string, SingleParser<Element>> => ({
-  footnote: (children) => {
-    foundFootnotes++;
-
+  footnote: (children, matchCounts) => {
     return ({
       type: "sup",
       attributes: { title: children[0] },
-      children: [foundFootnotes.toString()],
+      children: [
+        (matchCounts.footnote
+          ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+          : 1).toString(),
+      ],
     });
   },
   cite: (children, matchCounts) => {

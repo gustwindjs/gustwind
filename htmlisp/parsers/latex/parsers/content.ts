@@ -12,11 +12,12 @@ function getParseContent<ExpressionReturnType>(
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
+    initialMatchCounts?: MatchCounts,
   ): ExpressionReturnType {
     let stringBuffer = "";
     let foundComment = false;
     const parts: ExpressionReturnType[] = [];
-    let matchCounts: MatchCounts = {};
+    let matchCounts: MatchCounts = initialMatchCounts || {};
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -77,6 +78,10 @@ function getParseContent<ExpressionReturnType>(
     const value = expression(parts);
 
     if (!!value) {
+      if (initialMatchCounts) {
+        Object.assign(initialMatchCounts, matchCounts);
+      }
+
       return value;
     }
 

@@ -29,7 +29,7 @@ function runParsers<ExpressionReturnType>(
 
       const ret = parser(getCharacter, matchCounts);
 
-      if (ret.match && ret.value) {
+      if (ret?.match && ret.value) {
         return ret;
       }
 

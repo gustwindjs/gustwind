@@ -43,6 +43,10 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
       throw new Error("No matching expression was found");
     }
 
+    if (!expressions[beginValue]) {
+      throw new Error("No matching expression was found");
+    }
+
     const itemCb = expressions[beginValue].item;
     let items: ItemReturnValue[] = [];
 

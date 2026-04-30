@@ -8,6 +8,7 @@ import type { Element } from "../../types.ts";
 import { type SingleParser } from "./parsers/single.ts";
 import { type DoubleParser } from "./parsers/double.ts";
 import { type BlockParser } from "./parsers/block.ts";
+import type { MatchCounts } from "./parsers/runParsers.ts";
 
 const LIMIT = 100000;
 
@@ -41,15 +42,21 @@ function parseLatex(
     ),
   ].filter(Boolean);
   const ret = [];
+  let matchCounts: MatchCounts = {};
 
   for (let i = 0; i < LIMIT; i++) {
     const parseResult = runParsers<Element>(
       getCharacter,
       // @ts-expect-error This is fine for now. TODO: Fix runParsers type
       allParsers,
+      matchCounts,
     );
 
     if (parseResult?.match) {
+      if ("matchCounts" in parseResult && parseResult.matchCounts) {
+        matchCounts = parseResult.matchCounts;
+      }
+
       ret.push(parseResult.value);
     }
 

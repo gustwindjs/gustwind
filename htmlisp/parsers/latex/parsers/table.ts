@@ -32,6 +32,8 @@ function parseTable(
             container: ([header, ...rows]) => {
               parsedValues.header = header;
               parsedValues.rows = rows;
+
+              return "";
             },
             item: parseTabularItem,
           },
@@ -45,9 +47,11 @@ function parseTable(
       ],
     );
 
-    if (parseResult?.match) {
-      // @ts-ignore Ok for now
-      parsedValues[parseResult.match] = parseResult.value;
+    if (typeof parseResult?.match === "string") {
+      (parsedValues as Record<string, string | string[][] | undefined>)[
+        parseResult.match
+      ] = parseResult.value;
+      continue;
     }
 
     const c = getCharacter.next();
