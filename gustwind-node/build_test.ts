@@ -240,6 +240,12 @@ export const plugin = {
     });
 
     const html = await readFile(path.join(outputDirectory, "index.html"), "utf8");
+    const scriptAssetsManifest = JSON.parse(
+      await readFile(
+        path.join(outputDirectory, ".gustwind", "script-assets.json"),
+        "utf8",
+      ),
+    );
     const scriptMatch = html.match(/<script type="module" src="([^"]+)"><\/script>/);
     const styleMatch = html.match(/<link rel="stylesheet" href="([^"]+)">/);
 
@@ -247,6 +253,10 @@ export const plugin = {
     assert.ok(styleMatch);
     assert.match(scriptMatch[1], /^\/assets\/hello-[\w-]+\.js$/);
     assert.match(styleMatch[1], /^\/assets\/hello-[\w-]+\.css$/);
+    assert.deepEqual(scriptAssetsManifest.hello, {
+      file: scriptMatch[1],
+      css: [styleMatch[1]],
+    });
     await readFile(path.join(outputDirectory, scriptMatch[1].slice(1)), "utf8");
     await readFile(path.join(outputDirectory, styleMatch[1].slice(1)), "utf8");
     await readFile(path.join(outputDirectory, ".vite", "manifest.json"), "utf8");

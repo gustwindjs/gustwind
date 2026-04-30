@@ -55,6 +55,7 @@ const gustwindEntries = [
     exportPath: "./plugins/pagefind",
   },
   {
+    declaration: "scriptPlugin",
     in: "./plugins/script/mod.ts",
     out: "plugins/script/mod",
     exportPath: "./plugins/script",
@@ -308,6 +309,8 @@ async function writeGustwindDeclarations(outDirectory) {
           path.join(outDirectory, `${out}.d.ts`),
           declaration === "cloudflareWorker"
             ? createCloudflareWorkerDeclaration()
+            : declaration === "scriptPlugin"
+            ? createScriptPluginDeclaration()
             : createPluginDeclaration(),
         )
       ),
@@ -334,6 +337,28 @@ function createPluginDeclaration() {
     'import type { Plugin } from "../../types.js";',
     "",
     "export declare const plugin: Plugin<Record<string, unknown>, Record<string, unknown>>;",
+    "",
+  ].join("\n");
+}
+
+function createScriptPluginDeclaration() {
+  return [
+    'import type { Plugin, Scripts } from "../../types.js";',
+    "",
+    "export declare const SCRIPT_ASSETS_MANIFEST_PATH = \".gustwind/script-assets.json\";",
+    "",
+    "export type ScriptEntryAsset = {",
+    "  file: string;",
+    "  css?: string[];",
+    "};",
+    "",
+    "export type ScriptEntryAssets = Record<string, ScriptEntryAsset>;",
+    "",
+    "export declare const plugin: Plugin<{",
+    "  scripts?: Scripts;",
+    "  scriptAssets?: ScriptEntryAssets;",
+    "  scriptsPath?: string[];",
+    "}, Record<string, unknown>>;",
     "",
   ].join("\n");
 }

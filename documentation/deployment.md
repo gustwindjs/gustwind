@@ -41,8 +41,10 @@ For Worker deployments, Gustwind now exposes a Cloudflare adapter through `gustw
 ```js
 import { createCloudflareWorker } from "gustwind/workers/cloudflare";
 import { plugin as metaPlugin } from "gustwind/plugins/meta";
+import { plugin as scriptPlugin } from "gustwind/plugins/script";
 import { plugin as edgeRendererPlugin } from "gustwind/plugins/htmlisp-edge-renderer";
 import { plugin as edgeRouterPlugin } from "gustwind/routers/edge-router";
+import scriptAssets from "./build/.gustwind/script-assets.json" with { type: "json" };
 
 export default createCloudflareWorker({
   initialPlugins: [
@@ -55,6 +57,7 @@ export default createCloudflareWorker({
       },
     }],
     [metaPlugin, { meta: { title: "Cloudflare Worker" } }],
+    [scriptPlugin, { scriptAssets }],
     [edgeRendererPlugin, {
       components: {
         Home: "<html><body><h1 &children=\"meta.title\"></h1><p &children=\"context.headline\"></p></body></html>",
@@ -67,6 +70,8 @@ export default createCloudflareWorker({
 ```
 
 If you are also publishing a static `build/` directory, keep Wrangler assets enabled so CSS, JS, images, and other emitted files are served directly by the `ASSETS` binding while page requests fall through to Gustwind rendering.
+
+The script plugin writes `.gustwind/script-assets.json` during the Node build. Pass that manifest back to the Worker script plugin as `scriptAssets` so route-level `scripts` entries resolve to the same hashed module URLs that the static build uses.
 
 ## GitHub Pages
 

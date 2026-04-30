@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { plugin as metaPlugin } from "../plugins/meta/mod.ts";
+import { plugin as scriptPlugin } from "../plugins/script/mod.ts";
 import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer/mod.ts";
 import { plugin as edgeRouterPlugin } from "../routers/edge-router/mod.ts";
 import type { Route, Tasks } from "../types.ts";
@@ -57,6 +58,73 @@ test("cloudflare worker renders in-memory Gustwind routes", async () => {
   assert.equal(response.headers.get("content-type"), "text/html; charset=UTF-8");
   assert.match(markup, /<h1>Worker Render<\/h1>/);
   assert.match(markup, /<p>hello from worker<\/p>/);
+});
+
+test("cloudflare worker injects route scripts from script asset manifest", async () => {
+  const routes: Record<string, Route> = {
+    "/": {
+      layout: "Home",
+      scripts: [{ name: "theme-toggle" }],
+    },
+  };
+  const worker = createCloudflareWorker({
+    initialPlugins: [
+      [edgeRouterPlugin, { routes }],
+      [
+        scriptPlugin,
+        {
+          scripts: [{
+            type: "text/javascript",
+            src: "https://unpkg.com/sidewind@8.0.0/dist/sidewind.umd.production.min.js",
+          }],
+          scriptAssets: {
+            "theme-toggle": {
+              file: "/assets/theme-toggle-abc123.js",
+              css: ["/assets/theme-toggle-abc123.css"],
+            },
+          },
+        },
+      ],
+      [metaPlugin, { meta: { title: "Worker Render" } }],
+      [
+        edgeRendererPlugin,
+        {
+          components: {
+            Home: [
+              "<html><head>",
+              '<noop &foreach="(get context styles)">',
+              '<link &rel="(get props rel)" &href="(get props href)" />',
+              "</noop>",
+              "</head><body>",
+              '<button data-theme-toggle="dark"></button>',
+              '<noop &foreach="(get context scripts)">',
+              '<script &type="(get props type)" &src="(get props src)"></script>',
+              "</noop>",
+              "</body></html>",
+            ].join(""),
+          },
+          componentUtilities: {},
+          globalUtilities: { init: () => ({}) },
+        },
+      ],
+    ],
+  });
+  const { ctx } = createExecutionContext();
+  const response = await worker.fetch(
+    new Request("https://example.com/"),
+    {},
+    ctx,
+  );
+  const markup = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.match(markup, /data-theme-toggle="dark"/);
+  assert.match(markup, /<link rel="stylesheet" href="\/assets\/theme-toggle-abc123\.css">/);
+  assert.match(
+    markup,
+    /<script type="text\/javascript" src="https:\/\/unpkg\.com\/sidewind@8\.0\.0\/dist\/sidewind\.umd\.production\.min\.js"><\/script>/,
+  );
+  assert.match(markup, /<script type="module" src="\/assets\/theme-toggle-abc123\.js"><\/script>/);
 });
 
 test("cloudflare worker prefers bound assets for file requests", async () => {

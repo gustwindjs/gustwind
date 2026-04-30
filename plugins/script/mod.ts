@@ -12,11 +12,13 @@ import {
 } from "../../utilities/vite.ts";
 
 const DEBUG = isDebugEnabled();
+const SCRIPT_ASSETS_MANIFEST_PATH = ".gustwind/script-assets.json";
 
 const plugin: Plugin<{
-  scripts: Scripts;
+  scripts?: Scripts;
+  scriptAssets?: ScriptEntryAssets;
   // TODO: Model scripts output path here
-  scriptsPath: string[];
+  scriptsPath?: string[];
 }, {
   foundScripts: { name: string; path: string; externals?: string[] }[];
   receivedScripts: {
@@ -37,10 +39,10 @@ const plugin: Plugin<{
     cwd,
     load,
     mode,
-    options: { scripts: globalScripts = [], scriptsPath },
+    options: { scripts: globalScripts = [], scriptAssets, scriptsPath = [] },
     outputDirectory,
   }) {
-    let builtEntryAssets: Record<string, { file: string; css: string[] }> = {};
+    let builtEntryAssets: ScriptEntryAssets = {};
 
     return {
       initPluginContext: async () => {
@@ -60,6 +62,11 @@ const plugin: Plugin<{
             externals,
           })),
         );
+
+        if (mode === "production" && scriptAssets) {
+          builtEntryAssets = normalizeScriptEntryAssets(scriptAssets);
+          return [];
+        }
 
         if (mode === "production") {
           return buildProductionScripts({
@@ -214,6 +221,13 @@ const plugin: Plugin<{
       path: string;
       externals?: string[];
     }[]> {
+      if (scriptAssets) {
+        return Object.keys(scriptAssets).map((name) => ({
+          name: `${normalizeScriptName(name)}.ts`,
+          path: "",
+        }));
+      }
+
       return (await Promise.all(
         scriptsPath.map((p) =>
           load.dir({
@@ -227,6 +241,21 @@ const plugin: Plugin<{
   },
 };
 
+type ScriptEntryAsset = { file: string; css?: string[] };
+type ScriptEntryAssets = Record<string, ScriptEntryAsset>;
+
+function normalizeScriptEntryAssets(scriptAssets: ScriptEntryAssets) {
+  return Object.fromEntries(
+    Object.entries(scriptAssets).map(([name, asset]) => [
+      normalizeScriptName(name),
+      {
+        file: asset.file,
+        css: asset.css || [],
+      },
+    ]),
+  );
+}
+
 async function buildProductionScripts(
   {
     cwd,
@@ -239,7 +268,7 @@ async function buildProductionScripts(
     outputDirectory: string;
     scripts: { name: string; path: string; externals?: string[] }[];
     setBuiltEntryAssets(
-      builtEntryAssets: Record<string, { file: string; css: string[] }>,
+      builtEntryAssets: ScriptEntryAssets,
     ): void;
   },
 ): Promise<BuildWorkerEvent[]> {
@@ -249,6 +278,8 @@ async function buildProductionScripts(
   const remoteScripts = scripts.filter(({ path: scriptPath }) =>
     scriptPath.startsWith("http://") || scriptPath.startsWith("https://")
   );
+
+  let builtEntryAssets: ScriptEntryAssets = {};
 
   if (localScripts.length > 0) {
     const persistentCacheKey = await getScriptAssetCacheKey(cwd, localScripts);
@@ -269,12 +300,13 @@ async function buildProductionScripts(
         : undefined,
     });
 
-    setBuiltEntryAssets(builtAssets.entryAssets);
+    builtEntryAssets = builtAssets.entryAssets;
+    setBuiltEntryAssets(builtEntryAssets);
   } else {
     setBuiltEntryAssets({});
   }
 
-  return await Promise.all(
+  const tasks = await Promise.all(
     remoteScripts.map(({ name, path: scriptPath, externals }) =>
       writeScript({
         file: name.replace(".ts", ".js"),
@@ -285,6 +317,19 @@ async function buildProductionScripts(
       })
     ),
   );
+
+  if (localScripts.length > 0) {
+    tasks.push({
+      type: "writeTextFile",
+      payload: {
+        outputDirectory,
+        file: SCRIPT_ASSETS_MANIFEST_PATH,
+        data: `${JSON.stringify(builtEntryAssets, null, 2)}\n`,
+      },
+    });
+  }
+
+  return tasks;
 }
 
 function normalizeScriptName(name: string) {
@@ -385,4 +430,5 @@ async function getScriptAssetCacheKey(
   });
 }
 
-export { plugin };
+export { plugin, SCRIPT_ASSETS_MANIFEST_PATH };
+export type { ScriptEntryAsset, ScriptEntryAssets };
