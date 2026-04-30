@@ -160,19 +160,50 @@ const cites = (
       children: [text],
     });
   },
-  // TODO: Textual citation in parentheses (needs a bibtex lookup)
-  citep: (children, matchCounts) => ({
-    type: "span",
-    attributes: { title: children[0] },
-    children: [
-      "(" +
-      (matchCounts.citep
-        ? matchCounts.citep.findIndex((e) => e === children[0]) + 1
-        : 1)
-        .toString() +
-      ")",
-    ],
-  }),
+  citep: (children) => {
+    const ids = children[0].split(",").map((id) => id.trim()).filter(Boolean);
+    const entries = ids.map((id) => {
+      const e = bibtexEntries[id];
+
+      if (!e) {
+        throw new Error("No matching BibTeX entry was found!");
+      }
+
+      return e;
+    });
+
+    const references = entries.map((entry) => {
+      const title = entry.fields?.title;
+
+      if (!title) {
+        throw new Error("BibTeX entry was missing a title!");
+      }
+
+      const author = entry.fields?.author || "";
+
+      return {
+        title,
+        author,
+        surname: getFirstAuthorSurname(author),
+        year: entry.fields?.year || "",
+      };
+    });
+
+    const title = references.map(({ title, author }) => `${title} - ${author}`)
+      .join(", ");
+    const text = references.map(({ author, surname, year }) => {
+      const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
+      const authorText = authorCount > 1 ? `${surname} et al.` : surname;
+
+      return [authorText, year].filter(Boolean).join(", ");
+    }).join("; ");
+
+    return ({
+      type: "span",
+      attributes: { title },
+      children: [`(${text})`],
+    });
+  },
   // TODO: Write reference using bibtex
   fullcite: (children) => ({
     type: "span",
