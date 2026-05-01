@@ -355,6 +355,98 @@ test("gustwind tailwind plugin reuses compiled css across cold plugin instances"
   }
 });
 
+test("gustwind tailwind plugin invalidates persistent css when content files change", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-tailwind-content-cache-"));
+
+  async function compileTailwind() {
+    let textFileReads = 0;
+    const api = await tailwindPlugin.init({
+      cwd,
+      mode: "production",
+      options: {
+        cssPath: "./tailwind.css",
+        setupPath: "./tailwindSetup.ts",
+      },
+      outputDirectory: "",
+      renderComponent: async () => "",
+      renderComponentSync: () => "",
+      load: {
+        async dir() {
+          return [];
+        },
+        async json() {
+          throw new Error("unused");
+        },
+        async module() {
+          throw new Error("unused");
+        },
+        async textFile(filePath: string) {
+          textFileReads++;
+          return await readFile(filePath, "utf8");
+        },
+        textFileSync() {
+          throw new Error("unused");
+        },
+      },
+    });
+
+    await api.prepareContext?.({
+      send: async () => undefined,
+      route: { layout: "Home" },
+      url: "/",
+      pluginContext: {},
+    });
+
+    const finishTasks = await api.finishBuild?.({
+      send: async () => undefined,
+      pluginContext: {},
+    });
+
+    return {
+      css: finishTasks?.[0]?.type === "writeFile"
+        ? String(finishTasks[0].payload.data)
+        : "",
+      textFileReads,
+    };
+  }
+
+  try {
+    await writeFile(path.join(cwd, "tailwind.css"), '@import "tailwindcss";\n');
+    await writeFile(
+      path.join(cwd, "tailwindSetup.ts"),
+      [
+        "export default {",
+        '  content: ["./site/**/*.{html,ts}"],',
+        "  theme: { extend: {} },",
+        "  plugins: [],",
+        "};",
+      ].join("\n"),
+    );
+    await mkdir(path.join(cwd, "site", "layouts"), { recursive: true });
+    await writeFile(
+      path.join(cwd, "site", "layouts", "index.html"),
+      '<div class="flex text-red-500"></div>\n',
+    );
+
+    const firstBuild = await compileTailwind();
+
+    await writeFile(
+      path.join(cwd, "site", "layouts", "index.html"),
+      '<div class="flex items-start text-red-500"></div>\n',
+    );
+
+    const secondBuild = await compileTailwind();
+
+    assert.equal(firstBuild.textFileReads, 1);
+    assert.equal(secondBuild.textFileReads, 1);
+    assert.match(firstBuild.css, /text-red-500/);
+    assert.doesNotMatch(firstBuild.css, /items-start/);
+    assert.match(secondBuild.css, /items-start/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 async function renderHome(
   {
     cwd,

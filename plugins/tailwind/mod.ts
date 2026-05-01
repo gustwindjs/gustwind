@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 import autoprefixer from "autoprefixer";
 import postcss from "postcss";
 import tailwindCss from "@tailwindcss/postcss";
+import { glob } from "tinyglobby";
 import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import type { Plugin } from "../../types.ts";
 import {
@@ -108,28 +111,32 @@ const plugin: Plugin<TailwindPluginOptions> = {
 
     async function getTailwindCacheKey() {
       if (!cacheKeyPromise) {
-        cacheKeyPromise = hashDependencyTasks(cwd, [
-          {
-            type: "readTextFile",
-            payload: {
-              path: cssPath,
-              type: "styles",
+        cacheKeyPromise = Promise.all([
+          hashDependencyTasks(cwd, [
+            {
+              type: "readTextFile",
+              payload: {
+                path: cssPath,
+                type: "styles",
+              },
             },
-          },
-          {
-            type: "loadModule",
-            payload: {
-              path: setupPath,
-              type: "styleSetup",
+            {
+              type: "loadModule",
+              payload: {
+                path: setupPath,
+                type: "styleSetup",
+              },
             },
-          },
-        ]).then((dependencyFingerprint) =>
-          dependencyFingerprint
+          ]),
+          hashTailwindContent(cwd, setupPath),
+        ]).then(([dependencyFingerprint, contentFingerprint]) =>
+          dependencyFingerprint && contentFingerprint !== null
             ? createHash("sha256")
               .update(JSON.stringify({
+                contentFingerprint,
                 dependencyFingerprint,
                 mode,
-                version: 2,
+                version: 3,
               }))
               .digest("hex")
             : null
@@ -209,6 +216,126 @@ const plugin: Plugin<TailwindPluginOptions> = {
     };
   },
 };
+
+async function hashTailwindContent(cwd: string, setupPath: string) {
+  const contentConfig = await getTailwindContentConfig(cwd, setupPath);
+
+  if (!contentConfig) {
+    return null;
+  }
+
+  const { baseDirectory, patterns } = contentConfig;
+  const hash = createHash("sha256");
+
+  hash.update(path.relative(cwd, baseDirectory));
+  hash.update("\n");
+  hash.update(JSON.stringify(patterns));
+  hash.update("\n");
+
+  if (patterns.length === 0) {
+    return hash.digest("hex");
+  }
+
+  let contentFiles: string[];
+
+  try {
+    contentFiles = await glob(patterns, {
+      absolute: true,
+      cwd: baseDirectory,
+      dot: true,
+      ignore: ["**/node_modules/**", ".gustwind/**"],
+      onlyFiles: true,
+    });
+  } catch {
+    return null;
+  }
+
+  for (const filePath of [...new Set(contentFiles)].sort()) {
+    hash.update(path.relative(cwd, filePath));
+    hash.update("\n");
+    hash.update(await readFile(filePath));
+    hash.update("\n");
+  }
+
+  return hash.digest("hex");
+}
+
+async function getTailwindContentConfig(cwd: string, setupPath: string) {
+  const setupModule = await import(`${pathToFileURL(setupPath).href}?cache=${Date.now()}`) as {
+    default?: {
+      content?: unknown;
+    };
+  };
+
+  return extractTailwindContentConfig(setupModule.default?.content, cwd, setupPath);
+}
+
+function extractTailwindContentConfig(content: unknown, cwd: string, setupPath: string): {
+  baseDirectory: string;
+  patterns: string[];
+} | null {
+  if (content === undefined) {
+    return { baseDirectory: cwd, patterns: [] };
+  }
+
+  if (typeof content === "string") {
+    return { baseDirectory: cwd, patterns: [content] };
+  }
+
+  if (Array.isArray(content)) {
+    const patterns = extractTailwindContentFiles(content);
+
+    return patterns ? { baseDirectory: cwd, patterns } : null;
+  }
+
+  if (!content || typeof content !== "object") {
+    return null;
+  }
+
+  if (!("files" in content)) {
+    return { baseDirectory: cwd, patterns: [] };
+  }
+
+  const contentObject = content as { files?: unknown; relative?: unknown };
+  const files = contentObject.files;
+  const baseDirectory = contentObject.relative === true ? path.dirname(setupPath) : cwd;
+
+  if (typeof files === "string") {
+    return { baseDirectory, patterns: [files] };
+  }
+
+  if (Array.isArray(files)) {
+    const patterns = extractTailwindContentFiles(files);
+
+    return patterns ? { baseDirectory, patterns } : null;
+  }
+
+  return null;
+}
+
+function extractTailwindContentFiles(files: unknown[]) {
+  const patterns: string[] = [];
+
+  for (const file of files) {
+    if (typeof file === "string") {
+      patterns.push(file);
+      continue;
+    }
+
+    if (!isRawTailwindContent(file)) {
+      return null;
+    }
+  }
+
+  return patterns;
+}
+
+function isRawTailwindContent(file: unknown) {
+  return Boolean(
+    file && typeof file === "object" &&
+      typeof (file as { raw?: unknown }).raw === "string",
+  );
+}
 
 function normalizeTailwindSource(source: string) {
   let hasTailwindImport = false;
