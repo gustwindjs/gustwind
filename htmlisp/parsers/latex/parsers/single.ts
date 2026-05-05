@@ -1,5 +1,5 @@
 import type { CharacterGenerator } from "../../types.ts";
-import type { MatchCounts } from "./runParsers.ts";
+import { type MatchCounts, runParsers } from "./runParsers.ts";
 
 type SingleParser<ExpressionReturnType> = (
   s: string[],
@@ -21,6 +21,14 @@ function getParseSingle<ExpressionReturnType>(
     string,
     SingleParser<ExpressionReturnType>
   >,
+  nestedParsers: ((
+    getCharacter: CharacterGenerator,
+    matchCounts?: MatchCounts,
+  ) => {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  })[] = [],
 ) {
   return function parseSingle(
     getCharacter: CharacterGenerator,
@@ -95,10 +103,21 @@ function getParseSingle<ExpressionReturnType>(
           getCharacter.previous();
 
           try {
-            const ret = parseSingle(getCharacter, matchCounts);
+            const parseResult = runParsers(
+              getCharacter,
+              [parseSingle, ...nestedParsers],
+              matchCounts,
+            );
 
-            if (ret) {
-              parts.push(ret.value);
+            if (parseResult?.match) {
+              if ("matchCounts" in parseResult && parseResult.matchCounts) {
+                matchCounts = parseResult.matchCounts;
+              }
+
+              parts.push(parseResult.value);
+            } else {
+              getCharacter.setIndex(characterIndex - 1);
+              stringBuffer += readLatexCommand(getCharacter);
             }
           } catch (error) {
             if (
@@ -117,12 +136,14 @@ function getParseSingle<ExpressionReturnType>(
           }
 
           if (matchCounts) {
-            if (!matchCounts[foundKey]) {
-              matchCounts[foundKey] = [];
+            const counts = matchCounts;
+
+            if (!counts[foundKey]) {
+              counts[foundKey] = [];
             }
 
-            stringBuffer.split(",").forEach((s) => {
-              matchCounts[foundKey].push(s.trim());
+            partsToText(parts).split(",").forEach((s) => {
+              counts[foundKey].push(s.trim());
             });
           }
 
@@ -202,6 +223,22 @@ function readBalancedGroup(getCharacter: CharacterGenerator) {
   }
 
   return ret;
+}
+
+function partsToText(parts: unknown[]): string {
+  return parts.map((part) => {
+    if (typeof part === "string") {
+      return part;
+    }
+
+    if (part && typeof part === "object" && "children" in part) {
+      return partsToText(
+        ((part as { children?: unknown[] }).children || []),
+      );
+    }
+
+    return "";
+  }).join("");
 }
 
 export { getParseSingle, type SingleParser };

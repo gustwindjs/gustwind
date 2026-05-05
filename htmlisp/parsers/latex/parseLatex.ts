@@ -25,8 +25,13 @@ function parseLatex(
   input = stripLatexComments(input);
 
   const getCharacter = characterGenerator(input);
-  const singleParsers = parser.singles && getParseSingle(parser.singles);
   const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
+  const singleParsers = parser.singles &&
+    getParseSingle(
+      parser.singles,
+      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+      [doubleParsers].filter(Boolean),
+    );
   const blockParsers = parser.blocks && getParseBlock(parser.blocks);
   const listParsers = parser.lists && getParseBlock(parser.lists);
   const allParsers = [

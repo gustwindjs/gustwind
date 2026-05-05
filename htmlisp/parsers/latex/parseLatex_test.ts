@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { blocks, doubles, el, lists, singles } from "./defaultExpressions.ts";
+import {
+  blocks,
+  cites,
+  doubles,
+  el,
+  lists,
+  singles,
+} from "./defaultExpressions.ts";
 import { parseLatex } from "./parseLatex.ts";
 
 test(`id expression`, () => {
@@ -288,6 +295,42 @@ test(`href`, () => {
       type: "a",
       attributes: { href: "https://google.com" },
       children: ["Google"],
+    }],
+  );
+});
+
+test(`double expression nested in single expression`, () => {
+  const input = String
+    .raw`Research\footnote{Occasionally this is called \href{https://example.com}{sensemaking}.}`;
+
+  assert.deepEqual(
+    parseLatex(input, {
+      singles: { ...singles, ...cites({}) },
+      doubles,
+    }),
+    [{
+      type: "p",
+      attributes: {},
+      children: ["Research", {
+        type: "sup",
+        attributes: {
+          title: "Occasionally this is called sensemaking.",
+        },
+        children: ["1"],
+      }],
+    }],
+  );
+});
+
+test(`newline expression`, () => {
+  const input = String.raw`Literature\newline Review`;
+
+  assert.deepEqual(
+    parseLatex(input, { singles, doubles }),
+    [{
+      type: "p",
+      attributes: {},
+      children: ["Literature", " ", "Review"],
     }],
   );
 });

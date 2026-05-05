@@ -19,6 +19,7 @@ const singles: Record<string, SingleParser<LatexNode>> = {
   subsubsection: el("h4"),
   paragraph: el("b"),
   label: () => element("", []),
+  newline: () => " ",
   textbackslash: () => "\\",
   // Formatting
   texttt: el("code"),
@@ -69,12 +70,14 @@ const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
 ): Record<string, SingleParser<LatexNode>> => ({
   footnote: (children, matchCounts) => {
+    const title = childrenToText(children);
+
     return ({
       type: "sup",
-      attributes: { title: children[0] },
+      attributes: { title },
       children: [
         (matchCounts.footnote
-          ? matchCounts.footnote.findIndex((e) => e === children[0]) + 1
+          ? matchCounts.footnote.findIndex((e) => e === title) + 1
           : 1).toString(),
       ],
     });
@@ -299,6 +302,12 @@ function element(
     attributes: attributes || {},
     children,
   };
+}
+
+function childrenToText(children: (Element | string)[]): string {
+  return children.map((child) =>
+    typeof child === "string" ? child : childrenToText(child.children || [])
+  ).join("");
 }
 
 export { blocks, cites, doubles, el, element, lists, refs, singles };
