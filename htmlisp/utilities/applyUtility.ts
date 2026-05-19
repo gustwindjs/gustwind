@@ -1,5 +1,6 @@
 import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
+import { isRawHtml, unwrapRawHtml } from "./runtime.ts";
 
 async function applyUtility<
   U extends Utility,
@@ -67,10 +68,14 @@ async function applyUtility<
   try {
     // @ts-expect-error This is fine for now.
     // TODO: Figure out a nice way to resolve context mismatch
-    return foundUtility.apply(context, parameters);
+    return foundUtility.apply(context, parameters.map(unwrapRawHtmlArgument));
   } catch (_error) {
     console.error("Failed to apply", foundUtility, parameters);
   }
 }
 
 export { applyUtility };
+
+function unwrapRawHtmlArgument(value: unknown) {
+  return isRawHtml(value) ? unwrapRawHtml(value) : value;
+}

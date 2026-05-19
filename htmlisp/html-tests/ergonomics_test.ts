@@ -54,6 +54,24 @@ test("rendered component children do not double escape", async () => {
   );
 });
 
+test("utility arguments receive rendered children as strings", async () => {
+  assert.deepEqual(
+    await htmlispToHTML({
+      htmlInput: `<SiteLink href="/demo"><strong>Demo</strong></SiteLink>`,
+      components: {
+        SiteLink:
+          `<a &href="(get props href)" &children="(getLinkSuffix (get props href) (get props children))"></a>`,
+      },
+      utilities: {
+        getLinkSuffix(href: string, children: string) {
+          return children + `<span>${href}</span>`;
+        },
+      },
+    }),
+    `<a href="/demo"><strong>Demo</strong><span>/demo</span></a>`,
+  );
+});
+
 test("shorthand lookup resolves local before props before context", async () => {
   assert.deepEqual(
     await htmlispToHTML({
