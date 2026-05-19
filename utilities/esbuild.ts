@@ -1,6 +1,6 @@
 type EsbuildBuild = (...args: any[]) => Promise<{ outputFiles?: { text: string }[] }>;
-type EsbuildStop = () => void;
-type EsbuildModule = { build: EsbuildBuild; stop: EsbuildStop };
+type EsbuildStop = () => void | Promise<void>;
+type EsbuildModule = { build: EsbuildBuild; stop?: EsbuildStop };
 
 let esbuildPromise: Promise<EsbuildModule> | undefined;
 
@@ -22,7 +22,7 @@ async function stopEsbuild() {
     return;
   }
 
-  (await esbuildPromise).stop();
+  await (await esbuildPromise).stop?.();
   esbuildPromise = undefined;
 }
 

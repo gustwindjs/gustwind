@@ -5,7 +5,7 @@ import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 import autoprefixer from "autoprefixer";
 import postcss from "postcss";
-import tailwindCss from "@tailwindcss/postcss";
+import type tailwindCssPlugin from "@tailwindcss/postcss";
 import { glob } from "tinyglobby";
 import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
 import type { Plugin } from "../../types.ts";
@@ -22,6 +22,9 @@ type TailwindPluginOptions = {
 
 const require = createRequire(import.meta.url);
 const tailwindStylesheetPath = require.resolve("tailwindcss/index.css");
+let tailwindCssPromise:
+  | Promise<typeof tailwindCssPlugin>
+  | undefined;
 
 const plugin: Plugin<TailwindPluginOptions> = {
   meta: {
@@ -40,6 +43,7 @@ const plugin: Plugin<TailwindPluginOptions> = {
 
     async function compileCss() {
       const tailwindSource = await load.textFile(cssPath);
+      const tailwindCss = await getTailwindCss();
       const plugins = [
         tailwindCss({ base: cwd }),
         autoprefixer({}),
@@ -361,6 +365,51 @@ function normalizeTailwindSource(source: string) {
       return `@import "${tailwindStylesheetPath}";`;
     },
   );
+}
+
+async function getTailwindCss() {
+  if (!tailwindCssPromise) {
+    tailwindCssPromise = importWithSuppressedModuleRegisterWarning(
+      "@tailwindcss/postcss",
+    ).then((module) =>
+      ("default" in module ? module.default : module) as typeof tailwindCssPlugin
+    );
+  }
+
+  return await tailwindCssPromise;
+}
+
+async function importWithSuppressedModuleRegisterWarning(
+  specifier: "@tailwindcss/postcss",
+) {
+  const originalEmitWarning = process.emitWarning;
+
+  // Tailwind 4 currently emits DEP0205 on Node 26 while registering its loader.
+  process.emitWarning = ((...args: Parameters<typeof process.emitWarning>) => {
+    if (isModuleRegisterDeprecationWarning(args)) {
+      return;
+    }
+
+    return Reflect.apply(originalEmitWarning, process, args);
+  }) as typeof process.emitWarning;
+
+  try {
+    return await import(specifier);
+  } finally {
+    process.emitWarning = originalEmitWarning;
+  }
+}
+
+function isModuleRegisterDeprecationWarning(
+  args: unknown[],
+) {
+  const [warning, typeOrOptions, code] = args;
+  const message = warning instanceof Error ? warning.message : String(warning);
+  const warningCode = typeof typeOrOptions === "object" && typeOrOptions
+    ? (typeOrOptions as { code?: unknown }).code
+    : code;
+
+  return warningCode === "DEP0205" && message.includes("module.register()");
 }
 
 export { plugin };
