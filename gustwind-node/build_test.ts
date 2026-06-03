@@ -359,6 +359,7 @@ export const plugin = {
           options: {
             cssPath: "./tailwind.css",
             setupPath: "./tailwindSetup.ts",
+            stableCssPath: "/assets/site.css",
           },
           module: undefined as never,
         },
@@ -379,6 +380,10 @@ export const plugin = {
     assert.doesNotMatch(docsMarkup, /<style/);
     assert.match(
       await readFile(path.join(outputDirectory, stylesheetHref), "utf8"),
+      /text-red-500/,
+    );
+    assert.match(
+      await readFile(path.join(outputDirectory, "assets", "site.css"), "utf8"),
       /text-red-500/,
     );
   } finally {

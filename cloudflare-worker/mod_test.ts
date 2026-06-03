@@ -5,7 +5,7 @@ import { plugin as scriptPlugin } from "../plugins/script/mod.ts";
 import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer/mod.ts";
 import { plugin as edgeRouterPlugin } from "../routers/edge-router/mod.ts";
 import type { Plugin, Route, Tasks } from "../types.ts";
-import { createCloudflareWorker } from "./mod.ts";
+import { createCloudflareWorker, initRender } from "./mod.ts";
 
 function createExecutionContext() {
   const pending: Promise<unknown>[] = [];
@@ -58,6 +58,10 @@ test("cloudflare worker renders in-memory Gustwind routes", async () => {
   assert.equal(response.headers.get("content-type"), "text/html; charset=UTF-8");
   assert.match(markup, /<h1>Worker Render<\/h1>/);
   assert.match(markup, /<p>hello from worker<\/p>/);
+});
+
+test("cloudflare module exposes edge-safe initRender", async () => {
+  assert.equal(typeof initRender, "function");
 });
 
 test("cloudflare worker injects route scripts from script asset manifest", async () => {

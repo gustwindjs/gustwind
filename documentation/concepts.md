@@ -33,6 +33,18 @@ The following example illustrates the usage of utilities:
 
 [<file>](site/layouts/blogIndex.html)
 
+Global utilities and component utilities export an `init(...)` function. At
+render time Gustwind calls it with `{ load, raw, render, renderRaw, renderSync,
+matchRoute, url }`, where `load` is the active load API, `render` and
+`renderSync` render components or inline HTMLisp, `raw` and `renderRaw` mark
+already-rendered HTML as opaque, `matchRoute` resolves another route, and `url`
+is the currently rendered URL. Use `UtilityInitContext` from `gustwind` to type
+the argument in TypeScript utility modules.
+
+Inside HTMLisp templates, use `render(...)` when the input should be parsed as
+HTMLisp. Use `renderRaw(...)` or `raw(...)` for rendered Markdown or other HTML
+that should pass through slots and components without being parsed again.
+
 ## Layouts
 
 Gustwind layouts are technically components:
@@ -50,4 +62,3 @@ The same idea can be used to implement an RSS feed.
 **layouts/rssPage.server.ts**
 
 [<file>](site/layouts/rssPage.server.ts)
-

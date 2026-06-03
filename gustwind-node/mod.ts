@@ -1,4 +1,8 @@
 import { buildNode } from "./build.ts";
+import {
+  createCloudflareManifestSource,
+  generateCloudflareManifest,
+} from "./cloudflareManifest.ts";
 import { importPlugin } from "../gustwind-utilities/plugins.ts";
 import { initLoadApi as initNodeLoadApi } from "../load-adapters/node.ts";
 import {
@@ -119,6 +123,8 @@ async function resolvePluginPath(cwd: string, pluginPath: string) {
 export type * from "../types.ts";
 export {
   buildNode,
+  createCloudflareManifestSource,
+  generateCloudflareManifest,
   initNodeRender,
   initRender,
   validateHtmlDirectory,

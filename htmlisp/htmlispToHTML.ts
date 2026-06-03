@@ -53,6 +53,7 @@ async function htmlispToHTML(
           }).then(raw)
           : raw("");
       },
+      renderRaw: raw,
       ...defaultUtilities,
       ...utilities,
     },

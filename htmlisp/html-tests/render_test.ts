@@ -32,6 +32,18 @@ test("component with undefined render", async () => {
   );
 });
 
+test("renderRaw treats already-rendered HTML as opaque", async () => {
+  assert.deepEqual(
+    await htmlispToHTML({
+      htmlInput: `<main &children="(renderRaw (get context content))"></main>`,
+      context: {
+        content: "<Suspense>Ready</Suspense><p>less than <1kb</p>",
+      },
+    }),
+    `<main><Suspense>Ready</Suspense><p>less than <1kb</p></main>`,
+  );
+});
+
 test("render within a component", async () => {
   assert.deepEqual(
     await htmlispToHTML({

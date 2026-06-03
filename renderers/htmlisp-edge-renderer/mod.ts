@@ -1,4 +1,4 @@
-import { htmlispToHTML, htmlispToHTMLSync } from "../../htmlisp/mod.ts";
+import { htmlispToHTML, htmlispToHTMLSync, raw } from "../../htmlisp/mod.ts";
 import { applyUtilities } from "../../htmlisp/utilities/applyUtilities.ts";
 import { defaultUtilities } from "../../htmlisp/defaultUtilities.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
@@ -80,13 +80,13 @@ const plugin: Plugin<{
           },
         };
       },
-      renderLayout: ({ matchRoute, route, context, pluginContext, url }) => {
+      renderLayout: async ({ matchRoute, route, context, pluginContext, url }) => {
         const { components, globalUtilities } = pluginContext;
         const layout = components[route.layout];
 
         if (!layout) {
           throw new Error(
-            "htmlisp-edge-renderer-plugin - layout to render was not found",
+            `htmlisp-edge-renderer-plugin - layout ${route.layout} to render was not found for url ${url}`,
           );
         }
 
@@ -98,24 +98,30 @@ const plugin: Plugin<{
           url,
         });
 
-        return htmlispToHTML({
-          htmlInput: layout,
-          components,
-          context,
-          utilities: {
-            ...runtimeUtilities.utilities,
-            ...(layoutUtilities
-              ? layoutUtilities.init({
-                load,
-                render: renderComponent,
-                renderSync: renderComponentSync,
-                matchRoute,
-                url,
-              })
-              : {}),
-          },
-          componentUtilities: runtimeUtilities.componentUtilities,
-        });
+        try {
+          return await htmlispToHTML({
+            htmlInput: layout,
+            components,
+            context,
+            utilities: {
+              ...runtimeUtilities.utilities,
+              ...(layoutUtilities
+                ? layoutUtilities.init({
+                  load,
+                  raw,
+                  render: renderComponent,
+                  renderRaw: raw,
+                  renderSync: renderComponentSync,
+                  matchRoute,
+                  url,
+                })
+                : {}),
+            },
+            componentUtilities: runtimeUtilities.componentUtilities,
+          });
+        } catch (error) {
+          throw withRenderContext(error, { layout: route.layout, url });
+        }
       },
       renderComponent: (
         { matchRoute, componentName, htmlInput, context, props, pluginContext },
@@ -218,5 +224,19 @@ const plugin: Plugin<{
 
   },
 };
+
+function withRenderContext(
+  error: unknown,
+  { layout, url }: { layout: string; url: string },
+) {
+  if (!(error instanceof Error)) {
+    return error;
+  }
+
+  return new Error(
+    `${error.message} while rendering layout "${layout}" for url "${url}"`,
+    { cause: error },
+  );
+}
 
 export { plugin };

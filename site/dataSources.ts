@@ -13,8 +13,8 @@ type MarkdownWithFrontmatter = {
   content: string;
 };
 
-function init({ load, render, renderSync }: DataSourcesApi) {
-  const markdown = getMarkdown({ load, render, renderSync });
+function init({ load, render, renderRaw, renderSync }: DataSourcesApi) {
+  const markdown = getMarkdown({ load, render, renderRaw, renderSync });
   const memoFile = getAsyncMemo(new Map());
   const memoHeadmatter = getAsyncMemo(new Map());
   const memo = getMemo(new Map());

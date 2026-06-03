@@ -296,6 +296,57 @@ test("expanded routes inherit parent data sources and resolved data source conte
   );
 });
 
+test("expanded routes support array-shaped child data sources", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          name: "blogPages",
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        dataSources: [
+          { name: "post", operation: "getPost", parameters: ["full"] },
+        ],
+        layout: "blogPage",
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await expandRoutes({
+      routes,
+      dataSources: {
+        getPost: (match: { slug: string }, mode: string) =>
+          `${match.slug}:${mode}`,
+        indexBlog: () => [{ slug: "foo" }],
+      },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          foo: {
+            context: {},
+            dataSources: {
+              post: {
+                operation: "getPost",
+                parameters: [{ slug: "foo" }, "full"],
+              },
+            },
+            layout: "blogPage",
+            parentDataSources: {
+              blogPages: [{ slug: "foo" }],
+            },
+            scripts: undefined,
+          },
+        },
+      },
+    },
+  );
+});
+
 test("expands sibling routes in parallel", async () => {
   const routes = {
     blog: {

@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { isRawHtml } from "../htmlisp/mod.ts";
+import type { UtilityInitContext } from "../types.ts";
 import { createRuntimeUtilitiesResolver } from "./runtimeUtilitiesCache.ts";
 
 test("runtime utilities resolver reuses initialized utilities for the same route runtime", () => {
   let globalUtilityInitCount = 0;
   let componentUtilityInitCount = 0;
+  let sawRawHelpers = false;
   const matchRoute = async () => undefined;
   const resolveRuntimeUtilities = createRuntimeUtilitiesResolver({
     load: {
@@ -38,8 +41,10 @@ test("runtime utilities resolver reuses initialized utilities for the same route
       },
     },
     globalUtilities: {
-      init: () => {
+      init: ({ raw, renderRaw }: UtilityInitContext) => {
         globalUtilityInitCount++;
+        sawRawHelpers = isRawHtml(raw("<p>raw</p>")) &&
+          isRawHtml(renderRaw("<p>rendered</p>"));
         return {};
       },
     },
@@ -63,4 +68,5 @@ test("runtime utilities resolver reuses initialized utilities for the same route
   assert.notEqual(firstUtilities, thirdUtilities);
   assert.equal(globalUtilityInitCount, 2);
   assert.equal(componentUtilityInitCount, 2);
+  assert.equal(sawRawHelpers, true);
 });

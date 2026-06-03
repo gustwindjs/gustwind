@@ -179,7 +179,7 @@ function shouldPreferAssets(pathname: string) {
   return getLastPathSegment(pathname).includes(".");
 }
 
-export { createCloudflareWorker };
+export { createCloudflareWorker, initRender };
 export type {
   CloudflareAssetFetcher,
   CloudflareExecutionContext,

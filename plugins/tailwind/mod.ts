@@ -8,7 +8,7 @@ import postcss from "postcss";
 import type tailwindCssPlugin from "@tailwindcss/postcss";
 import { glob } from "tinyglobby";
 import { hashDependencyTasks } from "../../utilities/incrementalBuildCache.ts";
-import type { Plugin } from "../../types.ts";
+import type { Plugin, Tasks } from "../../types.ts";
 import {
   persistentAssetExists,
   readPersistentAssetText,
@@ -18,6 +18,7 @@ import {
 type TailwindPluginOptions = {
   cssPath: string;
   setupPath: string;
+  stableCssPath?: string;
 };
 
 const require = createRequire(import.meta.url);
@@ -203,14 +204,28 @@ const plugin: Plugin<TailwindPluginOptions> = {
           return;
         }
 
-        return [{
+        const css = await ensureCompiledCss();
+        const tasks: Tasks = [{
           type: "writeFile",
           payload: {
             outputDirectory,
             file: await getStylesheetFile(),
-            data: await ensureCompiledCss(),
+            data: css,
           },
         }];
+
+        if (options.stableCssPath) {
+          tasks.push({
+            type: "writeFile",
+            payload: {
+              outputDirectory,
+              file: trimLeadingSlash(options.stableCssPath),
+              data: css,
+            },
+          });
+        }
+
+        return tasks;
       },
       onMessage({ message }) {
         if (message.type === "getStyleSetupPath") {
@@ -365,6 +380,10 @@ function normalizeTailwindSource(source: string) {
       return `@import "${tailwindStylesheetPath}";`;
     },
   );
+}
+
+function trimLeadingSlash(input: string) {
+  return input.startsWith("/") ? input.slice(1) : input;
 }
 
 async function getTailwindCss() {

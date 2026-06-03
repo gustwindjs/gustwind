@@ -53,6 +53,7 @@ function htmlispToHTMLSync(
           }))
           : raw("");
       },
+      renderRaw: raw,
       ...defaultUtilities,
       ...utilities,
     },

@@ -49,6 +49,19 @@ test("converts a single data source id to a context with parameters", async () =
   );
 });
 
+test("converts array-shaped data source ids to a context", async () => {
+  assert.deepEqual(
+    await getDataSourceContext(
+      {},
+      [{ name: "demo", operation: "processInput", parameters: ["foobar"] }],
+      { processInput: (input: string) => input.toUpperCase() },
+    ),
+    {
+      demo: "FOOBAR",
+    },
+  );
+});
+
 test("passes data from parent data sources to this", async () => {
   assert.deepEqual(
     await getDataSourceContext(

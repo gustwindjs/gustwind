@@ -2,6 +2,7 @@ import { get } from "../../utilities/functional.ts";
 import type { DataSource, DataSources, Route } from "../../types.ts";
 import { getDataSourceContext } from "./getDataSourceContext.ts";
 import { mergeRouteScripts } from "./routeScripts.ts";
+import { normalizeRouteDataSources } from "./normalizeRouteDataSources.ts";
 
 async function expandRoutes({ routes, dataSources, inheritedScripts }: {
   routes: Record<string, Route>;
@@ -111,7 +112,9 @@ async function expandRoute(
             dataSources: {
               ...Object.fromEntries(
                 // @ts-ignore route.expand exists by now for sure
-                Object.entries(route.expand?.dataSources || {}).map((
+                Object.entries(
+                  normalizeRouteDataSources(route.expand?.dataSources),
+                ).map((
                   [k, v]: [string, DataSource],
                 ) => [k, {
                   ...v,

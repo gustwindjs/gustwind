@@ -71,7 +71,37 @@ export default createCloudflareWorker({
 
 If you are also publishing a static `build/` directory, keep Wrangler assets enabled so CSS, JS, images, and other emitted files are served directly by the `ASSETS` binding while page requests fall through to Gustwind rendering.
 
+Dynamic edge-rendered pages can use a stable stylesheet URL by setting
+`stableCssPath` on the Tailwind plugin, for example
+`"/assets/site.css"`. Static pages still receive the hashed production
+stylesheet link, and Gustwind writes the stable copy for custom edge handlers.
+
 The script plugin writes `.gustwind/script-assets.json` during the Node build. Pass that manifest back to the Worker script plugin as `scriptAssets` so route-level `scripts` entries resolve to the same hashed module URLs that the static build uses.
+
+For custom Worker bundles, `generateCloudflareManifest(...)` from the Node API
+can generate a module containing explicit `.html` and `.server.ts` component
+imports. This keeps Wrangler/esbuild from guessing extensionless imports.
+
+If you need a custom Pages Function or Worker handler, import `initRender` from
+`gustwind/workers/cloudflare` instead of the root `gustwind` entry. The
+Cloudflare entry only depends on edge-safe runtime code, so it avoids pulling
+Node build tooling into the Worker bundle.
+
+```js
+import { initRender } from "gustwind/workers/cloudflare";
+
+const render = await initRender(initialPlugins);
+
+export default {
+  async fetch(request) {
+    const { markup } = await render(new URL(request.url).pathname, {});
+
+    return new Response(markup, {
+      headers: { "content-type": "text/html; charset=UTF-8" },
+    });
+  },
+};
+```
 
 ## GitHub Pages
 

@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import { raw } from "../../htmlisp/mod.ts";
 import { expandRoutes } from "../utilities/expandRoutes.ts";
 import { flattenRoutes } from "../utilities/flattenRoutes.ts";
 import { matchRoute } from "../utilities/matchRoute.ts";
@@ -144,7 +145,7 @@ const plugin: Plugin<{
         ? (await load.module<DataSourcesModule>({
           path: path.join(cwd, dataSourcesPath),
           type: "dataSources",
-        })).init({ load, render, renderSync })
+        })).init({ load, render, renderRaw: raw, renderSync })
         : {};
     }
   },

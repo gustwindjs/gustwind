@@ -1,8 +1,8 @@
 import getMarkdown from "../transforms/markdown.ts";
 import type { DataSourcesApi } from "../../types.ts";
 
-function init({ load, render, renderSync }: DataSourcesApi) {
-  const markdown = getMarkdown({ load, render, renderSync });
+function init({ load, render, renderRaw, renderSync }: DataSourcesApi) {
+  const markdown = getMarkdown({ load, render, renderRaw, renderSync });
 
   return {
     processMarkdown: async (input: unknown) => (await markdown(input)).content,

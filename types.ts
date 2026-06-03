@@ -1,4 +1,4 @@
-import type { Element } from "./htmlisp/types.ts";
+import type { Element, RawHtml } from "./htmlisp/types.ts";
 
 type Utilities =
   & Record<
@@ -30,6 +30,7 @@ type DataSourcesModule = {
 type DataSourcesApi = {
   load: LoadApi;
   render: Render;
+  renderRaw: RenderRaw;
   renderSync: RenderSync;
 };
 type Render = (
@@ -48,8 +49,11 @@ type RenderSync = (
     props?: Context;
   },
 ) => string;
+type RenderRaw = (value: unknown) => RawHtml;
 
 type DataSource = { operation: string; parameters?: unknown[] };
+type NamedDataSource = DataSource & { name: string };
+type RouteDataSources = Record<string, DataSource> | NamedDataSource[];
 type DataSources = Record<string, (...args: any) => unknown>;
 
 type LoadedPlugin = {
@@ -304,7 +308,7 @@ type Route = {
   scripts?: { name: string }[]; // These point to scripts directory by name
   routes?: Routes;
   parentDataSources?: Record<string, unknown>;
-  dataSources?: Record<string, DataSource>;
+  dataSources?: RouteDataSources;
   expand?: {
     context?: DataContext;
     matchBy?: {
@@ -312,7 +316,7 @@ type Route = {
       slug: string;
       name: string;
     };
-    dataSources?: Record<string, DataSource>;
+    dataSources?: RouteDataSources;
     layout: string;
     scripts?: { name: string }[];
   };
@@ -380,17 +384,19 @@ type BuildWorkerEvent =
   };
 type BuildWorkerMessageTypes = "finished" | "addTasks";
 
-type GlobalUtilities = {
-  init: (o: {
-    load: LoadApi;
-    render: Render;
-    renderSync: RenderSync;
-    matchRoute: MatchRoute;
-    url: string;
-  }) => Utilities;
-};
-
 type MatchRoute = (url: string) => Promise<Route | undefined>;
+type UtilityInitContext = {
+  load: LoadApi;
+  raw: RenderRaw;
+  render: Render;
+  renderRaw: RenderRaw;
+  renderSync: RenderSync;
+  matchRoute: MatchRoute;
+  url: string;
+};
+type GlobalUtilities = {
+  init: (o: UtilityInitContext) => Utilities;
+};
 
 export type {
   Attributes,
@@ -417,13 +423,17 @@ export type {
   PluginParameters,
   PluginsDefinition,
   Props,
+  RawHtml,
   Render,
+  RenderRaw,
   RenderSync,
   Route,
+  RouteDataSources,
   Routes,
   Scripts,
   Send,
   Tasks,
   Utilities,
   Utility,
+  UtilityInitContext,
 };

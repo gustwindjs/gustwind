@@ -23,3 +23,23 @@ Each route can be connected to data sources through functions as defined below. 
 [<file>](site/dataSources.ts)
 
 Data sources are asynchronous functions returning arrays of objects. Then, when bound, you can access the content. This would be a good spot to connect to a database, external API, or local data.
+
+Route `dataSources` are usually written as an object keyed by the context name:
+
+```json
+{
+  "post": { "operation": "getPost", "parameters": ["full"] }
+}
+```
+
+Older array-shaped configuration is still accepted during migration:
+
+```json
+[
+  { "name": "post", "operation": "getPost", "parameters": ["full"] }
+]
+```
+
+The same shapes are supported under `expand.dataSources`. Expanded routes
+prepend the current match object to the configured parameters before calling the
+data source.

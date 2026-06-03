@@ -3,18 +3,22 @@ import type {
   LoadApi,
   MatchRoute,
   Render,
+  RenderRaw,
   RenderSync,
   Utilities,
 } from "../types.ts";
+import { raw } from "../htmlisp/mod.ts";
 
 function createRuntimeUtilitiesResolver(
   {
     load,
     render,
+    renderRaw = raw,
     renderSync,
   }: {
     load: LoadApi;
     render: Render;
+    renderRaw?: RenderRaw;
     renderSync: RenderSync;
   },
 ) {
@@ -57,7 +61,9 @@ function createRuntimeUtilitiesResolver(
           v
             ? v.init({
               load,
+              raw,
               render,
+              renderRaw,
               renderSync,
               matchRoute,
               url,
@@ -67,7 +73,9 @@ function createRuntimeUtilitiesResolver(
       ),
       utilities: globalUtilities.init({
         load,
+        raw,
         render,
+        renderRaw,
         renderSync,
         matchRoute,
         url,

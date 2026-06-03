@@ -12,7 +12,41 @@ import { plugin as edgeRendererPlugin } from "../renderers/htmlisp-edge-renderer
 import { plugin as edgeRouterPlugin } from "../routers/edge-router/mod.ts";
 import { stopModuleBundler } from "../load-adapters/node.ts";
 import type { GlobalUtilities, Route } from "../types.ts";
-import { initNodeRender, initRender } from "./mod.ts";
+import {
+  createCloudflareManifestSource,
+  initNodeRender,
+  initRender,
+} from "./mod.ts";
+
+test("gustwind-node generates explicit Cloudflare manifest imports", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cf-manifest-"));
+
+  try {
+    await mkdir(path.join(cwd, "site", "components"), { recursive: true });
+    await writeFile(path.join(cwd, "site", "components", "Card.html"), "<article></article>");
+    await writeFile(
+      path.join(cwd, "site", "components", "Card.server.ts"),
+      "export function init() { return {}; }",
+    );
+
+    const source = await createCloudflareManifestSource({
+      cwd,
+      options: {
+        components: [{ path: "./site/components" }],
+        globalUtilitiesPath: "./site/globalUtilities.ts",
+      },
+    });
+
+    assert.match(source, /import component0 from "\.\/site\/components\/Card\.html";/);
+    assert.match(
+      source,
+      /import \* as componentUtilities0 from "\.\/site\/components\/Card\.server\.ts";/,
+    );
+    assert.match(source, /import \* as globalUtilities from "\.\/site\/globalUtilities\.ts";/);
+  } finally {
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
 
 test("gustwind-node renders with in-memory edge-compatible plugins", async () => {
   const globalUtilities: GlobalUtilities = {

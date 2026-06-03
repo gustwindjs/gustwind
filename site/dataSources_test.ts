@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { raw } from "../htmlisp/mod.ts";
 import { init } from "./dataSources.ts";
 
 test("site data sources reuse markdown file reads and headmatter parsing", async () => {
@@ -32,6 +33,7 @@ test("site data sources reuse markdown file reads and headmatter parsing", async
       textFileSync: () => markdown,
     },
     render: async () => "",
+    renderRaw: raw,
     renderSync: () => "",
   });
 
