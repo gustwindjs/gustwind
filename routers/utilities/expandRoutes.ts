@@ -3,23 +3,34 @@ import type { DataSource, DataSources, Route } from "../../types.ts";
 import { getDataSourceContext } from "./getDataSourceContext.ts";
 import { mergeRouteScripts } from "./routeScripts.ts";
 import { normalizeRouteDataSources } from "./normalizeRouteDataSources.ts";
+import { mapWithConcurrency } from "../../utilities/concurrency.ts";
 
-async function expandRoutes({ routes, dataSources, inheritedScripts }: {
-  routes: Record<string, Route>;
-  dataSources: DataSources;
-  inheritedScripts?: Route["scripts"];
-}): Promise<Record<string, Route>> {
+async function expandRoutes(
+  {
+    routes,
+    dataSources,
+    inheritedScripts,
+    routeConcurrency = Number.POSITIVE_INFINITY,
+  }: {
+    routes: Record<string, Route>;
+    dataSources: DataSources;
+    inheritedScripts?: Route["scripts"];
+    routeConcurrency?: number;
+  },
+): Promise<Record<string, Route>> {
   const allRoutes = Object.fromEntries(
-    await Promise.all(
-      Object.entries(routes).map(([url, route]) =>
+    await mapWithConcurrency(
+      Object.entries(routes),
+      routeConcurrency,
+      ([url, route]) =>
         expandRoute({
           url,
           route,
           dataSources,
           inheritedScripts,
+          routeConcurrency,
           recurse: true,
-        })
-      ),
+        }),
     ),
   );
 
@@ -37,11 +48,19 @@ async function expandRoutes({ routes, dataSources, inheritedScripts }: {
 }
 
 async function expandRoute(
-  { url, route, dataSources, inheritedScripts, recurse }: {
+  {
+    url,
+    route,
+    dataSources,
+    inheritedScripts,
+    routeConcurrency = Number.POSITIVE_INFINITY,
+    recurse,
+  }: {
     url: string;
     route: Route;
     dataSources: DataSources;
     inheritedScripts?: Route["scripts"];
+    routeConcurrency?: number;
     recurse: boolean;
   },
 ): Promise<[string, Route]> {
@@ -80,50 +99,52 @@ async function expandRoute(
           route.parentDataSources,
           route.dataSources,
           dataSources,
+          routeConcurrency,
         ),
       };
+      const matchByName = matchBy.name || matchBy.indexer.operation;
       const expandedRoutes = Object.fromEntries(
-        await Promise.all(indexResults.map(async (match) => {
-          const url = get(match, slug) as string;
+        await mapWithConcurrency(
+          indexResults,
+          routeConcurrency,
+          async (match) => {
+            const url = get(match, slug) as string;
 
-          if (!url) {
-            throw new Error(
-              `Route ${matchBy.slug} is missing from ${
-                JSON.stringify(match, null, 2)
-              } with slug ${matchBy.slug} within ${url} route`,
-            );
-          }
+            if (!url) {
+              throw new Error(
+                `Route ${matchBy.slug} is missing from ${
+                  JSON.stringify(match, null, 2)
+                } with slug ${matchBy.slug} within ${url} route`,
+              );
+            }
 
-          // @ts-ignore route.expand exists by now for sure
-          const { layout, scripts, context } = route.expand;
+            // @ts-ignore route.expand exists by now for sure
+            const { layout, scripts, context } = route.expand;
 
-          if (!matchBy.name) {
-            throw new Error(`Expand route ${url} is missing a name!`);
-          }
-
-          return [url, {
-            layout,
-            scripts: mergeRouteScripts(routeScripts, scripts),
-            context: context || {},
-            parentDataSources: {
-              ...inheritedParentDataSources,
-              [matchBy.name]: indexResults,
-            },
-            dataSources: {
-              ...Object.fromEntries(
-                // @ts-ignore route.expand exists by now for sure
-                Object.entries(
-                  normalizeRouteDataSources(route.expand?.dataSources),
-                ).map((
-                  [k, v]: [string, DataSource],
-                ) => [k, {
-                  ...v,
-                  parameters: [match].concat(v.parameters),
-                }]),
-              ),
-            },
-          }];
-        })),
+            return [url, {
+              layout,
+              scripts: mergeRouteScripts(routeScripts, scripts),
+              context: context || {},
+              parentDataSources: {
+                ...inheritedParentDataSources,
+                [matchByName]: indexResults,
+              },
+              dataSources: {
+                ...Object.fromEntries(
+                  // @ts-ignore route.expand exists by now for sure
+                  Object.entries(
+                    normalizeRouteDataSources(route.expand?.dataSources),
+                  ).map((
+                    [k, v]: [string, DataSource],
+                  ) => [k, {
+                    ...v,
+                    parameters: [match].concat(v.parameters),
+                  }]),
+                ),
+              },
+            }];
+          },
+        ),
       );
 
       ret = { ...route, routes: expandedRoutes };
@@ -139,6 +160,7 @@ async function expandRoute(
       routes: route.routes || {},
       dataSources,
       inheritedScripts: routeScripts,
+      routeConcurrency,
     });
 
     ret = {

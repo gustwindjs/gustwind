@@ -95,6 +95,44 @@ test("expand a route", async () => {
   );
 });
 
+test("expands a route without matchBy name using the indexer operation", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          indexer: { operation: "indexMarkdown" },
+          slug: "slug",
+        },
+        layout: "documentationPage",
+      },
+    },
+  };
+
+  assert.deepEqual(
+    await expandRoutes({
+      routes,
+      dataSources: { indexMarkdown: () => [{ slug: "foo" }] },
+    }),
+    {
+      blog: {
+        ...routes.blog,
+        routes: {
+          foo: {
+            context: {},
+            dataSources: {},
+            layout: "documentationPage",
+            scripts: undefined,
+            parentDataSources: {
+              indexMarkdown: [{ slug: "foo" }],
+            },
+          },
+        },
+      },
+    },
+  );
+});
+
 test("expands a route within routes", async () => {
   const routes = {
     blog: {
@@ -395,4 +433,51 @@ test("expands sibling routes in parallel", async () => {
   );
   assert.deepEqual(Object.keys(expandedRoutes.blog.routes || {}), ["hello"]);
   assert.deepEqual(Object.keys(expandedRoutes.docs.routes || {}), ["intro"]);
+});
+
+test("expands sibling routes within the configured concurrency", async () => {
+  const routes = {
+    blog: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          name: "blogPages",
+          indexer: { operation: "indexBlog" },
+          slug: "slug",
+        },
+        layout: "blogPage",
+      },
+    },
+    docs: {
+      layout: "siteIndex",
+      expand: {
+        matchBy: {
+          name: "docPages",
+          indexer: { operation: "indexDocs" },
+          slug: "slug",
+        },
+        layout: "docPage",
+      },
+    },
+  };
+  let active = 0;
+  let maxActive = 0;
+  const index = async (slug: string) => {
+    active++;
+    maxActive = Math.max(maxActive, active);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    active--;
+    return [{ slug }];
+  };
+
+  await expandRoutes({
+    routes,
+    dataSources: {
+      indexBlog: () => index("hello"),
+      indexDocs: () => index("intro"),
+    },
+    routeConcurrency: 1,
+  });
+
+  assert.equal(maxActive, 1);
 });

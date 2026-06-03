@@ -1,11 +1,13 @@
 import { isObject } from "../../utilities/functional.ts";
 import type { DataSources, Route } from "../../types.ts";
 import { normalizeRouteDataSources } from "./normalizeRouteDataSources.ts";
+import { mapWithConcurrency } from "../../utilities/concurrency.ts";
 
 async function getDataSourceContext(
   parentDataSources?: Route["parentDataSources"],
   dataSourceIds?: Route["dataSources"],
   dataSources?: DataSources,
+  routeConcurrency = Number.POSITIVE_INFINITY,
 ) {
   if (!dataSourceIds || !dataSources) {
     return {};
@@ -18,9 +20,10 @@ async function getDataSourceContext(
   const normalizedDataSourceIds = normalizeRouteDataSources(dataSourceIds);
 
   return Object.fromEntries(
-    await Promise.all(
-      Object.entries(normalizedDataSourceIds).map(
-        async ([name, { operation, parameters }]) => {
+    await mapWithConcurrency(
+      Object.entries(normalizedDataSourceIds),
+      routeConcurrency,
+      async ([name, { operation, parameters }]) => {
           const dataSource = dataSources[operation];
 
           if (!dataSource) {
@@ -35,7 +38,6 @@ async function getDataSourceContext(
             ),
           ];
         },
-      ),
     ),
   );
 }

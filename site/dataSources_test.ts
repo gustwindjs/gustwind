@@ -43,3 +43,45 @@ test("site data sources reuse markdown file reads and headmatter parsing", async
 
   assert.equal(loadCounts.get("/docs/hello.md"), 1);
 });
+
+test("site markdown code blocks fall back to plaintext", async () => {
+  const markdown = [
+    "```",
+    "<demo>",
+    "```",
+    "",
+    "```unknown",
+    "<demo>",
+    "```",
+  ].join("\n");
+  const api = init({
+    load: {
+      dir: async () => [],
+      json: async () => {
+        throw new Error("json should not be called");
+      },
+      module: async () => {
+        throw new Error("module should not be called");
+      },
+      textFile: async () => markdown,
+      textFileSync: () => markdown,
+    },
+    render: async () => "",
+    renderRaw: raw,
+    renderSync: () => "",
+  });
+
+  const result = await api.processMarkdown(
+    { path: "/docs/hello.md" },
+    { parseHeadmatter: false, skipFirstLine: false },
+  );
+
+  assert.match(
+    result.content,
+    /<code class="plaintext">&lt;demo&gt;\n<\/code>/,
+  );
+  assert.equal(
+    (result.content.match(/class="plaintext"/g) || []).length,
+    2,
+  );
+});

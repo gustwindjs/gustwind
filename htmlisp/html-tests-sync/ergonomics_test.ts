@@ -32,6 +32,18 @@ test("raw utility bypasses escaped children output", async () => {
   );
 });
 
+test("render utility returns raw HTML without reparsing it", async () => {
+  const html = `<div &children="(this is not valid htmlisp"></div>`;
+
+  assert.deepEqual(
+    await htmlispToHTMLSync({
+      htmlInput: `<section &children="(render (get context html))"></section>`,
+      context: { html: raw(html) },
+    }),
+    `<section>${html}</section>`,
+  );
+});
+
 test("unwrapRawHtml unwraps raw wrappers and stringifies plain values", () => {
   assert.deepEqual(
     unwrapRawHtml(raw("<strong>safe</strong>")),

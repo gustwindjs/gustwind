@@ -37,13 +37,13 @@ function htmlispToHTMLSync(
     {},
     {
       render: (htmlInput: unknown) => {
-        const renderedInput = isRawHtml(htmlInput)
-          ? htmlInput.value
-          : htmlInput;
+        if (isRawHtml(htmlInput)) {
+          return raw(htmlInput.value);
+        }
 
-        return renderedInput
+        return htmlInput
           ? raw(htmlispToHTMLSync({
-            htmlInput: String(renderedInput),
+            htmlInput: String(htmlInput),
             components,
             context,
             props,

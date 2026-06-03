@@ -170,20 +170,17 @@ function renderCodeBlock(
     langPrefix: string;
   },
 ) {
-  const renderedCode = lang && highlight.getLanguage(lang)
-    ? highlight.highlight(code, { language: lang }).value
+  const normalizedLang = lang && highlight.getLanguage(lang)
+    ? lang
+    : "plaintext";
+  const renderedCode = normalizedLang !== "plaintext"
+    ? highlight.highlight(code, { language: normalizedLang }).value
     : escapeHTML(code);
   const normalizedCode = renderedCode.replace(/\n$/, "") + "\n";
 
-  if (!lang) {
-    return "<pre><code>" +
-      normalizedCode +
-      "</code></pre>\n";
-  }
-
   return '<pre class="overflow-auto -mx-4 md:mx-0"><code class="' +
     langPrefix +
-    lang +
+    normalizedLang +
     '">' +
     normalizedCode +
     "</code></pre>\n";

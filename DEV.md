@@ -6,6 +6,18 @@ To test the CLI locally, use `node ./gustwind-node/cli.ts` with the appropriate 
 
 Generated HTML validation is available through `gustwind-node --validate --input ./build`, and `gustwind-node --build --validate` validates build output directly. The project-level shortcuts are `npm run validate:html` and `npm run build:node:check`.
 
+## Downstream feedback addressed
+
+Downstream porting notes addressed from `jsterlibs/website-v2` branch `refactor/port-to-gustwind-node`:
+
+- Code block language warnings: unlabelled or unknown Markdown code blocks fall back to `plaintext`; this avoids `Missing language` warnings during `npm run build`.
+- Raw HTML handling: `render(raw(html))` now treats the trusted HTML as opaque instead of reparsing it as HTMLisp.
+- Build concurrency: `--route-concurrency` is applied to route expansion and route data source resolution, not only page rendering.
+- Config router migration ergonomics: array-shaped route `dataSources` remain supported, and missing `matchBy.name` falls back to the indexer operation name.
+- Markdown/content rendering: data sources can pass trusted rendered HTML through `renderRaw`/`raw` and render it without downstream escaping workarounds.
+
+Source: https://github.com/jsterlibs/website-v2/tree/refactor/port-to-gustwind-node
+
 ## Testing Netlify edge functions
 
 Make sure you have a recent version of Node installed and then run `npm install netlify-cli -g`. After that the development environment is available through `netlify dev`. Note that it depends on a static build so run `npm run build` first to generate one. Use `npm run build:release` if you need Pagefind search assets in that build.

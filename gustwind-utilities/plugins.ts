@@ -120,8 +120,8 @@ async function importPlugins(
   // routers or route definitions to aggregate everything together.
   const router = {
     // Last definition wins
-    getAllRoutes() {
-      return applyGetAllRoutes({ plugins: loadedPluginDefinitions });
+    getAllRoutes(options?: { routeConcurrency?: number }) {
+      return applyGetAllRoutes({ plugins: loadedPluginDefinitions, options });
     },
     // First match wins
     matchRoute(url: string): Promise<Route | undefined> {
@@ -322,7 +322,12 @@ async function applyPlugins(
   };
 }
 
-async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
+async function applyGetAllRoutes(
+  { plugins, options }: {
+    plugins: PluginDefinition[];
+    options?: { routeConcurrency?: number };
+  },
+) {
   const getAllRoutes = plugins.map((
     { api, context },
   ) => api.getAllRoutes && [api.getAllRoutes, context])
@@ -332,7 +337,7 @@ async function applyGetAllRoutes({ plugins }: { plugins: PluginDefinition[] }) {
 
   // @ts-expect-error Figure out the right type for this
   for await (const [routeGetter, pluginContext] of getAllRoutes) {
-    const { routes, tasks } = await routeGetter({ pluginContext });
+    const { routes, tasks } = await routeGetter({ ...options, pluginContext });
 
     allRoutes = { ...allRoutes, ...routes };
     allTasks = allTasks.concat(tasks);

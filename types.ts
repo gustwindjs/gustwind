@@ -213,7 +213,7 @@ type PluginApi<C = Context> = {
         result?: unknown;
       }
     >;
-  getAllRoutes?(o: { pluginContext: C }):
+  getAllRoutes?(o: { pluginContext: C; routeConcurrency?: number }):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
@@ -314,7 +314,7 @@ type Route = {
     matchBy?: {
       indexer: DataSource;
       slug: string;
-      name: string;
+      name?: string;
     };
     dataSources?: RouteDataSources;
     layout: string;

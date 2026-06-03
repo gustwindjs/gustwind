@@ -61,13 +61,26 @@ function applyUtilitySync<
     })
     : [];
 
-  // @ts-expect-error This is fine for now.
-  // TODO: Figure out a nice way to resolve context mismatch
-  return foundUtility.apply(context, parameters.map(unwrapRawHtmlArgument));
+  const utilityName = (value as Utility).utility;
+  const utility = foundUtility as (
+    this: unknown,
+    ...args: unknown[]
+  ) => unknown;
+
+  return utility.apply(
+    context,
+    (parameters as unknown[]).map((parameter) =>
+      unwrapRawHtmlArgument(parameter, utilityName)
+    ),
+  );
 }
 
 export { applyUtilitySync };
 
-function unwrapRawHtmlArgument(value: unknown) {
-  return isRawHtml(value) ? unwrapRawHtml(value) : value;
+function unwrapRawHtmlArgument(value: unknown, utility: string) {
+  return utility === "render"
+    ? value
+    : isRawHtml(value)
+    ? unwrapRawHtml(value)
+    : value;
 }

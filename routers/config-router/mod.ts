@@ -50,10 +50,11 @@ const plugin: Plugin<{
 
         return { routes, dataSources, dynamicRoutes: [] };
       },
-      getAllRoutes: async ({ pluginContext }) => {
+      getAllRoutes: async ({ pluginContext, routeConcurrency }) => {
         const routes = await getAllRoutes(
           pluginContext.routes,
           pluginContext.dataSources,
+          routeConcurrency,
         );
 
         return {
@@ -151,10 +152,15 @@ const plugin: Plugin<{
   },
 };
 
-async function getAllRoutes(routes: Routes, dataSources: DataSources) {
+async function getAllRoutes(
+  routes: Routes,
+  dataSources: DataSources,
+  routeConcurrency?: number,
+) {
   const allRoutes = await expandRoutes({
     routes,
     dataSources,
+    routeConcurrency,
   });
 
   return flattenRoutes(allRoutes);

@@ -39,6 +39,7 @@ import {
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import { runWithTaskLog } from "../utilities/taskLogContext.ts";
+import { runWithConcurrency } from "../utilities/concurrency.ts";
 import type { PluginOptions, Route, Tasks } from "../types.ts";
 import type { BuildBenchmark } from "../utilities/buildBenchmark.ts";
 import type { ComponentDependencyGraph } from "../utilities/componentDependencyGraph.ts";
@@ -107,7 +108,9 @@ async function buildNode(
     });
 
     const prepareTasks = await preparePlugins(plugins);
-    const { routes, tasks: routerTasks } = await router.getAllRoutes();
+    const { routes, tasks: routerTasks } = await router.getAllRoutes({
+      routeConcurrency,
+    });
     const rendererDependencyInfo = await getRendererDependencyInfo(plugins);
     const globalDependencyTasks = normalizeDependencyTasks(
       getGlobalDependencyTasks({
@@ -562,24 +565,6 @@ async function executeTask(
       throw new Error(`Unsupported build task ${_exhaustive}`);
     }
   }
-}
-
-async function runWithConcurrency<T>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<void>,
-) {
-  const workerCount = Math.max(1, Math.min(concurrency, items.length || 1));
-  let index = 0;
-
-  await Promise.all(
-    Array.from({ length: workerCount }, async () => {
-      while (index < items.length) {
-        const item = items[index++];
-        await fn(item);
-      }
-    }),
-  );
 }
 
 function getDefaultRouteConcurrency() {
