@@ -28,15 +28,13 @@ const plugin: Plugin<TailwindPluginOptions> = {
     dependsOn: [],
   },
   init({ cwd, load, mode, options, outputDirectory }) {
-    const cssPath = path.join(cwd, options.cssPath);
-    const setupPath = path.join(cwd, options.setupPath);
-    const tailwindRuntime = new TailwindRuntime({
-      cssPath,
+    const tailwindRuntime = createTailwindRuntime({
       cwd,
       load,
       mode,
-      setupPath,
+      options,
     });
+    const setupPath = path.join(cwd, options.setupPath);
 
     return {
       prepareBuild: async () => {
@@ -46,58 +44,20 @@ const plugin: Plugin<TailwindPluginOptions> = {
         await tailwindRuntime.ensureCompiledCss();
       },
       async afterEachRender({ markup, url }) {
-        if (url.endsWith(".xml")) {
-          return { markup };
-        }
-
-        if (mode === "production") {
-          const stylesheetHref =
-            "/" + (await tailwindRuntime.getStylesheetFile());
-
-          return {
-            markup: injectIntoHead(
-              markup,
-              `<link rel="stylesheet" href="${stylesheetHref}">`,
-            ),
-          };
-        }
-
-        return {
-          markup: injectIntoHead(
-            markup,
-            `<style data-tailwind>${await tailwindRuntime.ensureCompiledCss()}</style>`,
-          ),
-        };
+        return await injectTailwindRenderStyle({
+          markup,
+          mode,
+          tailwindRuntime,
+          url,
+        });
       },
       async finishBuild() {
-        if (mode !== "production") {
-          return;
-        }
-
-        const css = await tailwindRuntime.ensureCompiledCss();
-        const tasks: Tasks = [
-          {
-            type: "writeFile",
-            payload: {
-              outputDirectory,
-              file: await tailwindRuntime.getStylesheetFile(),
-              data: css,
-            },
-          },
-        ];
-
-        if (options.stableCssPath) {
-          tasks.push({
-            type: "writeFile",
-            payload: {
-              outputDirectory,
-              file: trimLeadingSlash(options.stableCssPath),
-              data: css,
-            },
-          });
-        }
-
-        return tasks;
+        return await createTailwindBuildTasks({
+          mode,
+          options,
+          outputDirectory,
+          tailwindRuntime,
+        });
       },
       onMessage({ message }) {
         if (message.type === "getStyleSetupPath") {
@@ -107,6 +67,105 @@ const plugin: Plugin<TailwindPluginOptions> = {
     };
   },
 };
+
+function createTailwindRuntime(
+  {
+    cwd,
+    load,
+    mode,
+    options,
+  }: {
+    cwd: string;
+    load: LoadApi;
+    mode: Mode;
+    options: TailwindPluginOptions;
+  },
+) {
+  return new TailwindRuntime({
+    cssPath: path.join(cwd, options.cssPath),
+    cwd,
+    load,
+    mode,
+    setupPath: path.join(cwd, options.setupPath),
+  });
+}
+
+async function injectTailwindRenderStyle(
+  {
+    markup,
+    mode,
+    tailwindRuntime,
+    url,
+  }: {
+    markup: string;
+    mode: Mode;
+    tailwindRuntime: TailwindRuntime;
+    url: string;
+  },
+) {
+  if (url.endsWith(".xml")) {
+    return { markup };
+  }
+
+  const style = mode === "production"
+    ? await getProductionStyleElement(tailwindRuntime)
+    : await getDevelopmentStyleElement(tailwindRuntime);
+
+  return { markup: injectIntoHead(markup, style) };
+}
+
+async function getProductionStyleElement(tailwindRuntime: TailwindRuntime) {
+  const stylesheetHref = "/" + (await tailwindRuntime.getStylesheetFile());
+
+  return `<link rel="stylesheet" href="${stylesheetHref}">`;
+}
+
+async function getDevelopmentStyleElement(tailwindRuntime: TailwindRuntime) {
+  return `<style data-tailwind>${await tailwindRuntime.ensureCompiledCss()}</style>`;
+}
+
+async function createTailwindBuildTasks(
+  {
+    mode,
+    options,
+    outputDirectory,
+    tailwindRuntime,
+  }: {
+    mode: Mode;
+    options: TailwindPluginOptions;
+    outputDirectory: string;
+    tailwindRuntime: TailwindRuntime;
+  },
+): Promise<Tasks | undefined> {
+  if (mode !== "production") {
+    return;
+  }
+
+  const css = await tailwindRuntime.ensureCompiledCss();
+  const tasks: Tasks = [
+    {
+      type: "writeFile",
+      payload: {
+        outputDirectory,
+        file: await tailwindRuntime.getStylesheetFile(),
+        data: css,
+      },
+    },
+  ];
+
+  if (options.stableCssPath) {
+    tasks.push({
+      type: "writeFile",
+      payload: {
+        outputDirectory,
+        file: trimLeadingSlash(options.stableCssPath),
+        data: css,
+      },
+    });
+  }
+
+  return tasks;
+}
 
 class TailwindRuntime {
   #compiledCss: string | undefined;

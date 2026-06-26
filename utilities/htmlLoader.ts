@@ -12,21 +12,22 @@ type ParsedComponents = [
     utilitiesPath?: string;
   },
 ][];
+type ComponentLoaderOptions = {
+  cwd: string;
+  loadDir: (
+    { path, extension, recursive, type }: {
+      path: string;
+      extension: string;
+      recursive: boolean;
+      type: string;
+    },
+  ) => Promise<{ name: string; path: string }[]>;
+  loadModule: (path: string) => Promise<GlobalUtilities>;
+  readTextFile: (path: string) => Promise<string>;
+};
 
 const initLoader = (
-  { cwd, loadDir, loadModule, readTextFile }: {
-    cwd: string;
-    loadDir: (
-      { path, extension, recursive, type }: {
-        path: string;
-        extension: string;
-        recursive: boolean;
-        type: string;
-      },
-    ) => Promise<{ name: string; path: string }[]>;
-    loadModule: (path: string) => Promise<GlobalUtilities>;
-    readTextFile: (path: string) => Promise<string>;
-  },
+  options: ComponentLoaderOptions,
 ) => {
   return async (
     componentsPath: string,
@@ -37,66 +38,122 @@ const initLoader = (
     componentUtilities: Record<string, GlobalUtilities | undefined>;
   }> => {
     const extension = ".html";
-    let components: ParsedComponents = [];
+    const components = await loadComponents({
+      componentsPath,
+      extension,
+      options,
+      selection,
+    });
 
-    if (componentsPath.startsWith("http")) {
-      if (!selection) {
-        throw new Error("Remote loader is missing a selection");
-      }
-
-      components = await loadRemoteComponents(
-        componentsPath,
-        selection,
-        extension,
-      );
-    } else {
-      components = await Promise.all((await loadDir({
-        path: path.join(cwd, componentsPath),
-        extension,
-        recursive: true,
-        type: "components",
-      })).map(async (
-        { path: p },
-      ) => {
-        const componentName = path.basename(p, path.extname(p));
-        let utilities;
-        const utilitiesPath = p.replace(extension, ".server.ts");
-
-        try {
-          utilities = await loadModule(utilitiesPath);
-        } catch (_err) {
-          // Nothing to do
-        }
-
-        return [
-          componentName,
-          {
-            component: await readTextFile(p),
-            sourcePath: p,
-            utilities,
-            utilitiesPath: utilities ? utilitiesPath : undefined,
-          },
-        ];
-      }));
-    }
-
-    return {
-      componentDefinitions: Object.fromEntries(
-        components.map(([k, { component, sourcePath, utilitiesPath }]) => [k, {
-          htmlInput: component,
-          sourcePath,
-          utilitiesPath,
-        }]),
-      ),
-      components: Object.fromEntries(
-        components.map(([k, { component }]) => [k, component]),
-      ),
-      componentUtilities: Object.fromEntries(
-        components.map(([k, { utilities }]) => [k, utilities]),
-      ),
-    };
+    return createLoadedComponents(components);
   };
 };
+
+async function loadComponents(
+  {
+    componentsPath,
+    extension,
+    options,
+    selection,
+  }: {
+    componentsPath: string;
+    extension: string;
+    options: ComponentLoaderOptions;
+    selection?: string[];
+  },
+): Promise<ParsedComponents> {
+  if (componentsPath.startsWith("http")) {
+    if (!selection) {
+      throw new Error("Remote loader is missing a selection");
+    }
+
+    return await loadRemoteComponents(componentsPath, selection, extension);
+  }
+
+  return await loadLocalComponents({ componentsPath, extension, options });
+}
+
+async function loadLocalComponents(
+  {
+    componentsPath,
+    extension,
+    options,
+  }: {
+    componentsPath: string;
+    extension: string;
+    options: ComponentLoaderOptions;
+  },
+): Promise<ParsedComponents> {
+  const { cwd, loadDir } = options;
+  const componentFiles = await loadDir({
+    path: path.join(cwd, componentsPath),
+    extension,
+    recursive: true,
+    type: "components",
+  });
+
+  return await Promise.all(
+    componentFiles.map(({ path: filePath }) =>
+      loadLocalComponent({ extension, filePath, options })
+    ),
+  );
+}
+
+async function loadLocalComponent(
+  {
+    extension,
+    filePath,
+    options,
+  }: {
+    extension: string;
+    filePath: string;
+    options: ComponentLoaderOptions;
+  },
+): Promise<ParsedComponents[number]> {
+  const { loadModule, readTextFile } = options;
+  const componentName = path.basename(filePath, path.extname(filePath));
+  const utilitiesPath = filePath.replace(extension, ".server.ts");
+  const utilities = await loadOptionalUtilities(loadModule, utilitiesPath);
+
+  return [
+    componentName,
+    {
+      component: await readTextFile(filePath),
+      sourcePath: filePath,
+      utilities,
+      utilitiesPath: utilities ? utilitiesPath : undefined,
+    },
+  ];
+}
+
+async function loadOptionalUtilities(
+  loadModule: ComponentLoaderOptions["loadModule"],
+  utilitiesPath: string,
+) {
+  try {
+    return await loadModule(utilitiesPath);
+  } catch (_err) {
+    return;
+  }
+}
+
+function createLoadedComponents(components: ParsedComponents) {
+  return {
+    componentDefinitions: Object.fromEntries(
+      components.map(([k, { component, sourcePath, utilitiesPath }]) => [k, {
+        htmlInput: component,
+        sourcePath,
+        utilitiesPath,
+      }]),
+    ),
+    components: Object.fromEntries(
+      components.map(([k, { component }]) => [k, component]),
+    ),
+    componentUtilities: Object.fromEntries(
+      components.map(([k, { utilities }]) => [k, utilities]),
+    ),
+  };
+}
 
 // TODO: Cache results to .gustwind to speed up operation
 function loadRemoteComponents(
