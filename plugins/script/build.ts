@@ -101,34 +101,66 @@ async function buildProductionScripts({
     isRemotePath(scriptPath)
   );
 
-  let builtEntryAssets: ScriptEntryAssets = {};
+  const builtEntryAssets = await buildLocalScriptAssets({
+    cwd,
+    localScripts,
+    outputDirectory,
+  });
+  setBuiltEntryAssets(builtEntryAssets);
 
-  if (localScripts.length > 0) {
-    const persistentCacheKey = await getScriptAssetCacheKey(cwd, localScripts);
-    const builtAssets = await buildClientAssets({
-      cwd,
-      entries: Object.fromEntries(
-        localScripts.map(({ name, path: scriptPath }) => [
-          normalizeScriptName(name),
-          scriptPath,
-        ]),
-      ),
-      outputDirectory,
-      persistentCache: persistentCacheKey
-        ? {
-            key: persistentCacheKey,
-            namespace: "scripts",
-          }
-        : undefined,
-    });
+  const tasks = await writeRemoteScripts(remoteScripts, outputDirectory);
+  tasks.push(...createScriptManifestTasks(builtEntryAssets, outputDirectory));
 
-    builtEntryAssets = builtAssets.entryAssets;
-    setBuiltEntryAssets(builtEntryAssets);
-  } else {
-    setBuiltEntryAssets({});
+  return tasks;
+}
+
+async function buildLocalScriptAssets(
+  {
+    cwd,
+    localScripts,
+    outputDirectory,
+  }: {
+    cwd: string;
+    localScripts: { name: string; path: string; externals?: string[] }[];
+    outputDirectory: string;
+  },
+): Promise<ScriptEntryAssets> {
+  if (localScripts.length === 0) {
+    return {};
   }
 
-  const tasks = await Promise.all(
+  const persistentCacheKey = await getScriptAssetCacheKey(cwd, localScripts);
+  const builtAssets = await buildClientAssets({
+    cwd,
+    entries: getScriptBuildEntries(localScripts),
+    outputDirectory,
+    persistentCache: persistentCacheKey
+      ? {
+          key: persistentCacheKey,
+          namespace: "scripts",
+        }
+      : undefined,
+  });
+
+  return builtAssets.entryAssets;
+}
+
+function getScriptBuildEntries(
+  scripts: { name: string; path: string; externals?: string[] }[],
+) {
+  return Object.fromEntries(
+    scripts.map(({ name, path: scriptPath }) => [
+      normalizeScriptName(name),
+      scriptPath,
+    ]),
+  );
+}
+
+function writeRemoteScripts(
+  remoteScripts: { name: string; path: string; externals?: string[] }[],
+  outputDirectory: string,
+) {
+  return Promise.all(
     remoteScripts.map(({ name, path: scriptPath, externals }) =>
       writeScript({
         file: name.replace(".ts", ".js"),
@@ -139,19 +171,24 @@ async function buildProductionScripts({
       }),
     ),
   );
+}
 
-  if (localScripts.length > 0) {
-    tasks.push({
-      type: "writeTextFile",
-      payload: {
-        outputDirectory,
-        file: SCRIPT_ASSETS_MANIFEST_PATH,
-        data: `${JSON.stringify(builtEntryAssets, null, 2)}\n`,
-      },
-    });
+function createScriptManifestTasks(
+  builtEntryAssets: ScriptEntryAssets,
+  outputDirectory: string,
+): BuildWorkerEvent[] {
+  if (Object.keys(builtEntryAssets).length === 0) {
+    return [];
   }
 
-  return tasks;
+  return [{
+    type: "writeTextFile",
+    payload: {
+      outputDirectory,
+      file: SCRIPT_ASSETS_MANIFEST_PATH,
+      data: `${JSON.stringify(builtEntryAssets, null, 2)}\n`,
+    },
+  }];
 }
 
 async function writeScript({
