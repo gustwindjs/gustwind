@@ -7,6 +7,9 @@ npm
 .gustwind
 playwright-report/
 test-results/
+reports/
+.fallow/
+.stryker-tmp/
 
 # Local Netlify folder
 .netlify

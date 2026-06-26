@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "mod.ts",
+    "version.ts",
+    "gustwind-node/cli.ts",
+    "gustwind-node/mod.ts",
+    "cloudflare-worker/mod.ts",
+    "netlify/functions/**/*.ts",
+    "plugins/*/mod.ts",
+    "renderers/*/mod.ts",
+    "routers/*/mod.ts",
+    "site/**/*.server.ts",
+    "site/scripts/**/*.ts",
+    "site/tailwindSetup.ts"
+  ],
+  "ignoreDependencies": [
+    "@stryker-mutator/api",
+    "@tailwindcss/typography",
+    "@unocss/preset-wind3",
+    "@unocss/runtime",
+    "autoprefixer",
+    "cssnano",
+    "gray-matter",
+    "hast",
+    "highlight.js",
+    "htm",
+    "marked",
+    "mdast",
+    "nanoid",
+    "pagefind",
+    "parse5",
+    "sharp",
+    "tinyglobby"
+  ],
+  "ignoreExports": [
+    { "file": "gustwind-node/mod.ts", "exports": ["*"] },
+    { "file": "htmlisp/mod.ts", "exports": ["*"] },
+    { "file": "plugins/*/mod.ts", "exports": ["plugin", "*_ASSETS_MANIFEST_PATH"] },
+    { "file": "renderers/*/mod.ts", "exports": ["plugin"] },
+    { "file": "routers/*/mod.ts", "exports": ["plugin"] }
+  ],
+  "duplicates": {
+    "ignore": [
+      "**/*_test.ts",
+      "**/*.test.ts",
+      "e2e/**",
+      "htmlisp/html-tests/**",
+      "htmlisp/html-tests-sync/**",
+      "build/**",
+      "documentation/**"
+    ]
+  },
+  "health": {
+    "ignore": [
+      "**/*_test.ts",
+      "**/*.test.ts",
+      "e2e/**",
+      "htmlisp/html-tests/**",
+      "htmlisp/html-tests-sync/**",
+      "build/**",
+      "documentation/**"
+    ]
+  }
+}
