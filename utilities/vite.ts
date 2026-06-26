@@ -24,9 +24,25 @@ type ClientAssetBuildResult = {
   entryAssets: Record<string, { file: string; css: string[] }>;
   entryFiles: Record<string, string>;
 };
+type ClientAssetPersistentCache = {
+  key: string;
+  namespace: string;
+};
+type ClientAssetBuildOptions = {
+  cwd: string;
+  outputDirectory: string;
+  entries: Record<string, string>;
+  base?: string;
+  emptyOutDir?: boolean;
+  minify?: boolean;
+  sourcemap?: boolean;
+  persistentCache?: ClientAssetPersistentCache;
+};
 
 async function buildClientAssets(
-  {
+  options: ClientAssetBuildOptions,
+): Promise<ClientAssetBuildResult> {
+  const {
     cwd,
     outputDirectory,
     entries,
@@ -35,20 +51,7 @@ async function buildClientAssets(
     minify = true,
     sourcemap = false,
     persistentCache,
-  }: {
-    cwd: string;
-    outputDirectory: string;
-    entries: Record<string, string>;
-    base?: string;
-    emptyOutDir?: boolean;
-    minify?: boolean;
-    sourcemap?: boolean;
-    persistentCache?: {
-      key: string;
-      namespace: string;
-    };
-  },
-): Promise<ClientAssetBuildResult> {
+  } = options;
   const absoluteEntries = Object.fromEntries(
     Object.entries(entries).map(([name, filePath]) => [
       name,
@@ -58,52 +61,121 @@ async function buildClientAssets(
   const manifestPath = path.join(".vite", "manifest.json");
 
   if (persistentCache) {
-    const cachedManifest = await readCachedManifest({
-      cacheKey: persistentCache.key,
+    const cachedBuild = await restoreCachedClientAssets({
+      absoluteEntries,
       cwd,
       manifestPath,
-      namespace: persistentCache.namespace,
+      outputDirectory,
+      persistentCache,
     });
 
-    if (cachedManifest) {
-      const relativePaths = collectManifestOutputPaths({
-        absoluteEntries,
-        cwd,
-        manifest: cachedManifest,
-      });
-
-      if (
-        await restorePersistentAssets(
-          cwd,
-          persistentCache.namespace,
-          persistentCache.key,
-          outputDirectory,
-          relativePaths,
-        )
-      ) {
-        const entryAssets = Object.fromEntries(
-          Object.entries(absoluteEntries).map(([name, filePath]) => [
-            name,
-            getEntryAsset({
-              cwd,
-              filePath,
-              manifest: cachedManifest,
-            }),
-          ]),
-        );
-
-        return {
-          cacheHit: true,
-          manifest: cachedManifest,
-          entryAssets,
-          entryFiles: Object.fromEntries(
-            Object.entries(entryAssets).map(([name, asset]) => [name, asset.file]),
-          ),
-        };
-      }
+    if (cachedBuild) {
+      return cachedBuild;
     }
   }
 
+  const manifest = await runViteClientBuild({
+    absoluteEntries,
+    base,
+    root: cwd,
+    emptyOutDir,
+    minify,
+    outputDirectory,
+    sourcemap,
+  });
+  const entryAssets = getEntryAssets({ absoluteEntries, cwd, manifest });
+  const entryFiles = getEntryFiles(entryAssets);
+
+  if (persistentCache) {
+    await writePersistentAssets(
+      cwd,
+      persistentCache.namespace,
+      persistentCache.key,
+      outputDirectory,
+      collectManifestOutputPaths({ absoluteEntries, cwd, manifest }),
+    );
+  }
+
+  return { cacheHit: false, manifest, entryAssets, entryFiles };
+}
+
+async function restoreCachedClientAssets(
+  {
+    absoluteEntries,
+    cwd,
+    manifestPath,
+    outputDirectory,
+    persistentCache,
+  }: {
+    absoluteEntries: Record<string, string>;
+    cwd: string;
+    manifestPath: string;
+    outputDirectory: string;
+    persistentCache: ClientAssetPersistentCache;
+  },
+): Promise<ClientAssetBuildResult | undefined> {
+  const cachedManifest = await readCachedManifest({
+    cacheKey: persistentCache.key,
+    cwd,
+    manifestPath,
+    namespace: persistentCache.namespace,
+  });
+
+  if (!cachedManifest) {
+    return;
+  }
+
+  const relativePaths = collectManifestOutputPaths({
+    absoluteEntries,
+    cwd,
+    manifest: cachedManifest,
+  });
+
+  if (
+    !await restorePersistentAssets(
+      cwd,
+      persistentCache.namespace,
+      persistentCache.key,
+      outputDirectory,
+      relativePaths,
+    )
+  ) {
+    return;
+  }
+
+  const entryAssets = getEntryAssets({
+    absoluteEntries,
+    cwd,
+    manifest: cachedManifest,
+  });
+
+  return {
+    cacheHit: true,
+    manifest: cachedManifest,
+    entryAssets,
+    entryFiles: getEntryFiles(entryAssets),
+  };
+}
+
+async function runViteClientBuild(
+  {
+    absoluteEntries,
+    base,
+    emptyOutDir,
+    minify,
+    outputDirectory,
+    root,
+    sourcemap,
+  }: {
+    absoluteEntries: Record<string, string>;
+    base: string;
+    emptyOutDir: boolean;
+    minify: boolean;
+    outputDirectory: string;
+    root: string;
+    sourcemap: boolean;
+  },
+) {
   const { build: viteBuild } = await import("vite");
 
   await viteBuild({
@@ -111,7 +183,7 @@ async function buildClientAssets(
     base,
     configFile: false,
     publicDir: false,
-    root: cwd,
+    root,
     build: {
       emptyOutDir,
       manifest: true,
@@ -125,10 +197,26 @@ async function buildClientAssets(
     },
   });
 
-  const manifest = JSON.parse(
-    await readFile(path.join(outputDirectory, ".vite", "manifest.json"), "utf8"),
+  return JSON.parse(
+    await readFile(
+      path.join(outputDirectory, ".vite", "manifest.json"),
+      "utf8",
+    ),
   ) as Record<string, ClientAssetManifestChunk>;
-  const entryAssets = Object.fromEntries(
+}
+
+function getEntryAssets(
+  {
+    absoluteEntries,
+    cwd,
+    manifest,
+  }: {
+    absoluteEntries: Record<string, string>;
+    cwd: string;
+    manifest: Record<string, ClientAssetManifestChunk>;
+  },
+) {
+  return Object.fromEntries(
     Object.entries(absoluteEntries).map(([name, filePath]) => [
       name,
       getEntryAsset({
@@ -138,21 +226,12 @@ async function buildClientAssets(
       }),
     ]),
   );
-  const entryFiles = Object.fromEntries(
+}
+
+function getEntryFiles(entryAssets: ClientAssetBuildResult["entryAssets"]) {
+  return Object.fromEntries(
     Object.entries(entryAssets).map(([name, asset]) => [name, asset.file]),
   );
-
-  if (persistentCache) {
-    await writePersistentAssets(
-      cwd,
-      persistentCache.namespace,
-      persistentCache.key,
-      outputDirectory,
-      collectManifestOutputPaths({ absoluteEntries, cwd, manifest }),
-    );
-  }
-
-  return { cacheHit: false, manifest, entryAssets, entryFiles };
 }
 
 function getEntryAsset(
@@ -171,13 +250,17 @@ function getEntryAsset(
 
   if (!chunk) {
     throw new Error(
-      `Failed to find Vite manifest entry for ${relativePath} (${normalizeManifestPath(filePath)})`,
+      `Failed to find Vite manifest entry for ${relativePath} (${
+        normalizeManifestPath(filePath)
+      })`,
     );
   }
 
   return {
     file: `/${normalizeManifestPath(chunk.file)}`,
-    css: (chunk.css || []).map((assetPath) => `/${normalizeManifestPath(assetPath)}`),
+    css: (chunk.css || []).map((assetPath) =>
+      `/${normalizeManifestPath(assetPath)}`
+    ),
   };
 }
 
