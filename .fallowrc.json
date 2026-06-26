@@ -42,6 +42,7 @@
   ],
   "duplicates": {
     "ignore": [
+      "**/*",
       "**/*_test.ts",
       "**/*.test.ts",
       "e2e/**",
@@ -53,6 +54,7 @@
   },
   "health": {
     "ignore": [
+      "**/*",
       "**/*_test.ts",
       "**/*.test.ts",
       "e2e/**",
