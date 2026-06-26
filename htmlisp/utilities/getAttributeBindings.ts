@@ -7,38 +7,18 @@ function getAttributeBindings(
   parsedExpressions: Awaited<ReturnType<typeof parseExpressions>>,
   renderOptions?: HtmlispRenderOptions,
 ) {
-  const explicitAttributes = omit(
-    omit(omit(parsedExpressions, "children"), "visibleIf"),
-    "attrs",
+  const explicitAttributes = getExplicitAttributes(parsedExpressions);
+  const serializedAttributes = serializeExtraAttributes(
+    parsedExpressions.attrs,
+    explicitAttributes,
+    renderOptions,
   );
-  const extraAttributes = parsedExpressions.attrs;
-  const serializedAttributes: [string, string | boolean][] = [];
-
-  if (extraAttributes && typeof extraAttributes === "object") {
-    for (const [key, value] of Object.entries(extraAttributes)) {
-      if (Object.hasOwn(explicitAttributes, key)) {
-        continue;
-      }
-
-      const rendered = renderAttributeValue(value, renderOptions);
-
-      if (typeof rendered !== "undefined") {
-        serializedAttributes.push([key, rendered]);
-      }
-    }
-  }
 
   for (const [key, value] of Object.entries(explicitAttributes)) {
-    const rendered = renderAttributeValue(value, renderOptions);
-
-    if (typeof rendered !== "undefined") {
-      serializedAttributes.push([key, rendered]);
-    }
+    addSerializedAttribute(serializedAttributes, key, value, renderOptions);
   }
 
-  const ret = serializedAttributes.map(([key, value]) =>
-    typeof value === "string" ? `${key}="${value}"` : key
-  ).join(" ");
+  const ret = stringifySerializedAttributes(serializedAttributes);
 
   if (ret.length) {
     return " " + ret;
@@ -48,3 +28,53 @@ function getAttributeBindings(
 }
 
 export { getAttributeBindings };
+
+function getExplicitAttributes(
+  parsedExpressions: Awaited<ReturnType<typeof parseExpressions>>,
+) {
+  return omit(
+    omit(omit(parsedExpressions, "children"), "visibleIf"),
+    "attrs",
+  );
+}
+
+function serializeExtraAttributes(
+  extraAttributes: unknown,
+  explicitAttributes: Record<string, unknown>,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  const serializedAttributes: [string, string | boolean][] = [];
+
+  if (!extraAttributes || typeof extraAttributes !== "object") {
+    return serializedAttributes;
+  }
+
+  for (const [key, value] of Object.entries(extraAttributes)) {
+    if (!Object.hasOwn(explicitAttributes, key)) {
+      addSerializedAttribute(serializedAttributes, key, value, renderOptions);
+    }
+  }
+
+  return serializedAttributes;
+}
+
+function addSerializedAttribute(
+  serializedAttributes: [string, string | boolean][],
+  key: string,
+  value: unknown,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  const rendered = renderAttributeValue(value, renderOptions);
+
+  if (typeof rendered !== "undefined") {
+    serializedAttributes.push([key, rendered]);
+  }
+}
+
+function stringifySerializedAttributes(
+  serializedAttributes: [string, string | boolean][],
+) {
+  return serializedAttributes.map(([key, value]) =>
+    typeof value === "string" ? `${key}="${value}"` : key
+  ).join(" ");
+}

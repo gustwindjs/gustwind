@@ -37,7 +37,9 @@ function initLoadApiWithOptions(
 
       return JSON.parse(await readTextFile(payload.path)) as T;
     },
-    async module<T>(payload: Parameters<PluginParameters["load"]["module"]>[0]) {
+    async module<T>(
+      payload: Parameters<PluginParameters["load"]["module"]>[0],
+    ) {
       recordTask(tasks, { type: "loadModule", payload });
 
       return await importModule<T>(payload.path, options);
@@ -253,26 +255,43 @@ async function hasRemoteModuleDependencies(
   const importSpecifiers = getImportSpecifiers(source);
 
   for (const specifier of importSpecifiers) {
-    if (specifier.startsWith("http://") || specifier.startsWith("https://")) {
+    if (isRemoteSpecifier(specifier)) {
       return true;
     }
 
     if (
-      specifier.startsWith("./") || specifier.startsWith("../") ||
-      specifier.startsWith("/") || specifier.startsWith("file:")
+      await localDependencyHasRemoteModule(modulePath, specifier, visitedPaths)
     ) {
-      const dependencyPath = resolveDependencyPath(modulePath, specifier);
-
-      if (dependencyPath && await hasRemoteModuleDependencies(
-        dependencyPath,
-        visitedPaths,
-      )) {
-        return true;
-      }
+      return true;
     }
   }
 
   return false;
+}
+
+async function localDependencyHasRemoteModule(
+  modulePath: string,
+  specifier: string,
+  visitedPaths: Set<string>,
+) {
+  if (!isLocalSpecifier(specifier)) {
+    return false;
+  }
+
+  const dependencyPath = resolveDependencyPath(modulePath, specifier);
+
+  return dependencyPath
+    ? await hasRemoteModuleDependencies(dependencyPath, visitedPaths)
+    : false;
+}
+
+function isRemoteSpecifier(specifier: string) {
+  return specifier.startsWith("http://") || specifier.startsWith("https://");
+}
+
+function isLocalSpecifier(specifier: string) {
+  return specifier.startsWith("./") || specifier.startsWith("../") ||
+    specifier.startsWith("/") || specifier.startsWith("file:");
 }
 
 function getImportSpecifiers(source: string) {
@@ -341,6 +360,11 @@ function getImportPath(modulePath: string) {
 }
 
 function getLoader(modulePath: string, contentType = "") {
+  return getContentTypeLoader(contentType) ||
+    getExtensionLoader(getModuleExtension(modulePath));
+}
+
+function getContentTypeLoader(contentType: string) {
   if (contentType.includes("json")) {
     return "json";
   }
@@ -348,11 +372,15 @@ function getLoader(modulePath: string, contentType = "") {
   if (contentType.includes("typescript")) {
     return "ts";
   }
+}
 
-  const extension = path.extname(
+function getModuleExtension(modulePath: string) {
+  return path.extname(
     modulePath.startsWith("http") ? new URL(modulePath).pathname : modulePath,
   );
+}
 
+function getExtensionLoader(extension: string) {
   switch (extension) {
     case ".tsx":
       return "tsx";
