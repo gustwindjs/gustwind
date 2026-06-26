@@ -12,19 +12,59 @@ import type { MatchCounts } from "./parsers/runParsers.ts";
 
 const LIMIT = 100000;
 type LatexNode = Element | string;
+type LatexParserConfig = {
+  singles?: Record<string, SingleParser<LatexNode>>;
+  doubles?: Record<string, DoubleParser<Element>>;
+  blocks?: Record<string, BlockParser<Element, string>>;
+  lists?: Record<string, BlockParser<Element, Element>>;
+};
+type ParseLatexResult =
+  | { match: string | boolean; value?: LatexNode; matchCounts?: MatchCounts }
+  | undefined;
+type ParseLatexState = {
+  ret: LatexNode[];
+  matchCounts: MatchCounts;
+  hasParagraphBreak: boolean;
+};
 
 function parseLatex(
   input: string,
-  parser: {
-    singles?: Record<string, SingleParser<LatexNode>>;
-    doubles?: Record<string, DoubleParser<Element>>;
-    blocks?: Record<string, BlockParser<Element, string>>;
-    lists?: Record<string, BlockParser<Element, Element>>;
-  },
+  parser: LatexParserConfig,
 ): LatexNode[] {
   input = stripLatexComments(input);
 
   const getCharacter = characterGenerator(input);
+  const allParsers = getLatexParsers(parser);
+  const state: ParseLatexState = {
+    ret: [],
+    matchCounts: {},
+    hasParagraphBreak: false,
+  };
+
+  for (let i = 0; i < LIMIT; i++) {
+    const parseResult = runParsers<LatexNode>(
+      getCharacter,
+      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+      allParsers,
+      state.matchCounts,
+    ) as ParseLatexResult;
+
+    if (parseResult?.match) {
+      applyParseResult(state, parseResult);
+      continue;
+    }
+
+    if (advanceUnmatchedCharacter(state, getCharacter)) {
+      break;
+    }
+  }
+
+  normalizeLatexInlineCommands(state.ret, parser);
+
+  return state.ret;
+}
+
+function getLatexParsers(parser: LatexParserConfig) {
   const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
   const singleParsers = parser.singles &&
     getParseSingle(
@@ -34,7 +74,7 @@ function parseLatex(
     );
   const blockParsers = parser.blocks && getParseBlock(parser.blocks);
   const listParsers = parser.lists && getParseBlock(parser.lists);
-  const allParsers = [
+  return [
     singleParsers,
     doubleParsers,
     blockParsers,
@@ -57,63 +97,59 @@ function parseLatex(
       [singleParsers, doubleParsers].filter(Boolean),
     ),
   ].filter(Boolean);
-  const ret: LatexNode[] = [];
-  let matchCounts: MatchCounts = {};
-  let hasParagraphBreak = false;
+}
 
-  for (let i = 0; i < LIMIT; i++) {
-    const parseResult = runParsers<LatexNode>(
-      getCharacter,
-      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-      allParsers,
-      matchCounts,
-    ) as
-      | { match: string | boolean; value?: LatexNode; matchCounts?: MatchCounts }
-      | undefined;
-
-    if (parseResult?.match) {
-      if ("matchCounts" in parseResult && parseResult.matchCounts) {
-        matchCounts = parseResult.matchCounts;
-      }
-
-      const value = parseResult.value;
-
-      if (
-        typeof value !== "string" && value?.type === "p" && !hasParagraphBreak
-      ) {
-        const leadingInlineNodes: Element[] = [];
-
-        while (isInlineLatexNode(ret.at(-1))) {
-          leadingInlineNodes.unshift(ret.pop() as Element);
-        }
-
-        if (leadingInlineNodes.length) {
-          value.children = [...leadingInlineNodes, ...value.children];
-        }
-      }
-
-      if (value) {
-        ret.push(value);
-      }
-      hasParagraphBreak = false;
-    }
-
-    if (!parseResult?.match) {
-      const c = getCharacter.next();
-
-      if (c === null) {
-        break;
-      }
-
-      if (c === "\n" && getCharacter.get() === "\n") {
-        hasParagraphBreak = true;
-      }
-    }
+function applyParseResult(
+  state: ParseLatexState,
+  parseResult: NonNullable<ParseLatexResult>,
+) {
+  if (parseResult.matchCounts) {
+    state.matchCounts = parseResult.matchCounts;
   }
 
-  normalizeLatexInlineCommands(ret, parser);
+  const value = parseResult.value;
 
-  return ret;
+  if (
+    typeof value !== "string" && value?.type === "p" &&
+    !state.hasParagraphBreak
+  ) {
+    mergeLeadingInlineNodes(state.ret, value);
+  }
+
+  if (value) {
+    state.ret.push(value);
+  }
+
+  state.hasParagraphBreak = false;
+}
+
+function mergeLeadingInlineNodes(ret: LatexNode[], value: Element) {
+  const leadingInlineNodes: Element[] = [];
+
+  while (isInlineLatexNode(ret.at(-1))) {
+    leadingInlineNodes.unshift(ret.pop() as Element);
+  }
+
+  if (leadingInlineNodes.length) {
+    value.children = [...leadingInlineNodes, ...value.children];
+  }
+}
+
+function advanceUnmatchedCharacter(
+  state: ParseLatexState,
+  getCharacter: ReturnType<typeof characterGenerator>,
+) {
+  const c = getCharacter.next();
+
+  if (c === null) {
+    return true;
+  }
+
+  if (c === "\n" && getCharacter.get() === "\n") {
+    state.hasParagraphBreak = true;
+  }
+
+  return false;
 }
 
 function isInlineLatexNode(node: unknown): node is Element {
