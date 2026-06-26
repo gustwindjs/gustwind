@@ -67,9 +67,21 @@ type RendererDependencyInfo = {
 };
 type BuildTask = Extract<Tasks[number], { type: "build" }>;
 type BuildPlugins = Awaited<ReturnType<typeof importPlugins>>["plugins"];
+type BuildNodeOptions = {
+  cwd: string;
+  outputDirectory: string;
+  pluginDefinitions: PluginOptions[];
+  validateOutput?: boolean;
+  collectBenchmark?: boolean;
+  incremental?: boolean;
+  cacheFrom?: string;
+  routeConcurrency?: number;
+};
 
 async function buildNode(
-  {
+  options: BuildNodeOptions,
+): Promise<BuildNodeResult> {
+  const {
     cwd,
     outputDirectory,
     pluginDefinitions,
@@ -78,17 +90,7 @@ async function buildNode(
     incremental = !collectBenchmark,
     cacheFrom = outputDirectory,
     routeConcurrency = getDefaultRouteConcurrency(),
-  }: {
-    cwd: string;
-    outputDirectory: string;
-    pluginDefinitions: PluginOptions[];
-    validateOutput?: boolean;
-    collectBenchmark?: boolean;
-    incremental?: boolean;
-    cacheFrom?: string;
-    routeConcurrency?: number;
-  },
-): Promise<BuildNodeResult> {
+  } = options;
   const previousCache = incremental
     ? await readIncrementalBuildCache(cwd, cacheFrom)
     : undefined;
@@ -99,46 +101,25 @@ async function buildNode(
   const releaseBuildLock = await acquireBuildLock(outputDirectory);
 
   try {
-    if (!preservesCurrentOutput) {
-      await removeOutputDirectoryContents(outputDirectory);
-    }
-    await mkdir(outputDirectory, { recursive: true });
+    await prepareBuildOutputDirectory({
+      outputDirectory,
+      preservesCurrentOutput,
+    });
     const benchmark = collectBenchmark
       ? createBuildBenchmark(outputDirectory)
       : undefined;
-
-    const { plugins, router } = await importPlugins({
+    const buildInputs = await loadBuildInputs({
       cwd,
-      pluginDefinitions,
       outputDirectory,
-      initLoadApi: initNodeLoadApi,
-      mode: "production",
-    });
-
-    const prepareTasks = await preparePlugins(plugins);
-    const { routes, tasks: routerTasks } = await router.getAllRoutes({
+      pluginDefinitions,
       routeConcurrency,
     });
-    const rendererDependencyInfo = await getRendererDependencyInfo(plugins);
-    const globalDependencyTasks = normalizeDependencyTasks(
-      getGlobalDependencyTasks({
-        plugins,
-        prepareTasks,
-        rendererDependencyInfo,
-        routerTasks,
-      }),
-      cwd,
-    );
-
-    if (!routes) {
-      throw new Error("No routes found");
-    }
 
     if (preservesCurrentOutput) {
       await removeDeletedRouteOutputs(
         outputDirectory,
         previousCache?.cache,
-        Object.keys(routes).map((url) => url === "/" ? "/" : "/" + url + "/"),
+        Object.keys(buildInputs.routes).map(toRouteOutputUrl),
       );
     }
 
@@ -149,7 +130,7 @@ async function buildNode(
     await runTaskQueue({
       benchmark,
       outputDirectory,
-      tasks: prepareTasks.concat(routerTasks),
+      tasks: buildInputs.prepareTasks.concat(buildInputs.routerTasks),
     });
     const routeBuildResult = await runBuildTasks({
       benchmark,
@@ -159,30 +140,21 @@ async function buildNode(
       incrementalCacheSource: incremental ? previousCache?.source : undefined,
       incrementalCacheEnabled: incremental,
       nextIncrementalCacheRoutes,
-      globalDependencyTasks,
-      rendererDependencyInfo,
+      globalDependencyTasks: buildInputs.globalDependencyTasks,
+      rendererDependencyInfo: buildInputs.rendererDependencyInfo,
       routeConcurrency,
-      router,
-      plugins,
-      tasks: Object.entries(routes)
-        .filter(([, route]) => Boolean(route.layout))
-        .map(([url, route]) => ({
-          type: "build" as const,
-          payload: {
-            route,
-            dir: path.join(outputDirectory, url),
-            url: url === "/" ? "/" : "/" + url + "/",
-          },
-        })),
+      router: buildInputs.router,
+      plugins: buildInputs.plugins,
+      tasks: createRouteBuildTasks(buildInputs.routes, outputDirectory),
     });
 
     await runTaskQueue({
       benchmark,
       outputDirectory,
-      tasks: await finishPlugins(plugins),
+      tasks: await finishPlugins(buildInputs.plugins),
     });
 
-    await cleanUpPlugins(plugins, routes);
+    await cleanUpPlugins(buildInputs.plugins, buildInputs.routes);
 
     const validation = validateOutput
       ? await validateHtmlDirectory(outputDirectory)
@@ -206,6 +178,93 @@ async function buildNode(
     await releaseBuildLock();
     await stopModuleBundler();
   }
+}
+
+async function prepareBuildOutputDirectory(
+  {
+    outputDirectory,
+    preservesCurrentOutput,
+  }: {
+    outputDirectory: string;
+    preservesCurrentOutput: boolean;
+  },
+) {
+  if (!preservesCurrentOutput) {
+    await removeOutputDirectoryContents(outputDirectory);
+  }
+
+  await mkdir(outputDirectory, { recursive: true });
+}
+
+async function loadBuildInputs(
+  {
+    cwd,
+    outputDirectory,
+    pluginDefinitions,
+    routeConcurrency,
+  }: {
+    cwd: string;
+    outputDirectory: string;
+    pluginDefinitions: PluginOptions[];
+    routeConcurrency: number;
+  },
+) {
+  const { plugins, router } = await importPlugins({
+    cwd,
+    pluginDefinitions,
+    outputDirectory,
+    initLoadApi: initNodeLoadApi,
+    mode: "production",
+  });
+  const prepareTasks = await preparePlugins(plugins);
+  const { routes, tasks: routerTasks } = await router.getAllRoutes({
+    routeConcurrency,
+  });
+
+  if (!routes) {
+    throw new Error("No routes found");
+  }
+
+  const rendererDependencyInfo = await getRendererDependencyInfo(plugins);
+  const globalDependencyTasks = normalizeDependencyTasks(
+    getGlobalDependencyTasks({
+      plugins,
+      prepareTasks,
+      rendererDependencyInfo,
+      routerTasks,
+    }),
+    cwd,
+  );
+
+  return {
+    globalDependencyTasks,
+    plugins,
+    prepareTasks,
+    rendererDependencyInfo,
+    router,
+    routerTasks,
+    routes,
+  };
+}
+
+function createRouteBuildTasks(
+  routes: Record<string, Route>,
+  outputDirectory: string,
+): BuildTask[] {
+  return Object.entries(routes)
+    .filter(([, route]) => Boolean(route.layout))
+    .map(([url, route]) => ({
+      type: "build" as const,
+      payload: {
+        route,
+        dir: path.join(outputDirectory, url),
+        url: toRouteOutputUrl(url),
+      },
+    }));
+}
+
+function toRouteOutputUrl(url: string) {
+  return url === "/" ? "/" : "/" + url + "/";
 }
 
 async function runTaskQueue(
