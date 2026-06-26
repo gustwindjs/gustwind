@@ -448,26 +448,43 @@ function createRuntimeReloadPlugin({
 }
 
 function collectWatchPaths(tasks: BuildWorkerEvent[]) {
-  return tasks
-    .flatMap(getWatchPath)
-    .filter(
-      (watchPath): watchPath is string =>
-        Boolean(watchPath) && !shouldIgnoreWatchPath(watchPath),
-    );
+  return tasks.flatMap(getWatchPath).filter(isWatchedPath);
 }
 
 function getWatchPath({ type, payload }: BuildWorkerEvent) {
-  switch (type) {
-    case "copyFiles":
-      return payload.inputDirectory;
-    case "listDirectory":
-    case "loadJSON":
-    case "loadModule":
-    case "readTextFile":
-      return payload.path;
-    default:
-      return [];
-  }
+  const getPath = watchPathReaders[type];
+
+  return getPath ? getPath(payload as never) : [];
+}
+
+const watchPathReaders: Record<
+  string,
+  (payload: never) => string | string[] | undefined
+> = {
+  copyFiles: (
+    payload: Extract<BuildWorkerEvent, { type: "copyFiles" }>["payload"],
+  ) => payload.inputDirectory,
+  listDirectory: getPayloadPath,
+  loadJSON: getPayloadPath,
+  loadModule: getPayloadPath,
+  readTextFile: getPayloadPath,
+};
+
+function getPayloadPath(
+  payload: Extract<
+    BuildWorkerEvent,
+    { type: "listDirectory" | "loadJSON" | "loadModule" | "readTextFile" }
+  >["payload"],
+) {
+  return payload.path;
+}
+
+function isWatchedPath(watchPath: unknown): watchPath is string {
+  return (
+    typeof watchPath === "string" &&
+    Boolean(watchPath) &&
+    !shouldIgnoreWatchPath(watchPath)
+  );
 }
 
 function shouldIgnoreWatchPath(filePath: string) {

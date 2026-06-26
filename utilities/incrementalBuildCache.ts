@@ -278,29 +278,41 @@ async function restoreCachedOutputs(
   outputPaths: string[],
 ) {
   for (const outputPath of outputPaths) {
-    const targetPath = path.join(outputDirectory, outputPath);
-
-    if (
-      cacheSource.kind === "filesystem" &&
-      path.resolve(cacheSource.rootDirectory) === path.resolve(outputDirectory)
-    ) {
+    if (shouldSkipCacheRestore(cacheSource, outputDirectory)) {
       continue;
     }
 
-    await mkdir(path.dirname(targetPath), { recursive: true });
-
-    if (cacheSource.kind === "filesystem") {
-      await cp(path.join(cacheSource.rootDirectory, outputPath), targetPath, {
-        force: true,
-      });
-      continue;
-    }
-
-    await writeFile(
-      targetPath,
-      await fetchCachedOutput(cacheSource, outputPath),
-    );
+    await restoreCachedOutput(cacheSource, outputDirectory, outputPath);
   }
+}
+
+function shouldSkipCacheRestore(
+  cacheSource: IncrementalBuildCacheSource,
+  outputDirectory: string,
+) {
+  return (
+    cacheSource.kind === "filesystem" &&
+    path.resolve(cacheSource.rootDirectory) === path.resolve(outputDirectory)
+  );
+}
+
+async function restoreCachedOutput(
+  cacheSource: IncrementalBuildCacheSource,
+  outputDirectory: string,
+  outputPath: string,
+) {
+  const targetPath = path.join(outputDirectory, outputPath);
+
+  await mkdir(path.dirname(targetPath), { recursive: true });
+
+  if (cacheSource.kind === "filesystem") {
+    await cp(path.join(cacheSource.rootDirectory, outputPath), targetPath, {
+      force: true,
+    });
+    return;
+  }
+
+  await writeFile(targetPath, await fetchCachedOutput(cacheSource, outputPath));
 }
 
 function toRelativeOutputPath(outputDirectory: string, outputPath: string) {

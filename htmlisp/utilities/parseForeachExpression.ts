@@ -26,10 +26,13 @@ function parseForeachExpression(
 }
 
 function isForeachBinding(value: unknown): value is ForeachBinding {
-  return !!value &&
-    typeof value === "object" &&
-    "items" in value &&
-    Array.isArray((value as ForeachBinding).items);
+  return (
+    isObjectWithItems(value) && Array.isArray((value as ForeachBinding).items)
+  );
+}
+
+function isObjectWithItems(value: unknown) {
+  return Boolean(value && typeof value === "object" && "items" in value);
 }
 
 export { isForeachBinding, parseForeachExpression };

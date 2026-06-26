@@ -148,20 +148,38 @@ function getExpressionUtilities(
 function isComponentTag(type: string, components?: Components) {
   const typeFirstLetter = type[0];
 
-  return (
-    !["!", "?"].some((s) => s === typeFirstLetter) &&
+  return Boolean(
     components &&
-    type[0]?.toUpperCase() === typeFirstLetter &&
-    !type.split("").every((t) => t.toUpperCase() === t)
+    isComponentTypePrefix(typeFirstLetter) &&
+    isCapitalizedType(type) &&
+    !isAllCapsType(type),
   );
+}
+
+function isComponentTypePrefix(typeFirstLetter: string | undefined) {
+  return !["!", "?"].some((s) => s === typeFirstLetter);
+}
+
+function isCapitalizedType(type: string) {
+  return type[0]?.toUpperCase() === type[0];
+}
+
+function isAllCapsType(type: string) {
+  return type.split("").every((t) => t.toUpperCase() === t);
 }
 
 function isHidden(parsedAttributes: Context) {
   return (
     Object.hasOwn(parsedAttributes, "visibleIf") &&
-    (parsedAttributes.visibleIf === false ||
-      parsedAttributes.visibleIf === undefined ||
-      (parsedAttributes.visibleIf as { length?: number })?.length === 0)
+    isHiddenVisibleIfValue(parsedAttributes.visibleIf)
+  );
+}
+
+function isHiddenVisibleIfValue(value: unknown) {
+  return (
+    value === false ||
+    value === undefined ||
+    (value as { length?: number })?.length === 0
   );
 }
 

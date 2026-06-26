@@ -916,14 +916,10 @@ async function executeTask({
 }) {
   DEBUG && console.log("node build - running task", task.type);
   benchmark?.markTaskProcessed();
+  const execute = taskExecutors[task.type];
 
-  if (isWriteTask(task)) {
-    await executeWriteTask(task.payload);
-    return;
-  }
-
-  if (task.type === "copyFiles") {
-    await executeCopyTask(task.payload);
+  if (execute) {
+    await execute(task.payload as never);
     return;
   }
 
@@ -931,9 +927,26 @@ async function executeTask({
     return;
   }
 
-  const _exhaustive: never = task;
-  throw new Error(`Unsupported build task ${_exhaustive}`);
+  throw new Error(`Unsupported build task ${task.type}`);
 }
+
+const taskExecutors: Record<string, (payload: never) => Promise<void>> = {
+  copyFiles: (
+    payload: Extract<Tasks[number], { type: "copyFiles" }>["payload"],
+  ) => executeCopyTask(payload),
+  writeFile: (
+    payload: Extract<
+      Tasks[number],
+      { type: "writeFile" | "writeTextFile" }
+    >["payload"],
+  ) => executeWriteTask(payload),
+  writeTextFile: (
+    payload: Extract<
+      Tasks[number],
+      { type: "writeFile" | "writeTextFile" }
+    >["payload"],
+  ) => executeWriteTask(payload),
+};
 
 function isWriteTask(
   task: Exclude<Tasks[number], { type: "build" }>,
@@ -1039,36 +1052,48 @@ async function acquireBuildLock(outputDirectory: string) {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const handle = await open(lockPath, "wx");
-
-      await handle.writeFile(
-        JSON.stringify({
-          pid: process.pid,
-          startedAt: new Date().toISOString(),
-        }) + "\n",
-      );
-      await handle.close();
+      await createBuildLockFile(lockPath);
 
       return async () => {
         await unlink(lockPath).catch(() => undefined);
       };
     } catch (error) {
-      if (!isFileExistsError(error)) {
-        throw error;
-      }
-
-      if (await removeStaleBuildLock(lockPath)) {
+      if (await shouldRetryBuildLock(error, lockPath)) {
         continue;
       }
 
-      throw new Error(
-        `Another Gustwind build is already using ${outputDirectory}. ` +
-          `Remove ${lockPath} if that build is no longer running.`,
-      );
+      throwBuildLockError(outputDirectory, lockPath);
     }
   }
 
   throw new Error(`Failed to acquire Gustwind build lock at ${lockPath}`);
+}
+
+async function createBuildLockFile(lockPath: string) {
+  const handle = await open(lockPath, "wx");
+
+  await handle.writeFile(
+    JSON.stringify({
+      pid: process.pid,
+      startedAt: new Date().toISOString(),
+    }) + "\n",
+  );
+  await handle.close();
+}
+
+async function shouldRetryBuildLock(error: unknown, lockPath: string) {
+  if (!isFileExistsError(error)) {
+    throw error;
+  }
+
+  return await removeStaleBuildLock(lockPath);
+}
+
+function throwBuildLockError(outputDirectory: string, lockPath: string): never {
+  throw new Error(
+    `Another Gustwind build is already using ${outputDirectory}. ` +
+      `Remove ${lockPath} if that build is no longer running.`,
+  );
 }
 
 async function removeStaleBuildLock(lockPath: string) {

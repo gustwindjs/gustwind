@@ -49,23 +49,36 @@ function getBibtexParseValue(parseResult: unknown) {
 function hasParseValue(
   parseResult: unknown,
 ): parseResult is { match: unknown; value: unknown } {
-  if (
-    parseResult === null ||
-    typeof parseResult !== "object" ||
-    !("match" in parseResult)
-  ) {
+  if (!hasParseMatch(parseResult)) {
     return false;
   }
 
-  return Boolean(parseResult.match) &&
-    "value" in parseResult;
+  return Boolean(parseResult.match) && "value" in parseResult;
+}
+
+function hasParseMatch(
+  parseResult: unknown,
+): parseResult is { match: unknown } {
+  return (
+    parseResult !== null &&
+    typeof parseResult === "object" &&
+    "match" in parseResult
+  );
 }
 
 function isBibtexCollection(value: unknown): value is BibtexCollection {
-  return Boolean(value) &&
-    typeof value === "object" &&
-    typeof (value as Partial<BibtexCollection>).id === "string" &&
-    typeof (value as Partial<BibtexCollection>).type === "string";
+  return (
+    isObjectValue(value) &&
+    hasBibtexIdentity(value as Partial<BibtexCollection>)
+  );
+}
+
+function isObjectValue(value: unknown) {
+  return Boolean(value) && typeof value === "object";
+}
+
+function hasBibtexIdentity(value: Partial<BibtexCollection>) {
+  return typeof value.id === "string" && typeof value.type === "string";
 }
 
 function normalizeBibtexEntry(value: BibtexCollection): BibtexCollection {
@@ -100,53 +113,41 @@ function stripTitleBraces(fields: Record<string, string>) {
 
 function decodeLatexAccents(value: string) {
   return value
-    .replace(
-      /\{\\?"([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent('"', letter),
+    .replace(/\{\\?"([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent('"', letter),
     )
-    .replace(
-      /\\?"([A-Za-z])/g,
-      (_, letter: string) => decodeLatexAccent('"', letter),
+    .replace(/\\?"([A-Za-z])/g, (_, letter: string) =>
+      decodeLatexAccent('"', letter),
     )
-    .replace(
-      /\{\\?'([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent("'", letter),
+    .replace(/\{\\?'([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent("'", letter),
     )
-    .replace(
-      /\\'([A-Za-z])/g,
-      (_, letter: string) => decodeLatexAccent("'", letter),
+    .replace(/\\'([A-Za-z])/g, (_, letter: string) =>
+      decodeLatexAccent("'", letter),
     )
-    .replace(
-      /\{\\?`([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent("`", letter),
+    .replace(/\{\\?`([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent("`", letter),
     )
-    .replace(
-      /\\`([A-Za-z])/g,
-      (_, letter: string) => decodeLatexAccent("`", letter),
+    .replace(/\\`([A-Za-z])/g, (_, letter: string) =>
+      decodeLatexAccent("`", letter),
     )
-    .replace(
-      /\{\\?\^([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent("^", letter),
+    .replace(/\{\\?\^([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent("^", letter),
     )
-    .replace(
-      /\\\^([A-Za-z])/g,
-      (_, letter: string) => decodeLatexAccent("^", letter),
+    .replace(/\\\^([A-Za-z])/g, (_, letter: string) =>
+      decodeLatexAccent("^", letter),
     )
-    .replace(
-      /\{\\?~([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent("~", letter),
+    .replace(/\{\\?~([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent("~", letter),
     )
-    .replace(
-      /\\~([A-Za-z])/g,
-      (_, letter: string) => decodeLatexAccent("~", letter),
+    .replace(/\\~([A-Za-z])/g, (_, letter: string) =>
+      decodeLatexAccent("~", letter),
     )
-    .replace(
-      /\{\\c\{([A-Za-z])\}\}/g,
-      (_, letter: string) => decodeLatexAccent("c", letter),
+    .replace(/\{\\c\{([A-Za-z])\}\}/g, (_, letter: string) =>
+      decodeLatexAccent("c", letter),
     )
-    .replace(
-      /\\c\{([A-Za-z])\}/g,
-      (_, letter: string) => decodeLatexAccent("c", letter),
+    .replace(/\\c\{([A-Za-z])\}/g, (_, letter: string) =>
+      decodeLatexAccent("c", letter),
     );
 }
 

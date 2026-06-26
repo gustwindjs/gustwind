@@ -16,19 +16,17 @@ type ExpandRouteOptions = {
 type RouteExpansion = NonNullable<Route["expand"]>;
 type RouteExpansionMatch = NonNullable<RouteExpansion["matchBy"]>;
 
-async function expandRoutes(
-  {
-    routes,
-    dataSources,
-    inheritedScripts,
-    routeConcurrency = Number.POSITIVE_INFINITY,
-  }: {
-    routes: Record<string, Route>;
-    dataSources: DataSources;
-    inheritedScripts?: Route["scripts"];
-    routeConcurrency?: number;
-  },
-): Promise<Record<string, Route>> {
+async function expandRoutes({
+  routes,
+  dataSources,
+  inheritedScripts,
+  routeConcurrency = Number.POSITIVE_INFINITY,
+}: {
+  routes: Record<string, Route>;
+  dataSources: DataSources;
+  inheritedScripts?: Route["scripts"];
+  routeConcurrency?: number;
+}): Promise<Record<string, Route>> {
   const allRoutes = Object.fromEntries(
     await mapWithConcurrency(
       Object.entries(routes),
@@ -69,56 +67,87 @@ async function expandRoute(
     routeConcurrency = Number.POSITIVE_INFINITY,
     recurse,
   } = options;
-  let ret = { ...route };
   const routeScripts = mergeRouteScripts(inheritedScripts, route.scripts);
+  let ret = await expandRouteIndex({ ...options, routeScripts });
 
-  if (route.expand) {
-    ret = {
-      ...route,
-      routes: await expandRouteByIndex({
-        dataSources,
-        expansion: route.expand,
-        route,
-        routeConcurrency,
-        routeScripts,
-      }),
-    };
-  }
-
-  // Take care to expand routes since they might have data source related logic etc.
-  // to execute.
-  if (recurse && route.routes) {
-    const expandedRouteRoutes = await expandRoutes({
-      routes: route.routes || {},
+  if (shouldExpandChildRoutes(recurse, route)) {
+    ret = await expandChildRoutes({
       dataSources,
-      inheritedScripts: routeScripts,
+      ret,
+      route,
       routeConcurrency,
+      routeScripts,
     });
-
-    ret = {
-      ...ret,
-      routes: { ...ret.routes, ...expandedRouteRoutes },
-    };
   }
 
   return [url, ret];
 }
 
-async function expandRouteByIndex(
-  {
+async function expandRouteIndex({
+  dataSources,
+  route,
+  routeConcurrency = Number.POSITIVE_INFINITY,
+  routeScripts,
+}: ExpandRouteOptions & { routeScripts: Route["scripts"] }) {
+  if (!route.expand) {
+    return { ...route };
+  }
+
+  return {
+    ...route,
+    routes: await expandRouteByIndex({
+      dataSources,
+      expansion: route.expand,
+      route,
+      routeConcurrency,
+      routeScripts,
+    }),
+  };
+}
+
+function shouldExpandChildRoutes(recurse: boolean, route: Route) {
+  return Boolean(recurse && route.routes);
+}
+
+async function expandChildRoutes({
+  dataSources,
+  ret,
+  route,
+  routeConcurrency,
+  routeScripts,
+}: {
+  dataSources: DataSources;
+  ret: Route;
+  route: Route;
+  routeConcurrency: number;
+  routeScripts: Route["scripts"];
+}) {
+  const expandedRouteRoutes = await expandRoutes({
+    routes: route.routes || {},
     dataSources,
-    expansion,
-    route,
+    inheritedScripts: routeScripts,
     routeConcurrency,
-    routeScripts,
-  }: {
-    dataSources: DataSources;
-    expansion: RouteExpansion;
-    route: Route;
-    routeConcurrency: number;
-    routeScripts: Route["scripts"];
-  },
-) {
+  });
+
+  return {
+    ...ret,
+    routes: { ...ret.routes, ...expandedRouteRoutes },
+  };
+}
+
+async function expandRouteByIndex({
+  dataSources,
+  expansion,
+  route,
+  routeConcurrency,
+  routeScripts,
+}: {
+  dataSources: DataSources;
+  expansion: RouteExpansion;
+  route: Route;
+  routeConcurrency: number;
+  routeScripts: Route["scripts"];
+}) {
   const matchBy = getRouteExpansionMatch(expansion);
   const indexResults = await runRouteExpansionIndexer(dataSources, matchBy);
 
@@ -128,29 +157,26 @@ async function expandRouteByIndex(
 
   const inheritedParentDataSources = {
     ...route.parentDataSources,
-    ...await getDataSourceContext(
+    ...(await getDataSourceContext(
       route.parentDataSources,
       route.dataSources,
       dataSources,
       routeConcurrency,
-    ),
+    )),
   };
   const matchByName = matchBy.name || matchBy.indexer.operation;
 
   return Object.fromEntries(
-    await mapWithConcurrency(
-      indexResults,
-      routeConcurrency,
-      async (match) =>
-        createExpandedRoute({
-          expansion,
-          inheritedParentDataSources,
-          indexResults,
-          match,
-          matchBy,
-          matchByName,
-          routeScripts,
-        }),
+    await mapWithConcurrency(indexResults, routeConcurrency, async (match) =>
+      createExpandedRoute({
+        expansion,
+        inheritedParentDataSources,
+        indexResults,
+        match,
+        matchBy,
+        matchByName,
+        routeScripts,
+      }),
     ),
   );
 }
@@ -179,54 +205,54 @@ async function runRouteExpansionIndexer(
     throw new Error("Data source is not a function");
   }
 
-  return await indexer.apply(
-    undefined,
-    matchBy.indexer.parameters || [],
-  );
+  return await indexer.apply(undefined, matchBy.indexer.parameters || []);
 }
 
-function createExpandedRoute(
-  {
-    expansion,
-    inheritedParentDataSources,
-    indexResults,
-    match,
-    matchBy,
-    matchByName,
-    routeScripts,
-  }: {
-    expansion: RouteExpansion;
-    inheritedParentDataSources: Record<string, unknown>;
-    indexResults: unknown[];
-    match: unknown;
-    matchBy: RouteExpansionMatch;
-    matchByName: string;
-    routeScripts: Route["scripts"];
-  },
-): [string, Route] {
+function createExpandedRoute({
+  expansion,
+  inheritedParentDataSources,
+  indexResults,
+  match,
+  matchBy,
+  matchByName,
+  routeScripts,
+}: {
+  expansion: RouteExpansion;
+  inheritedParentDataSources: Record<string, unknown>;
+  indexResults: unknown[];
+  match: unknown;
+  matchBy: RouteExpansionMatch;
+  matchByName: string;
+  routeScripts: Route["scripts"];
+}): [string, Route] {
   const { slug } = matchBy;
   const url = get(match, slug) as string;
 
   if (!url) {
     throw new Error(
-      `Route ${matchBy.slug} is missing from ${
-        JSON.stringify(match, null, 2)
-      } with slug ${matchBy.slug} within ${url} route`,
+      `Route ${matchBy.slug} is missing from ${JSON.stringify(
+        match,
+        null,
+        2,
+      )} with slug ${matchBy.slug} within ${url} route`,
     );
   }
 
   const { layout, scripts, context } = expansion;
 
-  return [url, {
-    layout,
-    scripts: mergeRouteScripts(routeScripts, scripts),
-    context: context || {},
-    parentDataSources: {
-      ...inheritedParentDataSources,
-      [matchByName]: indexResults,
+  return [
+    url,
+    {
+      layout,
+      scripts: mergeRouteScripts(routeScripts, scripts),
+      context: context || {},
+      parentDataSources: {
+        ...inheritedParentDataSources,
+        [matchByName]: indexResults,
+      },
+      dataSources: createExpandedRouteDataSources(expansion, match),
     },
-    dataSources: createExpandedRouteDataSources(expansion, match),
-  }];
+  ];
 }
 
 function createExpandedRouteDataSources(
@@ -234,14 +260,15 @@ function createExpandedRouteDataSources(
   match: unknown,
 ) {
   return Object.fromEntries(
-    Object.entries(
-      normalizeRouteDataSources(expansion.dataSources),
-    ).map((
-      [k, v]: [string, DataSource],
-    ) => [k, {
-      ...v,
-      parameters: [match].concat(v.parameters),
-    }]),
+    Object.entries(normalizeRouteDataSources(expansion.dataSources)).map(
+      ([k, v]: [string, DataSource]) => [
+        k,
+        {
+          ...v,
+          parameters: [match].concat(v.parameters),
+        },
+      ],
+    ),
   );
 }
 

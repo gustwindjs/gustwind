@@ -8,9 +8,7 @@ function parseEmpty(
   getCharacter: CharacterGenerator,
   checkRule?: (c: string) => boolean,
 ): void {
-  if (!checkRule) {
-    checkRule = (c: string) => c === " " || c === `\n`;
-  }
+  const isEmptyCharacter = checkRule || isDefaultEmptyCharacter;
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -19,14 +17,16 @@ function parseEmpty(
       break;
     }
 
-    if (checkRule(c)) {
-      // Nothing to do
-    } else {
+    if (!isEmptyCharacter(c)) {
       getCharacter.previous();
 
       return;
     }
   }
+}
+
+function isDefaultEmptyCharacter(c: string) {
+  return c === " " || c === `\n`;
 }
 
 export { parseEmpty };
