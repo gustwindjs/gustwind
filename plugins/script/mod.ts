@@ -4,7 +4,15 @@ import {
   compileTypeScript,
   stopEsbuild,
 } from "../../utilities/compileTypeScript.ts";
-import type { BuildWorkerEvent, Mode, Plugin, Scripts } from "../../types.ts";
+import type {
+  BuildWorkerEvent,
+  Mode,
+  Plugin,
+  PluginApi,
+  Route,
+  Scripts,
+  Send,
+} from "../../types.ts";
 import { isDebugEnabled } from "../../utilities/runtime.ts";
 import {
   buildClientAssets,
@@ -20,7 +28,7 @@ const plugin: Plugin<{
   // TODO: Model scripts output path here
   scriptsPath?: string[];
 }, {
-  foundScripts: { name: string; path: string; externals?: string[] }[];
+  foundScripts: FoundScript[];
   receivedScripts: {
     isExternal?: boolean;
     name: string;
@@ -51,167 +59,35 @@ const plugin: Plugin<{
         return { foundScripts, receivedScripts: [], receivedGlobalScripts: [] };
       },
       prepareBuild: ({ pluginContext }) => {
-        if (mode === "production" && scriptAssets) {
-          builtEntryAssets = normalizeScriptEntryAssets(scriptAssets);
-          return [];
-        }
-
-        const { foundScripts, receivedScripts } = pluginContext;
-        const isDevelopingLocally = import.meta.url.startsWith("file:///");
-        const resolvedScripts = foundScripts.concat(
-          receivedScripts.map((
-            { name, localPath, remotePath, externals },
-          ) => ({
-            name,
-            path: isDevelopingLocally ? localPath : remotePath,
-            externals,
-          })),
-        );
-
-        if (mode === "production") {
-          return buildProductionScripts({
-            cwd,
-            mode,
-            outputDirectory,
-            scripts: resolvedScripts,
-            setBuiltEntryAssets(nextBuiltEntryAssets) {
-              builtEntryAssets = nextBuiltEntryAssets;
-            },
-          });
-        }
-
-        return Promise.all(
-          resolvedScripts.filter(({ path: scriptPath }) =>
-            scriptPath.startsWith("http://") || scriptPath.startsWith("https://")
-          ).map((
-            { name, path: scriptPath, externals },
-          ) =>
-            writeScript({
-              file: name.replace(".ts", ".js"),
-              scriptPath,
-              externals,
-              mode,
-              outputDirectory,
-            })
-          ),
-        );
+        return prepareScriptBuild({
+          cwd,
+          mode,
+          outputDirectory,
+          pluginContext,
+          scriptAssets,
+          setBuiltEntryAssets(nextBuiltEntryAssets) {
+            builtEntryAssets = nextBuiltEntryAssets;
+          },
+        });
       },
       prepareContext({ route, pluginContext, send }) {
-        const { foundScripts, receivedScripts, receivedGlobalScripts } =
-          pluginContext;
-        const routeScripts = route.scripts || [];
-        const routeScriptNames = routeScripts.map(({ name }) => name);
-        const foundScriptNames = foundScripts.map(({ name }) => name);
-        const foundScriptPaths = Object.fromEntries(
-          foundScripts.map(({ name, path }) => [name, path]),
-        );
-
-        if (
-          !routeScriptNames.every((name) =>
-            foundScriptNames.includes(`${name}.ts`)
-          )
-        ) {
-          console.error(foundScriptNames, routeScriptNames);
-          throw new Error("Route script is missing from the scripts directory");
-        }
-
-        const scripts: { name: string; src?: string; srcPrefix?: string }[] =
-          (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
-            { name, localPath, remotePath },
-          ) => ({
-            name,
-            src: mode === "production"
-              ? builtEntryAssets[normalizeScriptName(name)]?.file
-              : getDevScriptPath(
-                import.meta.url.startsWith("file:///") ? localPath : remotePath,
-                cwd,
-              ),
-          })).concat(
-            routeScripts.map(({ name, ...rest }) => ({
-              name: `${name}.ts`,
-              src: mode === "production"
-                ? builtEntryAssets[name]?.file
-                : getDevScriptPath(foundScriptPaths[`${name}.ts`], cwd),
-              ...rest,
-            })),
-          );
-        const scriptTags = scripts.map(({ name, src, srcPrefix, ...rest }) => ({
-          type: "module",
-          ...rest,
-          src: src || (srcPrefix || "/") + name.replace(".ts", ".js"),
-        }));
-        const styles = Array.from(
-          new Set(
-            scripts.flatMap(({ name }) => builtEntryAssets[normalizeScriptName(name)]?.css || []),
-          ),
-        ).map((href) => ({ href, rel: "stylesheet" }));
-
-        scripts.forEach(({ name, src }) => {
-          if (src) {
-            return;
-          }
-
-          send("*", {
-            type: "addDynamicRoute",
-            payload: { path: name.replace(".ts", ".js") },
-          });
+        return prepareScriptContext({
+          builtEntryAssets,
+          cwd,
+          globalScripts,
+          mode,
+          pluginContext,
+          routeScripts: route.scripts || [],
+          send,
         });
-
-        // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
-        // Global scripts don't need processing since they are in the right format already
-        return {
-          context: {
-            styles,
-            scripts: globalScripts.concat(receivedGlobalScripts).concat(
-              scriptTags,
-            ),
-          },
-        };
       },
       onMessage: async ({ message, pluginContext, send }) => {
-        const { type, payload } = message;
-
-        if (type === "fileChanged") {
-          if (payload.type === "foundScripts") {
-            const foundScripts = await loadScripts();
-
-            // TODO: Make this more refined by sending a replaceScript event
-            // and the script that changed so that it can be replaced as
-            // that avoids a full page reload.
-            return {
-              send: [{ type: "reloadPage", payload: undefined }],
-              pluginContext: { foundScripts },
-            };
-          }
-        }
-
-        if (type === "addGlobalScripts") {
-          payload.forEach(({ src: path }) =>
-            // TODO: Scope to router- instead
-            send("*", { type: "addDynamicRoute", payload: { path } })
-          );
-
-          return {
-            pluginContext: {
-              receivedGlobalScripts: pluginContext.receivedGlobalScripts.concat(
-                payload,
-              ),
-            },
-          };
-        }
-
-        if (type === "addScripts") {
-          payload.forEach(({ name: path }) =>
-            // TODO: Scope to router- instead
-            send("*", { type: "addDynamicRoute", payload: { path } })
-          );
-
-          return {
-            pluginContext: {
-              receivedScripts: pluginContext.receivedScripts.concat(payload),
-            },
-          };
-        }
+        return await handleScriptMessage({
+          loadScripts,
+          message,
+          pluginContext,
+          send,
+        });
       },
       cleanUp: stopEsbuild,
     };
@@ -243,6 +119,278 @@ const plugin: Plugin<{
 
 type ScriptEntryAsset = { file: string; css?: string[] };
 type ScriptEntryAssets = Record<string, ScriptEntryAsset>;
+type FoundScript = { name: string; path: string; externals?: string[] };
+type ScriptPluginContext = {
+  foundScripts: FoundScript[];
+  receivedScripts: {
+    isExternal?: boolean;
+    name: string;
+    localPath: string;
+    remotePath: string;
+    externals?: string[];
+  }[];
+  receivedGlobalScripts: { type: string; src: string }[];
+};
+type RouteScripts = NonNullable<Route["scripts"]>;
+type ScriptContextInput = {
+  name: string;
+  src?: string;
+  srcPrefix?: string;
+  [key: string]: unknown;
+};
+
+async function prepareScriptBuild(
+  {
+    cwd,
+    mode,
+    outputDirectory,
+    pluginContext,
+    scriptAssets,
+    setBuiltEntryAssets,
+  }: {
+    cwd: string;
+    mode: Mode;
+    outputDirectory: string;
+    pluginContext: ScriptPluginContext;
+    scriptAssets?: ScriptEntryAssets;
+    setBuiltEntryAssets(builtEntryAssets: ScriptEntryAssets): void;
+  },
+) {
+  if (mode === "production" && scriptAssets) {
+    setBuiltEntryAssets(normalizeScriptEntryAssets(scriptAssets));
+    return [];
+  }
+
+  const resolvedScripts = resolveScriptInputs(pluginContext);
+
+  if (mode === "production") {
+    return buildProductionScripts({
+      cwd,
+      mode,
+      outputDirectory,
+      scripts: resolvedScripts,
+      setBuiltEntryAssets,
+    });
+  }
+
+  return Promise.all(
+    resolvedScripts.filter(({ path: scriptPath }) => isRemotePath(scriptPath))
+      .map((
+        { name, path: scriptPath, externals },
+      ) =>
+        writeScript({
+          file: name.replace(".ts", ".js"),
+          scriptPath,
+          externals,
+          mode,
+          outputDirectory,
+        })
+      ),
+  );
+}
+
+function resolveScriptInputs(pluginContext: ScriptPluginContext) {
+  const { foundScripts, receivedScripts } = pluginContext;
+  const isDevelopingLocally = import.meta.url.startsWith("file:///");
+
+  return foundScripts.concat(
+    receivedScripts.map((
+      { name, localPath, remotePath, externals },
+    ) => ({
+      name,
+      path: isDevelopingLocally ? localPath : remotePath,
+      externals,
+    })),
+  );
+}
+
+function prepareScriptContext(
+  {
+    builtEntryAssets,
+    cwd,
+    globalScripts,
+    mode,
+    pluginContext,
+    routeScripts,
+    send,
+  }: {
+    builtEntryAssets: ScriptEntryAssets;
+    cwd: string;
+    globalScripts: Scripts;
+    mode: Mode;
+    pluginContext: ScriptPluginContext;
+    routeScripts: RouteScripts;
+    send: Send;
+  },
+) {
+  const scripts = collectContextScripts({
+    builtEntryAssets,
+    cwd,
+    mode,
+    pluginContext,
+    routeScripts,
+  });
+  const scriptTags = scripts.map(({ name, src, srcPrefix, ...rest }) => ({
+    type: "module",
+    ...rest,
+    src: src || (srcPrefix || "/") + name.replace(".ts", ".js"),
+  }));
+  const styles = getScriptStyles(scripts, builtEntryAssets);
+
+  registerDynamicScriptRoutes(scripts, send);
+
+  // TODO: Add uniqueness check for global scripts to avoid injecting the same script multiple times
+  // Global scripts don't need processing since they are in the right format already
+  return {
+    context: {
+      styles,
+      scripts: globalScripts.concat(pluginContext.receivedGlobalScripts).concat(
+        scriptTags,
+      ),
+    },
+  };
+}
+
+function collectContextScripts(
+  {
+    builtEntryAssets,
+    cwd,
+    mode,
+    pluginContext,
+    routeScripts,
+  }: {
+    builtEntryAssets: ScriptEntryAssets;
+    cwd: string;
+    mode: Mode;
+    pluginContext: ScriptPluginContext;
+    routeScripts: RouteScripts;
+  },
+): ScriptContextInput[] {
+  const { foundScripts, receivedScripts } = pluginContext;
+  const routeScriptNames = routeScripts.map(({ name }) => name);
+  const foundScriptNames = foundScripts.map(({ name }) => name);
+  const foundScriptPaths = Object.fromEntries(
+    foundScripts.map(({ name, path }) => [name, path]),
+  );
+
+  if (
+    !routeScriptNames.every((name) => foundScriptNames.includes(`${name}.ts`))
+  ) {
+    console.error(foundScriptNames, routeScriptNames);
+    throw new Error("Route script is missing from the scripts directory");
+  }
+
+  return (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
+    { name, localPath, remotePath },
+  ) => ({
+    name,
+    src: mode === "production"
+      ? builtEntryAssets[normalizeScriptName(name)]?.file
+      : getDevScriptPath(
+        import.meta.url.startsWith("file:///") ? localPath : remotePath,
+        cwd,
+      ),
+  })).concat(
+    routeScripts.map(({ name, ...rest }) => ({
+      name: `${name}.ts`,
+      src: mode === "production"
+        ? builtEntryAssets[name]?.file
+        : getDevScriptPath(foundScriptPaths[`${name}.ts`], cwd),
+      ...rest,
+    })),
+  );
+}
+
+function getScriptStyles(
+  scripts: ScriptContextInput[],
+  builtEntryAssets: ScriptEntryAssets,
+) {
+  return Array.from(
+    new Set(
+      scripts.flatMap(({ name }) =>
+        builtEntryAssets[normalizeScriptName(name)]?.css || []
+      ),
+    ),
+  ).map((href) => ({ href, rel: "stylesheet" }));
+}
+
+function registerDynamicScriptRoutes(
+  scripts: ScriptContextInput[],
+  send: Send,
+) {
+  scripts.forEach(({ name, src }) => {
+    if (src) {
+      return;
+    }
+
+    send("*", {
+      type: "addDynamicRoute",
+      payload: { path: name.replace(".ts", ".js") },
+    });
+  });
+}
+
+async function handleScriptMessage(
+  {
+    loadScripts,
+    message,
+    pluginContext,
+    send,
+  }: {
+    loadScripts(): Promise<FoundScript[]>;
+    message: Parameters<
+      NonNullable<PluginApi<ScriptPluginContext>["onMessage"]>
+    >[
+      0
+    ]["message"];
+    pluginContext: ScriptPluginContext;
+    send: Send;
+  },
+) {
+  const { type, payload } = message;
+
+  if (type === "fileChanged") {
+    if (payload.type === "foundScripts") {
+      const foundScripts = await loadScripts();
+
+      // TODO: Make this more refined by sending a replaceScript event
+      // and the script that changed so that it can be replaced as
+      // that avoids a full page reload.
+      return {
+        send: [{ type: "reloadPage" as const, payload: undefined }],
+        pluginContext: { foundScripts },
+      };
+    }
+  }
+
+  if (type === "addGlobalScripts") {
+    payload.forEach(({ src: path }) =>
+      // TODO: Scope to router- instead
+      send("*", { type: "addDynamicRoute", payload: { path } })
+    );
+
+    return {
+      pluginContext: {
+        receivedGlobalScripts: pluginContext.receivedGlobalScripts.concat(
+          payload,
+        ),
+      },
+    };
+  }
+
+  if (type === "addScripts") {
+    payload.forEach(({ name: path }) =>
+      // TODO: Scope to router- instead
+      send("*", { type: "addDynamicRoute", payload: { path } })
+    );
+
+    return {
+      pluginContext: {
+        receivedScripts: pluginContext.receivedScripts.concat(payload),
+      },
+    };
+  }
+}
 
 function normalizeScriptEntryAssets(scriptAssets: ScriptEntryAssets) {
   return Object.fromEntries(
@@ -336,12 +484,16 @@ function normalizeScriptName(name: string) {
   return name.endsWith(".ts") ? name.slice(0, -3) : name;
 }
 
+function isRemotePath(scriptPath: string) {
+  return scriptPath.startsWith("http://") || scriptPath.startsWith("https://");
+}
+
 function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
   if (!scriptPath) {
     return undefined;
   }
 
-  if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+  if (isRemotePath(scriptPath)) {
     return undefined;
   }
 
