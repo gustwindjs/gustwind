@@ -61,8 +61,8 @@ const readOnlyTaskTypes = new Set([
   "readTextFile",
 ] as const);
 const retryableRemoveOutputErrors = new Set(["ENOTEMPTY", "EBUSY", "EPERM"]);
-type ReadOnlyTaskType = typeof readOnlyTaskTypes extends Set<infer T> ? T
-  : never;
+type ReadOnlyTaskType =
+  typeof readOnlyTaskTypes extends Set<infer T> ? T : never;
 type BuildNodeResult = {
   benchmark?: BuildBenchmark;
   cacheFrom?: string;
@@ -87,18 +87,16 @@ type BuildNodeOptions = {
   cacheFrom?: string;
   routeConcurrency?: number;
 };
-type NormalizedBuildNodeOptions =
-  & Required<
-    Pick<
-      BuildNodeOptions,
-      "collectBenchmark" | "incremental" | "routeConcurrency"
-    >
-  >
-  & Omit<
+type NormalizedBuildNodeOptions = Required<
+  Pick<
     BuildNodeOptions,
     "collectBenchmark" | "incremental" | "routeConcurrency"
   >
-  & {
+> &
+  Omit<
+    BuildNodeOptions,
+    "collectBenchmark" | "incremental" | "routeConcurrency"
+  > & {
     cacheFrom: string;
     validateOutput: boolean;
   };
@@ -121,9 +119,7 @@ type RestoreRouteBuildFromCacheOptions = {
   url: string;
 };
 
-async function buildNode(
-  options: BuildNodeOptions,
-): Promise<BuildNodeResult> {
+async function buildNode(options: BuildNodeOptions): Promise<BuildNodeResult> {
   const config = await createBuildNodeRunConfig(options);
   const releaseBuildLock = await acquireBuildLock(config.outputDirectory);
 
@@ -179,7 +175,9 @@ async function readPreviousBuildCache(
   cacheFrom: string,
   incremental: boolean,
 ) {
-  return incremental ? await readIncrementalBuildCache(cwd, cacheFrom) : undefined;
+  return incremental
+    ? await readIncrementalBuildCache(cwd, cacheFrom)
+    : undefined;
 }
 
 function preservesCurrentOutput(
@@ -187,9 +185,11 @@ function preservesCurrentOutput(
   cwd: string,
   outputDirectory: string,
 ) {
-  return previousCache?.source.kind === "filesystem" &&
+  return (
+    previousCache?.source.kind === "filesystem" &&
     path.resolve(previousCache.source.rootDirectory) ===
-      path.resolve(cwd, outputDirectory);
+      path.resolve(cwd, outputDirectory)
+  );
 }
 
 async function runNodeBuild(
@@ -236,15 +236,13 @@ async function prepareNodeBuild(config: BuildNodeRunConfig) {
     : undefined;
 }
 
-async function prepareBuildOutputDirectory(
-  {
-    outputDirectory,
-    preservesCurrentOutput,
-  }: {
-    outputDirectory: string;
-    preservesCurrentOutput: boolean;
-  },
-) {
+async function prepareBuildOutputDirectory({
+  outputDirectory,
+  preservesCurrentOutput,
+}: {
+  outputDirectory: string;
+  preservesCurrentOutput: boolean;
+}) {
   if (!preservesCurrentOutput) {
     await removeOutputDirectoryContents(outputDirectory);
   }
@@ -252,19 +250,17 @@ async function prepareBuildOutputDirectory(
   await mkdir(outputDirectory, { recursive: true });
 }
 
-async function loadBuildInputs(
-  {
-    cwd,
-    outputDirectory,
-    pluginDefinitions,
-    routeConcurrency,
-  }: {
-    cwd: string;
-    outputDirectory: string;
-    pluginDefinitions: PluginOptions[];
-    routeConcurrency: number;
-  },
-) {
+async function loadBuildInputs({
+  cwd,
+  outputDirectory,
+  pluginDefinitions,
+  routeConcurrency,
+}: {
+  cwd: string;
+  outputDirectory: string;
+  pluginDefinitions: PluginOptions[];
+  routeConcurrency: number;
+}) {
   const { plugins, router } = await importPlugins({
     cwd,
     pluginDefinitions,
@@ -303,19 +299,17 @@ async function loadBuildInputs(
   };
 }
 
-async function runNodeBuildTasks(
-  {
-    benchmark,
-    buildInputs,
-    config,
-    nextIncrementalCacheRoutes,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    buildInputs: BuildInputs;
-    config: BuildNodeRunConfig;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  },
-) {
+async function runNodeBuildTasks({
+  benchmark,
+  buildInputs,
+  config,
+  nextIncrementalCacheRoutes,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildInputs: BuildInputs;
+  config: BuildNodeRunConfig;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+}) {
   if (config.preservesCurrentOutput) {
     await removeDeletedRouteOutputs(
       config.outputDirectory,
@@ -352,19 +346,17 @@ function getPreviousIncrementalCache(config: BuildNodeRunConfig) {
   return config.incremental ? config.previousCache : undefined;
 }
 
-async function finishNodeBuild(
-  {
-    benchmark,
-    buildInputs,
-    config,
-    nextIncrementalCacheRoutes,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    buildInputs: BuildInputs;
-    config: BuildNodeRunConfig;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  },
-) {
+async function finishNodeBuild({
+  benchmark,
+  buildInputs,
+  config,
+  nextIncrementalCacheRoutes,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildInputs: BuildInputs;
+  config: BuildNodeRunConfig;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+}) {
   await runTaskQueue({
     benchmark,
     outputDirectory: config.outputDirectory,
@@ -401,17 +393,15 @@ function toRouteOutputUrl(url: string) {
   return url === "/" ? "/" : "/" + url + "/";
 }
 
-async function runTaskQueue(
-  {
-    benchmark,
-    outputDirectory,
-    tasks,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    outputDirectory: string;
-    tasks: Tasks;
-  },
-): Promise<void> {
+async function runTaskQueue({
+  benchmark,
+  outputDirectory,
+  tasks,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  outputDirectory: string;
+  tasks: Tasks;
+}): Promise<void> {
   for (const task of tasks) {
     if (task.type === "build") {
       throw new Error("runTaskQueue does not support build tasks");
@@ -421,27 +411,19 @@ async function runTaskQueue(
   }
 }
 
-async function writeRenderedPage(
-  { dir, markup, outputDirectory, url }: {
-    dir: string;
-    markup: string;
-    outputDirectory: string;
-    url: string;
-  },
-) {
-  if (
-    url.endsWith(".json/") || url.endsWith(".xml/") ||
-    url.endsWith(".html/")
-  ) {
-    const output = url.endsWith(".xml/") || url.endsWith(".json/")
-      ? markup
-      : stripVoidElementClosers(markup);
-    await mkdir(path.dirname(dir), { recursive: true });
-    await writeFile(dir, output);
-    return {
-      bytesWritten: Buffer.byteLength(output),
-      outputPath: toRelativeOutputPath(outputDirectory, dir),
-    };
+async function writeRenderedPage({
+  dir,
+  markup,
+  outputDirectory,
+  url,
+}: {
+  dir: string;
+  markup: string;
+  outputDirectory: string;
+  url: string;
+}) {
+  if (shouldWriteDirectOutput(url)) {
+    return writeDirectRenderedOutput({ dir, markup, outputDirectory, url });
   }
 
   await mkdir(dir, { recursive: true });
@@ -455,45 +437,79 @@ async function writeRenderedPage(
   };
 }
 
+function shouldWriteDirectOutput(url: string) {
+  return (
+    url.endsWith(".json/") || url.endsWith(".xml/") || url.endsWith(".html/")
+  );
+}
+
+async function writeDirectRenderedOutput({
+  dir,
+  markup,
+  outputDirectory,
+  url,
+}: {
+  dir: string;
+  markup: string;
+  outputDirectory: string;
+  url: string;
+}) {
+  const output = shouldPreserveRenderedOutput(url)
+    ? markup
+    : stripVoidElementClosers(markup);
+  await mkdir(path.dirname(dir), { recursive: true });
+  await writeFile(dir, output);
+
+  return {
+    bytesWritten: Buffer.byteLength(output),
+    outputPath: toRelativeOutputPath(outputDirectory, dir),
+  };
+}
+
+function shouldPreserveRenderedOutput(url: string) {
+  return url.endsWith(".xml/") || url.endsWith(".json/");
+}
+
 async function getRendererDependencyInfo(
   plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"],
 ): Promise<RendererDependencyInfo | undefined> {
   const send = createSend(plugins);
 
   if (
-    !await send("htmlisp-renderer-plugin", { type: "ping", payload: undefined })
+    !(await send("htmlisp-renderer-plugin", {
+      type: "ping",
+      payload: undefined,
+    }))
   ) {
     return;
   }
 
-  return await send("htmlisp-renderer-plugin", {
+  return (await send("htmlisp-renderer-plugin", {
     type: "getComponentDependencyGraph",
     payload: undefined,
-  }) as RendererDependencyInfo | undefined;
+  })) as RendererDependencyInfo | undefined;
 }
 
-function getGlobalDependencyTasks(
-  {
-    plugins,
-    prepareTasks,
-    rendererDependencyInfo,
-    routerTasks,
-  }: {
-    plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"];
-    prepareTasks: Tasks;
-    rendererDependencyInfo?: RendererDependencyInfo;
-    routerTasks: Tasks;
-  },
-) {
+function getGlobalDependencyTasks({
+  plugins,
+  prepareTasks,
+  rendererDependencyInfo,
+  routerTasks,
+}: {
+  plugins: Awaited<ReturnType<typeof importPlugins>>["plugins"];
+  prepareTasks: Tasks;
+  rendererDependencyInfo?: RendererDependencyInfo;
+  routerTasks: Tasks;
+}) {
   return prepareTasks
     .concat(routerTasks)
     .concat(
       plugins.flatMap(({ meta, moduleTasks = [], tasks }) =>
         meta.name === "htmlisp-renderer-plugin"
           ? moduleTasks.concat(
-            rendererDependencyInfo?.globalDependencyTasks ?? tasks,
-          )
-          : moduleTasks.concat(tasks)
+              rendererDependencyInfo?.globalDependencyTasks ?? tasks,
+            )
+          : moduleTasks.concat(tasks),
       ),
     );
 }
@@ -502,8 +518,9 @@ function getComponentDependencyTasks(
   rendererDependencyInfo: RendererDependencyInfo | undefined,
   layoutName: string,
 ) {
-  return rendererDependencyInfo?.componentGraph[layoutName]?.dependencyTasks ??
-    [];
+  return (
+    rendererDependencyInfo?.componentGraph[layoutName]?.dependencyTasks ?? []
+  );
 }
 
 function getTaskOutputPaths(tasks: Tasks) {
@@ -518,41 +535,39 @@ function getTaskOutputPaths(tasks: Tasks) {
   });
 }
 
-async function runBuildTasks(
-  {
-    benchmark,
-    cwd,
-    outputDirectory,
-    incrementalCache,
-    incrementalCacheSource,
-    incrementalCacheEnabled,
-    nextIncrementalCacheRoutes,
-    globalDependencyTasks,
-    rendererDependencyInfo,
-    routeConcurrency,
-    router,
-    plugins,
-    tasks,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    cwd: string;
-    outputDirectory: string;
-    incrementalCache?: IncrementalBuildCache;
-    incrementalCacheSource?: NonNullable<
-      Awaited<ReturnType<typeof readIncrementalBuildCache>>
-    >["source"];
-    incrementalCacheEnabled: boolean;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-    globalDependencyTasks?: DependencyTask[];
-    rendererDependencyInfo?: RendererDependencyInfo;
-    routeConcurrency: number;
-    router: {
-      matchRoute(url: string): Promise<Route | undefined>;
-    };
-    plugins: BuildPlugins;
-    tasks: BuildTask[];
-  },
-) {
+async function runBuildTasks({
+  benchmark,
+  cwd,
+  outputDirectory,
+  incrementalCache,
+  incrementalCacheSource,
+  incrementalCacheEnabled,
+  nextIncrementalCacheRoutes,
+  globalDependencyTasks,
+  rendererDependencyInfo,
+  routeConcurrency,
+  router,
+  plugins,
+  tasks,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  cwd: string;
+  outputDirectory: string;
+  incrementalCache?: IncrementalBuildCache;
+  incrementalCacheSource?: NonNullable<
+    Awaited<ReturnType<typeof readIncrementalBuildCache>>
+  >["source"];
+  incrementalCacheEnabled: boolean;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  globalDependencyTasks?: DependencyTask[];
+  rendererDependencyInfo?: RendererDependencyInfo;
+  routeConcurrency: number;
+  router: {
+    matchRoute(url: string): Promise<Route | undefined>;
+  };
+  plugins: BuildPlugins;
+  tasks: BuildTask[];
+}) {
   const globalFingerprint = globalDependencyTasks
     ? await hashDependencyTasks(cwd, globalDependencyTasks)
     : null;
@@ -582,39 +597,37 @@ async function runBuildTasks(
   return { cacheHits, nextIncrementalCacheRoutes, routesBuilt };
 }
 
-async function processBuildTask(
-  {
-    benchmark,
-    cwd,
-    globalFingerprint,
-    incrementalCache,
-    incrementalCacheEnabled,
-    incrementalCacheSource,
-    nextIncrementalCacheRoutes,
-    outputDirectory,
-    plugins,
-    rendererDependencyInfo,
-    router,
-    task,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    cwd: string;
-    globalFingerprint: string | null;
-    incrementalCache?: IncrementalBuildCache;
-    incrementalCacheEnabled: boolean;
-    incrementalCacheSource?: NonNullable<
-      Awaited<ReturnType<typeof readIncrementalBuildCache>>
-    >["source"];
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-    outputDirectory: string;
-    plugins: BuildPlugins;
-    rendererDependencyInfo?: RendererDependencyInfo;
-    router: {
-      matchRoute(url: string): Promise<Route | undefined>;
-    };
-    task: BuildTask;
-  },
-) {
+async function processBuildTask({
+  benchmark,
+  cwd,
+  globalFingerprint,
+  incrementalCache,
+  incrementalCacheEnabled,
+  incrementalCacheSource,
+  nextIncrementalCacheRoutes,
+  outputDirectory,
+  plugins,
+  rendererDependencyInfo,
+  router,
+  task,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  cwd: string;
+  globalFingerprint: string | null;
+  incrementalCache?: IncrementalBuildCache;
+  incrementalCacheEnabled: boolean;
+  incrementalCacheSource?: NonNullable<
+    Awaited<ReturnType<typeof readIncrementalBuildCache>>
+  >["source"];
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  outputDirectory: string;
+  plugins: BuildPlugins;
+  rendererDependencyInfo?: RendererDependencyInfo;
+  router: {
+    matchRoute(url: string): Promise<Route | undefined>;
+  };
+  task: BuildTask;
+}) {
   DEBUG &&
     console.log("node build - running task", task.type, task.payload.url);
   benchmark?.markTaskProcessed();
@@ -660,19 +673,17 @@ async function processBuildTask(
   return { cacheHit: false, routeBuilt: true };
 }
 
-async function restoreRouteBuildFromCache(
-  {
-    cwd,
-    globalFingerprint,
-    incrementalCache,
-    incrementalCacheEnabled,
-    incrementalCacheSource,
-    matchedRoute,
-    nextIncrementalCacheRoutes,
-    outputDirectory,
-    url,
-  }: RestoreRouteBuildFromCacheOptions,
-) {
+async function restoreRouteBuildFromCache({
+  cwd,
+  globalFingerprint,
+  incrementalCache,
+  incrementalCacheEnabled,
+  incrementalCacheSource,
+  matchedRoute,
+  nextIncrementalCacheRoutes,
+  outputDirectory,
+  url,
+}: RestoreRouteBuildFromCacheOptions) {
   const previousRouteCache = incrementalCache?.routes[url];
 
   if (!previousRouteCache) {
@@ -686,12 +697,15 @@ async function restoreRouteBuildFromCache(
     previousRouteCache.dependencyTasks,
   );
 
-  if (incrementalCacheSource && await canRestoreCachedRoute({
-    incrementalCacheEnabled,
-    incrementalCacheSource,
-    previousRouteCache,
-    previousRouteFingerprint,
-  })) {
+  if (
+    incrementalCacheSource &&
+    (await canRestoreCachedRoute({
+      incrementalCacheEnabled,
+      incrementalCacheSource,
+      previousRouteCache,
+      previousRouteFingerprint,
+    }))
+  ) {
     await restoreCachedOutputs(
       incrementalCacheSource,
       outputDirectory,
@@ -706,21 +720,19 @@ async function restoreRouteBuildFromCache(
   return false;
 }
 
-async function canRestoreCachedRoute(
-  {
-    incrementalCacheEnabled,
-    incrementalCacheSource,
-    previousRouteCache,
-    previousRouteFingerprint,
-  }: {
-    incrementalCacheEnabled: boolean;
-    incrementalCacheSource: NonNullable<
-      RestoreRouteBuildFromCacheOptions["incrementalCacheSource"]
-    >;
-    previousRouteCache: IncrementalBuildRouteCacheEntry;
-    previousRouteFingerprint: string | null;
-  },
-) {
+async function canRestoreCachedRoute({
+  incrementalCacheEnabled,
+  incrementalCacheSource,
+  previousRouteCache,
+  previousRouteFingerprint,
+}: {
+  incrementalCacheEnabled: boolean;
+  incrementalCacheSource: NonNullable<
+    RestoreRouteBuildFromCacheOptions["incrementalCacheSource"]
+  >;
+  previousRouteCache: IncrementalBuildRouteCacheEntry;
+  previousRouteFingerprint: string | null;
+}) {
   if (!incrementalCacheEnabled || !incrementalCacheSource) {
     return false;
   }
@@ -732,35 +744,33 @@ async function canRestoreCachedRoute(
   return outputsExist(incrementalCacheSource, previousRouteCache.outputPaths);
 }
 
-async function buildRouteOutput(
-  {
-    benchmark,
-    cwd,
-    dir,
-    globalFingerprint,
-    incrementalCacheEnabled,
-    matchDependencyTasks,
-    matchedRoute,
-    nextIncrementalCacheRoutes,
-    outputDirectory,
-    plugins,
-    rendererDependencyInfo,
-    url,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    cwd: string;
-    dir: string;
-    globalFingerprint: string | null;
-    incrementalCacheEnabled: boolean;
-    matchDependencyTasks: Tasks;
-    matchedRoute: Route;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-    outputDirectory: string;
-    plugins: BuildPlugins;
-    rendererDependencyInfo?: RendererDependencyInfo;
-    url: string;
-  },
-) {
+async function buildRouteOutput({
+  benchmark,
+  cwd,
+  dir,
+  globalFingerprint,
+  incrementalCacheEnabled,
+  matchDependencyTasks,
+  matchedRoute,
+  nextIncrementalCacheRoutes,
+  outputDirectory,
+  plugins,
+  rendererDependencyInfo,
+  url,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  cwd: string;
+  dir: string;
+  globalFingerprint: string | null;
+  incrementalCacheEnabled: boolean;
+  matchDependencyTasks: Tasks;
+  matchedRoute: Route;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  outputDirectory: string;
+  plugins: BuildPlugins;
+  rendererDependencyInfo?: RendererDependencyInfo;
+  url: string;
+}) {
   const routeStartTime = performance.now();
   const { renderResult, renderDependencyTasks } = await renderRoute({
     matchedRoute,
@@ -806,17 +816,15 @@ async function buildRouteOutput(
   recordRouteBenchmark({ benchmark, routeStartTime, url, writeResult });
 }
 
-async function renderRoute(
-  {
-    matchedRoute,
-    plugins,
-    url,
-  }: {
-    matchedRoute: Route;
-    plugins: BuildPlugins;
-    url: string;
-  },
-) {
+async function renderRoute({
+  matchedRoute,
+  plugins,
+  url,
+}: {
+  matchedRoute: Route;
+  plugins: BuildPlugins;
+  url: string;
+}) {
   const { result: renderResult, tasks: renderDependencyTasks } =
     await runWithTaskLog(() =>
       applyPlugins({
@@ -826,31 +834,29 @@ async function renderRoute(
         matchRoute(routeUrl: string) {
           return applyMatchRoutes({ plugins, url: routeUrl });
         },
-      })
+      }),
     );
 
   return { renderDependencyTasks, renderResult };
 }
 
 function getRouteOutputPaths(outputPath: string, tasks: Tasks) {
-  return [outputPath].concat(
-    getTaskOutputPaths(tasks),
-  ).filter((outputPath) => outputPath !== CACHE_MANIFEST_PATH);
+  return [outputPath]
+    .concat(getTaskOutputPaths(tasks))
+    .filter((outputPath) => outputPath !== CACHE_MANIFEST_PATH);
 }
 
-function recordRouteBenchmark(
-  {
-    benchmark,
-    routeStartTime,
-    url,
-    writeResult,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    routeStartTime: number;
-    url: string;
-    writeResult: Awaited<ReturnType<typeof writeRenderedPage>>;
-  },
-) {
+function recordRouteBenchmark({
+  benchmark,
+  routeStartTime,
+  url,
+  writeResult,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  routeStartTime: number;
+  url: string;
+  writeResult: Awaited<ReturnType<typeof writeRenderedPage>>;
+}) {
   benchmark?.recordRoute({
     bytesWritten: writeResult.bytesWritten,
     durationMs: performance.now() - routeStartTime,
@@ -860,27 +866,25 @@ function recordRouteBenchmark(
   });
 }
 
-async function updateRouteBuildCache(
-  {
-    cwd,
-    dependencyTasks,
-    globalFingerprint,
-    incrementalCacheEnabled,
-    matchedRoute,
-    nextIncrementalCacheRoutes,
-    outputPaths,
-    url,
-  }: {
-    cwd: string;
-    dependencyTasks: DependencyTask[];
-    globalFingerprint: string | null;
-    incrementalCacheEnabled: boolean;
-    matchedRoute: Route;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-    outputPaths: string[];
-    url: string;
-  },
-) {
+async function updateRouteBuildCache({
+  cwd,
+  dependencyTasks,
+  globalFingerprint,
+  incrementalCacheEnabled,
+  matchedRoute,
+  nextIncrementalCacheRoutes,
+  outputPaths,
+  url,
+}: {
+  cwd: string;
+  dependencyTasks: DependencyTask[];
+  globalFingerprint: string | null;
+  incrementalCacheEnabled: boolean;
+  matchedRoute: Route;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  outputPaths: string[];
+  url: string;
+}) {
   if (!incrementalCacheEnabled) {
     return;
   }
@@ -901,17 +905,15 @@ async function updateRouteBuildCache(
   }
 }
 
-async function executeTask(
-  {
-    benchmark,
-    outputDirectory,
-    task,
-  }: {
-    benchmark?: ReturnType<typeof createBuildBenchmark>;
-    outputDirectory: string;
-    task: Exclude<Tasks[number], { type: "build" }>;
-  },
-) {
+async function executeTask({
+  benchmark,
+  outputDirectory,
+  task,
+}: {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  outputDirectory: string;
+  task: Exclude<Tasks[number], { type: "build" }>;
+}) {
   DEBUG && console.log("node build - running task", task.type);
   benchmark?.markTaskProcessed();
 
@@ -1018,13 +1020,15 @@ async function removeOutputDirectoryContents(outputDirectory: string) {
     return;
   }
 
-  await Promise.all(entries.map(async (entry) => {
-    if (entry.name === ".gustwind") {
-      return;
-    }
+  await Promise.all(
+    entries.map(async (entry) => {
+      if (entry.name === ".gustwind") {
+        return;
+      }
 
-    await removeOutputDirectory(path.join(outputDirectory, entry.name));
-  }));
+      await removeOutputDirectory(path.join(outputDirectory, entry.name));
+    }),
+  );
 }
 
 async function acquireBuildLock(outputDirectory: string) {
@@ -1090,8 +1094,11 @@ function isProcessRunning(pid: number) {
     process.kill(pid, 0);
     return true;
   } catch (error) {
-    return !(error instanceof Error && "code" in error &&
-      error.code === "ESRCH");
+    return !(
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "ESRCH"
+    );
   }
 }
 

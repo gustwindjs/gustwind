@@ -50,9 +50,7 @@ type DevServerOptions = {
   watchPaths?: string[];
 };
 
-async function startDevServer(
-  options: DevServerOptions,
-): Promise<DevServer> {
+async function startDevServer(options: DevServerOptions): Promise<DevServer> {
   const {
     cwd,
     pluginDefinitions,
@@ -110,9 +108,8 @@ async function startDevServer(
 
   await listenHttpServer({ host, httpServer, port });
   const address = httpServer.address();
-  const listeningPort = typeof address === "object" && address
-    ? address.port
-    : port;
+  const listeningPort =
+    typeof address === "object" && address ? address.port : port;
 
   return {
     async close() {
@@ -126,7 +123,7 @@ async function startDevServer(
       await stopModuleBundler();
       await vite.close();
       await new Promise<void>((resolve, reject) => {
-        httpServer.close((error) => error ? reject(error) : resolve());
+        httpServer.close((error) => (error ? reject(error) : resolve()));
       });
     },
     port: listeningPort,
@@ -134,17 +131,15 @@ async function startDevServer(
   };
 }
 
-function registerDevMiddleware(
-  {
-    reqState,
-    vite,
-    watchedPaths,
-  }: {
-    reqState: DevServerState;
-    vite: ViteDevServer;
-    watchedPaths: Set<string>;
-  },
-) {
+function registerDevMiddleware({
+  reqState,
+  vite,
+  watchedPaths,
+}: {
+  reqState: DevServerState;
+  vite: ViteDevServer;
+  watchedPaths: Set<string>;
+}) {
   vite.middlewares.use(async (req, res, next) => {
     if (!req.url) {
       next();
@@ -175,17 +170,15 @@ function registerDevMiddleware(
   });
 }
 
-async function listenHttpServer(
-  {
-    host,
-    httpServer,
-    port,
-  }: {
-    host: string;
-    httpServer: ReturnType<typeof createHttpServer>;
-    port: number;
-  },
-) {
+async function listenHttpServer({
+  host,
+  httpServer,
+  port,
+}: {
+  host: string;
+  httpServer: ReturnType<typeof createHttpServer>;
+  port: number;
+}) {
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);
     httpServer.listen(port, host, () => {
@@ -195,21 +188,19 @@ async function listenHttpServer(
   });
 }
 
-async function handleRequest(
-  {
-    vite,
-    req,
-    res,
-    state,
-    watchTasks,
-  }: {
-    vite: ViteDevServer;
-    req: IncomingMessage;
-    res: ServerResponse;
-    state: ActiveRuntime;
-    watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
-  },
-) {
+async function handleRequest({
+  vite,
+  req,
+  res,
+  state,
+  watchTasks,
+}: {
+  vite: ViteDevServer;
+  req: IncomingMessage;
+  res: ServerResponse;
+  state: ActiveRuntime;
+  watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
+}) {
   const pathname = new URL(req.url || "/", "http://127.0.0.1").pathname;
   const routeHandled = await handleRouteRequest({
     pathname,
@@ -239,21 +230,19 @@ async function handleRequest(
   return true;
 }
 
-async function handleRouteRequest(
-  {
-    pathname,
-    res,
-    state,
-    vite,
-    watchTasks,
-  }: {
-    pathname: string;
-    res: ServerResponse;
-    state: ActiveRuntime;
-    vite: ViteDevServer;
-    watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
-  },
-) {
+async function handleRouteRequest({
+  pathname,
+  res,
+  state,
+  vite,
+  watchTasks,
+}: {
+  pathname: string;
+  res: ServerResponse;
+  state: ActiveRuntime;
+  vite: ViteDevServer;
+  watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
+}) {
   const matchedRoute = await state.router.matchRoute(pathname);
 
   if (!matchedRoute) {
@@ -282,36 +271,31 @@ async function handleRouteRequest(
   return true;
 }
 
-async function createRoutePayload(
-  {
-    markup,
-    pathname,
-    vite,
-  }: {
-    markup: string;
-    pathname: string;
-    vite: ViteDevServer;
-  },
-) {
-  return pathname.endsWith(".xml") ? markup : await vite.transformIndexHtml(
-    pathname,
-    stripVoidElementClosers(markup),
-  );
+async function createRoutePayload({
+  markup,
+  pathname,
+  vite,
+}: {
+  markup: string;
+  pathname: string;
+  vite: ViteDevServer;
+}) {
+  return pathname.endsWith(".xml")
+    ? markup
+    : await vite.transformIndexHtml(pathname, stripVoidElementClosers(markup));
 }
 
-async function handleGeneratedAssetRequest(
-  {
-    pathname,
-    res,
-    state,
-    watchTasks,
-  }: {
-    pathname: string;
-    res: ServerResponse;
-    state: ActiveRuntime;
-    watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
-  },
-) {
+async function handleGeneratedAssetRequest({
+  pathname,
+  res,
+  state,
+  watchTasks,
+}: {
+  pathname: string;
+  res: ServerResponse;
+  state: ActiveRuntime;
+  watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
+}) {
   const prepareTasks = await preparePlugins(state.plugins);
   const finishTasks = await finishPlugins(state.plugins);
   const taskResults = await evaluateTasks(prepareTasks.concat(finishTasks));
@@ -334,12 +318,7 @@ async function handleGeneratedAssetRequest(
   }
 
   const asset = await readFile(matchedFsItem.path);
-  sendResponse(
-    res,
-    200,
-    asset,
-    contentType(path.extname(matchedFsItem.path)),
-  );
+  sendResponse(res, 200, asset, contentType(path.extname(matchedFsItem.path)));
 
   return true;
 }
@@ -357,18 +336,15 @@ function sendNotFoundResponse(
   );
 }
 
-async function loadRuntime(
-  {
-    cwd,
-    pluginDefinitions,
-  }: {
-    cwd: string;
-    pluginDefinitions: PluginDefinitionsSource;
-  },
-) {
-  const resolvedPluginDefinitions = await resolvePluginDefinitions(
-    pluginDefinitions,
-  );
+async function loadRuntime({
+  cwd,
+  pluginDefinitions,
+}: {
+  cwd: string;
+  pluginDefinitions: PluginDefinitionsSource;
+}) {
+  const resolvedPluginDefinitions =
+    await resolvePluginDefinitions(pluginDefinitions);
   const { plugins, router } = await importPlugins({
     cwd,
     pluginDefinitions: resolvedPluginDefinitions,
@@ -419,27 +395,25 @@ async function addWatchPaths(
   DEBUG && console.log("gustwind-node - watching", nextPaths);
 }
 
-function createRuntimeReloadPlugin(
-  {
-    cwd,
-    watchedPaths,
-    getClosed,
-    getState,
-    loadRuntime,
-    setReloadPromise,
-    getReloadPromise,
-    setState,
-  }: {
-    cwd: string;
-    watchedPaths: Set<string>;
-    getClosed(): boolean;
-    getState(): ActiveRuntime;
-    loadRuntime(): Promise<ActiveRuntime>;
-    setReloadPromise(reloadPromise: Promise<void>): void;
-    getReloadPromise(): Promise<void>;
-    setState(state: ActiveRuntime): void;
-  },
-): Plugin {
+function createRuntimeReloadPlugin({
+  cwd,
+  watchedPaths,
+  getClosed,
+  getState,
+  loadRuntime,
+  setReloadPromise,
+  getReloadPromise,
+  setState,
+}: {
+  cwd: string;
+  watchedPaths: Set<string>;
+  getClosed(): boolean;
+  getState(): ActiveRuntime;
+  loadRuntime(): Promise<ActiveRuntime>;
+  setReloadPromise(reloadPromise: Promise<void>): void;
+  getReloadPromise(): Promise<void>;
+  setState(state: ActiveRuntime): void;
+}): Plugin {
   return {
     name: "gustwind-runtime-reload",
     async handleHotUpdate({ file, server }) {
@@ -474,21 +448,26 @@ function createRuntimeReloadPlugin(
 }
 
 function collectWatchPaths(tasks: BuildWorkerEvent[]) {
-  return tasks.flatMap(({ type, payload }) => {
-    switch (type) {
-      case "copyFiles":
-        return payload.inputDirectory;
-      case "listDirectory":
-      case "loadJSON":
-      case "loadModule":
-      case "readTextFile":
-        return payload.path;
-      default:
-        return [];
-    }
-  }).filter((watchPath): watchPath is string =>
-    Boolean(watchPath) && !shouldIgnoreWatchPath(watchPath)
-  );
+  return tasks
+    .flatMap(getWatchPath)
+    .filter(
+      (watchPath): watchPath is string =>
+        Boolean(watchPath) && !shouldIgnoreWatchPath(watchPath),
+    );
+}
+
+function getWatchPath({ type, payload }: BuildWorkerEvent) {
+  switch (type) {
+    case "copyFiles":
+      return payload.inputDirectory;
+    case "listDirectory":
+    case "loadJSON":
+    case "loadModule":
+    case "readTextFile":
+      return payload.path;
+    default:
+      return [];
+  }
 }
 
 function shouldIgnoreWatchPath(filePath: string) {

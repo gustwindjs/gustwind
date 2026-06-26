@@ -48,17 +48,7 @@ function getParseSingle<ExpressionReturnType>(
       const c = getCharacter.next();
 
       if (c === null) {
-        const emptyResult = getEmptyExpressionResult(
-          parseState,
-          expressions,
-          matchCounts,
-        );
-
-        if (emptyResult) {
-          return emptyResult;
-        }
-
-        break;
+        return handleSingleParserEnd(parseState, expressions, matchCounts);
       }
 
       const parseResult = parseSingleCharacter(
@@ -71,16 +61,50 @@ function getParseSingle<ExpressionReturnType>(
         i,
       );
 
-      if (parseResult.matchCounts) {
-        matchCounts = parseResult.matchCounts;
+      const characterResult = applySingleParseResult(parseResult);
+
+      if (characterResult.matchCounts) {
+        matchCounts = characterResult.matchCounts;
       }
 
-      if (parseResult.result) {
-        return parseResult.result;
+      if (characterResult.result) {
+        return characterResult.result;
       }
     }
 
     throw new Error("No matching expression was found");
+  };
+}
+
+function handleSingleParserEnd<ExpressionReturnType>(
+  parseState: SingleParseState,
+  expressions: Record<string, SingleParser<ExpressionReturnType>>,
+  matchCounts?: MatchCounts,
+) {
+  const emptyResult = getEmptyExpressionResult(
+    parseState,
+    expressions,
+    matchCounts,
+  );
+
+  if (emptyResult) {
+    return emptyResult;
+  }
+
+  throw new Error("No matching expression was found");
+}
+
+function applySingleParseResult<ExpressionReturnType>(parseResult: {
+  result?: {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  };
+  matchCounts?: MatchCounts;
+}) {
+  return {
+    matchCounts: parseResult.matchCounts,
+    result: parseResult.result,
   };
 }
 
@@ -182,19 +206,45 @@ function parseExpressionName<ExpressionReturnType>(
     return;
   }
 
-  if (expressions[parseState.stringBuffer] && !isCommandNameCharacter(c)) {
-    if (c !== " ") {
-      getCharacter.previous();
-    }
-
-    return {
-      match: parseState.stringBuffer,
-      value: expressions[parseState.stringBuffer]([], matchCounts || {}),
+  if (isStandaloneExpressionEnd(parseState, expressions, c)) {
+    return finishStandaloneExpression(
+      parseState,
+      getCharacter,
+      expressions,
       matchCounts,
-    };
+      c,
+    );
   }
 
   parseState.stringBuffer += c;
+}
+
+function isStandaloneExpressionEnd<ExpressionReturnType>(
+  parseState: SingleParseState,
+  expressions: Record<string, SingleParser<ExpressionReturnType>>,
+  c: string,
+) {
+  return (
+    Boolean(expressions[parseState.stringBuffer]) && !isCommandNameCharacter(c)
+  );
+}
+
+function finishStandaloneExpression<ExpressionReturnType>(
+  parseState: SingleParseState,
+  getCharacter: CharacterGenerator,
+  expressions: Record<string, SingleParser<ExpressionReturnType>>,
+  matchCounts: MatchCounts | undefined,
+  c: string,
+) {
+  if (c !== " ") {
+    getCharacter.previous();
+  }
+
+  return {
+    match: parseState.stringBuffer,
+    value: expressions[parseState.stringBuffer]([], matchCounts || {}),
+    matchCounts,
+  };
 }
 
 function startExpressionContent<ExpressionReturnType>(
@@ -226,10 +276,7 @@ function parseExpressionContent<ExpressionReturnType>(
   matchCounts: MatchCounts | undefined,
   c: string,
 ) {
-  if (c === "\\" && ["%", "{", "}"].includes(getCharacter.get() || "")) {
-    parseState.stringBuffer += getCharacter.get();
-    getCharacter.next();
-
+  if (parseEscapedContentCharacter(parseState, getCharacter, c)) {
     return {};
   }
 
@@ -251,6 +298,28 @@ function parseExpressionContent<ExpressionReturnType>(
   parseState.stringBuffer += c;
 
   return {};
+}
+
+function parseEscapedContentCharacter(
+  parseState: SingleParseState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (!isEscapedContentCharacter(getCharacter, c)) {
+    return false;
+  }
+
+  parseState.stringBuffer += getCharacter.get();
+  getCharacter.next();
+
+  return true;
+}
+
+function isEscapedContentCharacter(
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  return c === "\\" && ["%", "{", "}"].includes(getCharacter.get() || "");
 }
 
 function parseNestedExpression<ExpressionReturnType>(
@@ -408,34 +477,48 @@ function readBalancedGroup(getCharacter: CharacterGenerator) {
 
     ret += c;
 
-    if (c === "{") {
-      depth++;
-    } else if (c === "}") {
-      depth--;
+    const nextDepth = getNextGroupDepth(depth, c);
 
-      if (depth === 0) {
-        return ret;
-      }
+    if (isBalancedGroupEnd(nextDepth, c)) {
+      return ret;
     }
+
+    depth = nextDepth;
   }
 
   return ret;
 }
 
+function getNextGroupDepth(depth: number, c: string) {
+  if (c === "{") {
+    return depth + 1;
+  }
+
+  return c === "}" ? depth - 1 : depth;
+}
+
+function isBalancedGroupEnd(depth: number, c: string) {
+  return c === "}" && depth === 0;
+}
+
 function partsToText(parts: unknown[]): string {
-  return parts
-    .map((part) => {
-      if (typeof part === "string") {
-        return part;
-      }
+  return parts.map(partToText).join("");
+}
 
-      if (part && typeof part === "object" && "children" in part) {
-        return partsToText((part as { children?: unknown[] }).children || []);
-      }
+function partToText(part: unknown): string {
+  if (typeof part === "string") {
+    return part;
+  }
 
-      return "";
-    })
-    .join("");
+  if (hasTextChildren(part)) {
+    return partsToText(part.children || []);
+  }
+
+  return "";
+}
+
+function hasTextChildren(part: unknown): part is { children?: unknown[] } {
+  return Boolean(part && typeof part === "object" && "children" in part);
 }
 
 export { getParseSingle, type SingleParser };

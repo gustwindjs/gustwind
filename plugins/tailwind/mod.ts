@@ -23,9 +23,7 @@ type TailwindPluginOptions = {
 
 const require = createRequire(import.meta.url);
 const tailwindStylesheetPath = require.resolve("tailwindcss/index.css");
-let tailwindCssPromise:
-  | Promise<typeof tailwindCssPlugin>
-  | undefined;
+let tailwindCssPromise: Promise<typeof tailwindCssPlugin> | undefined;
 
 const plugin: Plugin<TailwindPluginOptions> = {
   meta: {
@@ -58,8 +56,8 @@ const plugin: Plugin<TailwindPluginOptions> = {
         }
 
         if (mode === "production") {
-          const stylesheetHref = "/" +
-            await tailwindRuntime.getStylesheetFile();
+          const stylesheetHref =
+            "/" + (await tailwindRuntime.getStylesheetFile());
 
           return {
             markup: injectIntoHead(
@@ -72,8 +70,7 @@ const plugin: Plugin<TailwindPluginOptions> = {
         return {
           markup: injectIntoHead(
             markup,
-            `<style data-tailwind>${await tailwindRuntime
-              .ensureCompiledCss()}</style>`,
+            `<style data-tailwind>${await tailwindRuntime.ensureCompiledCss()}</style>`,
           ),
         };
       },
@@ -83,14 +80,16 @@ const plugin: Plugin<TailwindPluginOptions> = {
         }
 
         const css = await tailwindRuntime.ensureCompiledCss();
-        const tasks: Tasks = [{
-          type: "writeFile",
-          payload: {
-            outputDirectory,
-            file: await tailwindRuntime.getStylesheetFile(),
-            data: css,
+        const tasks: Tasks = [
+          {
+            type: "writeFile",
+            payload: {
+              outputDirectory,
+              file: await tailwindRuntime.getStylesheetFile(),
+              data: css,
+            },
           },
-        }];
+        ];
 
         if (options.stableCssPath) {
           tasks.push({
@@ -127,15 +126,13 @@ class TailwindRuntime {
     setupPath: string;
   };
 
-  constructor(
-    options: {
-      cssPath: string;
-      cwd: string;
-      load: LoadApi;
-      mode: Mode;
-      setupPath: string;
-    },
-  ) {
+  constructor(options: {
+    cssPath: string;
+    cwd: string;
+    load: LoadApi;
+    mode: Mode;
+    setupPath: string;
+  }) {
     this.#options = options;
   }
 
@@ -169,7 +166,7 @@ class TailwindRuntime {
 
     if (
       cacheKey &&
-      await persistentAssetExists(cwd, "tailwind", cacheKey, "compiled.css")
+      (await persistentAssetExists(cwd, "tailwind", cacheKey, "compiled.css"))
     ) {
       this.#compiledCss = await readPersistentAssetText(
         cwd,
@@ -205,27 +202,22 @@ class TailwindRuntime {
   }
 }
 
-async function compileTailwindCss(
-  {
-    cssPath,
-    cwd,
-    load,
-    mode,
-    setupPath,
-  }: {
-    cssPath: string;
-    cwd: string;
-    load: LoadApi;
-    mode: Mode;
-    setupPath: string;
-  },
-) {
+async function compileTailwindCss({
+  cssPath,
+  cwd,
+  load,
+  mode,
+  setupPath,
+}: {
+  cssPath: string;
+  cwd: string;
+  load: LoadApi;
+  mode: Mode;
+  setupPath: string;
+}) {
   const tailwindSource = await load.textFile(cssPath);
   const tailwindCss = await getTailwindCss();
-  const plugins = [
-    tailwindCss({ base: cwd }),
-    autoprefixer({}),
-  ];
+  const plugins = [tailwindCss({ base: cwd }), autoprefixer({})];
 
   if (mode === "production") {
     const { default: cssnano } = await import("cssnano");
@@ -242,19 +234,17 @@ async function compileTailwindCss(
   return css;
 }
 
-async function createTailwindCacheKey(
-  {
-    cssPath,
-    cwd,
-    mode,
-    setupPath,
-  }: {
-    cssPath: string;
-    cwd: string;
-    mode: Mode;
-    setupPath: string;
-  },
-) {
+async function createTailwindCacheKey({
+  cssPath,
+  cwd,
+  mode,
+  setupPath,
+}: {
+  cssPath: string;
+  cwd: string;
+  mode: Mode;
+  setupPath: string;
+}) {
   const [dependencyFingerprint, contentFingerprint] = await Promise.all([
     hashDependencyTasks(cwd, [
       {
@@ -277,13 +267,15 @@ async function createTailwindCacheKey(
 
   return dependencyFingerprint && contentFingerprint !== null
     ? createHash("sha256")
-      .update(JSON.stringify({
-        contentFingerprint,
-        dependencyFingerprint,
-        mode,
-        version: 3,
-      }))
-      .digest("hex")
+        .update(
+          JSON.stringify({
+            contentFingerprint,
+            dependencyFingerprint,
+            mode,
+            version: 3,
+          }),
+        )
+        .digest("hex")
     : null;
 }
 
@@ -337,9 +329,9 @@ async function hashTailwindContent(cwd: string, setupPath: string) {
 }
 
 async function getTailwindContentConfig(cwd: string, setupPath: string) {
-  const setupModule = await import(
+  const setupModule = (await import(
     `${pathToFileURL(setupPath).href}?cache=${Date.now()}`
-  ) as {
+  )) as {
     default?: {
       content?: unknown;
     };
@@ -364,22 +356,34 @@ function extractTailwindContentConfig(
     return { baseDirectory: cwd, patterns: [] };
   }
 
-  if (typeof content === "string") {
+  if (isTailwindContentString(content)) {
     return { baseDirectory: cwd, patterns: [content] };
   }
 
-  if (Array.isArray(content)) {
+  if (isTailwindContentArray(content)) {
     return createTailwindContentConfig(
       cwd,
       extractTailwindContentFiles(content),
     );
   }
 
-  if (!content || typeof content !== "object") {
+  if (!isTailwindContentObject(content)) {
     return null;
   }
 
   return extractTailwindContentObjectConfig(content, cwd, setupPath);
+}
+
+function isTailwindContentString(content: unknown): content is string {
+  return typeof content === "string";
+}
+
+function isTailwindContentArray(content: unknown): content is unknown[] {
+  return Array.isArray(content);
+}
+
+function isTailwindContentObject(content: unknown): content is object {
+  return Boolean(content && typeof content === "object");
 }
 
 function extractTailwindContentObjectConfig(
@@ -392,9 +396,8 @@ function extractTailwindContentObjectConfig(
   }
 
   const contentObject = content as { files?: unknown; relative?: unknown };
-  const baseDirectory = contentObject.relative === true
-    ? path.dirname(setupPath)
-    : cwd;
+  const baseDirectory =
+    contentObject.relative === true ? path.dirname(setupPath) : cwd;
 
   return createTailwindContentConfig(
     baseDirectory,
@@ -440,8 +443,9 @@ function extractTailwindContentFiles(files: unknown[]) {
 
 function isRawTailwindContent(file: unknown) {
   return Boolean(
-    file && typeof file === "object" &&
-      typeof (file as { raw?: unknown }).raw === "string",
+    file &&
+    typeof file === "object" &&
+    typeof (file as { raw?: unknown }).raw === "string",
   );
 }
 
@@ -479,10 +483,11 @@ async function getTailwindCss() {
   if (!tailwindCssPromise) {
     tailwindCssPromise = importWithSuppressedModuleRegisterWarning(
       "@tailwindcss/postcss",
-    ).then((module) =>
-      ("default" in module
-        ? module.default
-        : module) as typeof tailwindCssPlugin
+    ).then(
+      (module) =>
+        ("default" in module
+          ? module.default
+          : module) as typeof tailwindCssPlugin,
     );
   }
 
@@ -510,14 +515,13 @@ async function importWithSuppressedModuleRegisterWarning(
   }
 }
 
-function isModuleRegisterDeprecationWarning(
-  args: unknown[],
-) {
+function isModuleRegisterDeprecationWarning(args: unknown[]) {
   const [warning, typeOrOptions, code] = args;
   const message = warning instanceof Error ? warning.message : String(warning);
-  const warningCode = typeof typeOrOptions === "object" && typeOrOptions
-    ? (typeOrOptions as { code?: unknown }).code
-    : code;
+  const warningCode =
+    typeof typeOrOptions === "object" && typeOrOptions
+      ? (typeOrOptions as { code?: unknown }).code
+      : code;
 
   return warningCode === "DEP0205" && message.includes("module.register()");
 }

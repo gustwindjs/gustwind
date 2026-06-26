@@ -49,23 +49,19 @@ type RendererServices = {
   renderComponentSync: RenderSync;
 };
 
-const plugin: Plugin<{
-  components: ComponentPathDefinition[];
-  globalUtilitiesPath: string;
-}, HtmlispRendererPluginContext> = {
+const plugin: Plugin<
+  {
+    components: ComponentPathDefinition[];
+    globalUtilitiesPath: string;
+  },
+  HtmlispRendererPluginContext
+> = {
   meta: {
     name: "htmlisp-renderer-plugin",
     description: "${name} allows rendering using HTMLisp templating language.",
     dependsOn: ["gustwind-meta-plugin"],
   },
-  init({
-    cwd,
-    options,
-    load,
-    renderComponent,
-    renderComponentSync,
-    mode,
-  }) {
+  init({ cwd, options, load, renderComponent, renderComponentSync, mode }) {
     const { components, globalUtilitiesPath } = options;
     const getRuntimeUtilities = createRuntimeUtilitiesResolver({
       load,
@@ -96,9 +92,14 @@ const plugin: Plugin<{
       prepareContext: ({ url, route, send }) =>
         prepareRendererContext({ mode, route, send, url }),
       renderLayout: (args) => renderRendererLayout(args, services),
-      renderComponent: (
-        { matchRoute, componentName, htmlInput, context, props, pluginContext },
-      ) =>
+      renderComponent: ({
+        matchRoute,
+        componentName,
+        htmlInput,
+        context,
+        props,
+        pluginContext,
+      }) =>
         renderRendererComponent({
           componentName,
           context,
@@ -108,9 +109,14 @@ const plugin: Plugin<{
           props,
           services,
         }),
-      renderComponentSync: (
-        { matchRoute, componentName, htmlInput, context, props, pluginContext },
-      ) =>
+      renderComponentSync: ({
+        matchRoute,
+        componentName,
+        htmlInput,
+        context,
+        props,
+        pluginContext,
+      }) =>
         renderRendererComponentSync({
           componentName,
           context,
@@ -131,12 +137,7 @@ async function initRendererPluginContext(
 ): Promise<HtmlispRendererPluginContext> {
   const htmlLoader = createHtmlLoader(services.cwd, services.load);
   const [
-    {
-      componentDefinitions,
-      componentGraph,
-      components,
-      componentUtilities,
-    },
+    { componentDefinitions, componentGraph, components, componentUtilities },
     globalUtilities,
   ] = await Promise.all([
     loadComponents(htmlLoader, services.components),
@@ -164,28 +165,26 @@ function createHtmlLoader(cwd: string, load: LoadApi) {
   });
 }
 
-async function prepareRendererContext(
-  {
-    mode,
-    route,
-    send,
-    url,
-  }: {
-    mode: Mode;
-    route: Route;
-    send: (
-      pluginName: string,
-      message: { type: "getMeta"; payload: undefined },
-    ) => unknown | Promise<unknown>;
-    url: string;
-  },
-) {
+async function prepareRendererContext({
+  mode,
+  route,
+  send,
+  url,
+}: {
+  mode: Mode;
+  route: Route;
+  send: (
+    pluginName: string,
+    message: { type: "getMeta"; payload: undefined },
+  ) => unknown | Promise<unknown>;
+  url: string;
+}) {
   const meta = await send("gustwind-meta-plugin", {
     type: "getMeta",
     payload: undefined,
   });
   const runtimeMeta: Record<string, string> = {
-    built: (new Date()).toString(),
+    built: new Date().toString(),
   };
 
   if (mode === "development") {
@@ -267,51 +266,47 @@ async function renderRendererLayout(
   }
 }
 
-function getLayoutUtilities(
-  {
-    layoutUtilities,
-    matchRoute,
-    services,
-    url,
-  }: {
-    layoutUtilities: GlobalUtilities | undefined;
-    matchRoute: MatchRoute;
-    services: RendererServices;
-    url: string;
-  },
-) {
+function getLayoutUtilities({
+  layoutUtilities,
+  matchRoute,
+  services,
+  url,
+}: {
+  layoutUtilities: GlobalUtilities | undefined;
+  matchRoute: MatchRoute;
+  services: RendererServices;
+  url: string;
+}) {
   return layoutUtilities
     ? layoutUtilities.init({
-      load: services.load,
-      raw,
-      render: services.renderComponent,
-      renderRaw: raw,
-      renderSync: services.renderComponentSync,
-      matchRoute,
-      url,
-    })
+        load: services.load,
+        raw,
+        render: services.renderComponent,
+        renderRaw: raw,
+        renderSync: services.renderComponentSync,
+        matchRoute,
+        url,
+      })
     : {};
 }
 
-function renderRendererComponent(
-  {
-    componentName,
-    context,
-    htmlInput,
-    matchRoute,
-    pluginContext,
-    props,
-    services,
-  }: {
-    componentName?: string;
-    context: Context;
-    htmlInput?: string;
-    matchRoute: MatchRoute;
-    pluginContext: HtmlispRendererPluginContext;
-    props: Context;
-    services: RendererServices;
-  },
-) {
+function renderRendererComponent({
+  componentName,
+  context,
+  htmlInput,
+  matchRoute,
+  pluginContext,
+  props,
+  services,
+}: {
+  componentName?: string;
+  context: Context;
+  htmlInput?: string;
+  matchRoute: MatchRoute;
+  pluginContext: HtmlispRendererPluginContext;
+  props: Context;
+  services: RendererServices;
+}) {
   const { components, componentUtilities, globalUtilities } = pluginContext;
   const runtimeUtilities = services.getRuntimeUtilities({
     componentUtilities,
@@ -330,25 +325,23 @@ function renderRendererComponent(
   });
 }
 
-function renderRendererComponentSync(
-  {
-    componentName,
-    context,
-    htmlInput,
-    matchRoute,
-    pluginContext,
-    props,
-    services,
-  }: {
-    componentName?: string;
-    context: Context;
-    htmlInput?: string;
-    matchRoute: MatchRoute;
-    pluginContext: HtmlispRendererPluginContext;
-    props: Context;
-    services: RendererServices;
-  },
-) {
+function renderRendererComponentSync({
+  componentName,
+  context,
+  htmlInput,
+  matchRoute,
+  pluginContext,
+  props,
+  services,
+}: {
+  componentName?: string;
+  context: Context;
+  htmlInput?: string;
+  matchRoute: MatchRoute;
+  pluginContext: HtmlispRendererPluginContext;
+  props: Context;
+  services: RendererServices;
+}) {
   const { components, componentUtilities, globalUtilities } = pluginContext;
   const runtimeUtilities = services.getRuntimeUtilities({
     componentUtilities,
@@ -385,40 +378,56 @@ function getComponentHtmlInput(
   return componentHtmlInput;
 }
 
-async function handleRendererMessage(
-  {
-    message,
-    pluginContext,
-    services,
-  }: {
-    message: Parameters<
-      NonNullable<PluginApi<HtmlispRendererPluginContext>["onMessage"]>
-    >[0]["message"];
-    pluginContext: HtmlispRendererPluginContext;
-    services: RendererServices;
-  },
-) {
+async function handleRendererMessage({
+  message,
+  pluginContext,
+  services,
+}: {
+  message: Parameters<
+    NonNullable<PluginApi<HtmlispRendererPluginContext>["onMessage"]>
+  >[0]["message"];
+  pluginContext: HtmlispRendererPluginContext;
+  services: RendererServices;
+}) {
   const { type, payload } = message;
+  const handler = rendererMessageHandlers[type];
 
-  switch (type) {
-    case "fileChanged":
-      return await handleRendererFileChange(payload, pluginContext, services);
-    case "getComponents":
-      return { result: pluginContext.components };
-    case "getRenderContext":
-      return getRenderContextMessageResult(payload, pluginContext, services);
-    case "getComponentDependencyGraph":
-      return {
-        result: {
-          componentGraph: pluginContext.componentGraph,
-          globalDependencyTasks: pluginContext.globalDependencyTasks,
-        },
-      };
-    case "getRenderer":
-      return { result: pluginContext.components[payload] };
-    default:
-      return;
+  if (!handler) {
+    return;
   }
+
+  return handler(payload, pluginContext, services);
+}
+
+const rendererMessageHandlers: Record<
+  string,
+  (
+    payload: any,
+    pluginContext: HtmlispRendererPluginContext,
+    services: RendererServices,
+  ) => any
+> = {
+  fileChanged: handleRendererFileChange,
+  getComponentDependencyGraph: getComponentDependencyGraphMessageResult,
+  getComponents: (_payload, pluginContext) => ({
+    result: pluginContext.components,
+  }),
+  getRenderContext: getRenderContextMessageResult,
+  getRenderer: (payload, pluginContext) => ({
+    result: pluginContext.components[payload],
+  }),
+};
+
+function getComponentDependencyGraphMessageResult(
+  _payload: unknown,
+  pluginContext: HtmlispRendererPluginContext,
+) {
+  return {
+    result: {
+      componentGraph: pluginContext.componentGraph,
+      globalDependencyTasks: pluginContext.globalDependencyTasks,
+    },
+  };
 }
 
 async function handleRendererFileChange(
@@ -485,9 +494,8 @@ async function loadComponents(
   componentUtilities: Record<string, GlobalUtilities | undefined>;
 }> {
   const loadedComponents = await Promise.all(
-    components.map(
-      ({ path: componentsPath, selection }) =>
-        htmlLoader(componentsPath, selection),
+    components.map(({ path: componentsPath, selection }) =>
+      htmlLoader(componentsPath, selection),
     ),
   );
   const componentDefinitions = Object.assign(
@@ -512,21 +520,23 @@ async function loadComponents(
 async function loadGlobalUtilities(services: RendererServices) {
   return services.globalUtilitiesPath
     ? await services.load.module<GlobalUtilities>({
-      path: path.join(services.cwd, services.globalUtilitiesPath),
-      type: "globalUtilities",
-    })
+        path: path.join(services.cwd, services.globalUtilitiesPath),
+        type: "globalUtilities",
+      })
     : { init: () => ({}) };
 }
 
 function getGlobalDependencyTasks(services: RendererServices) {
   return services.globalUtilitiesPath
-    ? [{
-      type: "loadModule" as const,
-      payload: {
-        path: path.join(services.cwd, services.globalUtilitiesPath),
-        type: "globalUtilities",
-      },
-    }]
+    ? [
+        {
+          type: "loadModule" as const,
+          payload: {
+            path: path.join(services.cwd, services.globalUtilitiesPath),
+            type: "globalUtilities",
+          },
+        },
+      ]
     : [];
 }
 
@@ -534,29 +544,34 @@ function shouldReloadComponents(
   payload: { type: string; path: string },
   services: RendererServices,
 ) {
-  return payload.type === "components" ||
-    isComponentSourcePath(payload.path, services);
+  return (
+    payload.type === "components" ||
+    isComponentSourcePath(payload.path, services)
+  );
 }
 
 function shouldReloadGlobalUtilities(
   payload: { type: string; path: string },
   services: RendererServices,
 ) {
-  return payload.type === "globalUtilities" ||
-    isGlobalUtilitiesPath(payload.path, services);
+  return (
+    payload.type === "globalUtilities" ||
+    isGlobalUtilitiesPath(payload.path, services)
+  );
 }
 
 function isComponentSourcePath(filePath: string, services: RendererServices) {
-  return services.components.some(({ path: componentsPath }) =>
-    !componentsPath.startsWith("http") &&
-    isWithinPath(filePath, path.join(services.cwd, componentsPath))
+  return services.components.some(
+    ({ path: componentsPath }) =>
+      !componentsPath.startsWith("http") &&
+      isWithinPath(filePath, path.join(services.cwd, componentsPath)),
   );
 }
 
 function isGlobalUtilitiesPath(filePath: string, services: RendererServices) {
   return services.globalUtilitiesPath
     ? path.resolve(filePath) ===
-      path.resolve(path.join(services.cwd, services.globalUtilitiesPath))
+        path.resolve(path.join(services.cwd, services.globalUtilitiesPath))
     : false;
 }
 
@@ -564,8 +579,10 @@ function isWithinPath(filePath: string, directoryPath: string) {
   const resolvedFilePath = path.resolve(filePath);
   const resolvedDirectoryPath = path.resolve(directoryPath);
 
-  return resolvedFilePath === resolvedDirectoryPath ||
-    resolvedFilePath.startsWith(resolvedDirectoryPath + path.sep);
+  return (
+    resolvedFilePath === resolvedDirectoryPath ||
+    resolvedFilePath.startsWith(resolvedDirectoryPath + path.sep)
+  );
 }
 
 function withRenderContext(

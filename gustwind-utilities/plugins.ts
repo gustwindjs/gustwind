@@ -19,29 +19,27 @@ const DEBUG = isDebugEnabled();
 
 export type PluginDefinition = LoadedPlugin["plugin"];
 type PluginRouter = {
-  getAllRoutes(options?: { routeConcurrency?: number }): ReturnType<
-    typeof applyGetAllRoutes
-  >;
+  getAllRoutes(options?: {
+    routeConcurrency?: number;
+  }): ReturnType<typeof applyGetAllRoutes>;
   matchRoute(url: string): Promise<Route | undefined>;
 };
 
-async function importPlugins(
-  {
-    cwd,
-    initialImportedPlugins,
-    pluginDefinitions,
-    outputDirectory,
-    initLoadApi,
-    mode,
-  }: {
-    cwd: string;
-    initialImportedPlugins?: LoadedPlugin[];
-    pluginDefinitions: PluginOptions[];
-    outputDirectory: string;
-    initLoadApi: InitLoadApi;
-    mode: Mode;
-  },
-) {
+async function importPlugins({
+  cwd,
+  initialImportedPlugins,
+  pluginDefinitions,
+  outputDirectory,
+  initLoadApi,
+  mode,
+}: {
+  cwd: string;
+  initialImportedPlugins?: LoadedPlugin[];
+  pluginDefinitions: PluginOptions[];
+  outputDirectory: string;
+  initLoadApi: InitLoadApi;
+  mode: Mode;
+}) {
   const loadedPluginDefinitions: PluginDefinition[] = [];
   let initialTasks: Tasks = [];
 
@@ -108,9 +106,12 @@ function createPluginRenderers(
   plugins: PluginDefinition[],
   getMatchRoute: () => MatchRoute,
 ) {
-  const renderComponent: Render = (
-    { componentName, htmlInput, context, props },
-  ) =>
+  const renderComponent: Render = ({
+    componentName,
+    htmlInput,
+    context,
+    props,
+  }) =>
     applyRenderComponents({
       componentName,
       htmlInput,
@@ -120,9 +121,12 @@ function createPluginRenderers(
       matchRoute: getMatchRoute(),
     });
 
-  const renderComponentSync: RenderSync = (
-    { componentName, htmlInput, context, props },
-  ) =>
+  const renderComponentSync: RenderSync = ({
+    componentName,
+    htmlInput,
+    context,
+    props,
+  }) =>
     applyRenderComponentsSync({
       componentName,
       htmlInput,
@@ -135,35 +139,34 @@ function createPluginRenderers(
   return { renderComponent, renderComponentSync };
 }
 
-async function loadConfiguredPlugin(
-  {
-    cwd,
-    outputDirectory,
-    pluginDefinition,
-    renderComponent,
-    renderComponentSync,
-    initLoadApi,
-    mode,
-  }: {
-    cwd: string;
-    outputDirectory: string;
-    pluginDefinition: PluginOptions;
-    renderComponent: Render;
-    renderComponentSync: RenderSync;
-    initLoadApi: InitLoadApi;
-    mode: Mode;
-  },
-) {
+async function loadConfiguredPlugin({
+  cwd,
+  outputDirectory,
+  pluginDefinition,
+  renderComponent,
+  renderComponentSync,
+  initLoadApi,
+  mode,
+}: {
+  cwd: string;
+  outputDirectory: string;
+  pluginDefinition: PluginOptions;
+  renderComponent: Render;
+  renderComponentSync: RenderSync;
+  initLoadApi: InitLoadApi;
+  mode: Mode;
+}) {
   const moduleTasks: Tasks = [];
   const loadedPlugin = await importPlugin({
     cwd,
-    pluginModule: pluginDefinition.module ||
-      await loadPluginModule({
+    pluginModule:
+      pluginDefinition.module ||
+      (await loadPluginModule({
         cwd,
         initLoadApi,
         path: pluginDefinition.path,
         tasks: moduleTasks,
-      }),
+      })),
     options: pluginDefinition.options,
     outputDirectory,
     renderComponent,
@@ -207,19 +210,17 @@ function createPluginRouter(plugins: PluginDefinition[]): PluginRouter {
   };
 }
 
-async function loadPluginModule(
-  {
-    cwd,
-    initLoadApi,
-    path,
-    tasks,
-  }: {
-    cwd: string;
-    initLoadApi: InitLoadApi;
-    path: string;
-    tasks: Tasks;
-  },
-): Promise<Plugin> {
+async function loadPluginModule({
+  cwd,
+  initLoadApi,
+  path,
+  tasks,
+}: {
+  cwd: string;
+  initLoadApi: InitLoadApi;
+  path: string;
+  tasks: Tasks;
+}): Promise<Plugin> {
   const exports = await initLoadApi(tasks).module<{
     default?: Plugin;
     plugin?: Plugin;
@@ -239,7 +240,7 @@ async function loadPluginModule(
 async function resolvePluginPath(cwd: string, path: string) {
   if (
     ["file:", "http://", "https://"].some((prefix) =>
-      path.startsWith(prefix)
+      path.startsWith(prefix),
     ) ||
     path.startsWith("/")
   ) {
@@ -250,27 +251,25 @@ async function resolvePluginPath(cwd: string, path: string) {
   return join(cwd, path);
 }
 
-async function importPlugin(
-  {
-    cwd,
-    pluginModule,
-    options,
-    outputDirectory,
-    renderComponent,
-    renderComponentSync,
-    initLoadApi,
-    mode,
-  }: {
-    cwd: string;
-    pluginModule: Plugin;
-    options: Record<string, unknown>;
-    outputDirectory: string;
-    renderComponent?: Render;
-    renderComponentSync?: RenderSync;
-    initLoadApi: InitLoadApi;
-    mode: Mode;
-  },
-): Promise<LoadedPlugin> {
+async function importPlugin({
+  cwd,
+  pluginModule,
+  options,
+  outputDirectory,
+  renderComponent,
+  renderComponentSync,
+  initLoadApi,
+  mode,
+}: {
+  cwd: string;
+  pluginModule: Plugin;
+  options: Record<string, unknown>;
+  outputDirectory: string;
+  renderComponent?: Render;
+  renderComponentSync?: RenderSync;
+  initLoadApi: InitLoadApi;
+  mode: Mode;
+}): Promise<LoadedPlugin> {
   const tasks: Tasks = [];
   const api = await pluginModule.init({
     cwd,
@@ -295,9 +294,8 @@ async function importPlugin(
 }
 
 async function sendMessages(plugins: PluginDefinition[]) {
-  const messageSenders = plugins.map((
-    { api, context },
-  ) => [api.sendMessages, context])
+  const messageSenders = plugins
+    .map(({ api, context }) => [api.sendMessages, context])
     .filter(Boolean);
   const send = createSend(plugins);
 
@@ -330,7 +328,8 @@ async function finishPlugins(plugins: PluginDefinition[]) {
 }
 
 async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
-  const cleanUps = plugins.map(({ api, context }) => [api.cleanUp, context])
+  const cleanUps = plugins
+    .map(({ api, context }) => [api.cleanUp, context])
     .filter(Boolean);
 
   for await (const [cleanUp, pluginContext] of cleanUps) {
@@ -341,21 +340,19 @@ async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
   }
 }
 
-async function applyPlugins(
-  {
-    plugins,
-    url,
-    route,
-    initialContext,
-    matchRoute,
-  }: {
-    route: Route;
-    plugins: PluginDefinition[];
-    url: string;
-    initialContext?: Context;
-    matchRoute: MatchRoute;
-  },
-) {
+async function applyPlugins({
+  plugins,
+  url,
+  route,
+  initialContext,
+  matchRoute,
+}: {
+  route: Route;
+  plugins: PluginDefinition[];
+  url: string;
+  initialContext?: Context;
+  matchRoute: MatchRoute;
+}) {
   const send = createSend(plugins);
   const context = {
     ...initialContext,
@@ -399,15 +396,15 @@ async function applyPlugins(
   };
 }
 
-async function applyGetAllRoutes(
-  { plugins, options }: {
-    plugins: PluginDefinition[];
-    options?: { routeConcurrency?: number };
-  },
-) {
-  const getAllRoutes = plugins.map((
-    { api, context },
-  ) => api.getAllRoutes && [api.getAllRoutes, context])
+async function applyGetAllRoutes({
+  plugins,
+  options,
+}: {
+  plugins: PluginDefinition[];
+  options?: { routeConcurrency?: number };
+}) {
+  const getAllRoutes = plugins
+    .map(({ api, context }) => api.getAllRoutes && [api.getAllRoutes, context])
     .filter(Boolean);
   let allRoutes: Record<string, Route> = {};
   let allTasks: Tasks = [];
@@ -423,21 +420,20 @@ async function applyGetAllRoutes(
   return { routes: allRoutes, tasks: allTasks };
 }
 
-async function applyMatchRoutes(
-  { plugins, url }: {
-    plugins: PluginDefinition[];
-    url: string;
-  },
-) {
-  const matchRoutes = plugins.map((
-    { api, context },
-  ) => api.matchRoute && [api.matchRoute, context])
+async function applyMatchRoutes({
+  plugins,
+  url,
+}: {
+  plugins: PluginDefinition[];
+  url: string;
+}) {
+  const matchRoutes = plugins
+    .map(({ api, context }) => api.matchRoute && [api.matchRoute, context])
     .filter(Boolean);
 
   // @ts-expect-error Figure out the right type for this
   for await (const [matchRoute, pluginContext] of matchRoutes) {
-    const matchedRoute = matchRoute &&
-      matchRoute(url, pluginContext);
+    const matchedRoute = matchRoute && matchRoute(url, pluginContext);
 
     if (matchedRoute) {
       return matchedRoute;
@@ -447,18 +443,22 @@ async function applyMatchRoutes(
   return false;
 }
 
-async function applyPrepareContext(
-  { plugins, route, send, url }: {
-    plugins: PluginDefinition[];
-    route: Route;
-    send: Send;
-    url: string;
-  },
-) {
+async function applyPrepareContext({
+  plugins,
+  route,
+  send,
+  url,
+}: {
+  plugins: PluginDefinition[];
+  route: Route;
+  send: Send;
+  url: string;
+}) {
   let context = {};
-  const prepareContexts = plugins.map((
-    { api, context },
-  ) => api.prepareContext && [api.prepareContext, context])
+  const prepareContexts = plugins
+    .map(
+      ({ api, context }) => api.prepareContext && [api.prepareContext, context],
+    )
     .filter(Boolean);
 
   // @ts-expect-error Figure out the right type for this
@@ -473,18 +473,24 @@ async function applyPrepareContext(
   return context;
 }
 
-async function applyBeforeEachRenders(
-  { context, matchRoute, plugins, route, send, url }: {
-    context: Context;
-    matchRoute: MatchRoute;
-    plugins: PluginDefinition[];
-    route: Route;
-    send: Send;
-    url: string;
-  },
-) {
+async function applyBeforeEachRenders({
+  context,
+  matchRoute,
+  plugins,
+  route,
+  send,
+  url,
+}: {
+  context: Context;
+  matchRoute: MatchRoute;
+  plugins: PluginDefinition[];
+  route: Route;
+  send: Send;
+  url: string;
+}) {
   let tasks: Tasks = [];
-  const beforeEachRenders = plugins.map(({ api }) => api.beforeEachRender)
+  const beforeEachRenders = plugins
+    .map(({ api }) => api.beforeEachRender)
     .filter(Boolean);
 
   for await (const beforeEachRender of beforeEachRenders) {
@@ -500,19 +506,27 @@ async function applyBeforeEachRenders(
   return { tasks };
 }
 
-async function applyRenderComponents(
-  { componentName, htmlInput, props, context, plugins, matchRoute }: {
-    componentName?: string;
-    htmlInput?: string;
-    context?: Context;
-    props?: Context;
-    plugins: PluginDefinition[];
-    matchRoute: MatchRoute;
-  },
-) {
-  const renders = plugins.map((
-    { api, context },
-  ) => api.renderComponent && [api.renderComponent, context]).filter(Boolean);
+async function applyRenderComponents({
+  componentName,
+  htmlInput,
+  props,
+  context,
+  plugins,
+  matchRoute,
+}: {
+  componentName?: string;
+  htmlInput?: string;
+  context?: Context;
+  props?: Context;
+  plugins: PluginDefinition[];
+  matchRoute: MatchRoute;
+}) {
+  const renders = plugins
+    .map(
+      ({ api, context }) =>
+        api.renderComponent && [api.renderComponent, context],
+    )
+    .filter(Boolean);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
@@ -532,21 +546,27 @@ async function applyRenderComponents(
   return markup;
 }
 
-function applyRenderComponentsSync(
-  { componentName, htmlInput, props, context, plugins, matchRoute }: {
-    componentName?: string;
-    htmlInput?: string;
-    context?: Context;
-    props?: Context;
-    plugins: PluginDefinition[];
-    matchRoute: MatchRoute;
-  },
-) {
-  const renders = plugins.map((
-    { api, context },
-  ) => api.renderComponent && [api.renderComponentSync, context]).filter(
-    Boolean,
-  );
+function applyRenderComponentsSync({
+  componentName,
+  htmlInput,
+  props,
+  context,
+  plugins,
+  matchRoute,
+}: {
+  componentName?: string;
+  htmlInput?: string;
+  context?: Context;
+  props?: Context;
+  plugins: PluginDefinition[];
+  matchRoute: MatchRoute;
+}) {
+  const renders = plugins
+    .map(
+      ({ api, context }) =>
+        api.renderComponent && [api.renderComponentSync, context],
+    )
+    .filter(Boolean);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
@@ -566,19 +586,24 @@ function applyRenderComponentsSync(
   return markup;
 }
 
-async function applyRenderLayouts(
-  { context, plugins, route, send, url, matchRoute }: {
-    context: Context;
-    plugins: PluginDefinition[];
-    route: Route;
-    send: Send;
-    url: string;
-    matchRoute: MatchRoute;
-  },
-) {
-  const renders = plugins.map((
-    { api, context },
-  ) => api.renderLayout && [api.renderLayout, context]).filter(Boolean);
+async function applyRenderLayouts({
+  context,
+  plugins,
+  route,
+  send,
+  url,
+  matchRoute,
+}: {
+  context: Context;
+  plugins: PluginDefinition[];
+  route: Route;
+  send: Send;
+  url: string;
+  matchRoute: MatchRoute;
+}) {
+  const renders = plugins
+    .map(({ api, context }) => api.renderLayout && [api.renderLayout, context])
+    .filter(Boolean);
   let markup = "";
 
   // In the current design, we pick only the markup of the last renderer.
@@ -598,11 +623,16 @@ async function applyRenderLayouts(
   return markup;
 }
 
-async function applyOnTasksRegistered(
-  { plugins, tasks }: { plugins: PluginDefinition[]; tasks: Tasks },
-) {
+async function applyOnTasksRegistered({
+  plugins,
+  tasks,
+}: {
+  plugins: PluginDefinition[];
+  tasks: Tasks;
+}) {
   const send = createSend(plugins);
-  const tasksRegistered = plugins.map(({ api }) => api.onTasksRegistered)
+  const tasksRegistered = plugins
+    .map(({ api }) => api.onTasksRegistered)
     .filter(Boolean);
 
   for await (const cb of tasksRegistered) {
@@ -612,17 +642,23 @@ async function applyOnTasksRegistered(
   }
 }
 
-async function applyAfterEachRenders(
-  { context, markup, plugins, route, send, url }: {
-    context: Context;
-    markup: string;
-    plugins: PluginDefinition[];
-    route: Route;
-    send: Send;
-    url: string;
-  },
-) {
-  const afterEachRenders = plugins.map(({ api }) => api.afterEachRender)
+async function applyAfterEachRenders({
+  context,
+  markup,
+  plugins,
+  route,
+  send,
+  url,
+}: {
+  context: Context;
+  markup: string;
+  plugins: PluginDefinition[];
+  route: Route;
+  send: Send;
+  url: string;
+}) {
+  const afterEachRenders = plugins
+    .map(({ api }) => api.afterEachRender)
     .filter(Boolean);
   for await (const afterEachRender of afterEachRenders) {
     // TODO: Later on this should be able to create new tasks to run
@@ -653,18 +689,22 @@ function createSend(plugins: PluginDefinition[]) {
   return send;
 }
 
-async function sendToAllPlugins(
-  { plugins, message, send }: {
-    plugins: PluginDefinition[];
-    message: Parameters<Send>[1];
-    send: Send;
-  },
-) {
+async function sendToAllPlugins({
+  plugins,
+  message,
+  send,
+}: {
+  plugins: PluginDefinition[];
+  message: Parameters<Send>[1];
+  send: Send;
+}) {
   DEBUG && console.log("Send to all", message);
 
-  const messageResults = (await Promise.all(
-    plugins.map((plugin) => notifyPlugin(plugin, message, send)),
-  )).filter(Boolean);
+  const messageResults = (
+    await Promise.all(
+      plugins.map((plugin) => notifyPlugin(plugin, message, send)),
+    )
+  ).filter(Boolean);
 
   // @ts-expect-error Make typing more strict here
   const sends = messageResults.flatMap((s) => s.send).filter(Boolean);
@@ -705,15 +745,16 @@ async function notifyPlugin(
   return payload;
 }
 
-async function relayBroadcastMessages(
-  { plugins, messages }: {
-    plugins: PluginDefinition[];
-    messages: Parameters<Send>[1][];
-  },
-) {
+async function relayBroadcastMessages({
+  plugins,
+  messages,
+}: {
+  plugins: PluginDefinition[];
+  messages: Parameters<Send>[1][];
+}) {
   await Promise.all(
     messages.map((message) =>
-      Promise.all(plugins.map((plugin) => relayMessage(plugin, message)))
+      Promise.all(plugins.map((plugin) => relayMessage(plugin, message))),
     ),
   );
 }
@@ -737,70 +778,89 @@ async function relayMessage(
   };
 }
 
-async function sendToPlugin(
-  { plugins, pluginName, message, send }: {
-    plugins: PluginDefinition[];
-    pluginName: string;
-    message: Parameters<Send>[1];
-    send: Send;
-  },
-) {
+async function sendToPlugin({
+  plugins,
+  pluginName,
+  message,
+  send,
+}: {
+  plugins: PluginDefinition[];
+  pluginName: string;
+  message: Parameters<Send>[1];
+  send: Send;
+}) {
   const foundPlugin = plugins.find(({ meta: { name } }) => pluginName === name);
 
-  // Handle ping as a special case
-  if (message.type === "ping") {
-    return !!foundPlugin;
+  if (isPingMessage(message)) {
+    return Boolean(foundPlugin);
   }
 
-  if (!foundPlugin) {
+  const plugin = requireMessagePlugin(foundPlugin, pluginName);
+  const payload = await plugin.api.onMessage({
+    message,
+    pluginContext: plugin.context,
+    send,
+  });
+
+  applyPluginContext(plugin, payload?.pluginContext);
+
+  return payload?.result;
+}
+
+function isPingMessage(message: Parameters<Send>[1]) {
+  return message.type === "ping";
+}
+
+function requireMessagePlugin(
+  plugin: PluginDefinition | undefined,
+  pluginName: string,
+) {
+  if (!plugin) {
     throw new Error(
       `Tried to send a plugin (${pluginName}) that does not exist`,
     );
   }
 
-  if (!foundPlugin.api.onMessage) {
-    throw new Error(
-      `Plugin ${pluginName} does not have an onMessage handler`,
-    );
+  if (!plugin.api.onMessage) {
+    throw new Error(`Plugin ${pluginName} does not have an onMessage handler`);
   }
 
-  const payload = await foundPlugin.api.onMessage({
-    message,
-    pluginContext: foundPlugin.context,
-    send,
-  });
-
-  foundPlugin.context = {
-    ...foundPlugin.context,
-    ...payload?.pluginContext,
+  return plugin as PluginDefinition & {
+    api: PluginDefinition["api"] & {
+      onMessage: NonNullable<PluginDefinition["api"]["onMessage"]>;
+    };
   };
-
-  return payload?.result;
 }
 
-async function runLifecycleHooksInDependencyLayers<T>(
-  {
-    getHook,
-    plugins,
-    runHook,
-  }: {
-    getHook(
-      plugin: PluginDefinition,
-    ): ((args: any) => Promise<Tasks | void> | Tasks | void) | undefined;
-    plugins: PluginDefinition[];
-    runHook(
-      hook: (args: any) => Promise<Tasks | void> | Tasks | void,
-      pluginContext: Context,
-    ): Promise<Tasks | void>;
-  },
+function applyPluginContext(
+  plugin: PluginDefinition,
+  pluginContext: Context | undefined,
 ) {
+  plugin.context = {
+    ...plugin.context,
+    ...pluginContext,
+  };
+}
+
+async function runLifecycleHooksInDependencyLayers<T>({
+  getHook,
+  plugins,
+  runHook,
+}: {
+  getHook(
+    plugin: PluginDefinition,
+  ): ((args: any) => Promise<Tasks | void> | Tasks | void) | undefined;
+  plugins: PluginDefinition[];
+  runHook(
+    hook: (args: any) => Promise<Tasks | void> | Tasks | void,
+    pluginContext: Context,
+  ): Promise<Tasks | void>;
+}) {
   let tasks: Tasks = [];
 
-  for (
-    const layer of getDependencyLayers(
-      plugins.filter((plugin) => getHook(plugin)),
-    )
-  ) {
+  for (const layer of getDependencyLayers(
+    plugins.filter((plugin) => getHook(plugin)),
+  )) {
     const layerTasks = await Promise.all(
       layer.map(async (plugin) => {
         const hook = getHook(plugin);
@@ -830,17 +890,18 @@ function getDependencyLayers(plugins: PluginDefinition[]) {
 
   while (remaining.length) {
     const ready = remaining.filter(({ meta }) =>
-      (meta.dependsOn || []).every((dependencyName) =>
-        !pluginNames.has(dependencyName) ||
-        !remaining.some(({ meta }) => meta.name === dependencyName)
-      )
+      (meta.dependsOn || []).every(
+        (dependencyName) =>
+          !pluginNames.has(dependencyName) ||
+          !remaining.some(({ meta }) => meta.name === dependencyName),
+      ),
     );
 
     if (!ready.length) {
       throw new Error(
-        `Failed to resolve plugin lifecycle order for ${
-          remaining.map(({ meta }) => meta.name).join(", ")
-        }`,
+        `Failed to resolve plugin lifecycle order for ${remaining
+          .map(({ meta }) => meta.name)
+          .join(", ")}`,
       );
     }
 

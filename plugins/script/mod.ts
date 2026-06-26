@@ -22,22 +22,25 @@ import {
 const DEBUG = isDebugEnabled();
 const SCRIPT_ASSETS_MANIFEST_PATH = ".gustwind/script-assets.json";
 
-const plugin: Plugin<{
-  scripts?: Scripts;
-  scriptAssets?: ScriptEntryAssets;
-  // TODO: Model scripts output path here
-  scriptsPath?: string[];
-}, {
-  foundScripts: FoundScript[];
-  receivedScripts: {
-    isExternal?: boolean;
-    name: string;
-    localPath: string;
-    remotePath: string;
-    externals?: string[];
-  }[];
-  receivedGlobalScripts: { type: string; src: string }[];
-}> = {
+const plugin: Plugin<
+  {
+    scripts?: Scripts;
+    scriptAssets?: ScriptEntryAssets;
+    // TODO: Model scripts output path here
+    scriptsPath?: string[];
+  },
+  {
+    foundScripts: FoundScript[];
+    receivedScripts: {
+      isExternal?: boolean;
+      name: string;
+      localPath: string;
+      remotePath: string;
+      externals?: string[];
+    }[];
+    receivedGlobalScripts: { type: string; src: string }[];
+  }
+> = {
   meta: {
     name: "gustwind-script-plugin",
     description:
@@ -92,11 +95,13 @@ const plugin: Plugin<{
       cleanUp: stopEsbuild,
     };
 
-    async function loadScripts(): Promise<{
-      name: string;
-      path: string;
-      externals?: string[];
-    }[]> {
+    async function loadScripts(): Promise<
+      {
+        name: string;
+        path: string;
+        externals?: string[];
+      }[]
+    > {
       if (scriptAssets) {
         return Object.keys(scriptAssets).map((name) => ({
           name: `${normalizeScriptName(name)}.ts`,
@@ -104,15 +109,17 @@ const plugin: Plugin<{
         }));
       }
 
-      return (await Promise.all(
-        scriptsPath.map((p) =>
-          load.dir({
-            path: path.join(cwd, p),
-            extension: ".ts",
-            type: "foundScripts",
-          })
-        ),
-      )).flat();
+      return (
+        await Promise.all(
+          scriptsPath.map((p) =>
+            load.dir({
+              path: path.join(cwd, p),
+              extension: ".ts",
+              type: "foundScripts",
+            }),
+          ),
+        )
+      ).flat();
     }
   },
 };
@@ -139,23 +146,21 @@ type ScriptContextInput = {
   [key: string]: unknown;
 };
 
-async function prepareScriptBuild(
-  {
-    cwd,
-    mode,
-    outputDirectory,
-    pluginContext,
-    scriptAssets,
-    setBuiltEntryAssets,
-  }: {
-    cwd: string;
-    mode: Mode;
-    outputDirectory: string;
-    pluginContext: ScriptPluginContext;
-    scriptAssets?: ScriptEntryAssets;
-    setBuiltEntryAssets(builtEntryAssets: ScriptEntryAssets): void;
-  },
-) {
+async function prepareScriptBuild({
+  cwd,
+  mode,
+  outputDirectory,
+  pluginContext,
+  scriptAssets,
+  setBuiltEntryAssets,
+}: {
+  cwd: string;
+  mode: Mode;
+  outputDirectory: string;
+  pluginContext: ScriptPluginContext;
+  scriptAssets?: ScriptEntryAssets;
+  setBuiltEntryAssets(builtEntryAssets: ScriptEntryAssets): void;
+}) {
   if (mode === "production" && scriptAssets) {
     setBuiltEntryAssets(normalizeScriptEntryAssets(scriptAssets));
     return [];
@@ -174,17 +179,16 @@ async function prepareScriptBuild(
   }
 
   return Promise.all(
-    resolvedScripts.filter(({ path: scriptPath }) => isRemotePath(scriptPath))
-      .map((
-        { name, path: scriptPath, externals },
-      ) =>
+    resolvedScripts
+      .filter(({ path: scriptPath }) => isRemotePath(scriptPath))
+      .map(({ name, path: scriptPath, externals }) =>
         writeScript({
           file: name.replace(".ts", ".js"),
           scriptPath,
           externals,
           mode,
           outputDirectory,
-        })
+        }),
       ),
   );
 }
@@ -194,9 +198,7 @@ function resolveScriptInputs(pluginContext: ScriptPluginContext) {
   const isDevelopingLocally = import.meta.url.startsWith("file:///");
 
   return foundScripts.concat(
-    receivedScripts.map((
-      { name, localPath, remotePath, externals },
-    ) => ({
+    receivedScripts.map(({ name, localPath, remotePath, externals }) => ({
       name,
       path: isDevelopingLocally ? localPath : remotePath,
       externals,
@@ -204,25 +206,23 @@ function resolveScriptInputs(pluginContext: ScriptPluginContext) {
   );
 }
 
-function prepareScriptContext(
-  {
-    builtEntryAssets,
-    cwd,
-    globalScripts,
-    mode,
-    pluginContext,
-    routeScripts,
-    send,
-  }: {
-    builtEntryAssets: ScriptEntryAssets;
-    cwd: string;
-    globalScripts: Scripts;
-    mode: Mode;
-    pluginContext: ScriptPluginContext;
-    routeScripts: RouteScripts;
-    send: Send;
-  },
-) {
+function prepareScriptContext({
+  builtEntryAssets,
+  cwd,
+  globalScripts,
+  mode,
+  pluginContext,
+  routeScripts,
+  send,
+}: {
+  builtEntryAssets: ScriptEntryAssets;
+  cwd: string;
+  globalScripts: Scripts;
+  mode: Mode;
+  pluginContext: ScriptPluginContext;
+  routeScripts: RouteScripts;
+  send: Send;
+}) {
   const scripts = collectContextScripts({
     builtEntryAssets,
     cwd,
@@ -244,28 +244,26 @@ function prepareScriptContext(
   return {
     context: {
       styles,
-      scripts: globalScripts.concat(pluginContext.receivedGlobalScripts).concat(
-        scriptTags,
-      ),
+      scripts: globalScripts
+        .concat(pluginContext.receivedGlobalScripts)
+        .concat(scriptTags),
     },
   };
 }
 
-function collectContextScripts(
-  {
-    builtEntryAssets,
-    cwd,
-    mode,
-    pluginContext,
-    routeScripts,
-  }: {
-    builtEntryAssets: ScriptEntryAssets;
-    cwd: string;
-    mode: Mode;
-    pluginContext: ScriptPluginContext;
-    routeScripts: RouteScripts;
-  },
-): ScriptContextInput[] {
+function collectContextScripts({
+  builtEntryAssets,
+  cwd,
+  mode,
+  pluginContext,
+  routeScripts,
+}: {
+  builtEntryAssets: ScriptEntryAssets;
+  cwd: string;
+  mode: Mode;
+  pluginContext: ScriptPluginContext;
+  routeScripts: RouteScripts;
+}): ScriptContextInput[] {
   const { foundScripts, receivedScripts } = pluginContext;
   const routeScriptNames = routeScripts.map(({ name }) => name);
   const foundScriptNames = foundScripts.map(({ name }) => name);
@@ -280,25 +278,28 @@ function collectContextScripts(
     throw new Error("Route script is missing from the scripts directory");
   }
 
-  return (receivedScripts.filter(({ isExternal }) => !isExternal)).map((
-    { name, localPath, remotePath },
-  ) => ({
-    name,
-    src: mode === "production"
-      ? builtEntryAssets[normalizeScriptName(name)]?.file
-      : getDevScriptPath(
-        import.meta.url.startsWith("file:///") ? localPath : remotePath,
-        cwd,
-      ),
-  })).concat(
-    routeScripts.map(({ name, ...rest }) => ({
-      name: `${name}.ts`,
-      src: mode === "production"
-        ? builtEntryAssets[name]?.file
-        : getDevScriptPath(foundScriptPaths[`${name}.ts`], cwd),
-      ...rest,
-    })),
-  );
+  return receivedScripts
+    .filter(({ isExternal }) => !isExternal)
+    .map(({ name, localPath, remotePath }) => ({
+      name,
+      src:
+        mode === "production"
+          ? builtEntryAssets[normalizeScriptName(name)]?.file
+          : getDevScriptPath(
+              import.meta.url.startsWith("file:///") ? localPath : remotePath,
+              cwd,
+            ),
+    }))
+    .concat(
+      routeScripts.map(({ name, ...rest }) => ({
+        name: `${name}.ts`,
+        src:
+          mode === "production"
+            ? builtEntryAssets[name]?.file
+            : getDevScriptPath(foundScriptPaths[`${name}.ts`], cwd),
+        ...rest,
+      })),
+    );
 }
 
 function getScriptStyles(
@@ -307,8 +308,8 @@ function getScriptStyles(
 ) {
   return Array.from(
     new Set(
-      scripts.flatMap(({ name }) =>
-        builtEntryAssets[normalizeScriptName(name)]?.css || []
+      scripts.flatMap(
+        ({ name }) => builtEntryAssets[normalizeScriptName(name)]?.css || [],
       ),
     ),
   ).map((href) => ({ href, rel: "stylesheet" }));
@@ -330,23 +331,19 @@ function registerDynamicScriptRoutes(
   });
 }
 
-async function handleScriptMessage(
-  {
-    loadScripts,
-    message,
-    pluginContext,
-    send,
-  }: {
-    loadScripts(): Promise<FoundScript[]>;
-    message: Parameters<
-      NonNullable<PluginApi<ScriptPluginContext>["onMessage"]>
-    >[
-      0
-    ]["message"];
-    pluginContext: ScriptPluginContext;
-    send: Send;
-  },
-) {
+async function handleScriptMessage({
+  loadScripts,
+  message,
+  pluginContext,
+  send,
+}: {
+  loadScripts(): Promise<FoundScript[]>;
+  message: Parameters<
+    NonNullable<PluginApi<ScriptPluginContext>["onMessage"]>
+  >[0]["message"];
+  pluginContext: ScriptPluginContext;
+  send: Send;
+}) {
   const { type, payload } = message;
 
   if (type === "fileChanged") {
@@ -366,14 +363,13 @@ async function handleScriptMessage(
   if (type === "addGlobalScripts") {
     payload.forEach(({ src: path }) =>
       // TODO: Scope to router- instead
-      send("*", { type: "addDynamicRoute", payload: { path } })
+      send("*", { type: "addDynamicRoute", payload: { path } }),
     );
 
     return {
       pluginContext: {
-        receivedGlobalScripts: pluginContext.receivedGlobalScripts.concat(
-          payload,
-        ),
+        receivedGlobalScripts:
+          pluginContext.receivedGlobalScripts.concat(payload),
       },
     };
   }
@@ -381,7 +377,7 @@ async function handleScriptMessage(
   if (type === "addScripts") {
     payload.forEach(({ name: path }) =>
       // TODO: Scope to router- instead
-      send("*", { type: "addDynamicRoute", payload: { path } })
+      send("*", { type: "addDynamicRoute", payload: { path } }),
     );
 
     return {
@@ -404,27 +400,25 @@ function normalizeScriptEntryAssets(scriptAssets: ScriptEntryAssets) {
   );
 }
 
-async function buildProductionScripts(
-  {
-    cwd,
-    outputDirectory,
-    scripts,
-    setBuiltEntryAssets,
-  }: {
-    cwd: string;
-    mode: Mode;
-    outputDirectory: string;
-    scripts: { name: string; path: string; externals?: string[] }[];
-    setBuiltEntryAssets(
-      builtEntryAssets: ScriptEntryAssets,
-    ): void;
-  },
-): Promise<BuildWorkerEvent[]> {
-  const localScripts = scripts.filter(({ path: scriptPath }) =>
-    !scriptPath.startsWith("http://") && !scriptPath.startsWith("https://")
+async function buildProductionScripts({
+  cwd,
+  outputDirectory,
+  scripts,
+  setBuiltEntryAssets,
+}: {
+  cwd: string;
+  mode: Mode;
+  outputDirectory: string;
+  scripts: { name: string; path: string; externals?: string[] }[];
+  setBuiltEntryAssets(builtEntryAssets: ScriptEntryAssets): void;
+}): Promise<BuildWorkerEvent[]> {
+  const localScripts = scripts.filter(
+    ({ path: scriptPath }) =>
+      !scriptPath.startsWith("http://") && !scriptPath.startsWith("https://"),
   );
-  const remoteScripts = scripts.filter(({ path: scriptPath }) =>
-    scriptPath.startsWith("http://") || scriptPath.startsWith("https://")
+  const remoteScripts = scripts.filter(
+    ({ path: scriptPath }) =>
+      scriptPath.startsWith("http://") || scriptPath.startsWith("https://"),
   );
 
   let builtEntryAssets: ScriptEntryAssets = {};
@@ -442,9 +436,9 @@ async function buildProductionScripts(
       outputDirectory,
       persistentCache: persistentCacheKey
         ? {
-          key: persistentCacheKey,
-          namespace: "scripts",
-        }
+            key: persistentCacheKey,
+            namespace: "scripts",
+          }
         : undefined,
     });
 
@@ -462,7 +456,7 @@ async function buildProductionScripts(
         externals,
         mode: "production",
         outputDirectory,
-      })
+      }),
     ),
   );
 
@@ -498,13 +492,7 @@ function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
   }
 
   if (path.isAbsolute(scriptPath)) {
-    const relativePath = path.relative(cwd, scriptPath);
-
-    if (!relativePath.startsWith("..")) {
-      return `/${relativePath.split(path.sep).join("/")}`;
-    }
-
-    return `/@fs/${scriptPath.split(path.sep).join("/")}`;
+    return getAbsoluteDevScriptPath(scriptPath, cwd);
   }
 
   const normalizedPath = scriptPath.startsWith("./")
@@ -514,15 +502,39 @@ function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
   return `/${normalizedPath.split(path.sep).join("/")}`;
 }
 
-async function writeScript(
-  { file, scriptPath, externals, mode, outputDirectory }: {
-    file: string;
-    scriptPath: string;
-    externals?: string[];
-    mode: Mode;
-    outputDirectory: string;
-  },
-): Promise<BuildWorkerEvent> {
+function getAbsoluteDevScriptPath(scriptPath: string, cwd: string) {
+  const relativePath = path.relative(cwd, scriptPath);
+
+  return isProjectRelativePath(relativePath)
+    ? toDevRoutePath(relativePath)
+    : `/@fs/${toBrowserPath(scriptPath)}`;
+}
+
+function isProjectRelativePath(relativePath: string) {
+  return !relativePath.startsWith("..");
+}
+
+function toDevRoutePath(scriptPath: string) {
+  return `/${toBrowserPath(scriptPath)}`;
+}
+
+function toBrowserPath(scriptPath: string) {
+  return scriptPath.split(path.sep).join("/");
+}
+
+async function writeScript({
+  file,
+  scriptPath,
+  externals,
+  mode,
+  outputDirectory,
+}: {
+  file: string;
+  scriptPath: string;
+  externals?: string[];
+  mode: Mode;
+  outputDirectory: string;
+}): Promise<BuildWorkerEvent> {
   DEBUG &&
     console.log(
       "worker - writing script",
@@ -532,11 +544,7 @@ async function writeScript(
 
   const data = scriptPath.startsWith("http")
     ? await fetch(scriptPath).then((res) => res.text())
-    : await compileTypeScript(
-      scriptPath,
-      mode,
-      externals,
-    );
+    : await compileTypeScript(scriptPath, mode, externals);
 
   return {
     type: "writeTextFile",
