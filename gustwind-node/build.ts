@@ -104,6 +104,50 @@ type RestoreRouteBuildFromCacheOptions = {
   outputDirectory: string;
   url: string;
 };
+type RunBuildTasksOptions = {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  cwd: string;
+  outputDirectory: string;
+  incrementalCache?: IncrementalBuildCache;
+  incrementalCacheSource?: NonNullable<
+    Awaited<ReturnType<typeof readIncrementalBuildCache>>
+  >["source"];
+  incrementalCacheEnabled: boolean;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  globalDependencyTasks?: DependencyTask[];
+  rendererDependencyInfo?: RendererDependencyInfo;
+  routeConcurrency: number;
+  router: {
+    matchRoute(url: string): Promise<Route | undefined>;
+  };
+  plugins: BuildPlugins;
+  tasks: BuildTask[];
+};
+type ProcessBuildTaskOptions = Omit<
+  RunBuildTasksOptions,
+  "globalDependencyTasks" | "routeConcurrency" | "tasks"
+> & {
+  globalFingerprint: string | null;
+  task: BuildTask;
+};
+type ProcessBuildTaskResult = {
+  cacheHit: boolean;
+  routeBuilt: boolean;
+};
+type BuildRouteOutputOptions = {
+  benchmark?: ReturnType<typeof createBuildBenchmark>;
+  cwd: string;
+  dir: string;
+  globalFingerprint: string | null;
+  incrementalCacheEnabled: boolean;
+  matchDependencyTasks: Tasks;
+  matchedRoute: Route;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  outputDirectory: string;
+  plugins: BuildPlugins;
+  rendererDependencyInfo?: RendererDependencyInfo;
+  url: string;
+};
 
 async function buildNode(options: BuildNodeOptions): Promise<BuildNodeResult> {
   const config = await createBuildNodeRunConfig(options);
@@ -564,25 +608,7 @@ async function runBuildTasks({
   router,
   plugins,
   tasks,
-}: {
-  benchmark?: ReturnType<typeof createBuildBenchmark>;
-  cwd: string;
-  outputDirectory: string;
-  incrementalCache?: IncrementalBuildCache;
-  incrementalCacheSource?: NonNullable<
-    Awaited<ReturnType<typeof readIncrementalBuildCache>>
-  >["source"];
-  incrementalCacheEnabled: boolean;
-  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  globalDependencyTasks?: DependencyTask[];
-  rendererDependencyInfo?: RendererDependencyInfo;
-  routeConcurrency: number;
-  router: {
-    matchRoute(url: string): Promise<Route | undefined>;
-  };
-  plugins: BuildPlugins;
-  tasks: BuildTask[];
-}) {
+}: RunBuildTasksOptions) {
   const globalFingerprint = globalDependencyTasks
     ? await hashDependencyTasks(cwd, globalDependencyTasks)
     : null;
@@ -625,42 +651,19 @@ async function processBuildTask({
   rendererDependencyInfo,
   router,
   task,
-}: {
-  benchmark?: ReturnType<typeof createBuildBenchmark>;
-  cwd: string;
-  globalFingerprint: string | null;
-  incrementalCache?: IncrementalBuildCache;
-  incrementalCacheEnabled: boolean;
-  incrementalCacheSource?: NonNullable<
-    Awaited<ReturnType<typeof readIncrementalBuildCache>>
-  >["source"];
-  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  outputDirectory: string;
-  plugins: BuildPlugins;
-  rendererDependencyInfo?: RendererDependencyInfo;
-  router: {
-    matchRoute(url: string): Promise<Route | undefined>;
-  };
-  task: BuildTask;
-}) {
+}: ProcessBuildTaskOptions): Promise<ProcessBuildTaskResult> {
   DEBUG &&
     console.log("node build - running task", task.type, task.payload.url);
   benchmark?.markTaskProcessed();
 
-  const { result: matchedRoute, tasks: matchDependencyTasks } =
-    await runWithTaskLog(() => router.matchRoute(task.payload.url));
-
-  if (!matchedRoute) {
-    throw new Error(`Failed to find route ${task.payload.url} while building`);
-  }
-
+  const routeBuildInput = await prepareRouteBuildInput(router, task);
   const cacheRestore = await restoreRouteBuildFromCache({
     cwd,
     globalFingerprint,
     incrementalCache,
     incrementalCacheEnabled,
     incrementalCacheSource,
-    matchedRoute,
+    matchedRoute: routeBuildInput.matchedRoute,
     nextIncrementalCacheRoutes,
     outputDirectory,
     url: task.payload.url,
@@ -676,8 +679,8 @@ async function processBuildTask({
     dir: task.payload.dir,
     globalFingerprint,
     incrementalCacheEnabled,
-    matchDependencyTasks,
-    matchedRoute,
+    matchDependencyTasks: routeBuildInput.matchDependencyTasks,
+    matchedRoute: routeBuildInput.matchedRoute,
     nextIncrementalCacheRoutes,
     outputDirectory,
     plugins,
@@ -686,6 +689,20 @@ async function processBuildTask({
   });
 
   return { cacheHit: false, routeBuilt: true };
+}
+
+async function prepareRouteBuildInput(
+  router: ProcessBuildTaskOptions["router"],
+  task: BuildTask,
+) {
+  const { result: matchedRoute, tasks: matchDependencyTasks } =
+    await runWithTaskLog(() => router.matchRoute(task.payload.url));
+
+  if (!matchedRoute) {
+    throw new Error(`Failed to find route ${task.payload.url} while building`);
+  }
+
+  return { matchedRoute, matchDependencyTasks };
 }
 
 async function restoreRouteBuildFromCache({
@@ -772,20 +789,7 @@ async function buildRouteOutput({
   plugins,
   rendererDependencyInfo,
   url,
-}: {
-  benchmark?: ReturnType<typeof createBuildBenchmark>;
-  cwd: string;
-  dir: string;
-  globalFingerprint: string | null;
-  incrementalCacheEnabled: boolean;
-  matchDependencyTasks: Tasks;
-  matchedRoute: Route;
-  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  outputDirectory: string;
-  plugins: BuildPlugins;
-  rendererDependencyInfo?: RendererDependencyInfo;
-  url: string;
-}) {
+}: BuildRouteOutputOptions) {
   const routeStartTime = performance.now();
   const { renderResult, renderDependencyTasks } = await renderRoute({
     matchedRoute,

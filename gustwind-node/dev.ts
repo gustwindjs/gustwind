@@ -50,6 +50,7 @@ type DevServerOptions = {
   host?: string;
   watchPaths?: string[];
 };
+type DevHttpServer = ReturnType<typeof createHttpServer>;
 
 async function startDevServer(options: DevServerOptions): Promise<DevServer> {
   const {
@@ -60,18 +61,87 @@ async function startDevServer(options: DevServerOptions): Promise<DevServer> {
     watchPaths = [],
   } = options;
   const watchedPaths = new Set<string>();
-  const state: DevServerState = {
+  let requestHandler:
+    | ((req: IncomingMessage, res: ServerResponse) => void)
+    | undefined;
+  const state = await createDevServerState({ cwd, pluginDefinitions });
+  const httpServer = createDevHttpServer({
+    getRequestHandler: () => requestHandler,
+  });
+  const vite = await createDevViteServer({
+    cwd,
+    host,
+    httpServer,
+    pluginDefinitions,
+    state,
+    watchedPaths,
+  });
+
+  await watchTasks(vite, watchedPaths, state.runtime.initialTasks);
+  await addWatchPaths(vite, watchedPaths, watchPaths);
+
+  registerDevMiddleware({ reqState: state, vite, watchedPaths });
+
+  requestHandler = vite.middlewares;
+
+  await listenHttpServer({ host, httpServer, port });
+  const address = httpServer.address();
+  const listeningPort =
+    typeof address === "object" && address ? address.port : port;
+
+  return {
+    async close() {
+      await closeDevServer({ httpServer, state, vite });
+    },
+    port: listeningPort,
+    url: `http://${host}:${listeningPort}/`,
+  };
+}
+
+async function createDevServerState(
+  {
+    cwd,
+    pluginDefinitions,
+  }: Pick<DevServerOptions, "cwd" | "pluginDefinitions">,
+): Promise<DevServerState> {
+  return {
     closed: false,
     reloadPromise: Promise.resolve(),
     runtime: await loadRuntime({ cwd, pluginDefinitions }),
   };
-  let requestHandler:
-    | ((req: IncomingMessage, res: ServerResponse) => void)
-    | undefined;
-  const httpServer = createHttpServer((req, res) => {
-    requestHandler?.(req, res);
+}
+
+function createDevHttpServer(
+  {
+    getRequestHandler,
+  }: {
+    getRequestHandler(): ((req: IncomingMessage, res: ServerResponse) => void)
+      | undefined;
+  },
+) {
+  return createHttpServer((req, res) => {
+    getRequestHandler()?.(req, res);
   });
-  const vite = await createViteServer({
+}
+
+function createDevViteServer(
+  {
+    cwd,
+    host,
+    httpServer,
+    pluginDefinitions,
+    state,
+    watchedPaths,
+  }: {
+    cwd: string;
+    host: string;
+    httpServer: DevHttpServer;
+    pluginDefinitions: PluginDefinitionsSource;
+    state: DevServerState;
+    watchedPaths: Set<string>;
+  },
+) {
+  return createViteServer({
     appType: "custom",
     root: cwd,
     plugins: [
@@ -99,37 +169,35 @@ async function startDevServer(options: DevServerOptions): Promise<DevServer> {
       middlewareMode: true,
     },
   });
+}
 
-  await watchTasks(vite, watchedPaths, state.runtime.initialTasks);
-  await addWatchPaths(vite, watchedPaths, watchPaths);
+async function closeDevServer(
+  {
+    httpServer,
+    state,
+    vite,
+  }: {
+    httpServer: DevHttpServer;
+    state: DevServerState;
+    vite: ViteDevServer;
+  },
+) {
+  if (state.closed) {
+    return;
+  }
 
-  registerDevMiddleware({ reqState: state, vite, watchedPaths });
+  state.closed = true;
+  await state.reloadPromise;
+  await cleanUpPlugins(state.runtime.plugins, state.runtime.routes);
+  await stopModuleBundler();
+  await vite.close();
+  await closeHttpServer(httpServer);
+}
 
-  requestHandler = vite.middlewares;
-
-  await listenHttpServer({ host, httpServer, port });
-  const address = httpServer.address();
-  const listeningPort =
-    typeof address === "object" && address ? address.port : port;
-
-  return {
-    async close() {
-      if (state.closed) {
-        return;
-      }
-
-      state.closed = true;
-      await state.reloadPromise;
-      await cleanUpPlugins(state.runtime.plugins, state.runtime.routes);
-      await stopModuleBundler();
-      await vite.close();
-      await new Promise<void>((resolve, reject) => {
-        httpServer.close((error) => (error ? reject(error) : resolve()));
-      });
-    },
-    port: listeningPort,
-    url: `http://${host}:${listeningPort}/`,
-  };
+function closeHttpServer(httpServer: DevHttpServer) {
+  return new Promise<void>((resolve, reject) => {
+    httpServer.close((error) => (error ? reject(error) : resolve()));
+  });
 }
 
 function registerDevMiddleware({
