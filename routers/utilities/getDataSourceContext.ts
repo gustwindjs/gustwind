@@ -23,23 +23,34 @@ async function getDataSourceContext(
     await mapWithConcurrency(
       Object.entries(normalizedDataSourceIds),
       routeConcurrency,
-      async ([name, { operation, parameters }]) => {
-          const dataSource = dataSources[operation];
-
-          if (!dataSource) {
-            throw new Error(`Data source ${operation} was not found!`);
-          }
-
-          return [
-            name,
-            await dataSource.apply(
-              { parentDataSources },
-              Array.isArray(parameters) ? parameters : [],
-            ),
-          ];
-        },
+      ([name, source]) =>
+        applyDataSourceContext(name, source, dataSources, parentDataSources),
     ),
   );
+}
+
+async function applyDataSourceContext(
+  name: string,
+  {
+    operation,
+    parameters,
+  }: ReturnType<typeof normalizeRouteDataSources>[string],
+  dataSources: DataSources,
+  parentDataSources: Route["parentDataSources"],
+) {
+  const dataSource = dataSources[operation];
+
+  if (!dataSource) {
+    throw new Error(`Data source ${operation} was not found!`);
+  }
+
+  return [
+    name,
+    await dataSource.apply(
+      { parentDataSources },
+      Array.isArray(parameters) ? parameters : [],
+    ),
+  ] as const;
 }
 
 export { getDataSourceContext };

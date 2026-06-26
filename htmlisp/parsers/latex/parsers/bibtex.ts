@@ -132,27 +132,35 @@ function readBalancedValue(getCharacter: CharacterGenerator) {
 
 function readBalancedValueCharacter(c: string, depth: number, value: string) {
   if (c === "{") {
-    return {
-      depth: depth + 1,
-      done: false,
-      value: depth > 0 ? value + c : value,
-    };
+    return readOpeningBrace(depth, value);
   }
 
   if (c === "}") {
-    const nextDepth = depth - 1;
-
-    return {
-      depth: nextDepth,
-      done: nextDepth === 0,
-      value: nextDepth === 0 ? value : value + c,
-    };
+    return readClosingBrace(depth, value, c);
   }
 
   return {
     depth,
     done: false,
     value: value + c,
+  };
+}
+
+function readOpeningBrace(depth: number, value: string) {
+  return {
+    depth: depth + 1,
+    done: false,
+    value: depth > 0 ? value + "{" : value,
+  };
+}
+
+function readClosingBrace(depth: number, value: string, c: string) {
+  const nextDepth = depth - 1;
+
+  return {
+    depth: nextDepth,
+    done: nextDepth === 0,
+    value: nextDepth === 0 ? value : value + c,
   };
 }
 

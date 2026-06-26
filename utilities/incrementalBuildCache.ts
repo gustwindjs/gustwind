@@ -100,17 +100,20 @@ async function hashDependencyTasks(cwd: string, tasks: DependencyTask[]) {
 
 async function hashDependencyTask(cwd: string, task: DependencyTask) {
   const dependencyPath = resolveDependencyPath(cwd, task.payload.path);
+  const hashDependency = dependencyTaskHashers[task.type];
 
-  switch (task.type) {
-    case "listDirectory":
-      return hashDirectory(dependencyPath);
-    case "loadJSON":
-    case "readTextFile":
-      return hashFile(dependencyPath);
-    case "loadModule":
-      return hashModule(dependencyPath, new Set());
-  }
+  return hashDependency(dependencyPath);
 }
+
+const dependencyTaskHashers: Record<
+  DependencyTask["type"],
+  (dependencyPath: string | null) => Promise<string | null>
+> = {
+  listDirectory: hashDirectory,
+  loadJSON: hashFile,
+  loadModule: (dependencyPath) => hashModule(dependencyPath, new Set()),
+  readTextFile: hashFile,
+};
 
 function updateDependencyTaskHash(
   hash: ReturnType<typeof createHash>,
@@ -567,7 +570,7 @@ function normalizeDependencyPath(cwd: string, targetPath: string) {
   const absolutePath = getAbsoluteDependencyPath(cwd, targetPath);
   const relativePath = path.relative(cwd, absolutePath);
 
-  if (!relativePath || relativePath === ".") {
+  if (isRootRelativePath(relativePath)) {
     return ".";
   }
 
@@ -576,6 +579,10 @@ function normalizeDependencyPath(cwd: string, targetPath: string) {
   }
 
   return relativePath;
+}
+
+function isRootRelativePath(relativePath: string) {
+  return !relativePath || relativePath === ".";
 }
 
 function getAbsoluteDependencyPath(cwd: string, targetPath: string) {
@@ -605,7 +612,7 @@ function resolveImportedModulePath(modulePath: string, specifier: string) {
     return fileURLToPath(specifier);
   }
 
-  if (path.isAbsolute(specifier)) {
+  if (isAbsolutePath(specifier)) {
     return specifier;
   }
 
@@ -614,6 +621,10 @@ function resolveImportedModulePath(modulePath: string, specifier: string) {
   }
 
   return undefined;
+}
+
+function isAbsolutePath(targetPath: string) {
+  return path.isAbsolute(targetPath);
 }
 
 function isRemotePath(targetPath: string) {

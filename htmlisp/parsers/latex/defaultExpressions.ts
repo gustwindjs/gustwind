@@ -239,19 +239,7 @@ const refs = (
     const id = children.join("") || matchCounts.autoref?.at(-1) || "";
     const ref = refEntries.find(({ label }) => label === id);
 
-    if (ref) {
-      return {
-        type: "a",
-        attributes: { href: ref.slug },
-        children: [ref.title],
-      };
-    }
-
-    return {
-      type: "a",
-      attributes: { href: `#${slugify(id)}` },
-      children: [getAutorefLabel(id) || id],
-    };
+    return ref ? createAutorefLink(ref) : createAutorefFallback(id);
   },
   nameref: (children) => {
     const id = children[0];
@@ -282,6 +270,22 @@ const refs = (
     };
   },
 });
+
+function createAutorefLink(ref: { title: string; slug: string }) {
+  return {
+    type: "a",
+    attributes: { href: ref.slug },
+    children: [ref.title],
+  };
+}
+
+function createAutorefFallback(id: string) {
+  return {
+    type: "a",
+    attributes: { href: `#${slugify(id)}` },
+    children: [getAutorefLabel(id) || id],
+  };
+}
 
 function getAutorefLabel(id: string) {
   const [kind] = id.split(":");

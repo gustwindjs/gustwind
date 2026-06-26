@@ -517,13 +517,24 @@ async function importWithSuppressedModuleRegisterWarning(
 
 function isModuleRegisterDeprecationWarning(args: unknown[]) {
   const [warning, typeOrOptions, code] = args;
-  const message = warning instanceof Error ? warning.message : String(warning);
-  const warningCode =
-    typeof typeOrOptions === "object" && typeOrOptions
-      ? (typeOrOptions as { code?: unknown }).code
-      : code;
+  const message = getWarningMessage(warning);
+  const warningCode = getWarningCode(typeOrOptions, code);
 
   return warningCode === "DEP0205" && message.includes("module.register()");
+}
+
+function getWarningMessage(warning: unknown) {
+  return warning instanceof Error ? warning.message : String(warning);
+}
+
+function getWarningCode(typeOrOptions: unknown, code: unknown) {
+  return isWarningOptions(typeOrOptions) ? typeOrOptions.code : code;
+}
+
+function isWarningOptions(
+  typeOrOptions: unknown,
+): typeOrOptions is { code?: unknown } {
+  return Boolean(typeOrOptions && typeof typeOrOptions === "object");
 }
 
 export { plugin };

@@ -443,21 +443,42 @@ async function handleRendererFileChange(
 
   const nextPluginContext: Partial<HtmlispRendererPluginContext> = {};
 
+  await updateReloadedComponents(
+    nextPluginContext,
+    payload,
+    pluginContext,
+    services,
+  );
+  await updateReloadedGlobalUtilities(nextPluginContext, payload, services);
+
+  return {
+    send: [{ type: "reloadPage" as const, payload: undefined }],
+    pluginContext: nextPluginContext,
+  };
+}
+
+async function updateReloadedComponents(
+  nextPluginContext: Partial<HtmlispRendererPluginContext>,
+  payload: { type: string; path: string },
+  pluginContext: HtmlispRendererPluginContext,
+  services: RendererServices,
+) {
   if (shouldReloadComponents(payload, services)) {
     Object.assign(
       nextPluginContext,
       await loadComponents(pluginContext.htmlLoader, services.components),
     );
   }
+}
 
+async function updateReloadedGlobalUtilities(
+  nextPluginContext: Partial<HtmlispRendererPluginContext>,
+  payload: { type: string; path: string },
+  services: RendererServices,
+) {
   if (shouldReloadGlobalUtilities(payload, services)) {
     nextPluginContext.globalUtilities = await loadGlobalUtilities(services);
   }
-
-  return {
-    send: [{ type: "reloadPage" as const, payload: undefined }],
-    pluginContext: nextPluginContext,
-  };
 }
 
 function getRenderContextMessageResult(
