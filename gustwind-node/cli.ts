@@ -28,6 +28,16 @@ type CliArgs = {
   validate: boolean;
   version: boolean;
 };
+type CliArgsReader = {
+  next(): string;
+  nextValue(errorMessage: string): string;
+  hasNext(): boolean;
+};
+type CliOptionParser = (args: CliArgs, reader: CliArgsReader) => void;
+type CloseableServer = {
+  close(): Promise<void> | void;
+  url: string;
+};
 
 function usage() {
   console.log(`
@@ -90,21 +100,8 @@ async function main(cliArgs: string[]): Promise<number> {
       port: args.port,
       watchPaths: [pluginsPath],
     });
-    const stop = async () => {
-      process.off("SIGINT", onSigint);
-      process.off("SIGTERM", onSigterm);
-      await server.close();
-      process.exitCode = 0;
-    };
-    const onSigint = () => void stop();
-    const onSigterm = () => void stop();
 
-    process.on("SIGINT", onSigint);
-    process.on("SIGTERM", onSigterm);
-
-    console.log(`Serving at ${server.url}`);
-    await new Promise<void>(() => undefined);
-    return 0;
+    return waitForServer(server, `Serving at ${server.url}`);
   }
 
   if (args.serve) {
@@ -113,26 +110,19 @@ async function main(cliArgs: string[]): Promise<number> {
       input: args.input,
       port: args.port,
     });
-    const stop = async () => {
-      process.off("SIGINT", onSigint);
-      process.off("SIGTERM", onSigterm);
-      await server.close();
-      process.exitCode = 0;
-    };
-    const onSigint = () => void stop();
-    const onSigterm = () => void stop();
 
-    process.on("SIGINT", onSigint);
-    process.on("SIGTERM", onSigterm);
-
-    console.log(`Serving static files at ${server.url}`);
-    await new Promise<void>(() => undefined);
-    return 0;
+    return waitForServer(server, `Serving static files at ${server.url}`);
   }
 
   if (args.validate && !args.build) {
-    const { filesValidated } = await validateHtmlDirectory(path.resolve(cwd, args.input));
-    console.log(`Validated ${filesValidated} HTML files in ${path.resolve(cwd, args.input)}.`);
+    const { filesValidated } = await validateHtmlDirectory(
+      path.resolve(cwd, args.input),
+    );
+    console.log(
+      `Validated ${filesValidated} HTML files in ${
+        path.resolve(cwd, args.input)
+      }.`,
+    );
     return 0;
   }
 
@@ -143,21 +133,30 @@ async function main(cliArgs: string[]): Promise<number> {
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
     collectBenchmark: args.benchmark || args.diagnoseRoutes,
-    incremental: (args.benchmark || args.diagnoseRoutes) ? false : args.incremental,
+    incremental: (args.benchmark || args.diagnoseRoutes)
+      ? false
+      : args.incremental,
     routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
 
   if (args.validate && buildResult?.validation) {
-    console.log(`Validated ${buildResult.validation.filesValidated} HTML files in ${path.resolve(cwd, args.output)}.`);
+    console.log(
+      `Validated ${buildResult.validation.filesValidated} HTML files in ${
+        path.resolve(cwd, args.output)
+      }.`,
+    );
   }
 
-  if (args.build && !args.benchmark && typeof buildResult?.routesBuilt === "number") {
+  if (
+    args.build && !args.benchmark &&
+    typeof buildResult?.routesBuilt === "number"
+  ) {
     if (args.incremental) {
       console.log(
-        `Incremental build reused ${buildResult.cacheHits || 0} routes and rebuilt ${
-          buildResult.routesBuilt
-        }.`,
+        `Incremental build reused ${
+          buildResult.cacheHits || 0
+        } routes and rebuilt ${buildResult.routesBuilt}.`,
       );
     } else {
       console.log(`Full build rebuilt ${buildResult.routesBuilt} routes.`);
@@ -172,22 +171,60 @@ async function main(cliArgs: string[]): Promise<number> {
       JSON.stringify(buildResult.benchmark, null, 2) + "\n",
     );
     console.log(
-      `Benchmarked ${buildResult.benchmark.routesBuilt} routes in ${
-        buildResult.benchmark.totalDurationMs
-      }ms. Results written to ${benchmarkOutputPath}.`,
+      `Benchmarked ${buildResult.benchmark.routesBuilt} routes in ${buildResult.benchmark.totalDurationMs}ms. Results written to ${benchmarkOutputPath}.`,
     );
   }
 
   if (args.diagnoseRoutes && buildResult?.benchmark) {
-    formatRouteDiagnostics(buildResult.benchmark, args.diagnosticsTop).lines.forEach((line) =>
-      console.log(line)
-    );
+    formatRouteDiagnostics(buildResult.benchmark, args.diagnosticsTop).lines
+      .forEach((line) => console.log(line));
   }
 
   return 0;
 }
+
+async function waitForServer(
+  server: CloseableServer,
+  message: string,
+): Promise<number> {
+  const stop = async () => {
+    process.off("SIGINT", onSigint);
+    process.off("SIGTERM", onSigterm);
+    await server.close();
+    process.exitCode = 0;
+  };
+  const onSigint = () => void stop();
+  const onSigterm = () => void stop();
+
+  process.on("SIGINT", onSigint);
+  process.on("SIGTERM", onSigterm);
+
+  console.log(message);
+  await new Promise<void>(() => undefined);
+
+  return 0;
+}
+
 function parseArgs(cliArgs: string[]): CliArgs {
-  const ret: CliArgs = {
+  const ret = createDefaultCliArgs();
+  const reader = createCliArgsReader(cliArgs);
+
+  while (reader.hasNext()) {
+    const arg = reader.next();
+    const parseOption = CLI_OPTION_PARSERS[arg];
+
+    if (!parseOption) {
+      throw new Error(`Unknown argument ${arg}`);
+    }
+
+    parseOption(ret, reader);
+  }
+
+  return ret;
+}
+
+function createDefaultCliArgs(): CliArgs {
+  return {
     benchmark: false,
     benchmarkOutput: "./benchmark-results.json",
     build: false,
@@ -206,122 +243,138 @@ function parseArgs(cliArgs: string[]): CliArgs {
     validate: false,
     version: false,
   };
+}
 
-  for (let index = 0; index < cliArgs.length; index++) {
-    const arg = cliArgs[index];
-    const next = cliArgs[index + 1];
+function createCliArgsReader(cliArgs: string[]): CliArgsReader {
+  let index = 0;
 
-    switch (arg) {
-      case "-b":
-      case "--build":
-        ret.build = true;
-        break;
-      case "-B":
-      case "--benchmark":
-        ret.benchmark = true;
-        ret.build = true;
-        break;
-      case "--diagnose-routes":
-        ret.diagnoseRoutes = true;
-        ret.build = true;
-        break;
-      case "--diagnostics-top":
-        if (!next) {
-          throw new Error("Missing diagnostics top count");
-        }
-        ret.diagnosticsTop = Number(next);
-        if (!Number.isInteger(ret.diagnosticsTop) || ret.diagnosticsTop <= 0) {
-          throw new Error(`Invalid diagnostics top count ${next}`);
-        }
-        index++;
-        break;
-      case "--cache-from":
-        if (!next) {
-          throw new Error("Missing cache source");
-        }
-        ret.cacheFrom = next;
-        index++;
-        break;
-      case "-d":
-      case "--develop":
-        ret.develop = true;
-        break;
-      case "-s":
-      case "--serve":
-        ret.serve = true;
-        break;
-      case "-h":
-      case "--help":
-        ret.help = true;
-        break;
-      case "-i":
-      case "--input":
-        if (!next) {
-          throw new Error("Missing input directory");
-        }
-        ret.input = next;
-        index++;
-        break;
-      case "--no-incremental":
-        ret.incremental = false;
-        break;
-      case "-p":
-      case "--port":
-        if (!next) {
-          throw new Error("Missing port");
-        }
-        ret.port = Number(next);
-        if (!Number.isInteger(ret.port) || ret.port < 0) {
-          throw new Error(`Invalid port ${next}`);
-        }
-        index++;
-        break;
-      case "--route-concurrency":
-        if (!next) {
-          throw new Error("Missing route concurrency");
-        }
-        ret.routeConcurrency = Number(next);
-        if (
-          !Number.isInteger(ret.routeConcurrency) || ret.routeConcurrency <= 0
-        ) {
-          throw new Error(`Invalid route concurrency ${next}`);
-        }
-        index++;
-        break;
-      case "-v":
-      case "--version":
-        ret.version = true;
-        break;
-      case "-V":
-      case "--validate":
-        ret.validate = true;
-        break;
-      case "-o":
-      case "--output":
-        if (!next) {
-          throw new Error("Missing output directory");
-        }
-        ret.output = next;
-        index++;
-        break;
-      case "--benchmark-output":
-        if (!next) {
-          throw new Error("Missing benchmark output path");
-        }
-        ret.benchmarkOutput = next;
-        index++;
-        break;
-      case "-P":
-      case "--plugins":
-        if (!next) {
-          throw new Error("Missing plugins definition path");
-        }
-        ret.plugins = next;
-        index++;
-        break;
-      default:
-        throw new Error(`Unknown argument ${arg}`);
-    }
+  return {
+    hasNext: () => index < cliArgs.length,
+    next: () => cliArgs[index++],
+    nextValue: (errorMessage: string) => {
+      const value = cliArgs[index++];
+
+      if (!value) {
+        throw new Error(errorMessage);
+      }
+
+      return value;
+    },
+  };
+}
+
+const CLI_OPTION_PARSERS: Record<string, CliOptionParser> = {
+  "-b": enableBuild,
+  "--build": enableBuild,
+  "-B": enableBenchmark,
+  "--benchmark": enableBenchmark,
+  "--diagnose-routes": enableRouteDiagnostics,
+  "--diagnostics-top": (args, reader) => {
+    args.diagnosticsTop = parsePositiveInteger(
+      reader.nextValue("Missing diagnostics top count"),
+      "diagnostics top count",
+    );
+  },
+  "--cache-from": (args, reader) => {
+    args.cacheFrom = reader.nextValue("Missing cache source");
+  },
+  "-d": enableDevelop,
+  "--develop": enableDevelop,
+  "-s": enableServe,
+  "--serve": enableServe,
+  "-h": enableHelp,
+  "--help": enableHelp,
+  "-i": (args, reader) => {
+    args.input = reader.nextValue("Missing input directory");
+  },
+  "--input": (args, reader) => {
+    args.input = reader.nextValue("Missing input directory");
+  },
+  "--no-incremental": (args) => {
+    args.incremental = false;
+  },
+  "-p": (args, reader) => {
+    args.port = parsePort(reader.nextValue("Missing port"));
+  },
+  "--port": (args, reader) => {
+    args.port = parsePort(reader.nextValue("Missing port"));
+  },
+  "--route-concurrency": (args, reader) => {
+    args.routeConcurrency = parsePositiveInteger(
+      reader.nextValue("Missing route concurrency"),
+      "route concurrency",
+    );
+  },
+  "-v": enableVersion,
+  "--version": enableVersion,
+  "-V": enableValidate,
+  "--validate": enableValidate,
+  "-o": (args, reader) => {
+    args.output = reader.nextValue("Missing output directory");
+  },
+  "--output": (args, reader) => {
+    args.output = reader.nextValue("Missing output directory");
+  },
+  "--benchmark-output": (args, reader) => {
+    args.benchmarkOutput = reader.nextValue("Missing benchmark output path");
+  },
+  "-P": (args, reader) => {
+    args.plugins = reader.nextValue("Missing plugins definition path");
+  },
+  "--plugins": (args, reader) => {
+    args.plugins = reader.nextValue("Missing plugins definition path");
+  },
+};
+
+function enableBuild(args: CliArgs) {
+  args.build = true;
+}
+
+function enableBenchmark(args: CliArgs) {
+  args.benchmark = true;
+  args.build = true;
+}
+
+function enableRouteDiagnostics(args: CliArgs) {
+  args.diagnoseRoutes = true;
+  args.build = true;
+}
+
+function enableDevelop(args: CliArgs) {
+  args.develop = true;
+}
+
+function enableServe(args: CliArgs) {
+  args.serve = true;
+}
+
+function enableHelp(args: CliArgs) {
+  args.help = true;
+}
+
+function enableVersion(args: CliArgs) {
+  args.version = true;
+}
+
+function enableValidate(args: CliArgs) {
+  args.validate = true;
+}
+
+function parsePort(value: string) {
+  const port = Number(value);
+
+  if (!Number.isInteger(port) || port < 0) {
+    throw new Error(`Invalid port ${value}`);
+  }
+
+  return port;
+}
+
+function parsePositiveInteger(value: string, label: string) {
+  const ret = Number(value);
+
+  if (!Number.isInteger(ret) || ret <= 0) {
+    throw new Error(`Invalid ${label} ${value}`);
   }
 
   return ret;
