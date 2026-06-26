@@ -74,54 +74,43 @@ async function hashDependencyTasks(cwd: string, tasks: DependencyTask[]) {
   const hash = createHash("sha256");
 
   for (const task of normalizeDependencyTasks(tasks, cwd)) {
-    hash.update(task.type);
-    hash.update("\n");
+    const dependencyHash = await hashDependencyTask(cwd, task);
 
-    switch (task.type) {
-      case "listDirectory": {
-        const directoryHash = await hashDirectory(resolveDependencyPath(cwd, task.payload.path));
-
-        if (!directoryHash) {
-          return null;
-        }
-
-        hash.update(task.payload.path);
-        hash.update("\n");
-        hash.update(directoryHash);
-        hash.update("\n");
-        break;
-      }
-      case "loadJSON":
-      case "readTextFile": {
-        const fileHash = await hashFile(resolveDependencyPath(cwd, task.payload.path));
-
-        if (!fileHash) {
-          return null;
-        }
-
-        hash.update(task.payload.path);
-        hash.update("\n");
-        hash.update(fileHash);
-        hash.update("\n");
-        break;
-      }
-      case "loadModule": {
-        const moduleHash = await hashModule(resolveDependencyPath(cwd, task.payload.path), new Set());
-
-        if (!moduleHash) {
-          return null;
-        }
-
-        hash.update(task.payload.path);
-        hash.update("\n");
-        hash.update(moduleHash);
-        hash.update("\n");
-        break;
-      }
+    if (!dependencyHash) {
+      return null;
     }
+
+    updateDependencyTaskHash(hash, task, dependencyHash);
   }
 
   return hash.digest("hex");
+}
+
+async function hashDependencyTask(cwd: string, task: DependencyTask) {
+  const dependencyPath = resolveDependencyPath(cwd, task.payload.path);
+
+  switch (task.type) {
+    case "listDirectory":
+      return hashDirectory(dependencyPath);
+    case "loadJSON":
+    case "readTextFile":
+      return hashFile(dependencyPath);
+    case "loadModule":
+      return hashModule(dependencyPath, new Set());
+  }
+}
+
+function updateDependencyTaskHash(
+  hash: ReturnType<typeof createHash>,
+  task: DependencyTask,
+  dependencyHash: string,
+) {
+  hash.update(task.type);
+  hash.update("\n");
+  hash.update(task.payload.path);
+  hash.update("\n");
+  hash.update(dependencyHash);
+  hash.update("\n");
 }
 
 async function hashRouteFingerprint(
@@ -378,40 +367,67 @@ async function hashModule(modulePath: string | null, visitedPaths: Set<string>):
   }
 
   visitedPaths.add(modulePath);
-  let source: string;
+  const source = await readModuleSource(modulePath);
 
-  try {
-    source = await readFile(modulePath, "utf8");
-  } catch (error) {
-    if (isMissingFileError(error)) {
-      return createHash("sha256").update(MISSING_DEPENDENCY_HASH).digest("hex");
-    }
-
-    throw error;
+  if (source === undefined) {
+    return hashMissingDependency();
   }
+
   const hash = createHash("sha256");
 
   hash.update(source);
   hash.update("\n");
 
   for (const specifier of getImportSpecifiers(source)) {
-    const dependencyPath = resolveImportedModulePath(modulePath, specifier);
+    const specifierHash = await hashImportSpecifier(
+      modulePath,
+      specifier,
+      visitedPaths,
+    );
 
-    if (dependencyPath === null) {
+    if (specifierHash === null) {
       return null;
     }
 
-    if (!dependencyPath) {
-      hash.update(specifier);
-      hash.update("\n");
-      continue;
-    }
-
-    hash.update(await hashModule(dependencyPath, visitedPaths) || "");
+    hash.update(specifierHash);
     hash.update("\n");
   }
 
   return hash.digest("hex");
+}
+
+async function readModuleSource(modulePath: string) {
+  try {
+    return await readFile(modulePath, "utf8");
+  } catch (error) {
+    if (isMissingFileError(error)) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function hashMissingDependency() {
+  return createHash("sha256").update(MISSING_DEPENDENCY_HASH).digest("hex");
+}
+
+async function hashImportSpecifier(
+  modulePath: string,
+  specifier: string,
+  visitedPaths: Set<string>,
+) {
+  const dependencyPath = resolveImportedModulePath(modulePath, specifier);
+
+  if (dependencyPath === null) {
+    return null;
+  }
+
+  if (!dependencyPath) {
+    return specifier;
+  }
+
+  return await hashModule(dependencyPath, visitedPaths) || "";
 }
 
 function getImportSpecifiers(source: string) {
@@ -464,25 +480,32 @@ function normalizeDependencyPath(cwd: string, targetPath: string) {
     return targetPath;
   }
 
-  const absolutePath = targetPath.startsWith("file:")
-    ? fileURLToPath(targetPath)
-    : path.isAbsolute(targetPath)
-    ? targetPath
-    : path.resolve(cwd, targetPath);
+  const absolutePath = getAbsoluteDependencyPath(cwd, targetPath);
   const relativePath = path.relative(cwd, absolutePath);
 
   if (!relativePath || relativePath === ".") {
     return ".";
   }
 
-  if (
-    relativePath === ".." || relativePath.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relativePath)
-  ) {
+  if (isOutsideRoot(relativePath)) {
     return absolutePath;
   }
 
   return relativePath;
+}
+
+function getAbsoluteDependencyPath(cwd: string, targetPath: string) {
+  if (targetPath.startsWith("file:")) {
+    return fileURLToPath(targetPath);
+  }
+
+  return path.isAbsolute(targetPath) ? targetPath : path.resolve(cwd, targetPath);
+}
+
+function isOutsideRoot(relativePath: string) {
+  return relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath);
 }
 
 function resolveImportedModulePath(modulePath: string, specifier: string) {

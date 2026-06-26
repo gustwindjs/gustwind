@@ -53,6 +53,16 @@ import type {
 } from "../utilities/incrementalBuildCache.ts";
 
 const DEBUG = isDebugEnabled();
+const readOnlyTaskTypes = new Set([
+  "init",
+  "listDirectory",
+  "loadJSON",
+  "loadModule",
+  "readTextFile",
+] as const);
+const retryableRemoveOutputErrors = new Set(["ENOTEMPTY", "EBUSY", "EPERM"]);
+type ReadOnlyTaskType = typeof readOnlyTaskTypes extends Set<infer T> ? T
+  : never;
 type BuildNodeResult = {
   benchmark?: BuildBenchmark;
   cacheFrom?: string;
@@ -128,12 +138,14 @@ async function buildNode(
 async function createBuildNodeRunConfig(
   options: BuildNodeOptions,
 ): Promise<BuildNodeRunConfig> {
-  const collectBenchmark = options.collectBenchmark ?? false;
-  const incremental = options.incremental ?? !collectBenchmark;
+  const collectBenchmark = shouldCollectBenchmark(options);
+  const incremental = shouldUseIncrementalBuild(options, collectBenchmark);
   const cacheFrom = options.cacheFrom ?? options.outputDirectory;
-  const previousCache = incremental
-    ? await readIncrementalBuildCache(options.cwd, cacheFrom)
-    : undefined;
+  const previousCache = await readPreviousBuildCache(
+    options.cwd,
+    cacheFrom,
+    incremental,
+  );
 
   return {
     ...options,
@@ -149,6 +161,25 @@ async function createBuildNodeRunConfig(
     routeConcurrency: options.routeConcurrency ?? getDefaultRouteConcurrency(),
     validateOutput: options.validateOutput ?? false,
   };
+}
+
+function shouldCollectBenchmark(options: BuildNodeOptions) {
+  return options.collectBenchmark ?? false;
+}
+
+function shouldUseIncrementalBuild(
+  options: BuildNodeOptions,
+  collectBenchmark: boolean,
+) {
+  return options.incremental ?? !collectBenchmark;
+}
+
+async function readPreviousBuildCache(
+  cwd: string,
+  cacheFrom: string,
+  incremental: boolean,
+) {
+  return incremental ? await readIncrementalBuildCache(cwd, cacheFrom) : undefined;
 }
 
 function preservesCurrentOutput(
@@ -298,17 +329,14 @@ async function runNodeBuildTasks(
     outputDirectory: config.outputDirectory,
     tasks: buildInputs.prepareTasks.concat(buildInputs.routerTasks),
   });
+  const previousCache = getPreviousIncrementalCache(config);
 
   return await runBuildTasks({
     benchmark,
     cwd: config.cwd,
     outputDirectory: config.outputDirectory,
-    incrementalCache: config.incremental
-      ? config.previousCache?.cache
-      : undefined,
-    incrementalCacheSource: config.incremental
-      ? config.previousCache?.source
-      : undefined,
+    incrementalCache: previousCache?.cache,
+    incrementalCacheSource: previousCache?.source,
     incrementalCacheEnabled: config.incremental,
     nextIncrementalCacheRoutes,
     globalDependencyTasks: buildInputs.globalDependencyTasks,
@@ -318,6 +346,10 @@ async function runNodeBuildTasks(
     plugins: buildInputs.plugins,
     tasks: createRouteBuildTasks(buildInputs.routes, config.outputDirectory),
   });
+}
+
+function getPreviousIncrementalCache(config: BuildNodeRunConfig) {
+  return config.incremental ? config.previousCache : undefined;
 }
 
 async function finishNodeBuild(
@@ -915,11 +947,7 @@ function isReadOnlyTask(
     type: "loadJSON" | "loadModule" | "listDirectory" | "readTextFile" | "init";
   }
 > {
-  return task.type === "loadJSON" ||
-    task.type === "loadModule" ||
-    task.type === "listDirectory" ||
-    task.type === "readTextFile" ||
-    task.type === "init";
+  return readOnlyTaskTypes.has(task.type as ReadOnlyTaskType);
 }
 
 async function executeWriteTask(
@@ -953,24 +981,30 @@ function getDefaultRouteConcurrency() {
 }
 
 async function removeOutputDirectory(outputDirectory: string) {
-  const retryableErrors = new Set(["ENOTEMPTY", "EBUSY", "EPERM"]);
-
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
       await rm(outputDirectory, { recursive: true, force: true });
       return;
     } catch (error) {
-      const code = error instanceof Error && "code" in error
-        ? String(error.code)
-        : "";
-
-      if (!retryableErrors.has(code) || attempt === 3) {
+      if (!shouldRetryRemoveOutput(error, attempt)) {
         throw error;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+      await waitBeforeRemoveOutputRetry(attempt);
     }
   }
+}
+
+function shouldRetryRemoveOutput(error: unknown, attempt: number) {
+  return attempt < 3 && retryableRemoveOutputErrors.has(getErrorCode(error));
+}
+
+function getErrorCode(error: unknown) {
+  return error instanceof Error && "code" in error ? String(error.code) : "";
+}
+
+function waitBeforeRemoveOutputRetry(attempt: number) {
+  return new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
 }
 
 async function removeOutputDirectoryContents(outputDirectory: string) {

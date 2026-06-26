@@ -33,7 +33,28 @@ type CliArgsReader = {
   nextValue(errorMessage: string): string;
   hasNext(): boolean;
 };
-type CliOptionParser = (args: CliArgs, reader: CliArgsReader) => void;
+type CliOptionDefinition =
+  | { kind: "boolean"; field: BooleanCliArg }
+  | { kind: "build" }
+  | { kind: "benchmark" }
+  | { kind: "diagnoseRoutes" }
+  | { kind: "disableIncremental" }
+  | { kind: "integer"; field: IntegerCliArg; missing: string; label: string }
+  | { kind: "port"; missing: string }
+  | { kind: "string"; field: StringCliArg; missing: string };
+type BooleanCliArg =
+  | "develop"
+  | "help"
+  | "serve"
+  | "validate"
+  | "version";
+type IntegerCliArg = "diagnosticsTop" | "routeConcurrency";
+type StringCliArg =
+  | "benchmarkOutput"
+  | "cacheFrom"
+  | "input"
+  | "output"
+  | "plugins";
 type CloseableServer = {
   close(): Promise<void> | void;
   url: string;
@@ -331,7 +352,7 @@ function parseArgs(cliArgs: string[]): CliArgs {
       throw new Error(`Unknown argument ${arg}`);
     }
 
-    parseOption(ret, reader);
+    applyCliOption(ret, reader, parseOption);
   }
 
   return ret;
@@ -377,101 +398,147 @@ function createCliArgsReader(cliArgs: string[]): CliArgsReader {
   };
 }
 
-const CLI_OPTION_PARSERS: Record<string, CliOptionParser> = {
-  "-b": enableBuild,
-  "--build": enableBuild,
-  "-B": enableBenchmark,
-  "--benchmark": enableBenchmark,
-  "--diagnose-routes": enableRouteDiagnostics,
-  "--diagnostics-top": (args, reader) => {
-    args.diagnosticsTop = parsePositiveInteger(
-      reader.nextValue("Missing diagnostics top count"),
-      "diagnostics top count",
-    );
+const CLI_OPTION_PARSERS: Record<string, CliOptionDefinition> = {
+  "-b": { kind: "build" },
+  "--build": { kind: "build" },
+  "-B": { kind: "benchmark" },
+  "--benchmark": { kind: "benchmark" },
+  "--diagnose-routes": { kind: "diagnoseRoutes" },
+  "--diagnostics-top": {
+    kind: "integer",
+    field: "diagnosticsTop",
+    missing: "Missing diagnostics top count",
+    label: "diagnostics top count",
   },
-  "--cache-from": (args, reader) => {
-    args.cacheFrom = reader.nextValue("Missing cache source");
+  "--cache-from": {
+    kind: "string",
+    field: "cacheFrom",
+    missing: "Missing cache source",
   },
-  "-d": enableDevelop,
-  "--develop": enableDevelop,
-  "-s": enableServe,
-  "--serve": enableServe,
-  "-h": enableHelp,
-  "--help": enableHelp,
-  "-i": (args, reader) => {
-    args.input = reader.nextValue("Missing input directory");
+  "-d": { kind: "boolean", field: "develop" },
+  "--develop": { kind: "boolean", field: "develop" },
+  "-s": { kind: "boolean", field: "serve" },
+  "--serve": { kind: "boolean", field: "serve" },
+  "-h": { kind: "boolean", field: "help" },
+  "--help": { kind: "boolean", field: "help" },
+  "-i": { kind: "string", field: "input", missing: "Missing input directory" },
+  "--input": {
+    kind: "string",
+    field: "input",
+    missing: "Missing input directory",
   },
-  "--input": (args, reader) => {
-    args.input = reader.nextValue("Missing input directory");
+  "--no-incremental": { kind: "disableIncremental" },
+  "-p": { kind: "port", missing: "Missing port" },
+  "--port": { kind: "port", missing: "Missing port" },
+  "--route-concurrency": {
+    kind: "integer",
+    field: "routeConcurrency",
+    missing: "Missing route concurrency",
+    label: "route concurrency",
   },
-  "--no-incremental": (args) => {
-    args.incremental = false;
+  "-v": { kind: "boolean", field: "version" },
+  "--version": { kind: "boolean", field: "version" },
+  "-V": { kind: "boolean", field: "validate" },
+  "--validate": { kind: "boolean", field: "validate" },
+  "-o": {
+    kind: "string",
+    field: "output",
+    missing: "Missing output directory",
   },
-  "-p": (args, reader) => {
-    args.port = parsePort(reader.nextValue("Missing port"));
+  "--output": {
+    kind: "string",
+    field: "output",
+    missing: "Missing output directory",
   },
-  "--port": (args, reader) => {
-    args.port = parsePort(reader.nextValue("Missing port"));
+  "--benchmark-output": {
+    kind: "string",
+    field: "benchmarkOutput",
+    missing: "Missing benchmark output path",
   },
-  "--route-concurrency": (args, reader) => {
-    args.routeConcurrency = parsePositiveInteger(
-      reader.nextValue("Missing route concurrency"),
-      "route concurrency",
-    );
+  "-P": {
+    kind: "string",
+    field: "plugins",
+    missing: "Missing plugins definition path",
   },
-  "-v": enableVersion,
-  "--version": enableVersion,
-  "-V": enableValidate,
-  "--validate": enableValidate,
-  "-o": (args, reader) => {
-    args.output = reader.nextValue("Missing output directory");
-  },
-  "--output": (args, reader) => {
-    args.output = reader.nextValue("Missing output directory");
-  },
-  "--benchmark-output": (args, reader) => {
-    args.benchmarkOutput = reader.nextValue("Missing benchmark output path");
-  },
-  "-P": (args, reader) => {
-    args.plugins = reader.nextValue("Missing plugins definition path");
-  },
-  "--plugins": (args, reader) => {
-    args.plugins = reader.nextValue("Missing plugins definition path");
+  "--plugins": {
+    kind: "string",
+    field: "plugins",
+    missing: "Missing plugins definition path",
   },
 };
 
-function enableBuild(args: CliArgs) {
+function applyCliOption(
+  args: CliArgs,
+  reader: CliArgsReader,
+  option: CliOptionDefinition,
+) {
+  CLI_OPTION_APPLIERS[option.kind](args, reader, option);
+}
+
+const CLI_OPTION_APPLIERS: Record<
+  CliOptionDefinition["kind"],
+  (
+    args: CliArgs,
+    reader: CliArgsReader,
+    option: CliOptionDefinition,
+  ) => void
+> = {
+  benchmark: applyBenchmarkOption,
+  boolean: applyBooleanOption,
+  build: applyBuildOption,
+  diagnoseRoutes: applyRouteDiagnosticsOption,
+  disableIncremental: applyDisableIncrementalOption,
+  integer: applyIntegerOption,
+  port: applyPortOption,
+  string: applyStringOption,
+};
+
+function applyBooleanOption(_args: CliArgs, _reader: CliArgsReader, option: CliOptionDefinition) {
+  const { field } = option as Extract<CliOptionDefinition, { kind: "boolean" }>;
+
+  _args[field] = true;
+}
+
+function applyBuildOption(args: CliArgs) {
   args.build = true;
 }
 
-function enableBenchmark(args: CliArgs) {
+function applyBenchmarkOption(args: CliArgs) {
   args.benchmark = true;
   args.build = true;
 }
 
-function enableRouteDiagnostics(args: CliArgs) {
+function applyRouteDiagnosticsOption(args: CliArgs) {
   args.diagnoseRoutes = true;
   args.build = true;
 }
 
-function enableDevelop(args: CliArgs) {
-  args.develop = true;
+function applyDisableIncrementalOption(args: CliArgs) {
+  args.incremental = false;
 }
 
-function enableServe(args: CliArgs) {
-  args.serve = true;
+function applyIntegerOption(args: CliArgs, reader: CliArgsReader, option: CliOptionDefinition) {
+  const { field, label, missing } = option as Extract<
+    CliOptionDefinition,
+    { kind: "integer" }
+  >;
+
+  args[field] = parsePositiveInteger(reader.nextValue(missing), label);
 }
 
-function enableHelp(args: CliArgs) {
-  args.help = true;
+function applyPortOption(args: CliArgs, reader: CliArgsReader, option: CliOptionDefinition) {
+  const { missing } = option as Extract<CliOptionDefinition, { kind: "port" }>;
+
+  args.port = parsePort(reader.nextValue(missing));
 }
 
-function enableVersion(args: CliArgs) {
-  args.version = true;
-}
+function applyStringOption(args: CliArgs, reader: CliArgsReader, option: CliOptionDefinition) {
+  const { field, missing } = option as Extract<
+    CliOptionDefinition,
+    { kind: "string" }
+  >;
 
-function enableValidate(args: CliArgs) {
-  args.validate = true;
+  args[field] = reader.nextValue(missing);
 }
 
 function parsePort(value: string) {
