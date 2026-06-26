@@ -8,4 +8,3 @@ export {
   importPlugins,
   preparePlugins,
 } from "./pluginsCore.ts";
-export type { PluginDefinition } from "./pluginsCore.ts";

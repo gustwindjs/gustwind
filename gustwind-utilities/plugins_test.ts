@@ -4,8 +4,8 @@ import test from "node:test";
 import {
   finishPlugins,
   preparePlugins,
-  type PluginDefinition,
 } from "./plugins.ts";
+import type { PluginDefinition } from "./pluginsCore.ts";
 
 function createPluginDefinition(
   {
