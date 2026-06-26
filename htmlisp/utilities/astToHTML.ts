@@ -67,6 +67,28 @@ async function renderTag(
     return renderTextValue(tag, renderContext.renderOptions);
   }
 
+  const renderState = await createTagRenderState(
+    tag,
+    renderContext,
+    initialLocal,
+  );
+
+  return renderElementTag(renderState);
+}
+
+type TagRenderState = {
+  tag: Element;
+  renderContext: RenderContext;
+  local: Context | undefined;
+  parsedAttributes: Context;
+  isComponent: Components | boolean | undefined;
+};
+
+async function createTagRenderState(
+  tag: Element,
+  renderContext: RenderContext,
+  initialLocal?: Context,
+): Promise<TagRenderState> {
   const isComponent = isComponentTag(tag.type, renderContext.components);
   let local = initialLocal;
   const parsedAttributes = await parseExpressions(
@@ -83,17 +105,25 @@ async function renderTag(
     local = parsedAttributes;
   }
 
+  return {
+    tag,
+    renderContext,
+    local,
+    parsedAttributes,
+    isComponent,
+  };
+}
+
+async function renderElementTag(renderState: TagRenderState) {
+  const { tag, parsedAttributes, local, renderContext, isComponent } =
+    renderState;
+
   if (isHidden(parsedAttributes)) {
     return "";
   }
 
   if (parsedAttributes.foreach) {
-    return renderElement(
-      parsedAttributes,
-      tag,
-      await renderForeachChildren(tag, parsedAttributes, local, renderContext),
-      renderContext.renderOptions,
-    );
+    return renderForeachElement(renderState);
   }
 
   const renderedChildren = renderChildren(tag, local, renderContext);
@@ -112,6 +142,17 @@ async function renderTag(
     parsedAttributes,
     tag,
     await renderedChildren,
+    renderContext.renderOptions,
+  );
+}
+
+async function renderForeachElement(
+  { tag, parsedAttributes, local, renderContext }: TagRenderState,
+) {
+  return renderElement(
+    parsedAttributes,
+    tag,
+    await renderForeachChildren(tag, parsedAttributes, local, renderContext),
     renderContext.renderOptions,
   );
 }

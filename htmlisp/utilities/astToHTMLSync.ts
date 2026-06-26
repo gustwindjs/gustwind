@@ -67,6 +67,28 @@ function renderTagSync(
     return renderTextValue(tag, renderContext.renderOptions);
   }
 
+  const renderState = createTagRenderStateSync(
+    tag,
+    renderContext,
+    initialLocal,
+  );
+
+  return renderElementTagSync(renderState);
+}
+
+type TagRenderState = {
+  tag: Element;
+  renderContext: RenderContext;
+  local: Context | undefined;
+  parsedAttributes: Context;
+  isComponent: Components | boolean | undefined;
+};
+
+function createTagRenderStateSync(
+  tag: Element,
+  renderContext: RenderContext,
+  initialLocal?: Context,
+): TagRenderState {
   const isComponent = isComponentTag(tag.type, renderContext.components);
   let local = initialLocal;
   const parsedAttributes = parseExpressionsSync(
@@ -83,17 +105,25 @@ function renderTagSync(
     local = parsedAttributes;
   }
 
+  return {
+    tag,
+    renderContext,
+    local,
+    parsedAttributes,
+    isComponent,
+  };
+}
+
+function renderElementTagSync(renderState: TagRenderState) {
+  const { tag, parsedAttributes, local, renderContext, isComponent } =
+    renderState;
+
   if (isHidden(parsedAttributes)) {
     return "";
   }
 
   if (parsedAttributes.foreach) {
-    return renderElement(
-      parsedAttributes,
-      tag,
-      renderForeachChildrenSync(tag, parsedAttributes, local, renderContext),
-      renderContext.renderOptions,
-    );
+    return renderForeachElementSync(renderState);
   }
 
   const renderedChildren = renderChildrenSync(tag, local, renderContext);
@@ -112,6 +142,17 @@ function renderTagSync(
     parsedAttributes,
     tag,
     renderedChildren,
+    renderContext.renderOptions,
+  );
+}
+
+function renderForeachElementSync(
+  { tag, parsedAttributes, local, renderContext }: TagRenderState,
+) {
+  return renderElement(
+    parsedAttributes,
+    tag,
+    renderForeachChildrenSync(tag, parsedAttributes, local, renderContext),
     renderContext.renderOptions,
   );
 }
