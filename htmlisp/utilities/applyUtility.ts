@@ -1,6 +1,13 @@
-import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
-import { isRawHtml, unwrapRawHtml } from "./runtime.ts";
+import {
+  assertUtilities,
+  getUtility,
+  getUtilityParameters,
+  isNestedUtilityParameter,
+  isUtilityCall,
+  shouldResolveObject,
+  unwrapUtilityArguments,
+} from "./applyUtilityShared.ts";
 
 async function applyUtility<
   U extends Utility,
@@ -11,72 +18,23 @@ async function applyUtility<
   utilities: US,
   context: C,
 ): Promise<any> {
-  if (!utilities) {
-    throw new Error("applyUtility - No utilities were provided");
-  }
+  assertUtilities(utilities);
 
   if (!value) {
     return;
   }
 
-  // @ts-expect-error Figure out how to type this
-  if (typeof value.utility !== "string") {
-    if (isObject(value) && !(value instanceof Date)) {
-      return Object.fromEntries(
-        await Promise.all(
-          Object.entries(value).map(async (
-            [k, v],
-          ) => [
-            k,
-            await applyUtility(
-              v,
-              utilities,
-              context,
-            ),
-          ]),
-        ),
-      );
-    }
-
-    return value;
+  if (!isUtilityCall(value)) {
+    return await resolveNonUtilityValue(value, utilities, context);
   }
 
-  // @ts-expect-error Figure out how to type this
-  const foundUtility = utilities[value.utility];
-
-  if (!foundUtility) {
-    console.error({ utilities, value });
-    throw new Error("applyUtility - Matching utility was not found");
-  }
-
-  const parameters = await Promise.all(
-    // @ts-expect-error Figure out how to type this
-    Array.isArray(value.parameters)
-      // @ts-expect-error Figure out how to type this
-      ? value.parameters.map((p) => {
-        if (typeof p === "string") {
-          // Nothing to do
-        } else if (p.utility && p.parameters) {
-          return applyUtility(p, utilities, context);
-        }
-
-        return p;
-      })
-      : [],
-  );
+  const foundUtility = getUtility(utilities, value);
+  const parameters = await resolveUtilityParameters(value, utilities, context);
 
   try {
-    const utilityName = (value as Utility).utility;
-    const utility = foundUtility as (
-      this: unknown,
-      ...args: unknown[]
-    ) => unknown;
-
-    return utility.apply(
+    return foundUtility.apply(
       context,
-      (parameters as unknown[]).map((parameter) =>
-        unwrapRawHtmlArgument(parameter, utilityName)
-      ),
+      unwrapUtilityArguments(parameters, value.utility),
     );
   } catch (_error) {
     console.error("Failed to apply", foundUtility, parameters);
@@ -85,10 +43,35 @@ async function applyUtility<
 
 export { applyUtility };
 
-function unwrapRawHtmlArgument(value: unknown, utility: string) {
-  return utility === "render"
-    ? value
-    : isRawHtml(value)
-    ? unwrapRawHtml(value)
-    : value;
+async function resolveNonUtilityValue(
+  value: unknown,
+  utilities: Utilities,
+  context: Context,
+) {
+  if (!shouldResolveObject(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(value as Record<string, unknown>).map(async ([k, v]) => [
+        k,
+        await applyUtility(v, utilities, context),
+      ]),
+    ),
+  );
+}
+
+function resolveUtilityParameters(
+  value: Utility,
+  utilities: Utilities,
+  context: Context,
+) {
+  return Promise.all(
+    getUtilityParameters(value).map((parameter) =>
+      isNestedUtilityParameter(parameter)
+        ? applyUtility(parameter, utilities, context)
+        : parameter
+    ),
+  );
 }

@@ -1,71 +1,62 @@
-import { isString } from "../utilities/functional.ts";
-import { defaultUtilities } from "./defaultUtilities.ts";
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTMLSync } from "./utilities/astToHTMLSync.ts";
 import type { HtmlispToHTMLParameters } from "./types.ts";
 import { isRawHtml, raw } from "./utilities/runtime.ts";
+import {
+  createRenderUtilities,
+  endRender,
+  getHtmlInput,
+  startRender,
+} from "./htmlispToHTMLShared.ts";
 
-function htmlispToHTMLSync(
-  {
-    htmlInput,
-    components,
-    context,
-    props,
-    utilities,
-    componentUtilities,
-    renderOptions,
-  }: HtmlispToHTMLParameters,
-): string {
-  if (!htmlInput) {
-    throw new Error("convert - Missing html input");
-  }
-
-  if (!isString(htmlInput)) {
-    throw new Error("convert - html input was not a string");
-  }
-
-  utilities?._onRenderStart && utilities?._onRenderStart(context || {});
+function htmlispToHTMLSync(options: HtmlispToHTMLParameters): string {
+  const htmlInput = getHtmlInput(options);
+  startRender(options.utilities, options.context);
 
   // astToHtml is async because utilities can be async.
   // If that dependency was lifted, then the whole implementation could
   // become sync.
-  const ret = astToHTMLSync(
+  const ret = renderParsedHtmlSync(htmlInput, options);
+
+  endRender(options.utilities, options.context);
+
+  return ret;
+}
+
+function renderParsedHtmlSync(
+  htmlInput: string,
+  options: HtmlispToHTMLParameters,
+) {
+  const { components, context, props, componentUtilities, renderOptions } =
+    options;
+
+  return astToHTMLSync(
     parseTag(htmlInput),
     htmlispToHTMLSync,
     context,
     props,
     {},
-    {
-      render: (htmlInput: unknown) => {
-        if (isRawHtml(htmlInput)) {
-          return raw(htmlInput.value);
-        }
-
-        return htmlInput
-          ? raw(htmlispToHTMLSync({
-            htmlInput: String(htmlInput),
-            components,
-            context,
-            props,
-            utilities,
-            componentUtilities,
-            renderOptions,
-          }))
-          : raw("");
-      },
-      renderRaw: raw,
-      ...defaultUtilities,
-      ...utilities,
-    },
+    createRenderUtilities(options.utilities, createRenderUtilitySync(options)),
     componentUtilities,
     components || {},
     renderOptions,
     [],
   );
+}
 
-  utilities?._onRenderEnd && utilities?._onRenderEnd(context || {});
+function createRenderUtilitySync(options: HtmlispToHTMLParameters) {
+  return (htmlInput: unknown) => {
+    if (isRawHtml(htmlInput)) {
+      return raw(htmlInput.value);
+    }
 
-  return ret;
+    return htmlInput
+      ? raw(htmlispToHTMLSync({
+        ...options,
+        htmlInput: String(htmlInput),
+      }))
+      : raw("");
+  };
 }
 
 export { htmlispToHTMLSync };

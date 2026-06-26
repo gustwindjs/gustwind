@@ -1,17 +1,4 @@
-import type { Element, RawHtml } from "./htmlisp/types.ts";
-
-type Utilities =
-  & Record<
-    string,
-    (
-      this: { context: Context; props: Context; local?: Context },
-      ...args: any
-    ) => unknown | Promise<unknown> | void
-  >
-  & {
-    _onRenderStart?: (context: Context) => void;
-    _onRenderEnd?: (context: Context) => void;
-  };
+import type { Context, Element, RawHtml, Utilities } from "./htmlisp/types.ts";
 type Utility = {
   utility: string;
   parameters?: (string | Utility)[];
@@ -84,9 +71,6 @@ type PluginOptions = {
 
 type Meta = Record<string, unknown>;
 type Mode = "development" | "production";
-
-// This is the context used when rendering a page
-type Context = Record<string, unknown>;
 
 // TODO: Rename as PluginModule for clarity
 type Plugin<O = Record<string, unknown>, C = Context> = {

@@ -1,6 +1,13 @@
-import { isObject } from "../../utilities/functional.ts";
 import type { Context, Utilities, Utility } from "../../types.ts";
-import { isRawHtml, unwrapRawHtml } from "./runtime.ts";
+import {
+  assertUtilities,
+  getUtility,
+  getUtilityParameters,
+  isNestedUtilityParameter,
+  isUtilityCall,
+  shouldResolveObject,
+  unwrapUtilityArguments,
+} from "./applyUtilityShared.ts";
 
 function applyUtilitySync<
   U extends Utility,
@@ -11,76 +18,52 @@ function applyUtilitySync<
   utilities: US,
   context: C,
 ): any {
-  if (!utilities) {
-    throw new Error("applyUtility - No utilities were provided");
-  }
+  assertUtilities(utilities);
 
   if (!value) {
     return;
   }
 
-  // @ts-expect-error Figure out how to type this
-  if (typeof value.utility !== "string") {
-    if (isObject(value) && !(value instanceof Date)) {
-      return Object.fromEntries(
-        Object.entries(value).map((
-          [k, v],
-        ) => [
-          k,
-          applyUtilitySync(
-            v,
-            utilities,
-            context,
-          ),
-        ]),
-      );
-    }
-
-    return value;
+  if (!isUtilityCall(value)) {
+    return resolveNonUtilityValueSync(value, utilities, context);
   }
 
-  // @ts-expect-error Figure out how to type this
-  const foundUtility = utilities[value.utility];
+  const foundUtility = getUtility(utilities, value);
+  const parameters = resolveUtilityParametersSync(value, utilities, context);
 
-  if (!foundUtility) {
-    console.error({ utilities, value });
-    throw new Error("applyUtility - Matching utility was not found");
-  }
-
-  // @ts-expect-error Figure out how to type this
-  const parameters = Array.isArray(value.parameters)
-    // @ts-expect-error Figure out how to type this
-    ? value.parameters.map((p) => {
-      if (typeof p === "string") {
-        // Nothing to do
-      } else if (p.utility && p.parameters) {
-        return applyUtilitySync(p, utilities, context);
-      }
-
-      return p;
-    })
-    : [];
-
-  const utilityName = (value as Utility).utility;
-  const utility = foundUtility as (
-    this: unknown,
-    ...args: unknown[]
-  ) => unknown;
-
-  return utility.apply(
+  return foundUtility.apply(
     context,
-    (parameters as unknown[]).map((parameter) =>
-      unwrapRawHtmlArgument(parameter, utilityName)
-    ),
+    unwrapUtilityArguments(parameters, value.utility),
   );
 }
 
 export { applyUtilitySync };
 
-function unwrapRawHtmlArgument(value: unknown, utility: string) {
-  return utility === "render"
-    ? value
-    : isRawHtml(value)
-    ? unwrapRawHtml(value)
-    : value;
+function resolveNonUtilityValueSync(
+  value: unknown,
+  utilities: Utilities,
+  context: Context,
+) {
+  if (!shouldResolveObject(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([k, v]) => [
+      k,
+      applyUtilitySync(v, utilities, context),
+    ]),
+  );
+}
+
+function resolveUtilityParametersSync(
+  value: Utility,
+  utilities: Utilities,
+  context: Context,
+) {
+  return getUtilityParameters(value).map((parameter) =>
+    isNestedUtilityParameter(parameter)
+      ? applyUtilitySync(parameter, utilities, context)
+      : parameter
+  );
 }

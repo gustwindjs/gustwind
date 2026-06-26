@@ -855,13 +855,8 @@ function getDependencyLayers(plugins: PluginDefinition[]) {
 }
 
 export {
-  applyAfterEachRenders,
-  applyBeforeEachRenders,
   applyMatchRoutes,
-  applyOnTasksRegistered,
   applyPlugins,
-  applyPrepareContext,
-  applyRenderLayouts,
   cleanUpPlugins,
   createSend,
   finishPlugins,

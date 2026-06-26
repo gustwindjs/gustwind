@@ -1,5 +1,16 @@
-import type { Context, Utilities } from "../types.ts";
-
+type Context = Record<string, unknown>;
+type Utilities =
+  & Record<
+    string,
+    (
+      this: { context: Context; props: Context; local?: Context },
+      ...args: any
+    ) => unknown | Promise<unknown> | void
+  >
+  & {
+    _onRenderStart?: (context: Context) => void;
+    _onRenderEnd?: (context: Context) => void;
+  };
 type Attributes = Record<string, string | boolean | null>;
 type ForeachBinding = {
   items: unknown[];
@@ -47,4 +58,5 @@ export type {
   HtmlispToHTMLParameters,
   HtmllispToHTMLParameters,
   RawHtml,
+  Utilities,
 };
