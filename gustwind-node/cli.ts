@@ -112,9 +112,18 @@ async function main(cliArgs: string[]): Promise<number> {
 }
 
 function shouldShowUsage(args: CliArgs) {
-  return args.help ||
-    (!args.benchmark && !args.build && !args.develop && !args.diagnoseRoutes &&
-      !args.serve && !args.validate);
+  return args.help || !hasCliAction(args);
+}
+
+function hasCliAction(args: CliArgs) {
+  return [
+    args.benchmark,
+    args.build,
+    args.develop,
+    args.diagnoseRoutes,
+    args.serve,
+    args.validate,
+  ].some(Boolean);
 }
 
 function createCliExecutionContext(args: CliArgs): CliExecutionContext {
@@ -214,20 +223,26 @@ function reportBuildSummary(
   { args }: CliExecutionContext,
   buildResult: BuildResult,
 ) {
-  if (
-    args.build && !args.benchmark &&
-    typeof buildResult?.routesBuilt === "number"
-  ) {
-    if (args.incremental) {
-      console.log(
-        `Incremental build reused ${
-          buildResult.cacheHits || 0
-        } routes and rebuilt ${buildResult.routesBuilt}.`,
-      );
-    } else {
-      console.log(`Full build rebuilt ${buildResult.routesBuilt} routes.`);
-    }
+  if (!shouldReportBuildSummary(args, buildResult)) {
+    return;
   }
+
+  console.log(createBuildSummaryMessage(args, buildResult));
+}
+
+function shouldReportBuildSummary(args: CliArgs, buildResult: BuildResult) {
+  return args.build && !args.benchmark &&
+    typeof buildResult?.routesBuilt === "number";
+}
+
+function createBuildSummaryMessage(args: CliArgs, buildResult: BuildResult) {
+  if (!args.incremental) {
+    return `Full build rebuilt ${buildResult.routesBuilt} routes.`;
+  }
+
+  return `Incremental build reused ${
+    buildResult.cacheHits || 0
+  } routes and rebuilt ${buildResult.routesBuilt}.`;
 }
 
 async function writeBenchmarkResult(
