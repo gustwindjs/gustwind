@@ -1,15 +1,5 @@
-import { availableParallelism } from "node:os";
 import * as path from "node:path";
-import {
-  cp,
-  mkdir,
-  open,
-  readdir,
-  readFile,
-  rm,
-  unlink,
-  writeFile,
-} from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import {
   applyMatchRoutes,
@@ -51,18 +41,14 @@ import type {
   IncrementalBuildCache,
   IncrementalBuildRouteCacheEntry,
 } from "../utilities/incrementalBuildCache.ts";
+import { executeTask } from "./buildTasks.ts";
+import {
+  acquireBuildLock,
+  getDefaultRouteConcurrency,
+  removeOutputDirectoryContents,
+} from "./buildOutput.ts";
 
 const DEBUG = isDebugEnabled();
-const readOnlyTaskTypes = new Set([
-  "init",
-  "listDirectory",
-  "loadJSON",
-  "loadModule",
-  "readTextFile",
-] as const);
-const retryableRemoveOutputErrors = new Set(["ENOTEMPTY", "EBUSY", "EPERM"]);
-type ReadOnlyTaskType =
-  typeof readOnlyTaskTypes extends Set<infer T> ? T : never;
 type BuildNodeResult = {
   benchmark?: BuildBenchmark;
   cacheFrom?: string;
@@ -932,232 +918,6 @@ async function updateRouteBuildCache({
       outputPaths,
     };
   }
-}
-
-async function executeTask({
-  benchmark,
-  outputDirectory,
-  task,
-}: {
-  benchmark?: ReturnType<typeof createBuildBenchmark>;
-  outputDirectory: string;
-  task: Exclude<Tasks[number], { type: "build" }>;
-}) {
-  DEBUG && console.log("node build - running task", task.type);
-  benchmark?.markTaskProcessed();
-  const execute = taskExecutors[task.type];
-
-  if (execute) {
-    await execute(task.payload as never);
-    return;
-  }
-
-  if (isReadOnlyTask(task)) {
-    return;
-  }
-
-  throw new Error(`Unsupported build task ${task.type}`);
-}
-
-const taskExecutors: Record<string, (payload: never) => Promise<void>> = {
-  copyFiles: (
-    payload: Extract<Tasks[number], { type: "copyFiles" }>["payload"],
-  ) => executeCopyTask(payload),
-  writeFile: (
-    payload: Extract<
-      Tasks[number],
-      { type: "writeFile" | "writeTextFile" }
-    >["payload"],
-  ) => executeWriteTask(payload),
-  writeTextFile: (
-    payload: Extract<
-      Tasks[number],
-      { type: "writeFile" | "writeTextFile" }
-    >["payload"],
-  ) => executeWriteTask(payload),
-};
-
-function isWriteTask(
-  task: Exclude<Tasks[number], { type: "build" }>,
-): task is Extract<Tasks[number], { type: "writeFile" | "writeTextFile" }> {
-  return task.type === "writeFile" || task.type === "writeTextFile";
-}
-
-function isReadOnlyTask(
-  task: Exclude<Tasks[number], { type: "build" }>,
-): task is Extract<
-  Tasks[number],
-  {
-    type: "loadJSON" | "loadModule" | "listDirectory" | "readTextFile" | "init";
-  }
-> {
-  return readOnlyTaskTypes.has(task.type as ReadOnlyTaskType);
-}
-
-async function executeWriteTask(
-  payload: Extract<
-    Tasks[number],
-    { type: "writeFile" | "writeTextFile" }
-  >["payload"],
-) {
-  if (payload.outputDirectory.endsWith(".html")) {
-    return;
-  }
-
-  const filePath = path.join(payload.outputDirectory, payload.file);
-
-  await mkdir(path.dirname(filePath), { recursive: true });
-  await writeFile(filePath, payload.data);
-}
-
-async function executeCopyTask(
-  payload: Extract<Tasks[number], { type: "copyFiles" }>["payload"],
-) {
-  await cp(
-    payload.inputDirectory,
-    path.join(payload.outputDirectory, payload.outputPath),
-    { force: true, recursive: true },
-  );
-}
-
-function getDefaultRouteConcurrency() {
-  return Math.max(1, availableParallelism() - 1);
-}
-
-async function removeOutputDirectory(outputDirectory: string) {
-  for (let attempt = 0; attempt < 4; attempt++) {
-    try {
-      await rm(outputDirectory, { recursive: true, force: true });
-      return;
-    } catch (error) {
-      if (!shouldRetryRemoveOutput(error, attempt)) {
-        throw error;
-      }
-
-      await waitBeforeRemoveOutputRetry(attempt);
-    }
-  }
-}
-
-function shouldRetryRemoveOutput(error: unknown, attempt: number) {
-  return attempt < 3 && retryableRemoveOutputErrors.has(getErrorCode(error));
-}
-
-function getErrorCode(error: unknown) {
-  return error instanceof Error && "code" in error ? String(error.code) : "";
-}
-
-function waitBeforeRemoveOutputRetry(attempt: number) {
-  return new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-}
-
-async function removeOutputDirectoryContents(outputDirectory: string) {
-  await mkdir(outputDirectory, { recursive: true });
-
-  let entries: { name: string }[];
-
-  try {
-    entries = await readdir(outputDirectory, { withFileTypes: true });
-  } catch {
-    return;
-  }
-
-  await Promise.all(
-    entries.map(async (entry) => {
-      if (entry.name === ".gustwind") {
-        return;
-      }
-
-      await removeOutputDirectory(path.join(outputDirectory, entry.name));
-    }),
-  );
-}
-
-async function acquireBuildLock(outputDirectory: string) {
-  const lockDirectory = path.join(outputDirectory, ".gustwind");
-  const lockPath = path.join(lockDirectory, "build.lock");
-
-  await mkdir(lockDirectory, { recursive: true });
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      await createBuildLockFile(lockPath);
-
-      return async () => {
-        await unlink(lockPath).catch(() => undefined);
-      };
-    } catch (error) {
-      if (await shouldRetryBuildLock(error, lockPath)) {
-        continue;
-      }
-
-      throwBuildLockError(outputDirectory, lockPath);
-    }
-  }
-
-  throw new Error(`Failed to acquire Gustwind build lock at ${lockPath}`);
-}
-
-async function createBuildLockFile(lockPath: string) {
-  const handle = await open(lockPath, "wx");
-
-  await handle.writeFile(
-    JSON.stringify({
-      pid: process.pid,
-      startedAt: new Date().toISOString(),
-    }) + "\n",
-  );
-  await handle.close();
-}
-
-async function shouldRetryBuildLock(error: unknown, lockPath: string) {
-  if (!isFileExistsError(error)) {
-    throw error;
-  }
-
-  return await removeStaleBuildLock(lockPath);
-}
-
-function throwBuildLockError(outputDirectory: string, lockPath: string): never {
-  throw new Error(
-    `Another Gustwind build is already using ${outputDirectory}. ` +
-      `Remove ${lockPath} if that build is no longer running.`,
-  );
-}
-
-async function removeStaleBuildLock(lockPath: string) {
-  let parsed: { pid?: unknown };
-
-  try {
-    parsed = JSON.parse(await readFile(lockPath, "utf8"));
-  } catch {
-    return false;
-  }
-
-  if (typeof parsed.pid !== "number" || isProcessRunning(parsed.pid)) {
-    return false;
-  }
-
-  await unlink(lockPath).catch(() => undefined);
-
-  return true;
-}
-
-function isProcessRunning(pid: number) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return !(
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "ESRCH"
-    );
-  }
-}
-
-function isFileExistsError(error: unknown) {
-  return error instanceof Error && "code" in error && error.code === "EEXIST";
 }
 
 export { buildNode };
