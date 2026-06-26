@@ -25,23 +25,40 @@ function renderElement(
     renderedChildren,
   );
 
-  if (isFragment && (type === "fragment" || !parsedAttributes.type)) {
+  if (shouldRenderFragmentContent(isFragment, type, parsedAttributes)) {
     return content;
   }
 
-  const t = type === "noop" && parsedAttributes.type || type;
+  const renderedType = getRenderedType(type, parsedAttributes);
 
-  if (!t) {
+  if (!renderedType) {
     return content;
   }
 
   return renderNormalElement(
-    String(t),
+    renderedType,
     type,
     parsedAttributes,
     content,
     renderOptions,
   );
+}
+
+function shouldRenderFragmentContent(
+  isFragment: boolean,
+  type: string,
+  parsedAttributes: Record<string, unknown>,
+) {
+  return isFragment && (type === "fragment" || !parsedAttributes.type);
+}
+
+function getRenderedType(
+  type: string,
+  parsedAttributes: Record<string, unknown>,
+) {
+  const renderedType = type === "noop" && parsedAttributes.type || type;
+
+  return renderedType ? String(renderedType) : "";
 }
 
 function isSelfClosingElement(
