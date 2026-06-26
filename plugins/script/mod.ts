@@ -12,13 +12,15 @@ import {
   type ScriptPluginContext,
 } from "./types.ts";
 
+type ScriptPluginOptions = {
+  scripts?: Scripts;
+  scriptAssets?: ScriptEntryAssets;
+  // TODO: Model scripts output path here
+  scriptsPath?: string[];
+};
+
 const plugin: Plugin<
-  {
-    scripts?: Scripts;
-    scriptAssets?: ScriptEntryAssets;
-    // TODO: Model scripts output path here
-    scriptsPath?: string[];
-  },
+  ScriptPluginOptions,
   {
     foundScripts: FoundScript[];
     receivedScripts: {
@@ -44,6 +46,8 @@ const plugin: Plugin<
     outputDirectory,
   }) {
     let builtEntryAssets: ScriptEntryAssets = {};
+    const loadScripts = () =>
+      loadConfiguredScripts({ cwd, load, scriptAssets, scriptsPath });
 
     return {
       initPluginContext: async () => {
@@ -84,35 +88,47 @@ const plugin: Plugin<
       },
       cleanUp: stopEsbuild,
     };
-
-    async function loadScripts(): Promise<
-      {
-        name: string;
-        path: string;
-        externals?: string[];
-      }[]
-    > {
-      if (scriptAssets) {
-        return Object.keys(scriptAssets).map((name) => ({
-          name: `${normalizeScriptName(name)}.ts`,
-          path: "",
-        }));
-      }
-
-      return (
-        await Promise.all(
-          scriptsPath.map((p) =>
-            load.dir({
-              path: path.join(cwd, p),
-              extension: ".ts",
-              type: "foundScripts",
-            }),
-          ),
-        )
-      ).flat();
-    }
   },
 };
+
+async function loadConfiguredScripts(
+  {
+    cwd,
+    load,
+    scriptAssets,
+    scriptsPath,
+  }: {
+    cwd: string;
+    load: Parameters<Plugin<ScriptPluginOptions>["init"]>[0]["load"];
+    scriptAssets?: ScriptEntryAssets;
+    scriptsPath: string[];
+  },
+): Promise<
+  {
+    name: string;
+    path: string;
+    externals?: string[];
+  }[]
+> {
+  if (scriptAssets) {
+    return Object.keys(scriptAssets).map((name) => ({
+      name: `${normalizeScriptName(name)}.ts`,
+      path: "",
+    }));
+  }
+
+  return (
+    await Promise.all(
+      scriptsPath.map((p) =>
+        load.dir({
+          path: path.join(cwd, p),
+          extension: ".ts",
+          type: "foundScripts",
+        }),
+      ),
+    )
+  ).flat();
+}
 
 export { plugin, SCRIPT_ASSETS_MANIFEST_PATH };
 export type { ScriptEntryAsset, ScriptEntryAssets };

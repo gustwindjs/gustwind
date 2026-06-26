@@ -371,8 +371,7 @@ function createScriptPluginDeclaration() {
   ].join("\n");
 }
 
-function createCloudflareWorkerDeclaration() {
-  return [
+const cloudflareWorkerDeclarationLines = [
     'import type { Plugin, Tasks } from "../../types.js";',
     "",
     "type PluginDefinition = [Plugin, Record<string, unknown>];",
@@ -434,7 +433,10 @@ function createCloudflareWorkerDeclaration() {
     "  CloudflareWorkerOptions,",
     "};",
     "",
-  ].join("\n");
+  ];
+
+function createCloudflareWorkerDeclaration() {
+  return cloudflareWorkerDeclarationLines.join("\n");
 }
 
 function createHtmlispEntryDeclaration(declaration) {
@@ -572,8 +574,7 @@ function createDefaultExpressionsDeclaration() {
   ].join("\n");
 }
 
-function createGustwindDeclaration() {
-  return [
+const gustwindDeclarationLines = [
     'import type { InitLoadApi, Plugin, PluginOptions, Tasks } from "./types.js";',
     "",
     "type PluginDefinition = [Plugin, Record<string, unknown>];",
@@ -655,5 +656,8 @@ function createGustwindDeclaration() {
     "",
     "export type { BuildBenchmark, BuildNodeResult, BuildRouteBenchmark, RenderFn };",
     "",
-  ].join("\n");
+  ];
+
+function createGustwindDeclaration() {
+  return gustwindDeclarationLines.join("\n");
 }
