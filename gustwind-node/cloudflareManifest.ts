@@ -132,19 +132,23 @@ async function collectHtmlFiles(directoryPath: string): Promise<string[]> {
   const files: string[] = [];
 
   for (const entry of entries) {
-    const entryPath = path.join(directoryPath, entry.name);
-
-    if (entry.isDirectory()) {
-      files.push(...await collectHtmlFiles(entryPath));
-      continue;
-    }
-
-    if (entry.isFile() && entry.name.endsWith(".html")) {
-      files.push(entryPath);
-    }
+    files.push(...await collectHtmlEntry(directoryPath, entry));
   }
 
   return files.sort();
+}
+
+async function collectHtmlEntry(
+  directoryPath: string,
+  entry: { name: string; isFile(): boolean; isDirectory(): boolean },
+): Promise<string[]> {
+  const entryPath = path.join(directoryPath, entry.name);
+
+  if (entry.isDirectory()) {
+    return collectHtmlFiles(entryPath);
+  }
+
+  return entry.isFile() && entry.name.endsWith(".html") ? [entryPath] : [];
 }
 
 async function getExistingPath(filePath: string) {

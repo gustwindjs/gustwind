@@ -604,28 +604,33 @@ function isOutsideRoot(relativePath: string) {
 }
 
 function resolveImportedModulePath(modulePath: string, specifier: string) {
-  if (isRemotePath(specifier)) {
-    return null;
-  }
-
-  if (isFileUrl(specifier)) {
-    return fileURLToPath(specifier);
-  }
-
-  if (isAbsolutePath(specifier)) {
-    return specifier;
-  }
-
-  if (isRelativePath(specifier)) {
-    return resolveRelativeModulePath(modulePath, specifier);
-  }
-
-  return undefined;
+  return resolveImportSpecifiers
+    .find(({ matches }) => matches(specifier))
+    ?.resolve(modulePath, specifier);
 }
 
-function isAbsolutePath(targetPath: string) {
-  return path.isAbsolute(targetPath);
-}
+const resolveImportSpecifiers = [
+  {
+    matches: isRemotePath,
+    resolve: () => null,
+  },
+  {
+    matches: isFileUrl,
+    resolve: (_modulePath: string, specifier: string) =>
+      fileURLToPath(specifier),
+  },
+  {
+    matches: path.isAbsolute,
+    resolve: (_modulePath: string, specifier: string) => specifier,
+  },
+  {
+    matches: isRelativePath,
+    resolve: resolveRelativeModulePath,
+  },
+] satisfies {
+  matches: (targetPath: string) => boolean;
+  resolve: (modulePath: string, specifier: string) => string | null | undefined;
+}[];
 
 function isRemotePath(targetPath: string) {
   return targetPath.startsWith("http://") || targetPath.startsWith("https://");

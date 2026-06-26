@@ -68,20 +68,42 @@ function parseDoubleCharacter<ExpressionReturnType>(
   c: string,
   index: number,
 ) {
-  switch (parseState.state) {
-    case STATES.IDLE:
-      parseIdle(parseState, c, index);
-      break;
-    case STATES.PARSE_EXPRESSION:
-      parseExpressionName(parseState, expressions, c);
-      break;
-    case STATES.PARSE_EXPRESSION_FIRST:
-      parseFirstArgument(parseState, getCharacter, c);
-      break;
-    case STATES.PARSE_EXPRESSION_SECOND:
-      return parseSecondArgument(parseState, getCharacter, expressions, c);
-  }
+  return doubleStateParsers[parseState.state](
+    parseState,
+    getCharacter,
+    expressions,
+    c,
+    index,
+  );
 }
+
+const doubleStateParsers = {
+  [STATES.IDLE]: <ExpressionReturnType>(
+    parseState: DoubleParseState,
+    _getCharacter: CharacterGenerator,
+    _expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+    c: string,
+    index: number,
+  ) => parseIdle(parseState, c, index),
+  [STATES.PARSE_EXPRESSION]: <ExpressionReturnType>(
+    parseState: DoubleParseState,
+    _getCharacter: CharacterGenerator,
+    expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+    c: string,
+  ) => parseExpressionName(parseState, expressions, c),
+  [STATES.PARSE_EXPRESSION_FIRST]: (
+    parseState: DoubleParseState,
+    getCharacter: CharacterGenerator,
+    _expressions: unknown,
+    c: string,
+  ) => parseFirstArgument(parseState, getCharacter, c),
+  [STATES.PARSE_EXPRESSION_SECOND]: <ExpressionReturnType>(
+    parseState: DoubleParseState,
+    getCharacter: CharacterGenerator,
+    expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+    c: string,
+  ) => parseSecondArgument(parseState, getCharacter, expressions, c),
+};
 
 function parseIdle(
   parseState: DoubleParseState,
@@ -160,23 +182,44 @@ function parseSecondArgument<ExpressionReturnType>(
     return;
   }
 
-  if (c === "{") {
-    parseState.bracesFound++;
-  } else if (c === "}") {
-    if (parseState.bracesFound) {
-      parseState.bracesFound--;
-    } else {
-      return {
-        match: parseState.foundKey,
-        value: expressions[parseState.foundKey](
-          parseState.foundFirst,
-          parseState.stringBuffer,
-        ),
-      };
-    }
-  }
+  const result = parseSecondArgumentBrace(parseState, expressions, c);
 
   parseState.stringBuffer += c;
+
+  return result;
+}
+
+function parseSecondArgumentBrace<ExpressionReturnType>(
+  parseState: DoubleParseState,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+  c: string,
+) {
+  if (c === "{") {
+    parseState.bracesFound++;
+
+    return;
+  }
+
+  return c === "}" ? parseSecondArgumentClosingBrace(parseState, expressions) : undefined;
+}
+
+function parseSecondArgumentClosingBrace<ExpressionReturnType>(
+  parseState: DoubleParseState,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+) {
+  if (parseState.bracesFound) {
+    parseState.bracesFound--;
+
+    return;
+  }
+
+  return {
+    match: parseState.foundKey,
+    value: expressions[parseState.foundKey](
+      parseState.foundFirst,
+      parseState.stringBuffer,
+    ),
+  };
 }
 
 function parseEscapedPercent(

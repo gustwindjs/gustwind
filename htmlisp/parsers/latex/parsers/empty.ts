@@ -11,18 +11,37 @@ function parseEmpty(
   const isEmptyCharacter = checkRule || isDefaultEmptyCharacter;
 
   for (let i = 0; i < LIMIT; i++) {
-    const c = getCharacter.next();
-
-    if (c === null) {
+    if (advanceEmptyCharacter(getCharacter, isEmptyCharacter)) {
       break;
     }
-
-    if (!isEmptyCharacter(c)) {
-      getCharacter.previous();
-
-      return;
-    }
   }
+}
+
+function advanceEmptyCharacter(
+  getCharacter: CharacterGenerator,
+  isEmptyCharacter: (c: string) => boolean,
+) {
+  const c = getCharacter.next();
+
+  if (c === null) {
+    return true;
+  }
+
+  return rewindAfterContent(getCharacter, c, isEmptyCharacter);
+}
+
+function rewindAfterContent(
+  getCharacter: CharacterGenerator,
+  c: string,
+  isEmptyCharacter: (c: string) => boolean,
+) {
+  if (isEmptyCharacter(c)) {
+    return false;
+  }
+
+  getCharacter.previous();
+
+  return true;
 }
 
 function isDefaultEmptyCharacter(c: string) {

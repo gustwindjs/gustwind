@@ -51,20 +51,15 @@ function resolveScopedValue(
   defaultValue?: unknown,
 ) {
   const sources = [scope.local, scope.props, scope.context];
+  const resolved = sources
+    .map((source) => resolveSourceValue(source, key))
+    .find(hasResolvedValue);
 
-  for (const source of sources) {
-    if (!source || !isObject(source)) {
-      continue;
-    }
+  return hasResolvedValue(resolved) ? resolved : defaultValue;
+}
 
-    const resolved = get(source, key);
-
-    if (hasResolvedValue(resolved)) {
-      return resolved;
-    }
-  }
-
-  return defaultValue;
+function resolveSourceValue(source: Context | undefined, key: string) {
+  return source && isObject(source) ? get(source, key) : undefined;
 }
 
 function hasResolvedValue(value: unknown) {

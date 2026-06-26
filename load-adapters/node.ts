@@ -89,19 +89,26 @@ async function collectFiles(directoryPath: string, recursive: boolean) {
   const files: { path: string; name: string }[] = [];
 
   for (const entry of entries) {
-    const entryPath = path.join(directoryPath, entry.name);
-
-    if (entry.isFile()) {
-      files.push({ path: entryPath, name: entry.name });
-      continue;
-    }
-
-    if (recursive && entry.isDirectory()) {
-      files.push(...(await collectFiles(entryPath, recursive)));
-    }
+    files.push(...await collectFileEntry(directoryPath, entry, recursive));
   }
 
   return files;
+}
+
+async function collectFileEntry(
+  directoryPath: string,
+  entry: { name: string; isFile(): boolean; isDirectory(): boolean },
+  recursive: boolean,
+) {
+  const entryPath = path.join(directoryPath, entry.name);
+
+  if (entry.isFile()) {
+    return [{ path: entryPath, name: entry.name }];
+  }
+
+  return recursive && entry.isDirectory()
+    ? collectFiles(entryPath, recursive)
+    : [];
 }
 
 async function readTextFile(filePath: string) {
@@ -128,11 +135,7 @@ async function shouldBundleModule(
   modulePath: string,
   bundleMode: "auto" | "always",
 ) {
-  if (bundleMode === "always") {
-    return true;
-  }
-
-  if (modulePath.startsWith("http://") || modulePath.startsWith("https://")) {
+  if (shouldForceBundleModule(modulePath, bundleMode)) {
     return true;
   }
 
@@ -143,6 +146,13 @@ async function shouldBundleModule(
   }
 
   return await hasRemoteModuleDependencies(normalizedPath, new Set());
+}
+
+function shouldForceBundleModule(
+  modulePath: string,
+  bundleMode: "auto" | "always",
+) {
+  return bundleMode === "always" || isRemoteSpecifier(modulePath);
 }
 
 async function bundleModule(modulePath: string) {
@@ -256,18 +266,23 @@ async function hasRemoteModuleDependencies(
   const importSpecifiers = getImportSpecifiers(source);
 
   for (const specifier of importSpecifiers) {
-    if (isRemoteSpecifier(specifier)) {
-      return true;
-    }
-
-    if (
-      await localDependencyHasRemoteModule(modulePath, specifier, visitedPaths)
-    ) {
+    if (await moduleSpecifierHasRemoteDependency(modulePath, specifier, visitedPaths)) {
       return true;
     }
   }
 
   return false;
+}
+
+async function moduleSpecifierHasRemoteDependency(
+  modulePath: string,
+  specifier: string,
+  visitedPaths: Set<string>,
+) {
+  return (
+    isRemoteSpecifier(specifier) ||
+    (await localDependencyHasRemoteModule(modulePath, specifier, visitedPaths))
+  );
 }
 
 async function localDependencyHasRemoteModule(

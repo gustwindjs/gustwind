@@ -32,6 +32,7 @@ type DevServer = {
   port: number;
   url: string;
 };
+type DevNext = (error?: unknown) => void;
 
 type ActiveRuntime = Awaited<ReturnType<typeof loadRuntime>>;
 type PluginDefinitionsSource =
@@ -140,34 +141,64 @@ function registerDevMiddleware({
   vite: ViteDevServer;
   watchedPaths: Set<string>;
 }) {
-  vite.middlewares.use(async (req, res, next) => {
-    if (!req.url) {
-      next();
-      return;
-    }
+  vite.middlewares.use((req, res, next) =>
+    handleDevMiddlewareRequest(reqState, vite, watchedPaths, req, res, next),
+  );
+}
 
-    try {
-      const handled = await handleRequest({
-        vite,
-        req,
-        res,
-        state: reqState.runtime,
-        watchTasks(tasks) {
-          return watchTasks(vite, watchedPaths, tasks);
-        },
-      });
+async function handleDevMiddlewareRequest(
+  reqState: DevServerState,
+  vite: ViteDevServer,
+  watchedPaths: Set<string>,
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: DevNext,
+) {
+  if (!req.url) {
+    next();
+    return;
+  }
 
-      if (!handled) {
-        next();
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        vite.ssrFixStacktrace(error);
-      }
+  try {
+    await dispatchDevMiddlewareRequest(reqState, vite, watchedPaths, req, res, next);
+  } catch (error) {
+    handleDevMiddlewareError(vite, next, error);
+  }
+}
 
-      next(error);
-    }
+async function dispatchDevMiddlewareRequest(
+  reqState: DevServerState,
+  vite: ViteDevServer,
+  watchedPaths: Set<string>,
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: DevNext,
+) {
+  const handled = await handleRequest({
+    vite,
+    req,
+    res,
+    state: reqState.runtime,
+    watchTasks(tasks) {
+      return watchTasks(vite, watchedPaths, tasks);
+    },
   });
+
+  if (!handled) {
+    next();
+  }
+}
+
+function handleDevMiddlewareError(
+  vite: ViteDevServer,
+  next: DevNext,
+  error: unknown,
+) {
+  if (error instanceof Error) {
+    vite.ssrFixStacktrace(error);
+  }
+
+  next(error);
 }
 
 async function listenHttpServer({

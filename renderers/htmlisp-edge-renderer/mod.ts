@@ -360,24 +360,35 @@ function handleEdgeRendererFileChange(
 ) {
   DEBUG && console.log("htmlisp-edge-renderer - file changed", payload);
 
-  switch (payload.type) {
-    case "components":
-      return {
-        send: [{ type: "reloadPage" as const, payload: undefined }],
-        pluginContext: { components: services.options.components },
-      };
-    case "globalUtilities":
-      return {
-        send: [{ type: "reloadPage" as const, payload: undefined }],
-        pluginContext: { globalUtilities: services.options.globalUtilities },
-      };
-    case "paths":
-      return { send: [{ type: "reloadPage" as const, payload: undefined }] };
-  }
-
-  // Reload anyway
-  return { send: [{ type: "reloadPage" as const, payload: undefined }] };
+  return getEdgeRendererReloadResult(payload.type, services);
 }
+
+function getEdgeRendererReloadResult(
+  payloadType: string,
+  services: EdgeRendererServices,
+) {
+  return {
+    send: [{ type: "reloadPage" as const, payload: undefined }],
+    pluginContext: getEdgeRendererReloadContext(payloadType, services),
+  };
+}
+
+function getEdgeRendererReloadContext(
+  payloadType: string,
+  services: EdgeRendererServices,
+): Partial<EdgeRendererPluginContext> | undefined {
+  return edgeRendererReloadContexts[payloadType]?.(services);
+}
+
+const edgeRendererReloadContexts: Record<
+  string,
+  (services: EdgeRendererServices) => Partial<EdgeRendererPluginContext>
+> = {
+  components: (services) => ({ components: services.options.components }),
+  globalUtilities: (services) => ({
+    globalUtilities: services.options.globalUtilities,
+  }),
+};
 
 function withRenderContext(
   error: unknown,

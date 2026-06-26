@@ -13,9 +13,7 @@ function parseForeachExpression(
     return;
   }
 
-  const match = trimmed.match(FOREACH_ALIAS);
-  const source = match?.groups?.source?.trim() || trimmed;
-  const alias = match?.groups?.alias;
+  const { source, alias } = parseForeachSource(trimmed);
   const expression = parseBoundExpression(source);
 
   if (!expression) {
@@ -23,6 +21,15 @@ function parseForeachExpression(
   }
 
   return { expression, alias };
+}
+
+function parseForeachSource(trimmed: string) {
+  const match = trimmed.match(FOREACH_ALIAS);
+
+  return {
+    source: match?.groups?.source?.trim() || trimmed,
+    alias: match?.groups?.alias,
+  };
 }
 
 function isForeachBinding(value: unknown): value is ForeachBinding {

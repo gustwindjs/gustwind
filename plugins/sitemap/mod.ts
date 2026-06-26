@@ -75,19 +75,27 @@ async function listPublicPaths(
   const publicPaths: string[] = [];
 
   for (const entry of entries) {
-    const relativePath = parentPath
-      ? path.join(parentPath, entry.name)
-      : entry.name;
-    const absolutePath = path.join(directoryPath, entry.name);
-
-    if (entry.isDirectory()) {
-      publicPaths.push(...(await listPublicPaths(absolutePath, relativePath)));
-    } else if (isPublicPathEntry(entry)) {
-      publicPaths.push(relativePath);
-    }
+    publicPaths.push(...await listPublicPathEntry(directoryPath, parentPath, entry));
   }
 
   return publicPaths;
+}
+
+async function listPublicPathEntry(
+  directoryPath: string,
+  parentPath: string,
+  entry: Dirent,
+) {
+  const relativePath = parentPath
+    ? path.join(parentPath, entry.name)
+    : entry.name;
+  const absolutePath = path.join(directoryPath, entry.name);
+
+  if (entry.isDirectory()) {
+    return listPublicPaths(absolutePath, relativePath);
+  }
+
+  return isPublicPathEntry(entry) ? [relativePath] : [];
 }
 
 function isPublicPathEntry(entry: Dirent) {

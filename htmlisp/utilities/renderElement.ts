@@ -12,11 +12,17 @@ function renderElement(
   const { type, closesWith } = tag;
   const isFragment = type === "noop" || type === "fragment";
 
-  if (isSelfClosingElement(isFragment, parsedChildren, closesWith)) {
+  const selfClosingElement = getSelfClosingElement(
+    isFragment,
+    parsedChildren,
+    closesWith,
+  );
+
+  if (typeof selfClosingElement !== "undefined") {
     return renderSelfClosingElement(
       type,
       parsedAttributes,
-      closesWith,
+      selfClosingElement,
       renderOptions,
     );
   }
@@ -25,23 +31,7 @@ function renderElement(
     renderedChildren,
   );
 
-  if (shouldRenderFragmentContent(isFragment, type, parsedAttributes)) {
-    return content;
-  }
-
-  const renderedType = getRenderedType(type, parsedAttributes);
-
-  if (!renderedType) {
-    return content;
-  }
-
-  return renderNormalElement(
-    renderedType,
-    type,
-    parsedAttributes,
-    content,
-    renderOptions,
-  );
+  return renderOpenElement(type, isFragment, parsedAttributes, content, renderOptions);
 }
 
 function shouldRenderFragmentContent(
@@ -61,12 +51,38 @@ function getRenderedType(
   return renderedType ? String(renderedType) : "";
 }
 
-function isSelfClosingElement(
+function getSelfClosingElement(
   isFragment: boolean,
   parsedChildren: unknown,
   closesWith: Element["closesWith"],
-): closesWith is string {
-  return !isFragment && !parsedChildren && typeof closesWith === "string";
+) {
+  return !isFragment && !parsedChildren && typeof closesWith === "string"
+    ? closesWith
+    : undefined;
+}
+
+function renderOpenElement(
+  type: string,
+  isFragment: boolean,
+  parsedAttributes: Record<string, unknown>,
+  content: string,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  if (shouldRenderFragmentContent(isFragment, type, parsedAttributes)) {
+    return content;
+  }
+
+  const renderedType = getRenderedType(type, parsedAttributes);
+
+  return renderedType
+    ? renderNormalElement(
+      renderedType,
+      type,
+      parsedAttributes,
+      content,
+      renderOptions,
+    )
+    : content;
 }
 
 function renderSelfClosingElement(

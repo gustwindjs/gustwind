@@ -45,17 +45,39 @@ function serializeExtraAttributes(
 ) {
   const serializedAttributes: [string, string | boolean][] = [];
 
-  if (!extraAttributes || typeof extraAttributes !== "object") {
+  if (!isExtraAttributesObject(extraAttributes)) {
     return serializedAttributes;
   }
 
   for (const [key, value] of Object.entries(extraAttributes)) {
-    if (!Object.hasOwn(explicitAttributes, key)) {
-      addSerializedAttribute(serializedAttributes, key, value, renderOptions);
-    }
+    addExtraSerializedAttribute(
+      serializedAttributes,
+      explicitAttributes,
+      key,
+      value,
+      renderOptions,
+    );
   }
 
   return serializedAttributes;
+}
+
+function isExtraAttributesObject(
+  extraAttributes: unknown,
+): extraAttributes is Record<string, unknown> {
+  return Boolean(extraAttributes && typeof extraAttributes === "object");
+}
+
+function addExtraSerializedAttribute(
+  serializedAttributes: [string, string | boolean][],
+  explicitAttributes: Record<string, unknown>,
+  key: string,
+  value: unknown,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  if (!Object.hasOwn(explicitAttributes, key)) {
+    addSerializedAttribute(serializedAttributes, key, value, renderOptions);
+  }
 }
 
 function addSerializedAttribute(

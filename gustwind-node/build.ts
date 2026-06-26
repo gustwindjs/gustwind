@@ -310,19 +310,48 @@ async function runNodeBuildTasks({
   config: BuildNodeRunConfig;
   nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
 }) {
+  await removeDeletedOutputsWhenPreserving(config, buildInputs.routes);
+  await runPrepareAndRouterTasks(benchmark, config, buildInputs);
+
+  return await runCachedBuildTasks(
+    benchmark,
+    config,
+    buildInputs,
+    nextIncrementalCacheRoutes,
+  );
+}
+
+async function removeDeletedOutputsWhenPreserving(
+  config: BuildNodeRunConfig,
+  routes: Record<string, Route>,
+) {
   if (config.preservesCurrentOutput) {
     await removeDeletedRouteOutputs(
       config.outputDirectory,
       config.previousCache?.cache,
-      Object.keys(buildInputs.routes).map(toRouteOutputUrl),
+      Object.keys(routes).map(toRouteOutputUrl),
     );
   }
+}
 
+async function runPrepareAndRouterTasks(
+  benchmark: ReturnType<typeof createBuildBenchmark> | undefined,
+  config: BuildNodeRunConfig,
+  buildInputs: BuildInputs,
+) {
   await runTaskQueue({
     benchmark,
     outputDirectory: config.outputDirectory,
     tasks: buildInputs.prepareTasks.concat(buildInputs.routerTasks),
   });
+}
+
+async function runCachedBuildTasks(
+  benchmark: ReturnType<typeof createBuildBenchmark> | undefined,
+  config: BuildNodeRunConfig,
+  buildInputs: BuildInputs,
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>,
+) {
   const previousCache = getPreviousIncrementalCache(config);
 
   return await runBuildTasks({

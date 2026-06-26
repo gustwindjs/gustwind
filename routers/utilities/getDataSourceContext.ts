@@ -9,13 +9,12 @@ async function getDataSourceContext(
   dataSources?: DataSources,
   routeConcurrency = Number.POSITIVE_INFINITY,
 ) {
-  if (!dataSourceIds || !dataSources) {
+  if (isMissingDataSourceContext(dataSourceIds, dataSources)) {
     return {};
   }
 
-  if (!Array.isArray(dataSourceIds) && !isObject(dataSourceIds)) {
-    throw new Error("dataSourceIds is not an object!");
-  }
+  assertDataSources(dataSources);
+  assertDataSourceIds(dataSourceIds);
 
   const normalizedDataSourceIds = normalizeRouteDataSources(dataSourceIds);
 
@@ -51,6 +50,29 @@ async function applyDataSourceContext(
       Array.isArray(parameters) ? parameters : [],
     ),
   ] as const;
+}
+
+function isMissingDataSourceContext(
+  dataSourceIds: Route["dataSources"] | undefined,
+  dataSources: DataSources | undefined,
+) {
+  return !dataSourceIds || !dataSources;
+}
+
+function assertDataSourceIds(
+  dataSourceIds: Route["dataSources"],
+): asserts dataSourceIds is NonNullable<Route["dataSources"]> {
+  if (!Array.isArray(dataSourceIds) && !isObject(dataSourceIds)) {
+    throw new Error("dataSourceIds is not an object!");
+  }
+}
+
+function assertDataSources(
+  dataSources: DataSources | undefined,
+): asserts dataSources is DataSources {
+  if (!dataSources) {
+    throw new Error("Data sources are missing!");
+  }
 }
 
 export { getDataSourceContext };

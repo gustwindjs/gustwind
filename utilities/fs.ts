@@ -27,19 +27,26 @@ async function collectFiles(directoryPath: string, recursive: boolean) {
   const files: { path: string }[] = [];
 
   for (const entry of entries) {
-    const entryPath = _path.join(directoryPath, entry.name);
-
-    if (entry.isFile()) {
-      files.push({ path: entryPath });
-      continue;
-    }
-
-    if (recursive && entry.isDirectory()) {
-      files.push(...await collectFiles(entryPath, recursive));
-    }
+    files.push(...await collectFileEntry(directoryPath, entry, recursive));
   }
 
   return files;
+}
+
+async function collectFileEntry(
+  directoryPath: string,
+  entry: { name: string; isFile(): boolean; isDirectory(): boolean },
+  recursive: boolean,
+) {
+  const entryPath = _path.join(directoryPath, entry.name);
+
+  if (entry.isFile()) {
+    return [{ path: entryPath }];
+  }
+
+  return recursive && entry.isDirectory()
+    ? collectFiles(entryPath, recursive)
+    : [];
 }
 
 export { dir };

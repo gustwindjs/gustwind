@@ -360,15 +360,33 @@ function findEntryChunkKey(
     return relativePath;
   }
 
-  return Object.entries(manifest).find(([, { src, isEntry }]) =>
+  return Object.entries(manifest).find((entry) =>
+    isMatchingManifestEntry(entry, normalizedAbsolutePath, relativePath)
+  )?.[0];
+}
+
+function isMatchingManifestEntry(
+  [, { src, isEntry }]: [string, ClientAssetManifestChunk],
+  normalizedAbsolutePath: string,
+  relativePath: string,
+) {
+  return (
     typeof src === "string" &&
     isEntry &&
-    (
-      src === normalizedAbsolutePath ||
-      src === relativePath ||
-      src.endsWith(`/${relativePath}`)
-    )
-  )?.[0];
+    isMatchingManifestSource(src, normalizedAbsolutePath, relativePath)
+  );
+}
+
+function isMatchingManifestSource(
+  src: string,
+  normalizedAbsolutePath: string,
+  relativePath: string,
+) {
+  return (
+    src === normalizedAbsolutePath ||
+    src === relativePath ||
+    src.endsWith(`/${relativePath}`)
+  );
 }
 
 async function readCachedManifest(

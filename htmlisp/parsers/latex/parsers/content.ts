@@ -72,26 +72,42 @@ function finishContentParse<ExpressionReturnType>(
   initialMatchCounts?: MatchCounts,
 ) {
   // Skip comments
-  if (state.stringBuffer.startsWith("%")) {
-    throw new Error("Skip");
-  }
+  skipCommentBuffer(state.stringBuffer);
 
-  if (state.stringBuffer) {
-    // @ts-expect-error This is fine
-    state.parts.push(state.stringBuffer);
-  }
+  appendStringBuffer(state);
 
   const value = expression(state.parts);
 
-  if (!value) {
-    throw new Error("No matching expression was found");
-  }
+  assertContentValue(value);
 
   if (initialMatchCounts) {
     Object.assign(initialMatchCounts, state.matchCounts);
   }
 
   return value;
+}
+
+function skipCommentBuffer(stringBuffer: string) {
+  if (stringBuffer.startsWith("%")) {
+    throw new Error("Skip");
+  }
+}
+
+function appendStringBuffer<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+) {
+  if (state.stringBuffer) {
+    // @ts-expect-error This is fine
+    state.parts.push(state.stringBuffer);
+  }
+}
+
+function assertContentValue<ExpressionReturnType>(
+  value: ExpressionReturnType | undefined,
+): asserts value is ExpressionReturnType {
+  if (!value) {
+    throw new Error("No matching expression was found");
+  }
 }
 
 function parseContentCharacter<ExpressionReturnType>(

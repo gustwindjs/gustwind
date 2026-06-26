@@ -134,10 +134,7 @@ function collectTransitiveDependencies(
     visiting.add(name);
 
     for (const dependencyName of directDependencies[name] || []) {
-      if (dependencyName !== componentName) {
-        collected.add(dependencyName);
-      }
-
+      collectDependency(componentName, dependencyName, collected);
       visit(dependencyName);
     }
 
@@ -147,6 +144,16 @@ function collectTransitiveDependencies(
   visit(componentName);
 
   return [...collected].sort();
+}
+
+function collectDependency(
+  componentName: string,
+  dependencyName: string,
+  collected: Set<string>,
+) {
+  if (dependencyName !== componentName) {
+    collected.add(dependencyName);
+  }
 }
 
 function isComponentReference(type: string, componentNames: Set<string>) {
