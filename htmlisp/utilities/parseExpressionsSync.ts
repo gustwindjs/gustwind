@@ -1,9 +1,15 @@
 import { applyUtilitySync } from "./applyUtilitySync.ts";
-import { isUndefined } from "../../utilities/functional.ts";
-import type { Attributes, Context, ForeachBinding } from "../types.ts";
+import type { Attributes, Context } from "../types.ts";
 import type { Utilities, Utility } from "../../types.ts";
-import { parseBoundExpression } from "./parseBoundExpression.ts";
-import { parseForeachExpression } from "./parseForeachExpression.ts";
+import {
+  createEvaluatedAttribute,
+  createForeachBinding,
+  isBoundAttribute,
+  parseBoundAttribute,
+  parseForeachAttribute,
+  parseStaticAttribute,
+  shouldSkipAttribute,
+} from "./parseExpressionsShared.ts";
 
 function parseExpressionsSync(
   attributes: Attributes | undefined,
@@ -16,22 +22,13 @@ function parseExpressionsSync(
 
   const entries = Object.entries(attributes).map(
     ([name, value]) => {
-      // Skip commented attributes
-      if (name.startsWith("__")) {
+      if (shouldSkipAttribute(name)) {
         return;
       }
 
-      // Check bindings
-      if (name.startsWith("&") && value !== null) {
+      if (isBoundAttribute(name, value)) {
         if (name === "&foreach") {
-          const parsedForeach = parseForeachExpression(value.toString());
-
-          if (!parsedForeach) {
-            throw new Error(
-              `Failed to parse ${value} for attribute ${name}!`,
-            );
-          }
-
+          const parsedForeach = parseForeachAttribute(name, value);
           const evaluatedItems = applyUtilitySync<
             Utility,
             Utilities,
@@ -42,24 +39,15 @@ function parseExpressionsSync(
             context,
           );
 
-          if (isUndefined(evaluatedItems)) {
-            return;
-          }
+          const foreachBinding = createForeachBinding(
+            evaluatedItems,
+            parsedForeach.alias,
+          );
 
-          const foreachBinding: ForeachBinding = {
-            items: evaluatedItems as unknown[],
-            alias: parsedForeach.alias,
-          };
-
-          return [name.slice(1), foreachBinding];
+          return foreachBinding ? [name.slice(1), foreachBinding] : undefined;
         }
 
-        const parsedExpression = parseBoundExpression(value.toString());
-
-        if (!parsedExpression) {
-          throw new Error(`Failed to parse ${value} for attribute ${name}!`);
-        }
-
+        const parsedExpression = parseBoundAttribute(name, value);
         const evaluatedValue = applyUtilitySync<
           Utility,
           Utilities,
@@ -70,15 +58,10 @@ function parseExpressionsSync(
           context,
         );
 
-        // Filter out attributes with an undefined value
-        if (name !== "&visibleIf" && isUndefined(evaluatedValue)) {
-          return;
-        }
-
-        return [name.slice(1), evaluatedValue];
+        return createEvaluatedAttribute(name, evaluatedValue);
       }
 
-      return [name, value];
+      return parseStaticAttribute(name, value);
     },
   ).filter(Boolean);
 
