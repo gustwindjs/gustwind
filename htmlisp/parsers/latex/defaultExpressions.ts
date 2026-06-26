@@ -8,6 +8,14 @@ import { parseListItem } from "./parsers/list_item.ts";
 import type { Element } from "../../types.ts";
 
 type LatexNode = Element | string;
+type CitationReference = {
+  title: string;
+  author: string;
+};
+type AuthorYearCitationReference = CitationReference & {
+  surname: string;
+  year: string;
+};
 
 const singles: Record<string, SingleParser<LatexNode>> = {
   // Url
@@ -83,117 +91,41 @@ const cites = (
     });
   },
   cite: (children, matchCounts) => {
-    const ids = children[0].split(",").map((id) => id.trim());
-    const entries = ids.map((id) => {
-      const e = bibtexEntries[id];
-
-      if (!e) {
-        throw new Error("No matching BibTeX entry was found!");
-      }
-
-      return e;
-    });
-
-    const references = entries.map((entry) => {
-      const title = entry.fields?.title;
-
-      if (!title) {
-        throw new Error("BibTeX entry was missing a title!");
-      }
-
-      return { title, author: entry.fields?.author || "" };
-    });
+    const ids = parseCitationIds(children[0]);
+    const references = getCitationReferences(ids, bibtexEntries);
 
     return {
       type: "span",
       attributes: {
-        title: `${
-          references.map(({ title, author }) => `${title} - ${author}`).join(
-            ", ",
-          )
-        }`,
+        title: createCitationTitle(references),
       },
       children: [
         "[" +
-        (ids.map((id) =>
-          matchCounts.cite ? matchCounts.cite.findIndex((e) => e === id) + 1 : 1
-        )
+        (ids.map((id) => getCitationIndex(id, matchCounts.cite))
           .join(", ").toString()) +
         "]",
       ],
     };
   },
   citet: (children) => {
-    const ids = children[0].split(",").map((id) => id.trim());
-    const entries = ids.map((id) => {
-      const e = bibtexEntries[id];
-
-      if (!e) {
-        throw new Error("No matching BibTeX entry was found!");
-      }
-
-      return e;
-    });
-
-    const references = entries.map((entry) => {
-      const title = entry.fields?.title;
-
-      if (!title) {
-        throw new Error("BibTeX entry was missing a title!");
-      }
-
-      const author = entry.fields?.author || "";
-
-      return {
-        title,
-        author,
-        surname: getFirstAuthorSurname(author),
-        year: entry.fields?.year || "",
-      };
-    });
-
-    const title = references.map(({ title, author }) => `${title} - ${author}`)
-      .join(", ");
+    const references = getAuthorYearCitationReferences(
+      parseCitationIds(children[0]),
+      bibtexEntries,
+    );
     const text = references.map(({ surname, year }) => `${surname} (${year})`)
       .join(", ");
 
     return ({
       type: "span",
-      attributes: { title },
+      attributes: { title: createCitationTitle(references) },
       children: [text],
     });
   },
   citep: (children) => {
-    const ids = children[0].split(",").map((id) => id.trim()).filter(Boolean);
-    const entries = ids.map((id) => {
-      const e = bibtexEntries[id];
-
-      if (!e) {
-        throw new Error("No matching BibTeX entry was found!");
-      }
-
-      return e;
-    });
-
-    const references = entries.map((entry) => {
-      const title = entry.fields?.title;
-
-      if (!title) {
-        throw new Error("BibTeX entry was missing a title!");
-      }
-
-      const author = entry.fields?.author || "";
-
-      return {
-        title,
-        author,
-        surname: getFirstAuthorSurname(author),
-        year: entry.fields?.year || "",
-      };
-    });
-
-    const title = references.map(({ title, author }) => `${title} - ${author}`)
-      .join(", ");
+    const references = getAuthorYearCitationReferences(
+      parseCitationIds(children[0]),
+      bibtexEntries,
+    );
     const text = references.map(({ author, surname, year }) => {
       const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
       const authorText = authorCount > 1 ? `${surname} et al.` : surname;
@@ -203,7 +135,7 @@ const cites = (
 
     return ({
       type: "span",
-      attributes: { title },
+      attributes: { title: createCitationTitle(references) },
       children: [`(${text})`],
     });
   },
@@ -214,6 +146,63 @@ const cites = (
     children: ["full cite goes here"],
   }),
 });
+
+function parseCitationIds(input: string) {
+  return input.split(",").map((id) => id.trim()).filter(Boolean);
+}
+
+function getCitationReferences(
+  ids: string[],
+  bibtexEntries: Record<string, BibtexCollection>,
+): CitationReference[] {
+  return ids.map((id) => getCitationReference(bibtexEntries[id]));
+}
+
+function getAuthorYearCitationReferences(
+  ids: string[],
+  bibtexEntries: Record<string, BibtexCollection>,
+): AuthorYearCitationReference[] {
+  return ids.map((id) => getAuthorYearCitationReference(bibtexEntries[id]));
+}
+
+function getAuthorYearCitationReference(
+  entry: BibtexCollection | undefined,
+): AuthorYearCitationReference {
+  const { title, author } = getCitationReference(entry);
+
+  return {
+    title,
+    author,
+    surname: getFirstAuthorSurname(author),
+    year: entry?.fields?.year || "",
+  };
+}
+
+function getCitationReference(
+  entry: BibtexCollection | undefined,
+): CitationReference {
+  if (!entry) {
+    throw new Error("No matching BibTeX entry was found!");
+  }
+
+  const title = entry.fields?.title;
+
+  if (!title) {
+    throw new Error("BibTeX entry was missing a title!");
+  }
+
+  return { title, author: entry.fields?.author || "" };
+}
+
+function createCitationTitle(references: CitationReference[]) {
+  return references.map(({ title, author }) => `${title} - ${author}`).join(
+    ", ",
+  );
+}
+
+function getCitationIndex(id: string, matches: string[] | undefined) {
+  return matches ? matches.findIndex((e) => e === id) + 1 : 1;
+}
 
 function getFirstAuthorSurname(author: string) {
   const firstAuthor = author.split(/\s+and\s+/i)[0]?.trim() || "";
