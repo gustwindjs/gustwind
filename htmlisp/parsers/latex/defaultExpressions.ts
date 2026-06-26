@@ -77,74 +77,11 @@ const lists: Record<string, BlockParser<Element, Element>> = {
 const cites = (
   bibtexEntries: Record<string, BibtexCollection>,
 ): Record<string, SingleParser<LatexNode>> => ({
-  footnote: (children, matchCounts) => {
-    const title = childrenToText(children);
-
-    return {
-      type: "sup",
-      attributes: { title },
-      children: [
-        (matchCounts.footnote
-          ? matchCounts.footnote.findIndex((e) => e === title) + 1
-          : 1
-        ).toString(),
-      ],
-    };
-  },
-  cite: (children, matchCounts) => {
-    const ids = parseCitationIds(children[0]);
-    const references = getCitationReferences(ids, bibtexEntries);
-
-    return {
-      type: "span",
-      attributes: {
-        title: createCitationTitle(references),
-      },
-      children: [
-        "[" +
-          ids
-            .map((id) => getCitationIndex(id, matchCounts.cite))
-            .join(", ")
-            .toString() +
-          "]",
-      ],
-    };
-  },
-  citet: (children) => {
-    const references = getAuthorYearCitationReferences(
-      parseCitationIds(children[0]),
-      bibtexEntries,
-    );
-    const text = references
-      .map(({ surname, year }) => `${surname} (${year})`)
-      .join(", ");
-
-    return {
-      type: "span",
-      attributes: { title: createCitationTitle(references) },
-      children: [text],
-    };
-  },
-  citep: (children) => {
-    const references = getAuthorYearCitationReferences(
-      parseCitationIds(children[0]),
-      bibtexEntries,
-    );
-    const text = references
-      .map(({ author, surname, year }) => {
-        const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
-        const authorText = authorCount > 1 ? `${surname} et al.` : surname;
-
-        return [authorText, year].filter(Boolean).join(", ");
-      })
-      .join("; ");
-
-    return {
-      type: "span",
-      attributes: { title: createCitationTitle(references) },
-      children: [`(${text})`],
-    };
-  },
+  footnote: createFootnoteNode,
+  cite: (children, matchCounts) =>
+    createCitationNode(children, matchCounts, bibtexEntries),
+  citet: (children) => createTextualCitationNode(children, bibtexEntries),
+  citep: (children) => createParentheticalCitationNode(children, bibtexEntries),
   // TODO: Write reference using bibtex
   fullcite: (children) => ({
     type: "span",
@@ -152,6 +89,99 @@ const cites = (
     children: ["full cite goes here"],
   }),
 });
+
+function createFootnoteNode(
+  children: string[],
+  matchCounts: Record<string, string[]>,
+) {
+  const title = childrenToText(children);
+
+  return {
+    type: "sup",
+    attributes: { title },
+    children: [getFootnoteIndex(title, matchCounts.footnote).toString()],
+  };
+}
+
+function getFootnoteIndex(title: string, footnotes: string[] | undefined) {
+  return footnotes ? footnotes.findIndex((entry) => entry === title) + 1 : 1;
+}
+
+function createCitationNode(
+  children: string[],
+  matchCounts: Record<string, string[]>,
+  bibtexEntries: Record<string, BibtexCollection>,
+) {
+  const ids = parseCitationIds(children[0]);
+  const references = getCitationReferences(ids, bibtexEntries);
+
+  return {
+    type: "span",
+    attributes: {
+      title: createCitationTitle(references),
+    },
+    children: [formatCitationIndexes(ids, matchCounts.cite)],
+  };
+}
+
+function formatCitationIndexes(ids: string[], citationMatches: string[]) {
+  return `[${ids.map((id) => getCitationIndex(id, citationMatches)).join(", ")}]`;
+}
+
+function createTextualCitationNode(
+  children: string[],
+  bibtexEntries: Record<string, BibtexCollection>,
+) {
+  const references = getAuthorYearCitationReferences(
+    parseCitationIds(children[0]),
+    bibtexEntries,
+  );
+
+  return {
+    type: "span",
+    attributes: { title: createCitationTitle(references) },
+    children: [formatTextualCitation(references)],
+  };
+}
+
+function formatTextualCitation(
+  references: ReturnType<typeof getAuthorYearCitationReferences>,
+) {
+  return references
+    .map(({ surname, year }) => `${surname} (${year})`)
+    .join(", ");
+}
+
+function createParentheticalCitationNode(
+  children: string[],
+  bibtexEntries: Record<string, BibtexCollection>,
+) {
+  const references = getAuthorYearCitationReferences(
+    parseCitationIds(children[0]),
+    bibtexEntries,
+  );
+
+  return {
+    type: "span",
+    attributes: { title: createCitationTitle(references) },
+    children: [`(${formatParentheticalCitation(references)})`],
+  };
+}
+
+function formatParentheticalCitation(
+  references: ReturnType<typeof getAuthorYearCitationReferences>,
+) {
+  return references.map(formatParentheticalCitationReference).join("; ");
+}
+
+function formatParentheticalCitationReference(
+  { author, surname, year }: ReturnType<typeof getAuthorYearCitationReferences>[number],
+) {
+  const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
+  const authorText = authorCount > 1 ? `${surname} et al.` : surname;
+
+  return [authorText, year].filter(Boolean).join(", ");
+}
 
 function parseCitationIds(input: string) {
   return input

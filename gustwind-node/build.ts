@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import {
   applyMatchRoutes,
@@ -26,11 +26,9 @@ import {
   readIncrementalBuildCache,
   removeDeletedRouteOutputs,
   restoreCachedOutputs,
-  toRelativeOutputPath,
   writeIncrementalBuildCache,
 } from "../utilities/incrementalBuildCache.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
-import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
 import { runWithTaskLog } from "../utilities/taskLogContext.ts";
 import { runWithConcurrency } from "../utilities/concurrency.ts";
 import type { PluginOptions, Route, Tasks } from "../types.ts";
@@ -41,12 +39,12 @@ import type {
   IncrementalBuildCache,
   IncrementalBuildRouteCacheEntry,
 } from "../utilities/incrementalBuildCache.ts";
-import { executeTask } from "./buildTasks.ts";
 import {
   acquireBuildLock,
   getDefaultRouteConcurrency,
   removeOutputDirectoryContents,
 } from "./buildOutput.ts";
+import { runTaskQueue, writeRenderedPage } from "./buildRenderOutput.ts";
 
 const DEBUG = isDebugEnabled();
 type BuildNodeResult = {
@@ -450,83 +448,6 @@ function createRouteBuildTasks(
 
 function toRouteOutputUrl(url: string) {
   return url === "/" ? "/" : "/" + url + "/";
-}
-
-async function runTaskQueue({
-  benchmark,
-  outputDirectory,
-  tasks,
-}: {
-  benchmark?: ReturnType<typeof createBuildBenchmark>;
-  outputDirectory: string;
-  tasks: Tasks;
-}): Promise<void> {
-  for (const task of tasks) {
-    if (task.type === "build") {
-      throw new Error("runTaskQueue does not support build tasks");
-    }
-
-    await executeTask({ benchmark, outputDirectory, task });
-  }
-}
-
-async function writeRenderedPage({
-  dir,
-  markup,
-  outputDirectory,
-  url,
-}: {
-  dir: string;
-  markup: string;
-  outputDirectory: string;
-  url: string;
-}) {
-  if (shouldWriteDirectOutput(url)) {
-    return writeDirectRenderedOutput({ dir, markup, outputDirectory, url });
-  }
-
-  await mkdir(dir, { recursive: true });
-  const outputPath = path.join(dir, "index.html");
-  const output = stripVoidElementClosers(markup);
-  await writeFile(outputPath, output);
-
-  return {
-    bytesWritten: Buffer.byteLength(output),
-    outputPath: toRelativeOutputPath(outputDirectory, outputPath),
-  };
-}
-
-function shouldWriteDirectOutput(url: string) {
-  return (
-    url.endsWith(".json/") || url.endsWith(".xml/") || url.endsWith(".html/")
-  );
-}
-
-async function writeDirectRenderedOutput({
-  dir,
-  markup,
-  outputDirectory,
-  url,
-}: {
-  dir: string;
-  markup: string;
-  outputDirectory: string;
-  url: string;
-}) {
-  const output = shouldPreserveRenderedOutput(url)
-    ? markup
-    : stripVoidElementClosers(markup);
-  await mkdir(path.dirname(dir), { recursive: true });
-  await writeFile(dir, output);
-
-  return {
-    bytesWritten: Buffer.byteLength(output),
-    outputPath: toRelativeOutputPath(outputDirectory, dir),
-  };
-}
-
-function shouldPreserveRenderedOutput(url: string) {
-  return url.endsWith(".xml/") || url.endsWith(".json/");
 }
 
 async function getRendererDependencyInfo(
