@@ -42,6 +42,7 @@
     "test:node:benchmark": "node --test ./gustwind-node/benchmark_test.ts",
     "test:node:package": "node --test ./scripts/build-npm-package_test.mjs",
     "test:unit": "npm run test:node:htmlisp",
+    "test:mutation:node": "npm run test:unit && npm run test:node:render && npm run test:node:worker && npm run test:node:router && npm run test:node:plugins && npm run test:node:runtime && npm run test:node:validate && npm run test:node:vite && npm run test:node:benchmark && npm run test:node:package && npm run build:node:check && npm run test:node:dev && npm run test:node:serve",
     "mutation": "stryker run",
     "mutation:incremental": "stryker run --incremental",
     "validate:html": "node ./gustwind-node/cli.ts --validate --input ./build",
