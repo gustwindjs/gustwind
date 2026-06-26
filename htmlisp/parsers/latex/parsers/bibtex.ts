@@ -12,21 +12,23 @@ function parseBibtex(
   getCharacter: CharacterGenerator,
 ): BibtexCollection {
   const startIndex = getCharacter.getIndex();
+  const header = readBibtexHeader(getCharacter, startIndex);
 
-  if (getCharacter.next() !== "@") {
-    getCharacter.setIndex(startIndex);
-    throw new Error("No matching expression was found");
-  }
+  return {
+    ...header,
+    fields: readBibtexFields(getCharacter),
+  };
+}
 
+function readBibtexHeader(
+  getCharacter: CharacterGenerator,
+  startIndex: number,
+) {
+  requireNextCharacter(getCharacter, "@", startIndex);
   const type = readWhile(getCharacter, (c) => /[A-Za-z]/.test(c)).trim();
 
   skipWhitespace(getCharacter);
-
-  if (getCharacter.next() !== "{") {
-    getCharacter.setIndex(startIndex);
-    throw new Error("No matching expression was found");
-  }
-
+  requireNextCharacter(getCharacter, "{", startIndex);
   const id = readUntil(getCharacter, [",", "}"]).trim();
 
   if (!type) {
@@ -34,12 +36,31 @@ function parseBibtex(
     throw new Error("No matching expression was found");
   }
 
+  return { type, id };
+}
+
+function requireNextCharacter(
+  getCharacter: CharacterGenerator,
+  expectedCharacter: string,
+  startIndex: number,
+) {
+  if (getCharacter.next() === expectedCharacter) {
+    return;
+  }
+
+  getCharacter.setIndex(startIndex);
+  throw new Error("No matching expression was found");
+}
+
+function readBibtexFields(
+  getCharacter: CharacterGenerator,
+) {
   const fields: Record<string, string> = {};
   let current = getCharacter.get();
 
   if (current === "}") {
     getCharacter.next();
-    return { type, id, fields };
+    return fields;
   }
 
   while (current !== null) {
@@ -51,21 +72,28 @@ function parseBibtex(
       break;
     }
 
-    const key = readWhile(getCharacter, (c) => /[A-Za-z0-9_-]/.test(c)).trim();
-
-    skipWhitespace(getCharacter);
-
-    if (!key || getCharacter.next() !== "=") {
-      throw new Error("No matching expression was found");
-    }
-
-    skipWhitespace(getCharacter);
-
-    fields[key] = readBibtexValue(getCharacter).trim();
+    readBibtexField(getCharacter, fields);
     current = getCharacter.get();
   }
 
-  return { type, id, fields };
+  return fields;
+}
+
+function readBibtexField(
+  getCharacter: CharacterGenerator,
+  fields: Record<string, string>,
+) {
+  const key = readWhile(getCharacter, (c) => /[A-Za-z0-9_-]/.test(c)).trim();
+
+  skipWhitespace(getCharacter);
+
+  if (!key || getCharacter.next() !== "=") {
+    throw new Error("No matching expression was found");
+  }
+
+  skipWhitespace(getCharacter);
+
+  fields[key] = readBibtexValue(getCharacter).trim();
 }
 
 function readBibtexValue(
