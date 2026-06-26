@@ -39,6 +39,14 @@ type CloudflareWorkerOptions<E extends Record<string, unknown>> = {
   ): Response | Promise<Response>;
   render?: RenderFn;
 };
+type CloudflareFetchContext<E extends Record<string, unknown>> =
+  & CloudflareWorkerContext<E>
+  & {
+    assets?: CloudflareAssetFetcher;
+    options: CloudflareWorkerOptions<E>;
+    pathname: string;
+    renderPromise: Promise<RenderFn>;
+  };
 
 function createCloudflareWorker<E extends Record<string, unknown>>(
   options: CloudflareWorkerOptions<E>,
@@ -50,81 +58,149 @@ function createCloudflareWorker<E extends Record<string, unknown>>(
     : undefined;
 
   if (!renderPromise) {
-    throw new Error("createCloudflareWorker requires either render or initialPlugins");
+    throw new Error(
+      "createCloudflareWorker requires either render or initialPlugins",
+    );
   }
 
   return {
     async fetch(request, env, ctx) {
-      if (!["GET", "HEAD"].includes(request.method)) {
-        return new Response("Method Not Allowed", {
-          headers: { allow: "GET, HEAD" },
-          status: 405,
-        });
+      const methodResponse = validateMethod(request);
+
+      if (methodResponse) {
+        return methodResponse;
       }
 
-      const workerContext = { ctx, env, request };
       const url = new URL(request.url);
       const pathname = url.pathname;
-      const assets = getAssetFetcher(env, options.assetsBinding);
+      const fetchContext: CloudflareFetchContext<E> = {
+        assets: getAssetFetcher(env, options.assetsBinding),
+        ctx,
+        env,
+        options,
+        pathname,
+        renderPromise,
+        request,
+      };
+      const assetResponse = await getPreferredAssetResponse(fetchContext);
 
-      if (assets && shouldPreferAssets(pathname)) {
-        const assetResponse = await fetchAsset(assets, request);
-
-        if (assetResponse) {
-          return assetResponse;
-        }
+      if (assetResponse) {
+        return assetResponse;
       }
 
       try {
-        const render = await renderPromise;
-        const initialContext = options.getRenderContext
-          ? await options.getRenderContext(workerContext)
-          : {};
-        const { markup, tasks } = await render(pathname, initialContext);
-
-        if (options.handleTasks && tasks.length > 0) {
-          ctx.waitUntil(Promise.resolve(options.handleTasks({
-            ...workerContext,
-            tasks,
-          })));
-        }
-
-        return new Response(request.method === "HEAD" ? null : markup, {
-          headers: {
-            "content-type": getContentType(pathname),
-          },
-          status: 200,
-        });
+        return await renderWorkerResponse(fetchContext);
       } catch (error) {
-        if (assets && !shouldPreferAssets(pathname)) {
-          const assetResponse = await fetchAsset(assets, request);
-
-          if (assetResponse) {
-            return assetResponse;
-          }
-        }
-
-        if (options.onError) {
-          return await options.onError({
-            ...workerContext,
-            error,
-          });
-        }
-
-        if (isMissingRouteError(error, pathname)) {
-          return new Response("Not Found", {
-            headers: { "content-type": "text/plain; charset=UTF-8" },
-            status: 404,
-          });
-        }
-
-        return new Response("Internal Server Error", {
-          headers: { "content-type": "text/plain; charset=UTF-8" },
-          status: 500,
-        });
+        return handleWorkerError(fetchContext, error);
       }
     },
   };
+}
+
+function validateMethod(request: Request) {
+  if (["GET", "HEAD"].includes(request.method)) {
+    return;
+  }
+
+  return new Response("Method Not Allowed", {
+    headers: { allow: "GET, HEAD" },
+    status: 405,
+  });
+}
+
+async function getPreferredAssetResponse<E extends Record<string, unknown>>(
+  { assets, pathname, request }: CloudflareFetchContext<E>,
+) {
+  if (!assets || !shouldPreferAssets(pathname)) {
+    return;
+  }
+
+  return fetchAsset(assets, request);
+}
+
+async function renderWorkerResponse<E extends Record<string, unknown>>(
+  fetchContext: CloudflareFetchContext<E>,
+) {
+  const { markup, tasks } = await renderWorkerMarkup(fetchContext);
+
+  handleWorkerTasks(fetchContext, tasks);
+
+  return new Response(
+    fetchContext.request.method === "HEAD" ? null : markup,
+    {
+      headers: {
+        "content-type": getContentType(fetchContext.pathname),
+      },
+      status: 200,
+    },
+  );
+}
+
+async function renderWorkerMarkup<E extends Record<string, unknown>>(
+  fetchContext: CloudflareFetchContext<E>,
+) {
+  const render = await fetchContext.renderPromise;
+  const initialContext = fetchContext.options.getRenderContext
+    ? await fetchContext.options.getRenderContext(fetchContext)
+    : {};
+
+  return render(fetchContext.pathname, initialContext);
+}
+
+function handleWorkerTasks<E extends Record<string, unknown>>(
+  fetchContext: CloudflareFetchContext<E>,
+  tasks: Tasks,
+) {
+  if (!fetchContext.options.handleTasks || tasks.length === 0) {
+    return;
+  }
+
+  fetchContext.ctx.waitUntil(Promise.resolve(
+    fetchContext.options.handleTasks({
+      ...fetchContext,
+      tasks,
+    }),
+  ));
+}
+
+async function handleWorkerError<E extends Record<string, unknown>>(
+  fetchContext: CloudflareFetchContext<E>,
+  error: unknown,
+) {
+  const assetResponse = await getFallbackAssetResponse(fetchContext);
+
+  if (assetResponse) {
+    return assetResponse;
+  }
+
+  if (fetchContext.options.onError) {
+    return await fetchContext.options.onError({
+      ...fetchContext,
+      error,
+    });
+  }
+
+  if (isMissingRouteError(error, fetchContext.pathname)) {
+    return new Response("Not Found", {
+      headers: { "content-type": "text/plain; charset=UTF-8" },
+      status: 404,
+    });
+  }
+
+  return new Response("Internal Server Error", {
+    headers: { "content-type": "text/plain; charset=UTF-8" },
+    status: 500,
+  });
+}
+
+async function getFallbackAssetResponse<E extends Record<string, unknown>>(
+  { assets, pathname, request }: CloudflareFetchContext<E>,
+) {
+  if (!assets || shouldPreferAssets(pathname)) {
+    return;
+  }
+
+  return fetchAsset(assets, request);
 }
 
 function getAssetFetcher<E extends Record<string, unknown>>(
@@ -172,7 +248,8 @@ function getLastPathSegment(pathname: string) {
 }
 
 function isMissingRouteError(error: unknown, pathname: string) {
-  return error instanceof Error && error.message === `Failed to render ${pathname}`;
+  return error instanceof Error &&
+    error.message === `Failed to render ${pathname}`;
 }
 
 function shouldPreferAssets(pathname: string) {
