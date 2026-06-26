@@ -8,27 +8,22 @@ import type {
   HtmlispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
-import { raw, renderTextValue } from "./runtime.ts";
-import { isForeachBinding } from "./parseForeachExpression.ts";
+import { renderTextValue } from "./runtime.ts";
 import {
+  assertNamedSlots,
   createComponentProps,
   createForeachProps,
+  createRenderComponentParameters,
+  createRenderContext,
+  getComponentOrThrow,
   getExpressionUtilities,
+  getForeachItems,
+  getSlotElements,
   isComponentTag,
   isHidden,
+  type RenderContext,
+  slotsToObject,
 } from "./astToHTMLShared.ts";
-
-type RenderContext = {
-  ast: (string | Element)[];
-  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown;
-  context?: Context;
-  props?: Context;
-  utilities?: Utilities;
-  componentUtilities?: Record<string, Utilities>;
-  components?: Components;
-  renderOptions?: HtmlispRenderOptions;
-  parentAst?: (string | Element)[];
-};
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
@@ -46,7 +41,7 @@ async function astToHTML(
   // Helper for debugging
   parentAst?: (string | Element)[],
 ): Promise<string> {
-  const renderContext = {
+  const renderContext = createRenderContext(
     ast,
     htmlispToHTML,
     context,
@@ -56,7 +51,7 @@ async function astToHTML(
     components,
     renderOptions,
     parentAst,
-  };
+  );
 
   return (await Promise.all(
     ast.map((tag) => renderTag(tag, renderContext, initialLocal)),
@@ -127,18 +122,7 @@ async function renderForeachChildren(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
-  const foreachBinding = isForeachBinding(parsedAttributes.foreach)
-    ? parsedAttributes.foreach
-    : { items: parsedAttributes.foreach as unknown[] };
-  const { items, alias } = foreachBinding;
-
-  delete parsedAttributes.foreach;
-
-  // TODO: Test this case
-  if (!Array.isArray(items)) {
-    console.error(items);
-    throw new Error("foreach - Tried to iterate a non-array!");
-  }
+  const { items, alias } = getForeachItems(parsedAttributes);
 
   return (await Promise.all(
     items.map((p) =>
@@ -184,15 +168,7 @@ async function renderComponent(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
-  const foundComponent = renderContext.components?.[tag.type];
-
-  if (!foundComponent) {
-    console.error({
-      parentAst: renderContext.parentAst,
-      ast: renderContext.ast,
-    });
-    throw new Error(`Component "${tag.type}" was not found!`);
-  }
+  const foundComponent = getComponentOrThrow(tag, renderContext);
 
   const componentSlots = await slotsToProps(
     renderContext.ast,
@@ -219,18 +195,12 @@ async function renderComponent(
     ? await foundComponent(componentProps)
     : foundComponent;
 
-  return renderContext.htmlispToHTML({
-    htmlInput: renderedComponent,
-    components: renderContext.components,
-    context: renderContext.context,
-    props: componentProps,
-    utilities: {
-      ...renderContext.utilities,
-      ...renderContext.componentUtilities?.[tag.type],
-    },
-    componentUtilities: renderContext.componentUtilities,
-    renderOptions: renderContext.renderOptions,
-  });
+  return renderContext.htmlispToHTML(createRenderComponentParameters(
+    tag,
+    renderedComponent,
+    componentProps,
+    renderContext,
+  ));
 }
 
 async function slotsToProps(
@@ -246,42 +216,33 @@ async function slotsToProps(
   renderOptions?: HtmlispRenderOptions,
   wrapRenderedOutput?: boolean,
 ) {
-  const { children } = tag;
-
   // @ts-expect-error Filter breaks the type here
   const slots: [string | null, string | null][] = await Promise.all(
-    children.filter((o) => typeof o !== "string" && o.type === "slot")
-      .map(
-        async (o) =>
-          typeof o !== "string" &&
-          [
-            o.attributes?.name,
-            await astToHTML(
-              o.children,
-              htmlispToHTML,
-              context,
-              props,
-              local,
-              utilities,
-              componentUtilities,
-              components,
-              renderOptions,
-              // Pass original ast to help with debugging
-              ast,
-            ),
-          ],
-      ).filter(Boolean),
+    getSlotElements(tag).map(
+      async (o) =>
+        typeof o !== "string" &&
+        [
+          o.attributes?.name,
+          await astToHTML(
+            o.children,
+            htmlispToHTML,
+            context,
+            props,
+            local,
+            utilities,
+            componentUtilities,
+            components,
+            renderOptions,
+            // Pass original ast to help with debugging
+            ast,
+          ),
+        ],
+    ).filter(Boolean),
   );
 
-  if (!slots.every((s) => s[0])) {
-    throw new Error(`Slot is missing a name!`);
-  }
+  assertNamedSlots(slots);
 
-  return Object.fromEntries(
-    slots.map((
-      [name, value],
-    ) => [name, wrapRenderedOutput ? raw(value) : value]),
-  );
+  return slotsToObject(slots, wrapRenderedOutput);
 }
 
 export { astToHTML };

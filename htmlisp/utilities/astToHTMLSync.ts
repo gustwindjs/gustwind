@@ -8,27 +8,22 @@ import type {
   HtmlispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
-import { raw, renderTextValue } from "./runtime.ts";
-import { isForeachBinding } from "./parseForeachExpression.ts";
+import { renderTextValue } from "./runtime.ts";
 import {
+  assertNamedSlots,
   createComponentProps,
   createForeachProps,
+  createRenderComponentParameters,
+  createRenderContext,
+  getComponentOrThrow,
   getExpressionUtilities,
+  getForeachItems,
+  getSlotElements,
   isComponentTag,
   isHidden,
+  type RenderContext,
+  slotsToObject,
 } from "./astToHTMLShared.ts";
-
-type RenderContext = {
-  ast: (string | Element)[];
-  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown;
-  context?: Context;
-  props?: Context;
-  utilities?: Utilities;
-  componentUtilities?: Record<string, Utilities>;
-  components?: Components;
-  renderOptions?: HtmlispRenderOptions;
-  parentAst?: (string | Element)[];
-};
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
@@ -46,7 +41,7 @@ function astToHTMLSync(
   // Helper for debugging
   parentAst?: (string | Element)[],
 ): string {
-  const renderContext = {
+  const renderContext = createRenderContext(
     ast,
     htmlispToHTML,
     context,
@@ -56,7 +51,7 @@ function astToHTMLSync(
     components,
     renderOptions,
     parentAst,
-  };
+  );
 
   return ast.map((tag) => renderTagSync(tag, renderContext, initialLocal)).join(
     "",
@@ -127,18 +122,7 @@ function renderForeachChildrenSync(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
-  const foreachBinding = isForeachBinding(parsedAttributes.foreach)
-    ? parsedAttributes.foreach
-    : { items: parsedAttributes.foreach as unknown[] };
-  const { items, alias } = foreachBinding;
-
-  delete parsedAttributes.foreach;
-
-  // TODO: Test this case
-  if (!Array.isArray(items)) {
-    console.error(items);
-    throw new Error("foreach - Tried to iterate a non-array!");
-  }
+  const { items, alias } = getForeachItems(parsedAttributes);
 
   return items.map((p) =>
     astToHTMLSync(
@@ -182,15 +166,7 @@ function renderComponentSync(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
-  const foundComponent = renderContext.components?.[tag.type];
-
-  if (!foundComponent) {
-    console.error({
-      parentAst: renderContext.parentAst,
-      ast: renderContext.ast,
-    });
-    throw new Error(`Component "${tag.type}" was not found!`);
-  }
+  const foundComponent = getComponentOrThrow(tag, renderContext);
 
   const componentSlots = slotsToPropsSync(
     renderContext.ast,
@@ -223,18 +199,12 @@ function renderComponentSync(
     );
   }
 
-  return renderContext.htmlispToHTML({
-    htmlInput: renderedComponent,
-    components: renderContext.components,
-    context: renderContext.context,
-    props: componentProps,
-    utilities: {
-      ...renderContext.utilities,
-      ...renderContext.componentUtilities?.[tag.type],
-    },
-    componentUtilities: renderContext.componentUtilities,
-    renderOptions: renderContext.renderOptions,
-  });
+  return renderContext.htmlispToHTML(createRenderComponentParameters(
+    tag,
+    renderedComponent,
+    componentProps,
+    renderContext,
+  ));
 }
 
 function slotsToPropsSync(
@@ -250,12 +220,8 @@ function slotsToPropsSync(
   renderOptions?: HtmlispRenderOptions,
   wrapRenderedOutput?: boolean,
 ) {
-  const { children } = tag;
-
   // @ts-expect-error Filter breaks the type here
-  const slots: [string | null, string | null][] = children.filter((o) =>
-    typeof o !== "string" && o.type === "slot"
-  )
+  const slots: [string | null, string | null][] = getSlotElements(tag)
     .map(
       (o) =>
         typeof o !== "string" &&
@@ -277,15 +243,9 @@ function slotsToPropsSync(
         ],
     ).filter(Boolean);
 
-  if (!slots.every((s) => s[0])) {
-    throw new Error(`Slot is missing a name!`);
-  }
+  assertNamedSlots(slots);
 
-  return Object.fromEntries(
-    slots.map((
-      [name, value],
-    ) => [name, wrapRenderedOutput ? raw(value) : value]),
-  );
+  return slotsToObject(slots, wrapRenderedOutput);
 }
 
 export { astToHTMLSync };
