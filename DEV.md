@@ -6,6 +6,12 @@ To test the CLI locally, use `node ./gustwind-node/cli.ts` with the appropriate 
 
 Generated HTML validation is available through `gustwind-node --validate --input ./build`, and `gustwind-node --build --validate` validates build output directly. The project-level shortcuts are `npm run validate:html` and `npm run build:node:check`.
 
+## Markdown transforms
+
+The default site Markdown transform uses `satteri` through `site/transforms/markdownSatteri.ts` for build-time use only. It depends on Satteri's native/WASI packaging, so do not use it in Cloudflare Worker request-time rendering unless that package gains a Worker-compatible runtime path. The previous `marked` transform remains available at `site/transforms/markdown.ts` for runtime-safe fallback work.
+
+Benchmark both transforms against the repository Markdown corpus with `npm run benchmark:markdown`. The benchmark warms each transform once, then renders the same Markdown files repeatedly and prints JSON timing data.
+
 ## Downstream feedback addressed
 
 Downstream porting notes addressed from `jsterlibs/website-v2` branch `refactor/port-to-gustwind-node`:

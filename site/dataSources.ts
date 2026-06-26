@@ -1,5 +1,5 @@
 import matter from "gray-matter";
-import getMarkdown from "./transforms/markdown.ts";
+import getMarkdown from "./transforms/markdownSatteri.ts";
 import { getAsyncMemo, getMemo } from "../utilities/getMemo.ts";
 import type { DataSourcesApi } from "../types.ts";
 

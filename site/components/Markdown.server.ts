@@ -1,4 +1,4 @@
-import getMarkdown from "../transforms/markdown.ts";
+import getMarkdown from "../transforms/markdownSatteri.ts";
 import type { DataSourcesApi } from "../../types.ts";
 
 function init({ load, render, renderRaw, renderSync }: DataSourcesApi) {
