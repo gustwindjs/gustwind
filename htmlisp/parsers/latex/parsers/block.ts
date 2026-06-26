@@ -23,71 +23,107 @@ function getParseBlock<ExpressionReturnType, ItemReturnValue>(
   return function parseBlock(
     getCharacter: CharacterGenerator,
   ): ExpressionReturnType {
-    const parseResult = runParsers<ExpressionReturnType>(
-      getCharacter,
-      [
-        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-        getParseDouble({ begin: (i) => i }),
-        // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-        getParseSingle({ begin: joinString }),
-      ],
-    );
+    const beginValue = parseBlockBegin(getCharacter);
+    const expression = expressions[beginValue];
 
-    let beginValue: string = "";
-    if (parseResult?.match) {
-      // @ts-expect-error This is fine
-      beginValue = parseResult.value;
+    if (!expression) {
+      throwNoMatchingExpression();
     }
 
-    if (!beginValue) {
-      throw new Error("No matching expression was found");
-    }
-
-    if (!expressions[beginValue]) {
-      throw new Error("No matching expression was found");
-    }
-
-    const itemCb = expressions[beginValue].item;
-    let items: ItemReturnValue[] = [];
-
-    for (let i = 0; i < LIMIT; i++) {
-      if (getCharacter.get() === null) {
-        break;
-      }
-      const characterIndex = getCharacter.getIndex();
-
-      try {
-        const item = itemCb(getCharacter);
-
-        if (item) {
-          if (Array.isArray(item)) {
-            if (item.length) {
-              items = items.concat([item]);
-            }
-          } else {
-            items.push(item);
-          }
-        }
-      } catch (_error) {
-        getCharacter.setIndex(characterIndex);
-
-        break;
-      }
-    }
-
-    parseEmpty(getCharacter);
-
-    const end = getParseSingle<string>({ end: (i) => i.join("") })(
+    const items = collectBlockItems(getCharacter, expression.item);
+    const end = parseBlockEnd(
       getCharacter,
     );
 
     if (beginValue === end.value) {
-      return expressions[beginValue].container(items);
+      return expression.container(items);
     }
 
-    throw new Error("No matching expression was found");
+    throwNoMatchingExpression();
     // throw new Error(`Expression matching to ${beginValue} was not found`);
   };
+}
+
+function parseBlockBegin(getCharacter: CharacterGenerator) {
+  const parseResult = runParsers<string>(
+    getCharacter,
+    [
+      getParseDouble({ begin: (value) => value }),
+      getParseSingle({ begin: joinString }),
+    ],
+  );
+
+  if (
+    parseResult?.match && "value" in parseResult &&
+    typeof parseResult.value === "string"
+  ) {
+    return parseResult.value;
+  }
+
+  throwNoMatchingExpression();
+}
+
+function collectBlockItems<ItemReturnValue>(
+  getCharacter: CharacterGenerator,
+  itemCb: BlockParser<unknown, ItemReturnValue>["item"],
+) {
+  let items: ItemReturnValue[] = [];
+
+  for (let i = 0; i < LIMIT; i++) {
+    if (getCharacter.get() === null) {
+      break;
+    }
+
+    const collectedItem = collectBlockItem(getCharacter, itemCb);
+
+    if (!collectedItem.match) {
+      break;
+    }
+
+    items = appendBlockItem(items, collectedItem.value);
+  }
+
+  parseEmpty(getCharacter);
+
+  return items;
+}
+
+function collectBlockItem<ItemReturnValue>(
+  getCharacter: CharacterGenerator,
+  itemCb: BlockParser<unknown, ItemReturnValue>["item"],
+) {
+  const characterIndex = getCharacter.getIndex();
+
+  try {
+    return { match: true, value: itemCb(getCharacter) };
+  } catch (_error) {
+    getCharacter.setIndex(characterIndex);
+
+    return { match: false };
+  }
+}
+
+function appendBlockItem<ItemReturnValue>(
+  items: ItemReturnValue[],
+  item: ItemReturnValue | undefined,
+) {
+  if (!item) {
+    return items;
+  }
+
+  if (Array.isArray(item)) {
+    return item.length ? items.concat([item as ItemReturnValue]) : items;
+  }
+
+  return items.concat(item);
+}
+
+function parseBlockEnd(getCharacter: CharacterGenerator) {
+  return getParseSingle<string>({ end: joinString })(getCharacter);
+}
+
+function throwNoMatchingExpression(): never {
+  throw new Error("No matching expression was found");
 }
 
 function joinString(i: string[]) {

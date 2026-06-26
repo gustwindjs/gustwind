@@ -18,6 +18,12 @@ import { isDebugEnabled } from "../utilities/runtime.ts";
 const DEBUG = isDebugEnabled();
 
 export type PluginDefinition = LoadedPlugin["plugin"];
+type PluginRouter = {
+  getAllRoutes(options?: { routeConcurrency?: number }): ReturnType<
+    typeof applyGetAllRoutes
+  >;
+  matchRoute(url: string): Promise<Route | undefined>;
+};
 
 async function importPlugins(
   {
@@ -40,73 +46,34 @@ async function importPlugins(
   let initialTasks: Tasks = [];
 
   if (initialImportedPlugins) {
-    initialImportedPlugins.forEach(({ plugin, tasks }) => {
-      loadedPluginDefinitions.push(plugin);
-      initialTasks = initialTasks.concat(plugin.moduleTasks || [], tasks);
-    });
+    initialTasks = addInitialImportedPlugins(
+      loadedPluginDefinitions,
+      initialImportedPlugins,
+    );
   }
 
-  const renderComponent: Render = function (
-    { componentName, htmlInput, context, props },
-  ) {
-    return applyRenderComponents({
-      componentName,
-      htmlInput,
-      props,
-      context,
-      plugins: loadedPluginDefinitions,
-      matchRoute: router.matchRoute,
-    });
-  };
-
-  const renderComponentSync: RenderSync = function (
-    { componentName, htmlInput, context, props },
-  ) {
-    return applyRenderComponentsSync({
-      componentName,
-      htmlInput,
-      props,
-      context,
-      plugins: loadedPluginDefinitions,
-      matchRoute: router.matchRoute,
-    });
-  };
+  let router: PluginRouter;
+  const { renderComponent, renderComponentSync } = createPluginRenderers(
+    loadedPluginDefinitions,
+    () => router.matchRoute,
+  );
 
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
   for await (const pluginDefinition of pluginDefinitions) {
-    const pluginModuleTasks: Tasks = [];
-    const { plugin, tasks } = await importPlugin({
+    const { plugin, tasks, moduleTasks } = await loadConfiguredPlugin({
       cwd,
-      pluginModule: pluginDefinition.module ||
-        await loadPluginModule({
-          cwd,
-          initLoadApi,
-          path: pluginDefinition.path,
-          tasks: pluginModuleTasks,
-        }),
-      options: pluginDefinition.options,
       outputDirectory,
+      pluginDefinition,
       renderComponent,
       renderComponentSync,
       initLoadApi,
       mode,
     });
-    initialTasks = initialTasks.concat(pluginModuleTasks, tasks);
-    plugin.moduleTasks = pluginModuleTasks;
 
-    const { dependsOn } = plugin.meta;
-    const dependencyIndex = loadedPluginDefinitions.findIndex(
-      ({ meta: { name } }) => dependsOn?.includes(name),
-    );
-
-    // If there are dependencies, make sure the plugin is evaluated last
-    if (dependencyIndex < 0) {
-      loadedPluginDefinitions.unshift(plugin);
-    } else {
-      loadedPluginDefinitions.push(plugin);
-    }
+    initialTasks = initialTasks.concat(moduleTasks, tasks);
+    addPluginDefinition(loadedPluginDefinitions, plugin);
   }
 
   await applyOnTasksRegistered({
@@ -118,18 +85,126 @@ async function importPlugins(
 
   // The idea is to proxy routes from all routers so you can use multiple
   // routers or route definitions to aggregate everything together.
-  const router = {
+  router = createPluginRouter(loadedPluginDefinitions);
+
+  return { initialTasks, plugins: loadedPluginDefinitions, router };
+}
+
+function addInitialImportedPlugins(
+  loadedPluginDefinitions: PluginDefinition[],
+  initialImportedPlugins: LoadedPlugin[],
+) {
+  let initialTasks: Tasks = [];
+
+  initialImportedPlugins.forEach(({ plugin, tasks }) => {
+    loadedPluginDefinitions.push(plugin);
+    initialTasks = initialTasks.concat(plugin.moduleTasks || [], tasks);
+  });
+
+  return initialTasks;
+}
+
+function createPluginRenderers(
+  plugins: PluginDefinition[],
+  getMatchRoute: () => MatchRoute,
+) {
+  const renderComponent: Render = (
+    { componentName, htmlInput, context, props },
+  ) =>
+    applyRenderComponents({
+      componentName,
+      htmlInput,
+      props,
+      context,
+      plugins,
+      matchRoute: getMatchRoute(),
+    });
+
+  const renderComponentSync: RenderSync = (
+    { componentName, htmlInput, context, props },
+  ) =>
+    applyRenderComponentsSync({
+      componentName,
+      htmlInput,
+      props,
+      context,
+      plugins,
+      matchRoute: getMatchRoute(),
+    });
+
+  return { renderComponent, renderComponentSync };
+}
+
+async function loadConfiguredPlugin(
+  {
+    cwd,
+    outputDirectory,
+    pluginDefinition,
+    renderComponent,
+    renderComponentSync,
+    initLoadApi,
+    mode,
+  }: {
+    cwd: string;
+    outputDirectory: string;
+    pluginDefinition: PluginOptions;
+    renderComponent: Render;
+    renderComponentSync: RenderSync;
+    initLoadApi: InitLoadApi;
+    mode: Mode;
+  },
+) {
+  const moduleTasks: Tasks = [];
+  const loadedPlugin = await importPlugin({
+    cwd,
+    pluginModule: pluginDefinition.module ||
+      await loadPluginModule({
+        cwd,
+        initLoadApi,
+        path: pluginDefinition.path,
+        tasks: moduleTasks,
+      }),
+    options: pluginDefinition.options,
+    outputDirectory,
+    renderComponent,
+    renderComponentSync,
+    initLoadApi,
+    mode,
+  });
+
+  loadedPlugin.plugin.moduleTasks = moduleTasks;
+
+  return { ...loadedPlugin, moduleTasks };
+}
+
+function addPluginDefinition(
+  loadedPluginDefinitions: PluginDefinition[],
+  plugin: PluginDefinition,
+) {
+  const { dependsOn } = plugin.meta;
+  const dependencyIndex = loadedPluginDefinitions.findIndex(
+    ({ meta: { name } }) => dependsOn?.includes(name),
+  );
+
+  // If there are dependencies, make sure the plugin is evaluated last
+  if (dependencyIndex < 0) {
+    loadedPluginDefinitions.unshift(plugin);
+  } else {
+    loadedPluginDefinitions.push(plugin);
+  }
+}
+
+function createPluginRouter(plugins: PluginDefinition[]): PluginRouter {
+  return {
     // Last definition wins
     getAllRoutes(options?: { routeConcurrency?: number }) {
-      return applyGetAllRoutes({ plugins: loadedPluginDefinitions, options });
+      return applyGetAllRoutes({ plugins, options });
     },
     // First match wins
     matchRoute(url: string): Promise<Route | undefined> {
-      return applyMatchRoutes({ plugins: loadedPluginDefinitions, url });
+      return applyMatchRoutes({ plugins, url });
     },
   };
-
-  return { initialTasks, plugins: loadedPluginDefinitions, router };
 }
 
 async function loadPluginModule(
@@ -163,7 +238,9 @@ async function loadPluginModule(
 
 async function resolvePluginPath(cwd: string, path: string) {
   if (
-    ["file:", "http://", "https://"].some((prefix) => path.startsWith(prefix)) ||
+    ["file:", "http://", "https://"].some((prefix) =>
+      path.startsWith(prefix)
+    ) ||
     path.startsWith("/")
   ) {
     return path;
@@ -567,98 +644,138 @@ async function applyAfterEachRenders(
 function createSend(plugins: PluginDefinition[]) {
   const send: Send = async (pluginName, message) => {
     if (pluginName === "*") {
-      DEBUG && console.log("Send to all", message);
-
-      const messageResults = (await Promise.all(
-        plugins.map(async (plugin) => {
-          const { api, context: pluginContext } = plugin;
-
-          if (api.onMessage) {
-            const payload = await api.onMessage({
-              message,
-              pluginContext,
-              send,
-            });
-
-            plugin.context = {
-              ...pluginContext,
-              ...payload?.pluginContext,
-            };
-
-            if (payload) {
-              return payload;
-            }
-          }
-        }),
-      )).filter(Boolean);
-
-      // @ts-expect-error Make typing more strict here
-      const sends = messageResults.flatMap((s) => s.send).filter(Boolean);
-      // @ts-expect-error Make typing more strict here
-      const results = messageResults.flatMap((s) => s.result).filter(Boolean);
-
-      DEBUG &&
-        console.log("Send to all, received from plugins", sends, results);
-
-      // TODO: What to do with sends triggered by messages? Maybe it would be
-      // better to drop support for this and handle it otherwise?
-      await Promise.all(
-        sends.map((message) =>
-          Promise.all(plugins.map(async (plugin) => {
-            const { api } = plugin;
-
-            if (api.onMessage) {
-              // @ts-expect-error TS inference fails here
-              const payload = await api.onMessage({ message });
-
-              plugin.context = {
-                ...plugin.context,
-                ...payload?.pluginContext,
-              };
-            }
-          }))
-        ),
-      );
-
-      return results;
-    } else {
-      const foundPlugin = plugins.find(({ meta: { name } }) =>
-        pluginName === name
-      );
-
-      // Handle ping as a special case
-      if (message.type === "ping") {
-        return !!foundPlugin;
-      }
-
-      if (foundPlugin) {
-        if (foundPlugin.api.onMessage) {
-          const payload = await foundPlugin.api.onMessage({
-            message,
-            pluginContext: foundPlugin.context,
-            send,
-          });
-
-          foundPlugin.context = {
-            ...foundPlugin.context,
-            ...payload?.pluginContext,
-          };
-
-          return payload?.result;
-        } else {
-          throw new Error(
-            `Plugin ${pluginName} does not have an onMessage handler`,
-          );
-        }
-      } else {
-        throw new Error(
-          `Tried to send a plugin (${pluginName}) that does not exist`,
-        );
-      }
+      return await sendToAllPlugins({ plugins, message, send });
     }
+
+    return await sendToPlugin({ plugins, pluginName, message, send });
   };
 
   return send;
+}
+
+async function sendToAllPlugins(
+  { plugins, message, send }: {
+    plugins: PluginDefinition[];
+    message: Parameters<Send>[1];
+    send: Send;
+  },
+) {
+  DEBUG && console.log("Send to all", message);
+
+  const messageResults = (await Promise.all(
+    plugins.map((plugin) => notifyPlugin(plugin, message, send)),
+  )).filter(Boolean);
+
+  // @ts-expect-error Make typing more strict here
+  const sends = messageResults.flatMap((s) => s.send).filter(Boolean);
+  // @ts-expect-error Make typing more strict here
+  const results = messageResults.flatMap((s) => s.result).filter(Boolean);
+
+  DEBUG && console.log("Send to all, received from plugins", sends, results);
+
+  // TODO: What to do with sends triggered by messages? Maybe it would be
+  // better to drop support for this and handle it otherwise?
+  await relayBroadcastMessages({ plugins, messages: sends });
+
+  return results;
+}
+
+async function notifyPlugin(
+  plugin: PluginDefinition,
+  message: Parameters<Send>[1],
+  send: Send,
+) {
+  const { api, context: pluginContext } = plugin;
+
+  if (!api.onMessage) {
+    return;
+  }
+
+  const payload = await api.onMessage({
+    message,
+    pluginContext,
+    send,
+  });
+
+  plugin.context = {
+    ...pluginContext,
+    ...payload?.pluginContext,
+  };
+
+  return payload;
+}
+
+async function relayBroadcastMessages(
+  { plugins, messages }: {
+    plugins: PluginDefinition[];
+    messages: Parameters<Send>[1][];
+  },
+) {
+  await Promise.all(
+    messages.map((message) =>
+      Promise.all(plugins.map((plugin) => relayMessage(plugin, message)))
+    ),
+  );
+}
+
+async function relayMessage(
+  plugin: PluginDefinition,
+  message: Parameters<Send>[1],
+) {
+  const { api } = plugin;
+
+  if (!api.onMessage) {
+    return;
+  }
+
+  // @ts-expect-error Preserve the legacy relayed message shape.
+  const payload = await api.onMessage({ message });
+
+  plugin.context = {
+    ...plugin.context,
+    ...payload?.pluginContext,
+  };
+}
+
+async function sendToPlugin(
+  { plugins, pluginName, message, send }: {
+    plugins: PluginDefinition[];
+    pluginName: string;
+    message: Parameters<Send>[1];
+    send: Send;
+  },
+) {
+  const foundPlugin = plugins.find(({ meta: { name } }) => pluginName === name);
+
+  // Handle ping as a special case
+  if (message.type === "ping") {
+    return !!foundPlugin;
+  }
+
+  if (!foundPlugin) {
+    throw new Error(
+      `Tried to send a plugin (${pluginName}) that does not exist`,
+    );
+  }
+
+  if (!foundPlugin.api.onMessage) {
+    throw new Error(
+      `Plugin ${pluginName} does not have an onMessage handler`,
+    );
+  }
+
+  const payload = await foundPlugin.api.onMessage({
+    message,
+    pluginContext: foundPlugin.context,
+    send,
+  });
+
+  foundPlugin.context = {
+    ...foundPlugin.context,
+    ...payload?.pluginContext,
+  };
+
+  return payload?.result;
 }
 
 async function runLifecycleHooksInDependencyLayers<T>(
@@ -667,7 +784,9 @@ async function runLifecycleHooksInDependencyLayers<T>(
     plugins,
     runHook,
   }: {
-    getHook(plugin: PluginDefinition): ((args: any) => Promise<Tasks | void> | Tasks | void) | undefined;
+    getHook(
+      plugin: PluginDefinition,
+    ): ((args: any) => Promise<Tasks | void> | Tasks | void) | undefined;
     plugins: PluginDefinition[];
     runHook(
       hook: (args: any) => Promise<Tasks | void> | Tasks | void,
@@ -677,7 +796,11 @@ async function runLifecycleHooksInDependencyLayers<T>(
 ) {
   let tasks: Tasks = [];
 
-  for (const layer of getDependencyLayers(plugins.filter((plugin) => getHook(plugin)))) {
+  for (
+    const layer of getDependencyLayers(
+      plugins.filter((plugin) => getHook(plugin)),
+    )
+  ) {
     const layerTasks = await Promise.all(
       layer.map(async (plugin) => {
         const hook = getHook(plugin);
