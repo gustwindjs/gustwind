@@ -38,6 +38,15 @@ type CloseableServer = {
   close(): Promise<void> | void;
   url: string;
 };
+type BuildResult = Awaited<ReturnType<typeof buildNode>>;
+type CliExecutionContext = {
+  args: CliArgs;
+  cwd: string;
+  pluginsPath: string;
+  readPluginDefinitions(): Promise<
+    Awaited<ReturnType<typeof evaluatePluginsDefinition>>
+  >;
+};
 
 function usage() {
   console.log(`
@@ -77,57 +86,94 @@ async function main(cliArgs: string[]): Promise<number> {
     return 0;
   }
 
-  if (
-    args.help ||
-    (!args.benchmark && !args.build && !args.develop && !args.diagnoseRoutes &&
-      !args.serve && !args.validate)
-  ) {
+  if (shouldShowUsage(args)) {
     usage();
     return 0;
   }
 
-  const cwd = process.cwd();
-  const pluginsPath = path.join(cwd, args.plugins);
-  const readPluginDefinitions = async () =>
-    evaluatePluginsDefinition(
-      JSON.parse(await readFile(pluginsPath, "utf8")),
-    );
+  const cliContext = createCliExecutionContext(args);
 
   if (args.develop) {
-    const server = await startDevServer({
-      cwd,
-      pluginDefinitions: readPluginDefinitions,
-      port: args.port,
-      watchPaths: [pluginsPath],
-    });
-
-    return waitForServer(server, `Serving at ${server.url}`);
+    return runDevelop(cliContext);
   }
 
   if (args.serve) {
-    const server = await startStaticServer({
-      cwd,
-      input: args.input,
-      port: args.port,
-    });
-
-    return waitForServer(server, `Serving static files at ${server.url}`);
+    return runServe(cliContext);
   }
 
-  if (args.validate && !args.build) {
-    const { filesValidated } = await validateHtmlDirectory(
-      path.resolve(cwd, args.input),
-    );
-    console.log(
-      `Validated ${filesValidated} HTML files in ${
-        path.resolve(cwd, args.input)
-      }.`,
-    );
-    return 0;
+  if (isValidateOnly(args)) {
+    return runValidateOnly(cliContext);
   }
 
+  const buildResult = await runBuild(cliContext);
+  await reportBuildResult(cliContext, buildResult);
+
+  return 0;
+}
+
+function shouldShowUsage(args: CliArgs) {
+  return args.help ||
+    (!args.benchmark && !args.build && !args.develop && !args.diagnoseRoutes &&
+      !args.serve && !args.validate);
+}
+
+function createCliExecutionContext(args: CliArgs): CliExecutionContext {
+  const cwd = process.cwd();
+  const pluginsPath = path.join(cwd, args.plugins);
+
+  return {
+    args,
+    cwd,
+    pluginsPath,
+    readPluginDefinitions: async () =>
+      evaluatePluginsDefinition(
+        JSON.parse(await readFile(pluginsPath, "utf8")),
+      ),
+  };
+}
+
+async function runDevelop(
+  { args, cwd, pluginsPath, readPluginDefinitions }: CliExecutionContext,
+) {
+  const server = await startDevServer({
+    cwd,
+    pluginDefinitions: readPluginDefinitions,
+    port: args.port,
+    watchPaths: [pluginsPath],
+  });
+
+  return waitForServer(server, `Serving at ${server.url}`);
+}
+
+async function runServe({ args, cwd }: CliExecutionContext) {
+  const server = await startStaticServer({
+    cwd,
+    input: args.input,
+    port: args.port,
+  });
+
+  return waitForServer(server, `Serving static files at ${server.url}`);
+}
+
+function isValidateOnly(args: CliArgs) {
+  return args.validate && !args.build;
+}
+
+async function runValidateOnly({ args, cwd }: CliExecutionContext) {
+  const inputPath = path.resolve(cwd, args.input);
+  const { filesValidated } = await validateHtmlDirectory(inputPath);
+
+  console.log(`Validated ${filesValidated} HTML files in ${inputPath}.`);
+
+  return 0;
+}
+
+async function runBuild(
+  { args, cwd, readPluginDefinitions }: CliExecutionContext,
+) {
   const evaluatedPluginsDefinition = await readPluginDefinitions();
-  const buildResult = await buildNode({
+
+  return buildNode({
     cwd,
     cacheFrom: args.cacheFrom || args.output,
     outputDirectory: args.output,
@@ -139,7 +185,22 @@ async function main(cliArgs: string[]): Promise<number> {
     routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
+}
 
+async function reportBuildResult(
+  cliContext: CliExecutionContext,
+  buildResult: BuildResult,
+) {
+  reportValidation(cliContext, buildResult);
+  reportBuildSummary(cliContext, buildResult);
+  await writeBenchmarkResult(cliContext, buildResult);
+  reportRouteDiagnostics(cliContext, buildResult);
+}
+
+function reportValidation(
+  { args, cwd }: CliExecutionContext,
+  buildResult: BuildResult,
+) {
   if (args.validate && buildResult?.validation) {
     console.log(
       `Validated ${buildResult.validation.filesValidated} HTML files in ${
@@ -147,7 +208,12 @@ async function main(cliArgs: string[]): Promise<number> {
       }.`,
     );
   }
+}
 
+function reportBuildSummary(
+  { args }: CliExecutionContext,
+  buildResult: BuildResult,
+) {
   if (
     args.build && !args.benchmark &&
     typeof buildResult?.routesBuilt === "number"
@@ -162,7 +228,12 @@ async function main(cliArgs: string[]): Promise<number> {
       console.log(`Full build rebuilt ${buildResult.routesBuilt} routes.`);
     }
   }
+}
 
+async function writeBenchmarkResult(
+  { args, cwd }: CliExecutionContext,
+  buildResult: BuildResult,
+) {
   if (args.benchmark && buildResult?.benchmark) {
     const benchmarkOutputPath = path.resolve(cwd, args.benchmarkOutput);
 
@@ -174,13 +245,16 @@ async function main(cliArgs: string[]): Promise<number> {
       `Benchmarked ${buildResult.benchmark.routesBuilt} routes in ${buildResult.benchmark.totalDurationMs}ms. Results written to ${benchmarkOutputPath}.`,
     );
   }
+}
 
+function reportRouteDiagnostics(
+  { args }: CliExecutionContext,
+  buildResult: BuildResult,
+) {
   if (args.diagnoseRoutes && buildResult?.benchmark) {
     formatRouteDiagnostics(buildResult.benchmark, args.diagnosticsTop).lines
       .forEach((line) => console.log(line));
   }
-
-  return 0;
 }
 
 async function waitForServer(

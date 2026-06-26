@@ -12,6 +12,13 @@ const STATES = {
   PARSE_CHILDREN: 4,
 } as const;
 type State = typeof STATES[keyof typeof STATES];
+type ParseTagState = {
+  state: State;
+  currentTag: Element | null;
+  capturedTags: (string | Element)[];
+  content: string;
+  depth: number;
+};
 const LIMIT = 100000;
 
 const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
@@ -23,165 +30,277 @@ function parseTag(
   getCharacter: CharacterGenerator,
   isChild?: boolean,
 ): (Element | string)[] {
-  let state: State = STATES.IDLE;
-  let currentTag: Element | null = null;
-  const capturedTags: (string | Element)[] = [];
-  let content = "";
-  let depth = 0;
+  const parseState: ParseTagState = {
+    state: STATES.IDLE,
+    currentTag: null,
+    capturedTags: [],
+    content: "",
+    depth: 0,
+  };
 
   for (let i = 0; i < LIMIT; i++) {
-    if (state === STATES.IDLE) {
-      const c = getCharacter.next();
-
-      if (c === "\n") {
-        // No-op
-      } else if (c === "<") {
-        // Closing case - i.e., </
-        if (getCharacter.get() === "/") {
-          state = STATES.PARSE_END_TAG;
-        } else {
-          // Keep on parsing siblings if we are within a node already
-          if (depth > 0) {
-            getCharacter.previous();
-
-            state = STATES.PARSE_CHILDREN;
-          } // Otherwise construct a root node
-          else {
-            state = STATES.PARSE_TAG_TYPE;
-
-            depth++;
-            content.trim() && currentTag?.children.push(content);
-            content = "";
-            currentTag = { type: "", attributes: {}, children: [] };
-            capturedTags.push(currentTag);
-          }
-        }
-      } // Self-closing case
-      else if (c === "/") {
-        depth--;
-
-        if (depth === 0 && isChild) {
-          break;
-        }
-
-        getCharacter.next();
-      } else if (c === ">") {
-        // DOCTYPE cannot have children so keep on parsing. Same for xml
-        if (currentTag?.closesWith === "" || currentTag?.closesWith === "?") {
-          state = STATES.IDLE;
-        } else {
-          state = STATES.PARSE_CHILDREN;
-        }
-      } // <?xml ... ?>
-      else if (getCharacter.get() === ">") {
-        if (currentTag) {
-          depth--;
-          currentTag.closesWith = c;
-        }
-      } // Found content
-      else if (c) {
-        getCharacter.previous();
-
-        state = STATES.PARSE_CHILDREN;
-      }
-
-      if (!c) {
-        break;
-      }
-    } else if (state === STATES.PARSE_TAG_TYPE) {
-      if (currentTag) {
-        // <!DOCTYPE> case
-        if (getCharacter.get() === "!") {
-          depth--;
-          currentTag.closesWith = "";
-        }
-
-        currentTag.type = parseTagType(getCharacter);
-        state = STATES.PARSE_TAG_ATTRIBUTES;
-
-        if (getCharacter.get(1) === null) {
-          break;
-        }
-      } else {
-        throw new Error("No tag to parse for tag type");
-      }
-    } else if (state === STATES.PARSE_TAG_ATTRIBUTES) {
-      if (currentTag) {
-        getCharacter.previous();
-        currentTag.attributes = parseAttributes(getCharacter);
-        state = STATES.IDLE;
-      } else {
-        throw new Error("No tag to parse for attributes");
-      }
-    } else if (state === STATES.PARSE_CHILDREN) {
-      const c = getCharacter.next();
-
-      if (c === "<") {
-        if (getCharacter.get() === "/") {
-          state = STATES.PARSE_END_TAG;
-        } else if (currentTag?.type) {
-          if (currentTag?.closesWith === "" || currentTag?.closesWith === "?") {
-            getCharacter.previous();
-          } else {
-            if (content.trim()) {
-              currentTag.children.push(content);
-              content = "";
-            }
-
-            getCharacter.previous();
-
-            currentTag.children = currentTag.children.concat(
-              parseTag(getCharacter, true),
-            );
-          }
-
-          state = STATES.IDLE;
-        } // No tag was found yet so we have only pure content
-        else {
-          if (getCharacter.get(1) === null) {
-            break;
-          }
-
-          capturedTags.push(content);
-          content = "";
-
-          getCharacter.previous();
-
-          state = STATES.IDLE;
-        }
-      } else if (c) {
-        content += c;
-      } else {
-        break;
-      }
-    } else if (state === STATES.PARSE_END_TAG) {
-      const c = getCharacter.next();
-
-      if (c === ">") {
-        depth--;
-
-        content.trim() && currentTag?.children.push(content);
-        content = "";
-
-        currentTag = null;
-
-        // Escape once the current element has been parsed but only if we are not at the root
-        if (depth === 0 && isChild) {
-          break;
-        }
-
-        state = STATES.IDLE;
-      } else if (c === null) {
-        break;
-      }
+    if (parseTagState(parseState, getCharacter, isChild)) {
+      break;
     }
   }
 
-  if (content.trim()) {
-    return capturedTags.concat(content);
+  if (parseState.content.trim()) {
+    return parseState.capturedTags.concat(parseState.content);
   }
 
-  return capturedTags.length ? capturedTags : [content];
+  return parseState.capturedTags.length
+    ? parseState.capturedTags
+    : [parseState.content];
+}
+
+function parseTagState(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) {
+  switch (parseState.state) {
+    case STATES.IDLE:
+      return parseIdle(parseState, getCharacter, isChild);
+    case STATES.PARSE_TAG_TYPE:
+      return parseTagTypeState(parseState, getCharacter);
+    case STATES.PARSE_TAG_ATTRIBUTES:
+      parseTagAttributes(parseState, getCharacter);
+      break;
+    case STATES.PARSE_CHILDREN:
+      return parseChildren(parseState, getCharacter);
+    case STATES.PARSE_END_TAG:
+      return parseEndTag(parseState, getCharacter, isChild);
+  }
+
+  return false;
+}
+
+function parseIdle(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) {
+  const c = getCharacter.next();
+
+  switch (c) {
+    case "\n":
+      return false;
+    case "<":
+      parseTagOpening(parseState, getCharacter);
+      return false;
+    case "/":
+      return parseIdleSlash(parseState, getCharacter, isChild);
+    case ">":
+      parseState.state = isChildlessTag(parseState.currentTag)
+        ? STATES.IDLE
+        : STATES.PARSE_CHILDREN;
+      return false;
+    case null:
+      return true;
+    default:
+      return parseIdleContent(parseState, getCharacter, c);
+  }
+}
+
+function parseIdleSlash(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) {
+  parseState.depth--;
+
+  if (parseState.depth === 0 && isChild) {
+    return true;
+  }
+
+  getCharacter.next();
+
+  return false;
+}
+
+function parseIdleContent(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (getCharacter.get() === ">" && parseState.currentTag) {
+    parseState.depth--;
+    parseState.currentTag.closesWith = c;
+    return false;
+  }
+
+  getCharacter.previous();
+  parseState.state = STATES.PARSE_CHILDREN;
+
+  return false;
+}
+
+function parseTagOpening(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (getCharacter.get() === "/") {
+    parseState.state = STATES.PARSE_END_TAG;
+
+    return;
+  }
+
+  if (parseState.depth > 0) {
+    getCharacter.previous();
+    parseState.state = STATES.PARSE_CHILDREN;
+
+    return;
+  }
+
+  parseState.state = STATES.PARSE_TAG_TYPE;
+  parseState.depth++;
+
+  if (parseState.content.trim()) {
+    parseState.currentTag?.children.push(parseState.content);
+  }
+
+  parseState.content = "";
+  parseState.currentTag = { type: "", attributes: {}, children: [] };
+  parseState.capturedTags.push(parseState.currentTag);
+}
+
+function parseTagTypeState(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (!parseState.currentTag) {
+    throw new Error("No tag to parse for tag type");
+  }
+
+  // <!DOCTYPE> case
+  if (getCharacter.get() === "!") {
+    parseState.depth--;
+    parseState.currentTag.closesWith = "";
+  }
+
+  parseState.currentTag.type = parseTagType(getCharacter);
+  parseState.state = STATES.PARSE_TAG_ATTRIBUTES;
+
+  return getCharacter.get(1) === null;
+}
+
+function parseTagAttributes(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (!parseState.currentTag) {
+    throw new Error("No tag to parse for attributes");
+  }
+
+  getCharacter.previous();
+  parseState.currentTag.attributes = parseAttributes(getCharacter);
+  parseState.state = STATES.IDLE;
+}
+
+function parseChildren(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  const c = getCharacter.next();
+
+  if (c === "<") {
+    return parseChildOpening(parseState, getCharacter);
+  }
+
+  if (c) {
+    parseState.content += c;
+
+    return false;
+  }
+
+  return true;
+}
+
+function parseChildOpening(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (getCharacter.get() === "/") {
+    parseState.state = STATES.PARSE_END_TAG;
+
+    return false;
+  }
+
+  if (parseState.currentTag?.type) {
+    parseNestedChild(parseState, getCharacter);
+    parseState.state = STATES.IDLE;
+
+    return false;
+  }
+
+  if (getCharacter.get(1) === null) {
+    return true;
+  }
+
+  parseState.capturedTags.push(parseState.content);
+  parseState.content = "";
+  getCharacter.previous();
+  parseState.state = STATES.IDLE;
+
+  return false;
+}
+
+function parseNestedChild(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (isChildlessTag(parseState.currentTag)) {
+    getCharacter.previous();
+
+    return;
+  }
+
+  if (parseState.content.trim()) {
+    parseState.currentTag?.children.push(parseState.content);
+    parseState.content = "";
+  }
+
+  getCharacter.previous();
+
+  if (parseState.currentTag) {
+    parseState.currentTag.children = parseState.currentTag.children.concat(
+      parseTag(getCharacter, true),
+    );
+  }
+}
+
+function parseEndTag(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) {
+  const c = getCharacter.next();
+
+  if (c === ">") {
+    parseState.depth--;
+
+    if (parseState.content.trim()) {
+      parseState.currentTag?.children.push(parseState.content);
+    }
+
+    parseState.content = "";
+    parseState.currentTag = null;
+
+    // Escape once the current element has been parsed but only if we are not at the root
+    if (parseState.depth === 0 && isChild) {
+      return true;
+    }
+
+    parseState.state = STATES.IDLE;
+
+    return false;
+  }
+
+  return c === null;
+}
+
+function isChildlessTag(tag: Element | null) {
+  return tag?.closesWith === "" || tag?.closesWith === "?";
 }
 
 function parseTagType(getCharacter: CharacterGenerator) {

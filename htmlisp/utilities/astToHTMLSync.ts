@@ -10,6 +10,25 @@ import type {
 import type { Utilities } from "../../types.ts";
 import { raw, renderTextValue } from "./runtime.ts";
 import { isForeachBinding } from "./parseForeachExpression.ts";
+import {
+  createComponentProps,
+  createForeachProps,
+  getExpressionUtilities,
+  isComponentTag,
+  isHidden,
+} from "./astToHTMLShared.ts";
+
+type RenderContext = {
+  ast: (string | Element)[];
+  htmlispToHTML: (args: HtmlispToHTMLParameters) => unknown;
+  context?: Context;
+  props?: Context;
+  utilities?: Utilities;
+  componentUtilities?: Record<string, Utilities>;
+  components?: Components;
+  renderOptions?: HtmlispRenderOptions;
+  parentAst?: (string | Element)[];
+};
 
 // Currently this contains htmlisp syntax specific logic but technically
 // that could be decoupled as well.
@@ -27,154 +46,195 @@ function astToHTMLSync(
   // Helper for debugging
   parentAst?: (string | Element)[],
 ): string {
-  return ast.map((tag) => {
-    if (typeof tag === "string") {
-      return renderTextValue(tag, renderOptions);
-    }
+  const renderContext = {
+    ast,
+    htmlispToHTML,
+    context,
+    props,
+    utilities,
+    componentUtilities,
+    components,
+    renderOptions,
+    parentAst,
+  };
 
-    const { type, attributes, children } = tag;
+  return ast.map((tag) => renderTagSync(tag, renderContext, initialLocal)).join(
+    "",
+  );
+}
 
-    // Components begin with an uppercase letter always but not with ! or ?
-    // Component names aren't also fully in uppercase
-    const typeFirstLetter = type[0];
-    const isComponent = !["!", "?"].some((s) => s === typeFirstLetter) &&
-      components &&
-      type[0]?.toUpperCase() === typeFirstLetter &&
-      !type.split("").every((t) => t.toUpperCase() === t);
-    let local = initialLocal;
+function renderTagSync(
+  tag: string | Element,
+  renderContext: RenderContext,
+  initialLocal?: Context,
+) {
+  if (typeof tag === "string") {
+    return renderTextValue(tag, renderContext.renderOptions);
+  }
 
-    const parsedAttributes = parseExpressionsSync(
-      attributes,
-      { context: context || {}, props: props || {}, local },
-      isComponent
-        ? { ...utilities, ...componentUtilities?.[type] }
-        : utilities
-        ? utilities
-        : {},
-    );
+  const isComponent = isComponentTag(tag.type, renderContext.components);
+  let local = initialLocal;
+  const parsedAttributes = parseExpressionsSync(
+    tag.attributes,
+    {
+      context: renderContext.context || {},
+      props: renderContext.props || {},
+      local,
+    },
+    getExpressionUtilities(tag.type, isComponent, renderContext),
+  );
 
-    if (type === "noop") {
-      local = parsedAttributes;
-    }
+  if (tag.type === "noop") {
+    local = parsedAttributes;
+  }
 
-    if (
-      Object.hasOwn(parsedAttributes, "visibleIf") &&
-      (
-        parsedAttributes.visibleIf === false ||
-        parsedAttributes.visibleIf === undefined ||
-        parsedAttributes.visibleIf?.length === 0
-      )
-    ) {
-      return "";
-    }
+  if (isHidden(parsedAttributes)) {
+    return "";
+  }
 
-    let renderedChildren = "";
-    if (parsedAttributes.foreach) {
-      const foreachBinding = isForeachBinding(parsedAttributes.foreach)
-        ? parsedAttributes.foreach
-        : { items: parsedAttributes.foreach as unknown[] };
-      const { items, alias } = foreachBinding;
-
-      delete parsedAttributes.foreach;
-
-      // TODO: Test this case
-      if (!Array.isArray(items)) {
-        console.error(items);
-        throw new Error("foreach - Tried to iterate a non-array!");
-      }
-
-      renderedChildren = items.map((p) =>
-        astToHTMLSync(
-          children,
-          htmlispToHTML,
-          context,
-          createForeachProps(props, p, alias),
-          local,
-          utilities,
-          componentUtilities,
-          components,
-          renderOptions,
-          // Pass original ast to help with debugging
-          ast,
-        )
-      ).join("");
-    } else {
-      renderedChildren = astToHTMLSync(
-        children,
-        htmlispToHTML,
-        context,
-        props,
-        local,
-        utilities,
-        componentUtilities,
-        components,
-        renderOptions,
-        // Pass original ast to help with debugging
-        ast,
-      );
-
-      if (isComponent) {
-        const foundComponent = components[type];
-
-        if (!foundComponent) {
-          console.error({ parentAst, ast });
-          throw new Error(`Component "${type}" was not found!`);
-        }
-
-        const componentSlots = slotsToPropsSync(
-          ast,
-          tag,
-          htmlispToHTML,
-          context,
-          props,
-          local,
-          utilities,
-          componentUtilities,
-          components,
-          renderOptions,
-          typeof foundComponent !== "function",
-        );
-        const componentProps = {
-          children: typeof foundComponent === "function"
-            ? renderedChildren
-            : raw(renderedChildren),
-          ...attributes,
-          ...parsedAttributes,
-          ...componentSlots,
-          props,
-          utilities,
-          componentUtilities,
-          components,
-        };
-        const renderedComponent = typeof foundComponent === "function"
-          ? foundComponent(componentProps)
-          : foundComponent;
-
-        if (renderedComponent instanceof Promise) {
-          throw new Error(
-            `Component "${type}" returned a Promise in sync rendering`,
-          );
-        }
-
-        return htmlispToHTML({
-          htmlInput: renderedComponent,
-          components,
-          context,
-          props: componentProps,
-          utilities: { ...utilities, ...componentUtilities?.[type] },
-          componentUtilities,
-          renderOptions,
-        });
-      }
-    }
-
+  if (parsedAttributes.foreach) {
     return renderElement(
       parsedAttributes,
       tag,
-      renderedChildren,
-      renderOptions,
+      renderForeachChildrenSync(tag, parsedAttributes, local, renderContext),
+      renderContext.renderOptions,
     );
-  }).join("");
+  }
+
+  const renderedChildren = renderChildrenSync(tag, local, renderContext);
+
+  if (isComponent) {
+    return renderComponentSync(
+      tag,
+      parsedAttributes,
+      renderedChildren,
+      local,
+      renderContext,
+    );
+  }
+
+  return renderElement(
+    parsedAttributes,
+    tag,
+    renderedChildren,
+    renderContext.renderOptions,
+  );
+}
+
+function renderForeachChildrenSync(
+  tag: Element,
+  parsedAttributes: Context,
+  local: Context | undefined,
+  renderContext: RenderContext,
+) {
+  const foreachBinding = isForeachBinding(parsedAttributes.foreach)
+    ? parsedAttributes.foreach
+    : { items: parsedAttributes.foreach as unknown[] };
+  const { items, alias } = foreachBinding;
+
+  delete parsedAttributes.foreach;
+
+  // TODO: Test this case
+  if (!Array.isArray(items)) {
+    console.error(items);
+    throw new Error("foreach - Tried to iterate a non-array!");
+  }
+
+  return items.map((p) =>
+    astToHTMLSync(
+      tag.children,
+      renderContext.htmlispToHTML,
+      renderContext.context,
+      createForeachProps(renderContext.props, p, alias),
+      local,
+      renderContext.utilities,
+      renderContext.componentUtilities,
+      renderContext.components,
+      renderContext.renderOptions,
+      renderContext.ast,
+    )
+  ).join("");
+}
+
+function renderChildrenSync(
+  tag: Element,
+  local: Context | undefined,
+  renderContext: RenderContext,
+) {
+  return astToHTMLSync(
+    tag.children,
+    renderContext.htmlispToHTML,
+    renderContext.context,
+    renderContext.props,
+    local,
+    renderContext.utilities,
+    renderContext.componentUtilities,
+    renderContext.components,
+    renderContext.renderOptions,
+    renderContext.ast,
+  );
+}
+
+function renderComponentSync(
+  tag: Element,
+  parsedAttributes: Context,
+  renderedChildren: string,
+  local: Context | undefined,
+  renderContext: RenderContext,
+) {
+  const foundComponent = renderContext.components?.[tag.type];
+
+  if (!foundComponent) {
+    console.error({
+      parentAst: renderContext.parentAst,
+      ast: renderContext.ast,
+    });
+    throw new Error(`Component "${tag.type}" was not found!`);
+  }
+
+  const componentSlots = slotsToPropsSync(
+    renderContext.ast,
+    tag,
+    renderContext.htmlispToHTML,
+    renderContext.context,
+    renderContext.props,
+    local,
+    renderContext.utilities,
+    renderContext.componentUtilities,
+    renderContext.components,
+    renderContext.renderOptions,
+    typeof foundComponent !== "function",
+  );
+  const componentProps = createComponentProps(
+    tag,
+    parsedAttributes,
+    componentSlots,
+    renderedChildren,
+    typeof foundComponent === "function",
+    renderContext,
+  );
+  const renderedComponent = typeof foundComponent === "function"
+    ? foundComponent(componentProps)
+    : foundComponent;
+
+  if (renderedComponent instanceof Promise) {
+    throw new Error(
+      `Component "${tag.type}" returned a Promise in sync rendering`,
+    );
+  }
+
+  return renderContext.htmlispToHTML({
+    htmlInput: renderedComponent,
+    components: renderContext.components,
+    context: renderContext.context,
+    props: componentProps,
+    utilities: {
+      ...renderContext.utilities,
+      ...renderContext.componentUtilities?.[tag.type],
+    },
+    componentUtilities: renderContext.componentUtilities,
+    renderOptions: renderContext.renderOptions,
+  });
 }
 
 function slotsToPropsSync(
@@ -229,24 +289,3 @@ function slotsToPropsSync(
 }
 
 export { astToHTMLSync };
-
-function createForeachProps(
-  props: Context | undefined,
-  item: unknown,
-  alias?: string,
-) {
-  const loopProps: Context = {
-    ...(props || {}),
-    value: item,
-  };
-
-  if (item && typeof item === "object" && !Array.isArray(item)) {
-    Object.assign(loopProps, item);
-  }
-
-  if (alias) {
-    loopProps[alias] = item;
-  }
-
-  return loopProps;
-}
