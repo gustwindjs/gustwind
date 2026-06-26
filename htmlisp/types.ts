@@ -44,9 +44,6 @@ type HtmlispToHTMLParameters = {
   componentUtilities?: Record<string, Utilities>;
   renderOptions?: HtmlispRenderOptions;
 };
-/** @deprecated Use HtmlispToHTMLParameters instead. */
-type HtmllispToHTMLParameters = HtmlispToHTMLParameters;
-
 export type {
   Attributes,
   Components,
@@ -56,7 +53,6 @@ export type {
   HTMLispComponent,
   HtmlispRenderOptions,
   HtmlispToHTMLParameters,
-  HtmllispToHTMLParameters,
   RawHtml,
   Utilities,
 };

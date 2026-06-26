@@ -1,11 +1,3 @@
-function last<O>(array: O[]) {
-  return array[array.length - 1];
-}
-
-function isBoolean(str?: unknown) {
-  return typeof str === "boolean";
-}
-
 function isNull(str?: unknown) {
   return str === null;
 }
@@ -102,4 +94,4 @@ function omit<V = unknown>(o: Record<string, V> | undefined, k: string) {
   return ret;
 }
 
-export { get, isBoolean, isObject, isString, isUndefined, last, omit };
+export { get, isObject, isString, isUndefined, omit };
