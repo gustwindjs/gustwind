@@ -59,20 +59,18 @@ async function importPlugins({
   // TODO: Probably this logic should be revisited to make it more robust
   // with dependency cycles etc.
   // TODO: Validate that all plugin dependencies exist in configuration
-  for await (const pluginDefinition of pluginDefinitions) {
-    const { plugin, tasks, moduleTasks } = await loadConfiguredPlugin({
+  initialTasks = initialTasks.concat(
+    await loadConfiguredPlugins({
       cwd,
+      initLoadApi,
+      loadedPluginDefinitions,
+      mode,
       outputDirectory,
-      pluginDefinition,
+      pluginDefinitions,
       renderComponent,
       renderComponentSync,
-      initLoadApi,
-      mode,
-    });
-
-    initialTasks = initialTasks.concat(moduleTasks, tasks);
-    addPluginDefinition(loadedPluginDefinitions, plugin);
-  }
+    }),
+  );
 
   await applyOnTasksRegistered({
     plugins: loadedPluginDefinitions,
@@ -86,6 +84,45 @@ async function importPlugins({
   router = createPluginRouter(loadedPluginDefinitions);
 
   return { initialTasks, plugins: loadedPluginDefinitions, router };
+}
+
+async function loadConfiguredPlugins({
+  cwd,
+  initLoadApi,
+  loadedPluginDefinitions,
+  mode,
+  outputDirectory,
+  pluginDefinitions,
+  renderComponent,
+  renderComponentSync,
+}: {
+  cwd: string;
+  initLoadApi: InitLoadApi;
+  loadedPluginDefinitions: PluginDefinition[];
+  mode: Mode;
+  outputDirectory: string;
+  pluginDefinitions: PluginOptions[];
+  renderComponent: Render;
+  renderComponentSync: RenderSync;
+}) {
+  let tasksToRun: Tasks = [];
+
+  for await (const pluginDefinition of pluginDefinitions) {
+    const { plugin, tasks, moduleTasks } = await loadConfiguredPlugin({
+      cwd,
+      outputDirectory,
+      pluginDefinition,
+      renderComponent,
+      renderComponentSync,
+      initLoadApi,
+      mode,
+    });
+
+    tasksToRun = tasksToRun.concat(moduleTasks, tasks);
+    addPluginDefinition(loadedPluginDefinitions, plugin);
+  }
+
+  return tasksToRun;
 }
 
 function addInitialImportedPlugins(
