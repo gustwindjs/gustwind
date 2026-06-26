@@ -22,55 +22,75 @@ function getParseContent<ExpressionReturnType>(
     getCharacter: CharacterGenerator,
     initialMatchCounts?: MatchCounts,
   ): ExpressionReturnType {
-    const state: ParseContentState<ExpressionReturnType> = {
-      stringBuffer: "",
-      foundComment: false,
-      parts: [],
-      matchCounts: initialMatchCounts || {},
-    };
+    const state = createParseContentState<ExpressionReturnType>(
+      initialMatchCounts,
+    );
 
-    for (let i = 0; i < LIMIT; i++) {
-      const c = getCharacter.next();
+    collectContentParts(state, getCharacter, parsers);
 
-      if (c === null) {
-        break;
-      }
-
-      if (
-        parseContentCharacter(
-          state,
-          getCharacter,
-          parsers,
-          c,
-          i,
-        )
-      ) {
-        break;
-      }
-    }
-
-    // Skip comments
-    if (state.stringBuffer.startsWith("%")) {
-      throw new Error("Skip");
-    }
-
-    if (state.stringBuffer) {
-      // @ts-expect-error This is fine
-      state.parts.push(state.stringBuffer);
-    }
-
-    const value = expression(state.parts);
-
-    if (!!value) {
-      if (initialMatchCounts) {
-        Object.assign(initialMatchCounts, state.matchCounts);
-      }
-
-      return value;
-    }
-
-    throw new Error("No matching expression was found");
+    return finishContentParse(state, expression, initialMatchCounts);
   };
+}
+
+function createParseContentState<ExpressionReturnType>(
+  matchCounts?: MatchCounts,
+): ParseContentState<ExpressionReturnType> {
+  return {
+    stringBuffer: "",
+    foundComment: false,
+    parts: [],
+    matchCounts: matchCounts || {},
+  };
+}
+
+function collectContentParts<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+  ) => { match: string; value: ExpressionReturnType })[],
+) {
+  for (let i = 0; i < LIMIT; i++) {
+    const c = getCharacter.next();
+
+    if (c === null) {
+      break;
+    }
+
+    if (parseContentCharacter(state, getCharacter, parsers, c, i)) {
+      break;
+    }
+  }
+}
+
+function finishContentParse<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  expression: (
+    parts: ExpressionReturnType[],
+  ) => ExpressionReturnType | undefined,
+  initialMatchCounts?: MatchCounts,
+) {
+  // Skip comments
+  if (state.stringBuffer.startsWith("%")) {
+    throw new Error("Skip");
+  }
+
+  if (state.stringBuffer) {
+    // @ts-expect-error This is fine
+    state.parts.push(state.stringBuffer);
+  }
+
+  const value = expression(state.parts);
+
+  if (!value) {
+    throw new Error("No matching expression was found");
+  }
+
+  if (initialMatchCounts) {
+    Object.assign(initialMatchCounts, state.matchCounts);
+  }
+
+  return value;
 }
 
 function parseContentCharacter<ExpressionReturnType>(
