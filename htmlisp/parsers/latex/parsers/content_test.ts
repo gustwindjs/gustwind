@@ -24,8 +24,7 @@ test(`simple comment`, () => {
       getParseContent<string>((parts) => parts.join(""))(
         characterGenerator(input),
       ),
-    Error,
-    `Skip`,
+    { message: "Skip" },
   );
 });
 
@@ -37,8 +36,31 @@ test(`complex comment`, () => {
       getParseContent<string>((parts) => parts.join(""))(
         characterGenerator(input),
       ),
-    Error,
-    `Skip`,
+    { message: "Skip" },
+  );
+});
+
+test(`comment with a matching expression is skipped`, () => {
+  const input = String.raw`% \url{https://bing.com}`;
+
+  assert.throws(
+    () =>
+      getParseContent<string>((parts) => parts.join(""), [
+        getParseSingle({ url: (children) => children[0] }),
+      ])(
+        characterGenerator(input),
+      ),
+    { message: "Skip" },
+  );
+});
+
+test(`throws if expression returns no value`, () => {
+  assert.throws(
+    () =>
+      getParseContent<string>(() => undefined)(
+        characterGenerator("foobar"),
+      ),
+    { message: "No matching expression was found" },
   );
 });
 
@@ -65,6 +87,41 @@ barfoo`;
     ),
     `foobar
 foobar`,
+  );
+});
+
+test(`plain tilde is retained within content`, () => {
+  const input = "foo~bar";
+
+  assert.deepEqual(
+    getParseContent<string>((parts) => parts.join(""))(
+      characterGenerator(input),
+    ),
+    input,
+  );
+});
+
+test(`percent after plain content is retained`, () => {
+  const input = "foo%bar";
+
+  assert.deepEqual(
+    getParseContent<string>((parts) => parts.join(""))(
+      characterGenerator(input),
+    ),
+    input,
+  );
+});
+
+test(`percent after plain content does not disable expressions`, () => {
+  const input = String.raw`foo% \url{https://bing.com}`;
+
+  assert.deepEqual(
+    getParseContent<string>((parts) => parts.join(""), [
+      getParseSingle({ url: (children) => children[0] }),
+    ])(
+      characterGenerator(input),
+    ),
+    "foo% https://bing.com",
   );
 });
 
