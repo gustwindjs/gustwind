@@ -97,6 +97,19 @@ type BuildNodeRunConfig = NormalizedBuildNodeOptions & {
   previousCache?: Awaited<ReturnType<typeof readIncrementalBuildCache>>;
 };
 type BuildInputs = Awaited<ReturnType<typeof loadBuildInputs>>;
+type RestoreRouteBuildFromCacheOptions = {
+  cwd: string;
+  globalFingerprint: string | null;
+  incrementalCache?: IncrementalBuildCache;
+  incrementalCacheEnabled: boolean;
+  incrementalCacheSource?: NonNullable<
+    Awaited<ReturnType<typeof readIncrementalBuildCache>>
+  >["source"];
+  matchedRoute: Route;
+  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  outputDirectory: string;
+  url: string;
+};
 
 async function buildNode(
   options: BuildNodeOptions,
@@ -626,19 +639,7 @@ async function restoreRouteBuildFromCache(
     nextIncrementalCacheRoutes,
     outputDirectory,
     url,
-  }: {
-    cwd: string;
-    globalFingerprint: string | null;
-    incrementalCache?: IncrementalBuildCache;
-    incrementalCacheEnabled: boolean;
-    incrementalCacheSource?: NonNullable<
-      Awaited<ReturnType<typeof readIncrementalBuildCache>>
-    >["source"];
-    matchedRoute: Route;
-    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-    outputDirectory: string;
-    url: string;
-  },
+  }: RestoreRouteBuildFromCacheOptions,
 ) {
   const previousRouteCache = incrementalCache?.routes[url];
 
@@ -653,12 +654,12 @@ async function restoreRouteBuildFromCache(
     previousRouteCache.dependencyTasks,
   );
 
-  if (
-    incrementalCacheEnabled &&
-    incrementalCacheSource &&
-    previousRouteFingerprint === previousRouteCache.fingerprint &&
-    await outputsExist(incrementalCacheSource, previousRouteCache.outputPaths)
-  ) {
+  if (incrementalCacheSource && await canRestoreCachedRoute({
+    incrementalCacheEnabled,
+    incrementalCacheSource,
+    previousRouteCache,
+    previousRouteFingerprint,
+  })) {
     await restoreCachedOutputs(
       incrementalCacheSource,
       outputDirectory,
@@ -671,6 +672,32 @@ async function restoreRouteBuildFromCache(
   await clearCachedOutputs(outputDirectory, previousRouteCache.outputPaths);
 
   return false;
+}
+
+async function canRestoreCachedRoute(
+  {
+    incrementalCacheEnabled,
+    incrementalCacheSource,
+    previousRouteCache,
+    previousRouteFingerprint,
+  }: {
+    incrementalCacheEnabled: boolean;
+    incrementalCacheSource: NonNullable<
+      RestoreRouteBuildFromCacheOptions["incrementalCacheSource"]
+    >;
+    previousRouteCache: IncrementalBuildRouteCacheEntry;
+    previousRouteFingerprint: string | null;
+  },
+) {
+  if (!incrementalCacheEnabled || !incrementalCacheSource) {
+    return false;
+  }
+
+  if (previousRouteFingerprint !== previousRouteCache.fingerprint) {
+    return false;
+  }
+
+  return outputsExist(incrementalCacheSource, previousRouteCache.outputPaths);
 }
 
 async function buildRouteOutput(
