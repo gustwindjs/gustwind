@@ -47,6 +47,10 @@ type CliExecutionContext = {
     Awaited<ReturnType<typeof evaluatePluginsDefinition>>
   >;
 };
+type CliCommand = {
+  matches(args: CliArgs): boolean;
+  run(context: CliExecutionContext): Promise<number>;
+};
 
 function usage() {
   console.log(`
@@ -81,6 +85,19 @@ Options:
 async function main(cliArgs: string[]): Promise<number> {
   const args = parseArgs(cliArgs);
 
+  const immediateResult = runImmediateCommand(args);
+
+  if (immediateResult !== undefined) {
+    return immediateResult;
+  }
+
+  const cliContext = createCliExecutionContext(args);
+  const command = getCliCommand(args);
+
+  return command.run(cliContext);
+}
+
+function runImmediateCommand(args: CliArgs) {
   if (args.version) {
     console.log(`gustwind@${VERSION}\nnode@${process.version}`);
     return 0;
@@ -90,25 +107,6 @@ async function main(cliArgs: string[]): Promise<number> {
     usage();
     return 0;
   }
-
-  const cliContext = createCliExecutionContext(args);
-
-  if (args.develop) {
-    return runDevelop(cliContext);
-  }
-
-  if (args.serve) {
-    return runServe(cliContext);
-  }
-
-  if (isValidateOnly(args)) {
-    return runValidateOnly(cliContext);
-  }
-
-  const buildResult = await runBuild(cliContext);
-  await reportBuildResult(cliContext, buildResult);
-
-  return 0;
 }
 
 function shouldShowUsage(args: CliArgs) {
@@ -168,6 +166,16 @@ function isValidateOnly(args: CliArgs) {
   return args.validate && !args.build;
 }
 
+function getCliCommand(args: CliArgs) {
+  const command = CLI_COMMANDS.find(({ matches }) => matches(args));
+
+  if (!command) {
+    throw new Error("No CLI command matched parsed arguments");
+  }
+
+  return command;
+}
+
 async function runValidateOnly({ args, cwd }: CliExecutionContext) {
   const inputPath = path.resolve(cwd, args.input);
   const { filesValidated } = await validateHtmlDirectory(inputPath);
@@ -181,20 +189,37 @@ async function runBuild(
   { args, cwd, readPluginDefinitions }: CliExecutionContext,
 ) {
   const evaluatedPluginsDefinition = await readPluginDefinitions();
+  const collectBenchmark = args.benchmark || args.diagnoseRoutes;
 
   return buildNode({
     cwd,
     cacheFrom: args.cacheFrom || args.output,
+    collectBenchmark,
+    incremental: getBuildIncrementalMode(args, collectBenchmark),
     outputDirectory: args.output,
     pluginDefinitions: evaluatedPluginsDefinition,
-    collectBenchmark: args.benchmark || args.diagnoseRoutes,
-    incremental: (args.benchmark || args.diagnoseRoutes)
-      ? false
-      : args.incremental,
     routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
 }
+
+function getBuildIncrementalMode(args: CliArgs, collectBenchmark: boolean) {
+  return collectBenchmark ? false : args.incremental;
+}
+
+async function runBuildCommand(cliContext: CliExecutionContext) {
+  const buildResult = await runBuild(cliContext);
+  await reportBuildResult(cliContext, buildResult);
+
+  return 0;
+}
+
+const CLI_COMMANDS: CliCommand[] = [
+  { matches: (args) => args.develop, run: runDevelop },
+  { matches: (args) => args.serve, run: runServe },
+  { matches: isValidateOnly, run: runValidateOnly },
+  { matches: (args) => args.build, run: runBuildCommand },
+];
 
 async function reportBuildResult(
   cliContext: CliExecutionContext,
