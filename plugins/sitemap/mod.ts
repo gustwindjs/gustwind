@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import type { Plugin } from "../../types.ts";
 import { urlJoin } from "../../utilities/urlJoin.ts";
@@ -10,9 +11,7 @@ const plugin: Plugin = {
     description: "${name} writes a sitemap.xml file based on project output.",
     dependsOn: ["gustwind-meta-plugin"],
   },
-  init(
-    { cwd, outputDirectory },
-  ) {
+  init({ cwd, outputDirectory }) {
     return {
       finishBuild: async ({ send }) => {
         const meta = await send("gustwind-meta-plugin", {
@@ -25,25 +24,28 @@ const plugin: Plugin = {
           outputDirectory: path.join(cwd, outputDirectory),
         });
 
-        return [{
-          type: "writeTextFile",
-          payload: {
-            outputDirectory,
-            file: "sitemap.xml",
-            data: sitemapXML,
+        return [
+          {
+            type: "writeTextFile",
+            payload: {
+              outputDirectory,
+              file: "sitemap.xml",
+              data: sitemapXML,
+            },
           },
-        }];
+        ];
       },
     };
   },
 };
 
-async function buildSitemapXml(
-  { siteUrl, outputDirectory }: {
-    siteUrl: string;
-    outputDirectory: string;
-  },
-) {
+async function buildSitemapXml({
+  siteUrl,
+  outputDirectory,
+}: {
+  siteUrl: string;
+  outputDirectory: string;
+}) {
   const entries = await listPublicPaths(outputDirectory);
   const urls = entries
     .filter((entry) => entry !== "sitemap.xml")
@@ -79,19 +81,21 @@ async function listPublicPaths(
     const absolutePath = path.join(directoryPath, entry.name);
 
     if (entry.isDirectory()) {
-      publicPaths.push(...await listPublicPaths(absolutePath, relativePath));
-      continue;
-    }
-
-    if (
-      entry.isFile() &&
-      (entry.name.endsWith(".html") || entry.name.endsWith(".xml"))
-    ) {
+      publicPaths.push(...(await listPublicPaths(absolutePath, relativePath)));
+    } else if (isPublicPathEntry(entry)) {
       publicPaths.push(relativePath);
     }
   }
 
   return publicPaths;
+}
+
+function isPublicPathEntry(entry: Dirent) {
+  return entry.isFile() && isSitemapFile(entry.name);
+}
+
+function isSitemapFile(fileName: string) {
+  return fileName.endsWith(".html") || fileName.endsWith(".xml");
 }
 
 function toSitemapPath(relativePath: string) {
@@ -100,7 +104,7 @@ function toSitemapPath(relativePath: string) {
   }
 
   if (relativePath.endsWith(path.join(path.sep, "index.html"))) {
-    const withoutIndex = relativePath.slice(0, -("index.html".length));
+    const withoutIndex = relativePath.slice(0, -"index.html".length);
 
     return `/${withoutIndex.replaceAll(path.sep, "/")}`;
   }

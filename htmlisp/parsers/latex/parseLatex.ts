@@ -27,10 +27,7 @@ type ParseLatexState = {
   hasParagraphBreak: boolean;
 };
 
-function parseLatex(
-  input: string,
-  parser: LatexParserConfig,
-): LatexNode[] {
+function parseLatex(input: string, parser: LatexParserConfig): LatexNode[] {
   input = stripLatexComments(input);
 
   const getCharacter = characterGenerator(input);
@@ -66,7 +63,8 @@ function parseLatex(
 
 function getLatexParsers(parser: LatexParserConfig) {
   const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
-  const singleParsers = parser.singles &&
+  const singleParsers =
+    parser.singles &&
     getParseSingle(
       parser.singles,
       // @ts-expect-error This is fine for now. TODO: Fix runParsers type
@@ -109,18 +107,28 @@ function applyParseResult(
 
   const value = parseResult.value;
 
-  if (
-    typeof value !== "string" && value?.type === "p" &&
-    !state.hasParagraphBreak
-  ) {
+  if (shouldMergeLeadingInlineNodes(state, value)) {
     mergeLeadingInlineNodes(state.ret, value);
   }
 
+  pushParseValue(state, value);
+
+  state.hasParagraphBreak = false;
+}
+
+function shouldMergeLeadingInlineNodes(
+  state: ParseLatexState,
+  value: LatexNode | undefined,
+): value is Element {
+  return (
+    typeof value !== "string" && value?.type === "p" && !state.hasParagraphBreak
+  );
+}
+
+function pushParseValue(state: ParseLatexState, value: LatexNode | undefined) {
   if (value) {
     state.ret.push(value);
   }
-
-  state.hasParagraphBreak = false;
 }
 
 function mergeLeadingInlineNodes(ret: LatexNode[], value: Element) {
@@ -153,10 +161,14 @@ function advanceUnmatchedCharacter(
 }
 
 function isInlineLatexNode(node: unknown): node is Element {
-  return !!node && typeof node === "object" && "type" in node &&
+  return (
+    !!node &&
+    typeof node === "object" &&
+    "type" in node &&
     ["a", "code", "em", "span", "strong", "sup"].includes(
       (node as Element).type,
-    );
+    )
+  );
 }
 
 function normalizeLatexInlineCommands(
@@ -200,7 +212,7 @@ function normalizeLatexInlineChildren(
     }
 
     return parseLatex(child, parser).flatMap((node) =>
-      typeof node !== "string" && node.type === "p" ? node.children : [node]
+      typeof node !== "string" && node.type === "p" ? node.children : [node],
     );
   });
 }

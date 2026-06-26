@@ -1,5 +1,12 @@
 import * as path from "node:path";
-import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 
 const PERSISTENT_ASSET_CACHE_ROOT = path.join(".gustwind", "persistent-assets");
 
@@ -39,17 +46,24 @@ async function restorePersistentAssets(
   const normalizedPaths = normalizeRelativePaths(relativePaths);
 
   if (
-    !(await Promise.all(
-      normalizedPaths.map((relativePath) =>
-        persistentAssetExists(cwd, namespace, key, relativePath)
-      ),
-    )).every(Boolean)
+    !(
+      await Promise.all(
+        normalizedPaths.map((relativePath) =>
+          persistentAssetExists(cwd, namespace, key, relativePath),
+        ),
+      )
+    ).every(Boolean)
   ) {
     return false;
   }
 
   for (const relativePath of normalizedPaths) {
-    const sourcePath = getPersistentAssetPath(cwd, namespace, key, relativePath);
+    const sourcePath = getPersistentAssetPath(
+      cwd,
+      namespace,
+      key,
+      relativePath,
+    );
     const targetPath = path.join(outputDirectory, relativePath);
 
     await mkdir(path.dirname(targetPath), { recursive: true });
@@ -86,7 +100,12 @@ async function writePersistentAssets(
 
   for (const relativePath of normalizedPaths) {
     const sourcePath = path.join(sourceDirectory, relativePath);
-    const targetPath = getPersistentAssetPath(cwd, namespace, key, relativePath);
+    const targetPath = getPersistentAssetPath(
+      cwd,
+      namespace,
+      key,
+      relativePath,
+    );
 
     await mkdir(path.dirname(targetPath), { recursive: true });
     await copyFile(sourcePath, targetPath);
@@ -112,7 +131,6 @@ function normalizeRelativePaths(relativePaths: string[]) {
 
 export {
   persistentAssetExists,
-  PERSISTENT_ASSET_CACHE_ROOT,
   readPersistentAssetText,
   restorePersistentAssets,
   writePersistentAssets,

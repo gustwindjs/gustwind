@@ -45,39 +45,68 @@ async function findRouteMatch(
   dataSources: DataSources,
   inheritedScripts?: Route["scripts"],
 ) {
-  const parts = getUrlParts(url);
-  const match = routes[url] || routes[parts[0]];
-  const matchScripts = mergeRouteScripts(inheritedScripts, match?.scripts);
-
-  if (match && parts.length > 1) {
-    const nestedMatch = await matchNestedRoute({
-      dataSources,
-      inheritedScripts,
-      match,
-      matchScripts,
-      parts,
-      url,
-    });
-
-    if (nestedMatch) {
-      return nestedMatch;
-    }
-  }
-
-  if (match) {
-    return applyRouteScripts(match, matchScripts);
-  }
-
-  const rootExpansion = await matchRootExpansion(
+  const directMatch = await matchDirectRoute(
     routes,
     url,
     dataSources,
     inheritedScripts,
   );
 
-  if (rootExpansion) {
-    return rootExpansion;
+  if (directMatch) {
+    return directMatch;
   }
+
+  return matchRootExpansion(routes, url, dataSources, inheritedScripts);
+}
+
+async function matchDirectRoute(
+  routes: Record<string, Route>,
+  url: string,
+  dataSources: DataSources,
+  inheritedScripts?: Route["scripts"],
+) {
+  const parts = getUrlParts(url);
+  const match = getMatchedRoute(routes, url, parts);
+
+  if (!match) {
+    return;
+  }
+
+  const matchScripts = mergeRouteScripts(inheritedScripts, match?.scripts);
+
+  return matchNestedOrSelf({
+    dataSources,
+    inheritedScripts,
+    match,
+    matchScripts,
+    parts,
+    url,
+  });
+}
+
+function getMatchedRoute(
+  routes: Record<string, Route>,
+  url: string,
+  parts: string[],
+) {
+  return routes[url] || routes[parts[0]];
+}
+
+async function matchNestedOrSelf(input: NestedRouteMatchInput) {
+  const { match, matchScripts, parts } = input;
+  const nestedMatch = hasChildPath(parts)
+    ? await matchNestedRoute(input)
+    : null;
+
+  if (nestedMatch) {
+    return nestedMatch;
+  }
+
+  return applyRouteScripts(match, matchScripts);
+}
+
+function hasChildPath(parts: string[]) {
+  return parts.length > 1;
 }
 
 function getUrlParts(url: string) {
@@ -94,9 +123,12 @@ async function matchNestedRoute(input: NestedRouteMatchInput) {
   return matchExpandedChildRoutes(input);
 }
 
-async function matchNestedChildRoutes(
-  { match, parts, dataSources, matchScripts }: NestedRouteMatchInput,
-) {
+async function matchNestedChildRoutes({
+  match,
+  parts,
+  dataSources,
+  matchScripts,
+}: NestedRouteMatchInput) {
   if (!match.routes) {
     return;
   }
@@ -113,9 +145,13 @@ async function matchNestedChildRoutes(
   }
 }
 
-async function matchExpandedChildRoutes(
-  { match, url, dataSources, inheritedScripts, parts }: NestedRouteMatchInput,
-) {
+async function matchExpandedChildRoutes({
+  match,
+  url,
+  dataSources,
+  inheritedScripts,
+  parts,
+}: NestedRouteMatchInput) {
   if (!match.expand) {
     return;
   }

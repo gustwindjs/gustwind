@@ -6,7 +6,7 @@ const STATES = {
   PARSE_ATTRIBUTE_NAME: 2,
   PARSE_ATTRIBUTE_VALUE: 3,
 } as const;
-type State = typeof STATES[keyof typeof STATES];
+type State = (typeof STATES)[keyof typeof STATES];
 type ParseAttributeState = {
   state: State;
   attributeName: string;
@@ -19,6 +19,7 @@ type AttributeValueState = {
   attributeValue: string;
 };
 const LIMIT = 100000;
+const ATTRIBUTE_NAME_END_CHARACTERS = new Set(["/", "<", ">", "=", "?", " "]);
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
@@ -111,27 +112,31 @@ function parseAttributeName(getCharacter: CharacterGenerator) {
   let attributeName = "";
   let c = getCharacter.get();
 
-  if (isAttributeNameBoundary(c)) {
+  if (isAttributeNameEnd(c)) {
     return attributeName;
   }
 
   while (c) {
     c = getCharacter.next();
 
-    if (isAttributeNameBoundary(c) || c === "=" || c === "?" || c === " ") {
+    if (isAttributeNameEnd(c)) {
       getCharacter.previous();
 
       return attributeName;
-    } else if (c !== "\n") {
-      attributeName += c;
     }
+
+    attributeName += getAttributeNameCharacter(c);
   }
 
   return attributeName;
 }
 
-function isAttributeNameBoundary(c: string | null) {
-  return c === "/" || c === "<" || c === ">";
+function isAttributeNameEnd(c: string | null) {
+  return c === null || ATTRIBUTE_NAME_END_CHARACTERS.has(c);
+}
+
+function getAttributeNameCharacter(c: string | null) {
+  return c === "\n" || c === null ? "" : c;
 }
 
 function parseAttributeValue(getCharacter: CharacterGenerator) {
@@ -162,24 +167,38 @@ function parseAttributeValueCharacter(
     return parseDoubleQuote(parseState);
   }
 
-  if (
-    c === "'" && !parseState.doubleQuotesFound &&
-    !parseState.backtickQuotesFound
-  ) {
-    parseState.singleQuotesFound++;
-
-    return parseState.singleQuotesFound === 2;
+  if (isSingleQuoteDelimiter(parseState, c)) {
+    return parseQuote(parseState, "singleQuotesFound");
   }
 
-  if (c === "`" && !parseState.doubleQuotesFound) {
-    parseState.backtickQuotesFound++;
-
-    return parseState.backtickQuotesFound === 2;
+  if (isBacktickQuoteDelimiter(parseState, c)) {
+    return parseQuote(parseState, "backtickQuotesFound");
   }
 
   parseState.attributeValue += c;
 
   return false;
+}
+
+function isSingleQuoteDelimiter(parseState: AttributeValueState, c: string) {
+  return (
+    c === "'" &&
+    !parseState.doubleQuotesFound &&
+    !parseState.backtickQuotesFound
+  );
+}
+
+function isBacktickQuoteDelimiter(parseState: AttributeValueState, c: string) {
+  return c === "`" && !parseState.doubleQuotesFound;
+}
+
+function parseQuote(
+  parseState: AttributeValueState,
+  quoteField: "singleQuotesFound" | "backtickQuotesFound",
+) {
+  parseState[quoteField]++;
+
+  return parseState[quoteField] === 2;
 }
 
 function parseDoubleQuote(parseState: AttributeValueState) {

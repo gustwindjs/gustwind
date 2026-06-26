@@ -14,17 +14,17 @@ function getParseContent<ExpressionReturnType>(
   expression: (
     parts: ExpressionReturnType[],
   ) => ExpressionReturnType | undefined,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-  ) => { match: string; value: ExpressionReturnType })[] = [],
+  parsers: ((getCharacter: CharacterGenerator) => {
+    match: string;
+    value: ExpressionReturnType;
+  })[] = [],
 ) {
   return function parseContent(
     getCharacter: CharacterGenerator,
     initialMatchCounts?: MatchCounts,
   ): ExpressionReturnType {
-    const state = createParseContentState<ExpressionReturnType>(
-      initialMatchCounts,
-    );
+    const state =
+      createParseContentState<ExpressionReturnType>(initialMatchCounts);
 
     collectContentParts(state, getCharacter, parsers);
 
@@ -46,9 +46,10 @@ function createParseContentState<ExpressionReturnType>(
 function collectContentParts<ExpressionReturnType>(
   state: ParseContentState<ExpressionReturnType>,
   getCharacter: CharacterGenerator,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-  ) => { match: string; value: ExpressionReturnType })[],
+  parsers: ((getCharacter: CharacterGenerator) => {
+    match: string;
+    value: ExpressionReturnType;
+  })[],
 ) {
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -96,16 +97,15 @@ function finishContentParse<ExpressionReturnType>(
 function parseContentCharacter<ExpressionReturnType>(
   state: ParseContentState<ExpressionReturnType>,
   getCharacter: CharacterGenerator,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-  ) => { match: string; value: ExpressionReturnType })[],
+  parsers: ((getCharacter: CharacterGenerator) => {
+    match: string;
+    value: ExpressionReturnType;
+  })[],
   c: string,
   index: number,
 ) {
   // TODO: Allow also whitespace before a comment
-  if (index === 0 && c === "%") {
-    state.foundComment = true;
-  }
+  markCommentStart(state, c, index);
 
   if (isParagraphBreak(getCharacter, c)) {
     return true;
@@ -115,13 +115,38 @@ function parseContentCharacter<ExpressionReturnType>(
     return false;
   }
 
-  if (c === "\\" && !state.foundComment) {
+  if (shouldParseExpression(state, c)) {
     return !parseExpression(state, getCharacter, parsers);
   }
 
-  state.stringBuffer += c === "~" && getCharacter.get() === "\\" ? " " : c;
+  appendContentCharacter(state, getCharacter, c);
 
   return false;
+}
+
+function markCommentStart<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  c: string,
+  index: number,
+) {
+  if (index === 0 && c === "%") {
+    state.foundComment = true;
+  }
+}
+
+function shouldParseExpression<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  c: string,
+) {
+  return c === "\\" && !state.foundComment;
+}
+
+function appendContentCharacter<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  state.stringBuffer += c === "~" && getCharacter.get() === "\\" ? " " : c;
 }
 
 function isParagraphBreak(getCharacter: CharacterGenerator, c: string) {
@@ -157,9 +182,10 @@ function parseEscapedCharacter<ExpressionReturnType>(
 function parseExpression<ExpressionReturnType>(
   state: ParseContentState<ExpressionReturnType>,
   getCharacter: CharacterGenerator,
-  parsers: ((
-    getCharacter: CharacterGenerator,
-  ) => { match: string; value: ExpressionReturnType })[],
+  parsers: ((getCharacter: CharacterGenerator) => {
+    match: string;
+    value: ExpressionReturnType;
+  })[],
 ) {
   // @ts-expect-error This is fine
   state.parts.push(state.stringBuffer);

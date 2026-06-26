@@ -6,21 +6,31 @@ function mergeRouteScripts(
   parentScripts: RouteScripts,
   childScripts: RouteScripts,
 ): RouteScripts {
-  if (!parentScripts?.length && !childScripts?.length) {
+  if (areScriptsEmpty(parentScripts) && areScriptsEmpty(childScripts)) {
     return undefined;
   }
 
   const seen = new Set<string>();
 
-  return (parentScripts || []).concat(childScripts || []).filter(({ name }) => {
-    if (seen.has(name)) {
-      return false;
-    }
+  return toRouteScriptList(parentScripts)
+    .concat(toRouteScriptList(childScripts))
+    .filter(({ name }) => {
+      if (seen.has(name)) {
+        return false;
+      }
 
-    seen.add(name);
+      seen.add(name);
 
-    return true;
-  });
+      return true;
+    });
+}
+
+function areScriptsEmpty(scripts: RouteScripts) {
+  return !scripts || scripts.length === 0;
+}
+
+function toRouteScriptList(scripts: RouteScripts) {
+  return scripts || [];
 }
 
 export { mergeRouteScripts };

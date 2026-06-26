@@ -3,8 +3,9 @@ type ProcessLike = {
 };
 
 function getEnv(name: string): string | undefined {
-  const processObject =
-    (globalThis as typeof globalThis & { process?: ProcessLike }).process;
+  const processObject = (
+    globalThis as typeof globalThis & { process?: ProcessLike }
+  ).process;
 
   return processObject?.env?.[name];
 }
@@ -13,4 +14,4 @@ function isDebugEnabled() {
   return getEnv("DEBUG") === "1";
 }
 
-export { getEnv, isDebugEnabled };
+export { isDebugEnabled };

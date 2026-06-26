@@ -25,8 +25,7 @@ function isRawHtml(value: unknown): value is RawHtml {
 
   const candidate = value as Record<string, unknown>;
 
-  return candidate.__htmlispRaw === true &&
-    typeof candidate.value === "string";
+  return candidate.__htmlispRaw === true && typeof candidate.value === "string";
 }
 
 function unwrapRawHtml(value: unknown) {
@@ -68,28 +67,19 @@ function resolveScopedValue(
   return defaultValue;
 }
 
-function renderTextValue(
-  value: unknown,
-  renderOptions?: HtmlispRenderOptions,
-) {
-  if (value === false || value === null || isUndefined(value)) {
+function renderTextValue(value: unknown, renderOptions?: HtmlispRenderOptions) {
+  if (isEmptyRenderedValue(value)) {
     return "";
   }
 
-  if (isRawHtml(value)) {
-    return value.value;
-  }
-
-  const rendered = String(value);
-
-  return renderOptions?.escapeByDefault ? escapeHTML(rendered) : rendered;
+  return renderEscapedValue(value, renderOptions);
 }
 
 function renderAttributeValue(
   value: unknown,
   renderOptions?: HtmlispRenderOptions,
 ) {
-  if (value === false || value === null || isUndefined(value)) {
+  if (isEmptyRenderedValue(value)) {
     return;
   }
 
@@ -97,7 +87,22 @@ function renderAttributeValue(
     return true;
   }
 
-  const rendered = isRawHtml(value) ? value.value : String(value);
+  return renderEscapedValue(value, renderOptions);
+}
+
+function isEmptyRenderedValue(value: unknown) {
+  return value === false || value === null || isUndefined(value);
+}
+
+function renderEscapedValue(
+  value: unknown,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  if (isRawHtml(value)) {
+    return value.value;
+  }
+
+  const rendered = String(value);
 
   return renderOptions?.escapeByDefault ? escapeHTML(rendered) : rendered;
 }

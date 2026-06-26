@@ -13,16 +13,15 @@ type HtmlValidationResult = {
   filesValidated: number;
 };
 
-const DEFAULT_IGNORED_ERROR_CODES = new Set<string>([
-  "missing-doctype",
-]);
+const DEFAULT_IGNORED_ERROR_CODES = new Set<string>(["missing-doctype"]);
 
-function validateHtmlDocument(
-  { filePath, html }: {
-    filePath: string;
-    html: string;
-  },
-) {
+function validateHtmlDocument({
+  filePath,
+  html,
+}: {
+  filePath: string;
+  html: string;
+}) {
   const parseErrors: ParserError[] = [];
 
   parse(html, {
@@ -46,7 +45,9 @@ function validateHtmlDocument(
   }
 }
 
-async function validateHtmlDirectory(directoryPath: string): Promise<HtmlValidationResult> {
+async function validateHtmlDirectory(
+  directoryPath: string,
+): Promise<HtmlValidationResult> {
   const htmlFiles = await collectHtmlFiles(directoryPath);
 
   for (const filePath of htmlFiles) {
@@ -64,25 +65,28 @@ async function validateHtmlDirectory(directoryPath: string): Promise<HtmlValidat
 function formatHtmlValidationIssues(issues: HtmlValidationIssue[]) {
   return [
     "HTML validation failed.",
-    ...issues.map(({ code, filePath, startLine, startCol }) =>
-      `${filePath}:${startLine}:${startCol} ${code}`
+    ...issues.map(
+      ({ code, filePath, startLine, startCol }) =>
+        `${filePath}:${startLine}:${startCol} ${code}`,
     ),
   ].join("\n");
 }
 
 async function collectHtmlFiles(directoryPath: string): Promise<string[]> {
   const entries = await readdir(directoryPath, { withFileTypes: true });
-  const files = await Promise.all(entries.map(async (entry) => {
-    const entryPath = path.join(directoryPath, entry.name);
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(directoryPath, entry.name);
 
-    if (entry.isDirectory()) {
-      return await collectHtmlFiles(entryPath);
-    }
+      if (entry.isDirectory()) {
+        return await collectHtmlFiles(entryPath);
+      }
 
-    return entry.name.endsWith(".html") ? [entryPath] : [];
-  }));
+      return entry.name.endsWith(".html") ? [entryPath] : [];
+    }),
+  );
 
   return files.flat().sort();
 }
 
-export { formatHtmlValidationIssues, validateHtmlDirectory, validateHtmlDocument };
+export { validateHtmlDirectory, validateHtmlDocument };

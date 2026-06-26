@@ -11,7 +11,7 @@ const STATES = {
   PARSE_EXPRESSION: "PARSE_EXPRESSION",
   PARSE_EXPRESSION_CONTENT: "PARSE_EXPRESSION_CONTENT",
 } as const;
-type State = typeof STATES[keyof typeof STATES];
+type State = (typeof STATES)[keyof typeof STATES];
 type SingleParseState = {
   state: State;
   foundKey: string;
@@ -23,10 +23,7 @@ const LIMIT = 100000;
 
 // Parses \<expression>{<parameter>} form
 function getParseSingle<ExpressionReturnType>(
-  expressions: Record<
-    string,
-    SingleParser<ExpressionReturnType>
-  >,
+  expressions: Record<string, SingleParser<ExpressionReturnType>>,
   nestedParsers: ((
     getCharacter: CharacterGenerator,
     matchCounts?: MatchCounts,
@@ -157,11 +154,7 @@ function parseSingleCharacter<ExpressionReturnType>(
   );
 }
 
-function parseIdle(
-  parseState: SingleParseState,
-  c: string,
-  index: number,
-) {
+function parseIdle(parseState: SingleParseState, c: string, index: number) {
   if (c !== "\\") {
     parseState.stringBuffer += c;
 
@@ -189,10 +182,7 @@ function parseExpressionName<ExpressionReturnType>(
     return;
   }
 
-  if (
-    expressions[parseState.stringBuffer] &&
-    !isCommandNameCharacter(c)
-  ) {
+  if (expressions[parseState.stringBuffer] && !isCommandNameCharacter(c)) {
     if (c !== " ") {
       getCharacter.previous();
     }
@@ -282,11 +272,7 @@ function parseNestedExpression<ExpressionReturnType>(
   getCharacter.previous();
 
   try {
-    const parseResult = runParsers(
-      getCharacter,
-      parsers,
-      matchCounts,
-    );
+    const parseResult = runParsers(getCharacter, parsers, matchCounts);
 
     if (parseResult && typeof parseResult.match === "string") {
       parseState.parts.push(parseResult.value);
@@ -344,14 +330,18 @@ function updateMatchCounts(
     matchCounts[parseState.foundKey] = [];
   }
 
-  partsToText(parseState.parts).split(",").forEach((s) => {
-    matchCounts[parseState.foundKey].push(s.trim());
-  });
+  partsToText(parseState.parts)
+    .split(",")
+    .forEach((s) => {
+      matchCounts[parseState.foundKey].push(s.trim());
+    });
 }
 
 function isUnknownExpressionError(error: unknown) {
-  return error instanceof Error &&
-    error.message === "No matching expression was found";
+  return (
+    error instanceof Error &&
+    error.message === "No matching expression was found"
+  );
 }
 
 function isCommandNameCharacter(value: string) {
@@ -359,14 +349,19 @@ function isCommandNameCharacter(value: string) {
 }
 
 function readLatexCommand(getCharacter: CharacterGenerator) {
-  let ret = "";
   const first = getCharacter.next();
 
-  if (first !== "\\") {
+  if (!startsLatexCommand(first)) {
     return first || "";
   }
 
-  ret += first;
+  return (
+    first + readCommandName(getCharacter) + readCommandArguments(getCharacter)
+  );
+}
+
+function readCommandName(getCharacter: CharacterGenerator) {
+  let ret = "";
 
   for (let i = 0; i < LIMIT; i++) {
     const c = getCharacter.next();
@@ -375,19 +370,29 @@ function readLatexCommand(getCharacter: CharacterGenerator) {
       return ret;
     }
 
-    if (isCommandNameCharacter(c)) {
-      ret += c;
-    } else {
+    if (!isCommandNameCharacter(c)) {
       getCharacter.previous();
       break;
     }
+
+    ret += c;
   }
+
+  return ret;
+}
+
+function readCommandArguments(getCharacter: CharacterGenerator) {
+  let ret = "";
 
   for (let i = 0; i < LIMIT && getCharacter.get() === "{"; i++) {
     ret += readBalancedGroup(getCharacter);
   }
 
   return ret;
+}
+
+function startsLatexCommand(value: string | null) {
+  return value === "\\";
 }
 
 function readBalancedGroup(getCharacter: CharacterGenerator) {
@@ -418,19 +423,19 @@ function readBalancedGroup(getCharacter: CharacterGenerator) {
 }
 
 function partsToText(parts: unknown[]): string {
-  return parts.map((part) => {
-    if (typeof part === "string") {
-      return part;
-    }
+  return parts
+    .map((part) => {
+      if (typeof part === "string") {
+        return part;
+      }
 
-    if (part && typeof part === "object" && "children" in part) {
-      return partsToText(
-        (part as { children?: unknown[] }).children || [],
-      );
-    }
+      if (part && typeof part === "object" && "children" in part) {
+        return partsToText((part as { children?: unknown[] }).children || []);
+      }
 
-    return "";
-  }).join("");
+      return "";
+    })
+    .join("");
 }
 
 export { getParseSingle, type SingleParser };

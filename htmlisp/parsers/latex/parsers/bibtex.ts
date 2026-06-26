@@ -8,9 +8,7 @@ type BibtexCollection = {
 
 const LIMIT = 100000;
 
-function parseBibtex(
-  getCharacter: CharacterGenerator,
-): BibtexCollection {
+function parseBibtex(getCharacter: CharacterGenerator): BibtexCollection {
   const startIndex = getCharacter.getIndex();
   const header = readBibtexHeader(getCharacter, startIndex);
 
@@ -52,9 +50,7 @@ function requireNextCharacter(
   throw new Error("No matching expression was found");
 }
 
-function readBibtexFields(
-  getCharacter: CharacterGenerator,
-) {
+function readBibtexFields(getCharacter: CharacterGenerator) {
   const fields: Record<string, string> = {};
   let current = getCharacter.get();
 
@@ -96,9 +92,7 @@ function readBibtexField(
   fields[key] = readBibtexValue(getCharacter).trim();
 }
 
-function readBibtexValue(
-  getCharacter: CharacterGenerator,
-) {
+function readBibtexValue(getCharacter: CharacterGenerator) {
   const first = getCharacter.get();
 
   if (first === "{") {
@@ -112,9 +106,7 @@ function readBibtexValue(
   return readUntil(getCharacter, [",", "}"]).trim();
 }
 
-function readBalancedValue(
-  getCharacter: CharacterGenerator,
-) {
+function readBalancedValue(getCharacter: CharacterGenerator) {
   let depth = 0;
   let value = "";
 
@@ -125,28 +117,46 @@ function readBalancedValue(
       break;
     }
 
-    if (c === "{") {
-      if (depth > 0) {
-        value += c;
-      }
-      depth++;
-    } else if (c === "}") {
-      depth--;
-      if (depth === 0) {
-        break;
-      }
-      value += c;
-    } else {
-      value += c;
+    const next = readBalancedValueCharacter(c, depth, value);
+
+    if (next.done) {
+      break;
     }
+
+    depth = next.depth;
+    value = next.value;
   }
 
   return value;
 }
 
-function readQuotedValue(
-  getCharacter: CharacterGenerator,
-) {
+function readBalancedValueCharacter(c: string, depth: number, value: string) {
+  if (c === "{") {
+    return {
+      depth: depth + 1,
+      done: false,
+      value: depth > 0 ? value + c : value,
+    };
+  }
+
+  if (c === "}") {
+    const nextDepth = depth - 1;
+
+    return {
+      depth: nextDepth,
+      done: nextDepth === 0,
+      value: nextDepth === 0 ? value : value + c,
+    };
+  }
+
+  return {
+    depth,
+    done: false,
+    value: value + c,
+  };
+}
+
+function readQuotedValue(getCharacter: CharacterGenerator) {
   let value = "";
 
   getCharacter.next();
@@ -168,22 +178,15 @@ function readQuotedValue(
   return value;
 }
 
-function skipWhitespace(
-  getCharacter: CharacterGenerator,
-) {
+function skipWhitespace(getCharacter: CharacterGenerator) {
   readWhile(getCharacter, (c) => /\s/.test(c));
 }
 
-function skipWhitespaceAndCommas(
-  getCharacter: CharacterGenerator,
-) {
+function skipWhitespaceAndCommas(getCharacter: CharacterGenerator) {
   readWhile(getCharacter, (c) => /[\s,]/.test(c));
 }
 
-function readUntil(
-  getCharacter: CharacterGenerator,
-  endCharacters: string[],
-) {
+function readUntil(getCharacter: CharacterGenerator, endCharacters: string[]) {
   return readWhile(getCharacter, (c) => !endCharacters.includes(c));
 }
 

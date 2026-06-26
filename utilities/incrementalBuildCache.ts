@@ -1,6 +1,15 @@
 import * as path from "node:path";
 import { createHash } from "node:crypto";
-import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import type { Dirent } from "node:fs";
+import {
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import type { BuildWorkerEvent, Route } from "../types.ts";
 
@@ -32,13 +41,13 @@ type IncrementalBuildCache = {
 
 type IncrementalBuildCacheSource =
   | {
-    kind: "filesystem";
-    rootDirectory: string;
-  }
+      kind: "filesystem";
+      rootDirectory: string;
+    }
   | {
-    kind: "http";
-    rootUrl: string;
-  };
+      kind: "http";
+      rootUrl: string;
+    };
 
 async function clearCachedOutputs(
   outputDirectory: string,
@@ -46,7 +55,10 @@ async function clearCachedOutputs(
 ) {
   await Promise.all(
     outputPaths.map((outputPath) =>
-      rm(path.join(outputDirectory, outputPath), { force: true, recursive: false })
+      rm(path.join(outputDirectory, outputPath), {
+        force: true,
+        recursive: false,
+      }),
     ),
   );
 }
@@ -144,12 +156,17 @@ function normalizeDependencyTasks(
 ): DependencyTask[] {
   const seen = new Set<string>();
 
-  return tasks.filter((task): task is DependencyTask => dependencyTaskTypes.has(task.type as never))
+  return tasks
+    .filter((task): task is DependencyTask =>
+      dependencyTaskTypes.has(task.type as never),
+    )
     .map((task) => ({
       ...task,
       payload: {
         ...task.payload,
-        path: cwd ? normalizeDependencyPath(cwd, task.payload.path) : task.payload.path,
+        path: cwd
+          ? normalizeDependencyPath(cwd, task.payload.path)
+          : task.payload.path,
       },
     }))
     .sort((a, b) => stableStringify(a).localeCompare(stableStringify(b)))
@@ -173,7 +190,7 @@ async function outputsExist(
     if (cacheSource.kind === "filesystem") {
       await Promise.all(
         outputPaths.map((outputPath) =>
-          stat(path.join(cacheSource.rootDirectory, outputPath))
+          stat(path.join(cacheSource.rootDirectory, outputPath)),
         ),
       );
       return true;
@@ -199,19 +216,30 @@ async function outputsExist(
 async function readIncrementalBuildCache(
   cwd: string,
   cacheFrom: string,
-): Promise<{ cache: IncrementalBuildCache; source: IncrementalBuildCacheSource } | undefined> {
+): Promise<
+  | { cache: IncrementalBuildCache; source: IncrementalBuildCacheSource }
+  | undefined
+> {
   const source = resolveCacheSource(cwd, cacheFrom);
 
   try {
-    const manifest = source.kind === "filesystem"
-      ? await readFile(path.join(source.rootDirectory, CACHE_MANIFEST_PATH), "utf8")
-      : await fetch(joinUrl(source.rootUrl, CACHE_MANIFEST_PATH)).then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch cache manifest: ${response.status}`);
-        }
+    const manifest =
+      source.kind === "filesystem"
+        ? await readFile(
+            path.join(source.rootDirectory, CACHE_MANIFEST_PATH),
+            "utf8",
+          )
+        : await fetch(joinUrl(source.rootUrl, CACHE_MANIFEST_PATH)).then(
+            async (response) => {
+              if (!response.ok) {
+                throw new Error(
+                  `Failed to fetch cache manifest: ${response.status}`,
+                );
+              }
 
-        return await response.text();
-      });
+              return await response.text();
+            },
+          );
     const cache = JSON.parse(manifest) as IncrementalBuildCache;
 
     if (cache.schemaVersion !== CACHE_SCHEMA_VERSION) {
@@ -238,7 +266,9 @@ async function removeDeletedRouteOutputs(
   await Promise.all(
     Object.entries(previousCache.routes)
       .filter(([url]) => !nextRouteSet.has(url))
-      .map(([, entry]) => clearCachedOutputs(outputDirectory, entry.outputPaths)),
+      .map(([, entry]) =>
+        clearCachedOutputs(outputDirectory, entry.outputPaths),
+      ),
   );
 }
 
@@ -260,11 +290,16 @@ async function restoreCachedOutputs(
     await mkdir(path.dirname(targetPath), { recursive: true });
 
     if (cacheSource.kind === "filesystem") {
-      await cp(path.join(cacheSource.rootDirectory, outputPath), targetPath, { force: true });
+      await cp(path.join(cacheSource.rootDirectory, outputPath), targetPath, {
+        force: true,
+      });
       continue;
     }
 
-    await writeFile(targetPath, await fetchCachedOutput(cacheSource, outputPath));
+    await writeFile(
+      targetPath,
+      await fetchCachedOutput(cacheSource, outputPath),
+    );
   }
 }
 
@@ -281,14 +316,20 @@ async function writeIncrementalBuildCache(
   await mkdir(path.dirname(cachePath), { recursive: true });
   await writeFile(
     cachePath,
-    JSON.stringify({
-      routes,
-      schemaVersion: CACHE_SCHEMA_VERSION,
-    }, null, 2) + "\n",
+    JSON.stringify(
+      {
+        routes,
+        schemaVersion: CACHE_SCHEMA_VERSION,
+      },
+      null,
+      2,
+    ) + "\n",
   );
 }
 
-async function hashDirectory(directoryPath: string | null): Promise<string | null> {
+async function hashDirectory(
+  directoryPath: string | null,
+): Promise<string | null> {
   if (!directoryPath) {
     return null;
   }
@@ -311,11 +352,28 @@ async function hashDirectory(directoryPath: string | null): Promise<string | nul
   return hash.digest("hex");
 }
 
-async function collectFiles(directoryPath: string): Promise<string[] | undefined> {
-  let entries;
+async function collectFiles(
+  directoryPath: string,
+): Promise<string[] | undefined> {
+  const entries = await readDirectoryEntries(directoryPath);
 
+  if (!entries) {
+    return;
+  }
+
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const entryPath = path.join(directoryPath, entry.name);
+    await collectDirectoryEntryFiles(files, entryPath, entry);
+  }
+
+  return files.sort();
+}
+
+async function readDirectoryEntries(directoryPath: string) {
   try {
-    entries = await readdir(directoryPath, { withFileTypes: true });
+    return await readdir(directoryPath, { withFileTypes: true });
   } catch (error) {
     if (isMissingFileError(error)) {
       return;
@@ -323,22 +381,18 @@ async function collectFiles(directoryPath: string): Promise<string[] | undefined
 
     throw error;
   }
-  const files: string[] = [];
+}
 
-  for (const entry of entries) {
-    const entryPath = path.join(directoryPath, entry.name);
-
-    if (entry.isDirectory()) {
-      files.push(...(await collectFiles(entryPath) || []));
-      continue;
-    }
-
-    if (entry.isFile()) {
-      files.push(entryPath);
-    }
+async function collectDirectoryEntryFiles(
+  files: string[],
+  entryPath: string,
+  entry: Dirent,
+) {
+  if (entry.isDirectory()) {
+    files.push(...((await collectFiles(entryPath)) || []));
+  } else if (entry.isFile()) {
+    files.push(entryPath);
   }
-
-  return files.sort();
 }
 
 async function hashFile(filePath: string | null): Promise<string | null> {
@@ -347,7 +401,9 @@ async function hashFile(filePath: string | null): Promise<string | null> {
   }
 
   try {
-    return createHash("sha256").update(await readFile(filePath)).digest("hex");
+    return createHash("sha256")
+      .update(await readFile(filePath))
+      .digest("hex");
   } catch (error) {
     if (isMissingFileError(error)) {
       return createHash("sha256").update(MISSING_DEPENDENCY_HASH).digest("hex");
@@ -357,7 +413,10 @@ async function hashFile(filePath: string | null): Promise<string | null> {
   }
 }
 
-async function hashModule(modulePath: string | null, visitedPaths: Set<string>): Promise<string | null> {
+async function hashModule(
+  modulePath: string | null,
+  visitedPaths: Set<string>,
+): Promise<string | null> {
   if (!modulePath) {
     return null;
   }
@@ -427,7 +486,7 @@ async function hashImportSpecifier(
     return specifier;
   }
 
-  return await hashModule(dependencyPath, visitedPaths) || "";
+  return (await hashModule(dependencyPath, visitedPaths)) || "";
 }
 
 function getImportSpecifiers(source: string) {
@@ -449,7 +508,10 @@ function getImportSpecifiers(source: string) {
   return [...importSpecifiers];
 }
 
-function resolveCacheSource(cwd: string, cacheFrom: string): IncrementalBuildCacheSource {
+function resolveCacheSource(
+  cwd: string,
+  cacheFrom: string,
+): IncrementalBuildCacheSource {
   if (cacheFrom.startsWith("http://") || cacheFrom.startsWith("https://")) {
     return {
       kind: "http",
@@ -464,19 +526,21 @@ function resolveCacheSource(cwd: string, cacheFrom: string): IncrementalBuildCac
 }
 
 function resolveDependencyPath(cwd: string, targetPath: string) {
-  if (targetPath.startsWith("http://") || targetPath.startsWith("https://")) {
+  if (isRemotePath(targetPath)) {
     return null;
   }
 
-  if (targetPath.startsWith("file:")) {
+  if (isFileUrl(targetPath)) {
     return fileURLToPath(targetPath);
   }
 
-  return path.isAbsolute(targetPath) ? targetPath : path.resolve(cwd, targetPath);
+  return path.isAbsolute(targetPath)
+    ? targetPath
+    : path.resolve(cwd, targetPath);
 }
 
 function normalizeDependencyPath(cwd: string, targetPath: string) {
-  if (targetPath.startsWith("http://") || targetPath.startsWith("https://")) {
+  if (isRemotePath(targetPath)) {
     return targetPath;
   }
 
@@ -495,39 +559,59 @@ function normalizeDependencyPath(cwd: string, targetPath: string) {
 }
 
 function getAbsoluteDependencyPath(cwd: string, targetPath: string) {
-  if (targetPath.startsWith("file:")) {
+  if (isFileUrl(targetPath)) {
     return fileURLToPath(targetPath);
   }
 
-  return path.isAbsolute(targetPath) ? targetPath : path.resolve(cwd, targetPath);
+  return path.isAbsolute(targetPath)
+    ? targetPath
+    : path.resolve(cwd, targetPath);
 }
 
 function isOutsideRoot(relativePath: string) {
-  return relativePath === ".." ||
+  return (
+    relativePath === ".." ||
     relativePath.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relativePath);
+    path.isAbsolute(relativePath)
+  );
 }
 
 function resolveImportedModulePath(modulePath: string, specifier: string) {
-  if (specifier.startsWith("http://") || specifier.startsWith("https://")) {
+  if (isRemotePath(specifier)) {
     return null;
   }
 
-  if (specifier.startsWith("file:")) {
+  if (isFileUrl(specifier)) {
     return fileURLToPath(specifier);
   }
 
-  if (specifier.startsWith("/")) {
+  if (path.isAbsolute(specifier)) {
     return specifier;
   }
 
-  if (specifier.startsWith("./") || specifier.startsWith("../")) {
-    const resolvedPath = path.resolve(path.dirname(modulePath), specifier);
-
-    return path.extname(resolvedPath) ? resolvedPath : undefined;
+  if (isRelativePath(specifier)) {
+    return resolveRelativeModulePath(modulePath, specifier);
   }
 
   return undefined;
+}
+
+function isRemotePath(targetPath: string) {
+  return targetPath.startsWith("http://") || targetPath.startsWith("https://");
+}
+
+function isFileUrl(targetPath: string) {
+  return targetPath.startsWith("file:");
+}
+
+function isRelativePath(targetPath: string) {
+  return targetPath.startsWith("./") || targetPath.startsWith("../");
+}
+
+function resolveRelativeModulePath(modulePath: string, specifier: string) {
+  const resolvedPath = path.resolve(path.dirname(modulePath), specifier);
+
+  return path.extname(resolvedPath) ? resolvedPath : undefined;
 }
 
 function joinUrl(baseUrl: string, relativePath: string) {
@@ -543,14 +627,22 @@ function stableStringify(value: unknown): string {
     return `[${value.map((item) => stableStringify(item)).join(",")}]`;
   }
 
-  return `{${Object.keys(value).sort().map((key) =>
-    `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`
-  ).join(",")}}`;
+  return `{${Object.keys(value)
+    .sort()
+    .map(
+      (key) =>
+        `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`,
+    )
+    .join(",")}}`;
 }
 
 function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
-  return typeof error === "object" && error !== null && "code" in error &&
-    error.code === "ENOENT";
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "ENOENT"
+  );
 }
 
 export {
