@@ -19,7 +19,11 @@ import type { BuildWorkerEvent, PluginOptions } from "../types.ts";
 import { contentType } from "../utilities/contentType.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { stripVoidElementClosers } from "../utilities/stripVoidElementClosers.ts";
-import { createServer as createViteServer, type Plugin, type ViteDevServer } from "vite";
+import {
+  createServer as createViteServer,
+  type Plugin,
+  type ViteDevServer,
+} from "vite";
 
 const DEBUG = isDebugEnabled();
 
@@ -33,26 +37,35 @@ type ActiveRuntime = Awaited<ReturnType<typeof loadRuntime>>;
 type PluginDefinitionsSource =
   | PluginOptions[]
   | (() => PluginOptions[] | Promise<PluginOptions[]>);
+type DevServerState = {
+  closed: boolean;
+  reloadPromise: Promise<void>;
+  runtime: ActiveRuntime;
+};
+type DevServerOptions = {
+  cwd: string;
+  pluginDefinitions: PluginDefinitionsSource;
+  port?: number;
+  host?: string;
+  watchPaths?: string[];
+};
 
 async function startDevServer(
-  {
+  options: DevServerOptions,
+): Promise<DevServer> {
+  const {
     cwd,
     pluginDefinitions,
     port = 3000,
     host = "127.0.0.1",
     watchPaths = [],
-  }: {
-    cwd: string;
-    pluginDefinitions: PluginDefinitionsSource;
-    port?: number;
-    host?: string;
-    watchPaths?: string[];
-  },
-): Promise<DevServer> {
+  } = options;
   const watchedPaths = new Set<string>();
-  let state = await loadRuntime({ cwd, pluginDefinitions });
-  let closed = false;
-  let reloadPromise = Promise.resolve();
+  const state: DevServerState = {
+    closed: false,
+    reloadPromise: Promise.resolve(),
+    runtime: await loadRuntime({ cwd, pluginDefinitions }),
+  };
   let requestHandler:
     | ((req: IncomingMessage, res: ServerResponse) => void)
     | undefined;
@@ -66,15 +79,15 @@ async function startDevServer(
       createRuntimeReloadPlugin({
         cwd,
         watchedPaths,
-        getClosed: () => closed,
-        getState: () => state,
+        getClosed: () => state.closed,
+        getState: () => state.runtime,
         loadRuntime: () => loadRuntime({ cwd, pluginDefinitions }),
         setReloadPromise(nextReloadPromise) {
-          reloadPromise = nextReloadPromise;
+          state.reloadPromise = nextReloadPromise;
         },
-        getReloadPromise: () => reloadPromise,
-        setState(nextState) {
-          state = nextState;
+        getReloadPromise: () => state.reloadPromise,
+        setState(nextRuntime) {
+          state.runtime = nextRuntime;
         },
       }),
     ],
@@ -88,9 +101,50 @@ async function startDevServer(
     },
   });
 
-  await watchTasks(vite, watchedPaths, state.initialTasks);
+  await watchTasks(vite, watchedPaths, state.runtime.initialTasks);
   await addWatchPaths(vite, watchedPaths, watchPaths);
 
+  registerDevMiddleware({ reqState: state, vite, watchedPaths });
+
+  requestHandler = vite.middlewares;
+
+  await listenHttpServer({ host, httpServer, port });
+  const address = httpServer.address();
+  const listeningPort = typeof address === "object" && address
+    ? address.port
+    : port;
+
+  return {
+    async close() {
+      if (state.closed) {
+        return;
+      }
+
+      state.closed = true;
+      await state.reloadPromise;
+      await cleanUpPlugins(state.runtime.plugins, state.runtime.routes);
+      await stopModuleBundler();
+      await vite.close();
+      await new Promise<void>((resolve, reject) => {
+        httpServer.close((error) => error ? reject(error) : resolve());
+      });
+    },
+    port: listeningPort,
+    url: `http://${host}:${listeningPort}/`,
+  };
+}
+
+function registerDevMiddleware(
+  {
+    reqState,
+    vite,
+    watchedPaths,
+  }: {
+    reqState: DevServerState;
+    vite: ViteDevServer;
+    watchedPaths: Set<string>;
+  },
+) {
   vite.middlewares.use(async (req, res, next) => {
     if (!req.url) {
       next();
@@ -102,7 +156,7 @@ async function startDevServer(
         vite,
         req,
         res,
-        state,
+        state: reqState.runtime,
         watchTasks(tasks) {
           return watchTasks(vite, watchedPaths, tasks);
         },
@@ -119,9 +173,19 @@ async function startDevServer(
       next(error);
     }
   });
+}
 
-  requestHandler = vite.middlewares;
-
+async function listenHttpServer(
+  {
+    host,
+    httpServer,
+    port,
+  }: {
+    host: string;
+    httpServer: ReturnType<typeof createHttpServer>;
+    port: number;
+  },
+) {
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);
     httpServer.listen(port, host, () => {
@@ -129,29 +193,6 @@ async function startDevServer(
       resolve();
     });
   });
-  const address = httpServer.address();
-  const listeningPort = typeof address === "object" && address
-    ? address.port
-    : port;
-
-  return {
-    async close() {
-      if (closed) {
-        return;
-      }
-
-      closed = true;
-      await reloadPromise;
-      await cleanUpPlugins(state.plugins, state.routes);
-      await stopModuleBundler();
-      await vite.close();
-      await new Promise<void>((resolve, reject) => {
-        httpServer.close((error) => error ? reject(error) : resolve());
-      });
-    },
-    port: listeningPort,
-    url: `http://${host}:${listeningPort}/`,
-  };
 }
 
 async function handleRequest(
@@ -170,38 +211,107 @@ async function handleRequest(
   },
 ) {
   const pathname = new URL(req.url || "/", "http://127.0.0.1").pathname;
-  const matchedRoute = await state.router.matchRoute(pathname);
+  const routeHandled = await handleRouteRequest({
+    pathname,
+    res,
+    state,
+    vite,
+    watchTasks,
+  });
 
-  if (matchedRoute) {
-    const { markup, tasks } = await applyPlugins({
-      plugins: state.plugins,
-      url: pathname,
-      route: matchedRoute,
-      matchRoute(url: string) {
-        return applyMatchRoutes({ plugins: state.plugins, url });
-      },
-    });
-
-    state.pathFs = await evaluateTasks(tasks);
-    await watchTasks(tasks);
-
-    const payload = pathname.endsWith(".xml")
-      ? markup
-      : await vite.transformIndexHtml(
-        pathname,
-        stripVoidElementClosers(markup),
-      );
-
-    sendResponse(
-      res,
-      200,
-      payload,
-      pathname.endsWith(".xml") ? contentType(".xml") : contentType(".html"),
-    );
-
+  if (routeHandled) {
     return true;
   }
 
+  const assetHandled = await handleGeneratedAssetRequest({
+    pathname,
+    res,
+    state,
+    watchTasks,
+  });
+
+  if (assetHandled) {
+    return true;
+  }
+
+  sendNotFoundResponse(res, pathname, state);
+
+  return true;
+}
+
+async function handleRouteRequest(
+  {
+    pathname,
+    res,
+    state,
+    vite,
+    watchTasks,
+  }: {
+    pathname: string;
+    res: ServerResponse;
+    state: ActiveRuntime;
+    vite: ViteDevServer;
+    watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
+  },
+) {
+  const matchedRoute = await state.router.matchRoute(pathname);
+
+  if (!matchedRoute) {
+    return false;
+  }
+
+  const { markup, tasks } = await applyPlugins({
+    plugins: state.plugins,
+    url: pathname,
+    route: matchedRoute,
+    matchRoute(url: string) {
+      return applyMatchRoutes({ plugins: state.plugins, url });
+    },
+  });
+
+  state.pathFs = await evaluateTasks(tasks);
+  await watchTasks(tasks);
+
+  sendResponse(
+    res,
+    200,
+    await createRoutePayload({ markup, pathname, vite }),
+    pathname.endsWith(".xml") ? contentType(".xml") : contentType(".html"),
+  );
+
+  return true;
+}
+
+async function createRoutePayload(
+  {
+    markup,
+    pathname,
+    vite,
+  }: {
+    markup: string;
+    pathname: string;
+    vite: ViteDevServer;
+  },
+) {
+  return pathname.endsWith(".xml") ? markup : await vite.transformIndexHtml(
+    pathname,
+    stripVoidElementClosers(markup),
+  );
+}
+
+async function handleGeneratedAssetRequest(
+  {
+    pathname,
+    res,
+    state,
+    watchTasks,
+  }: {
+    pathname: string;
+    res: ServerResponse;
+    state: ActiveRuntime;
+    watchTasks(tasks: BuildWorkerEvent[]): Promise<void>;
+  },
+) {
   const prepareTasks = await preparePlugins(state.plugins);
   const finishTasks = await finishPlugins(state.plugins);
   const taskResults = await evaluateTasks(prepareTasks.concat(finishTasks));
@@ -209,37 +319,42 @@ async function handleRequest(
 
   await watchTasks(prepareTasks.concat(finishTasks));
 
-  if (matchedFsItem) {
-    switch (matchedFsItem.type) {
-      case "file":
-        sendResponse(
-          res,
-          200,
-          matchedFsItem.data,
-          contentType(path.extname(pathname)),
-        );
-        return true;
-      case "path": {
-        const asset = await readFile(matchedFsItem.path);
-        sendResponse(
-          res,
-          200,
-          asset,
-          contentType(path.extname(matchedFsItem.path)),
-        );
-        return true;
-      }
-    }
+  if (!matchedFsItem) {
+    return false;
   }
 
+  if (matchedFsItem.type === "file") {
+    sendResponse(
+      res,
+      200,
+      matchedFsItem.data,
+      contentType(path.extname(pathname)),
+    );
+    return true;
+  }
+
+  const asset = await readFile(matchedFsItem.path);
+  sendResponse(
+    res,
+    200,
+    asset,
+    contentType(path.extname(matchedFsItem.path)),
+  );
+
+  return true;
+}
+
+function sendNotFoundResponse(
+  res: ServerResponse,
+  pathname: string,
+  state: ActiveRuntime,
+) {
   sendResponse(
     res,
     404,
     `No matching route in ${Object.keys(state.routes).join(", ")}.`,
     contentType(".txt"),
   );
-
-  return true;
 }
 
 async function loadRuntime(
