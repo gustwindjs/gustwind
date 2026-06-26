@@ -9,6 +9,7 @@ import { type SingleParser } from "./parsers/single.ts";
 import { type DoubleParser } from "./parsers/double.ts";
 import { type BlockParser } from "./parsers/block.ts";
 import type { MatchCounts } from "./parsers/runParsers.ts";
+import type { CharacterGenerator } from "../types.ts";
 
 const LIMIT = 100000;
 type LatexNode = Element | string;
@@ -39,19 +40,7 @@ function parseLatex(input: string, parser: LatexParserConfig): LatexNode[] {
   };
 
   for (let i = 0; i < LIMIT; i++) {
-    const parseResult = runParsers<LatexNode>(
-      getCharacter,
-      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-      allParsers,
-      state.matchCounts,
-    ) as ParseLatexResult;
-
-    if (parseResult?.match) {
-      applyParseResult(state, parseResult);
-      continue;
-    }
-
-    if (advanceUnmatchedCharacter(state, getCharacter)) {
+    if (parseLatexCharacter(state, getCharacter, allParsers)) {
       break;
     }
   }
@@ -61,40 +50,84 @@ function parseLatex(input: string, parser: LatexParserConfig): LatexNode[] {
   return state.ret;
 }
 
+function parseLatexCharacter(
+  state: ParseLatexState,
+  getCharacter: CharacterGenerator,
+  allParsers: ReturnType<typeof getLatexParsers>,
+) {
+  const parseResult = runParsers<LatexNode>(
+    getCharacter,
+    // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+    allParsers,
+    state.matchCounts,
+  ) as ParseLatexResult;
+
+  if (parseResult?.match) {
+    applyParseResult(state, parseResult);
+
+    return false;
+  }
+
+  return advanceUnmatchedCharacter(state, getCharacter);
+}
+
 function getLatexParsers(parser: LatexParserConfig) {
-  const doubleParsers = parser.doubles && getParseDouble(parser.doubles);
-  const singleParsers =
-    parser.singles &&
-    getParseSingle(
-      parser.singles,
-      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
-      [doubleParsers].filter(Boolean),
-    );
-  const blockParsers = parser.blocks && getParseBlock(parser.blocks);
-  const listParsers = parser.lists && getParseBlock(parser.lists);
+  const doubleParsers = createDoubleParsers(parser);
+  const singleParsers = createSingleParsers(parser, doubleParsers);
+  const blockParsers = createBlockParsers(parser);
+  const listParsers = createListParsers(parser);
+
   return [
     singleParsers,
     doubleParsers,
     blockParsers,
     listParsers,
     getParseContent<LatexNode>(
-      (children) => {
-        children = children.filter((child) => child !== "");
-
-        if (!children.length) {
-          return;
-        }
-
-        return {
-          type: "p",
-          attributes: {},
-          children,
-        };
-      },
+      createLatexParagraph,
       // @ts-expect-error This is fine for now as it will be fixed in a later TS most likely.
       [singleParsers, doubleParsers].filter(Boolean),
     ),
   ].filter(Boolean);
+}
+
+function createDoubleParsers(parser: LatexParserConfig) {
+  return parser.doubles && getParseDouble(parser.doubles);
+}
+
+function createSingleParsers(
+  parser: LatexParserConfig,
+  doubleParsers: ReturnType<typeof createDoubleParsers>,
+) {
+  return (
+    parser.singles &&
+    getParseSingle(
+      parser.singles,
+      // @ts-expect-error This is fine for now. TODO: Fix runParsers type
+      [doubleParsers].filter(Boolean),
+    )
+  );
+}
+
+function createBlockParsers(parser: LatexParserConfig) {
+  return parser.blocks && getParseBlock(parser.blocks);
+}
+
+function createListParsers(parser: LatexParserConfig) {
+  return parser.lists && getParseBlock(parser.lists);
+}
+
+function createLatexParagraph(children: LatexNode[]) {
+  children = children.filter((child) => child !== "");
+
+  if (!children.length) {
+    return;
+  }
+
+  return {
+    type: "p",
+    attributes: {},
+    children,
+  };
 }
 
 function applyParseResult(
@@ -176,17 +209,22 @@ function normalizeLatexInlineCommands(
   parser: Parameters<typeof parseLatex>[1],
 ) {
   for (const child of children) {
-    if (typeof child !== "string") {
-      if (isRawTextNode(child)) {
-        continue;
-      }
-
-      child.children = normalizeLatexInlineChildren(
-        child.children || [],
-        parser,
-      );
-    }
+    normalizeLatexInlineChild(child, parser);
   }
+}
+
+function normalizeLatexInlineChild(
+  child: LatexNode,
+  parser: Parameters<typeof parseLatex>[1],
+) {
+  if (typeof child === "string" || isRawTextNode(child)) {
+    return;
+  }
+
+  child.children = normalizeLatexInlineChildren(
+    child.children || [],
+    parser,
+  );
 }
 
 function normalizeLatexInlineChildren(
@@ -195,26 +233,46 @@ function normalizeLatexInlineChildren(
 ) {
   const inlineCommandPattern = getInlineCommandPattern(parser);
 
-  return children.flatMap((child) => {
-    if (typeof child !== "string") {
-      if (!isRawTextNode(child)) {
-        child.children = normalizeLatexInlineChildren(
-          child.children || [],
-          parser,
-        );
-      }
+  return children.flatMap((child) =>
+    normalizeLatexInlineChildValue(child, parser, inlineCommandPattern)
+  );
+}
 
-      return [child];
-    }
+function normalizeLatexInlineChildValue(
+  child: LatexNode,
+  parser: Parameters<typeof parseLatex>[1],
+  inlineCommandPattern: RegExp | undefined,
+) {
+  if (typeof child !== "string") {
+    return normalizeLatexInlineElementChild(child, parser);
+  }
 
-    if (!inlineCommandPattern?.test(child)) {
-      return [child];
-    }
+  return inlineCommandPattern?.test(child)
+    ? parseInlineLatexChild(child, parser)
+    : [child];
+}
 
-    return parseLatex(child, parser).flatMap((node) =>
-      typeof node !== "string" && node.type === "p" ? node.children : [node],
+function normalizeLatexInlineElementChild(
+  child: Element,
+  parser: Parameters<typeof parseLatex>[1],
+) {
+  if (!isRawTextNode(child)) {
+    child.children = normalizeLatexInlineChildren(
+      child.children || [],
+      parser,
     );
-  });
+  }
+
+  return [child];
+}
+
+function parseInlineLatexChild(
+  child: string,
+  parser: Parameters<typeof parseLatex>[1],
+) {
+  return parseLatex(child, parser).flatMap((node) =>
+    typeof node !== "string" && node.type === "p" ? node.children : [node],
+  );
 }
 
 function isRawTextNode(node: Element) {
@@ -232,22 +290,31 @@ function stripLatexLineComments(text: string) {
   let skipCommentParagraph = false;
 
   for (const line of text.split("\n")) {
-    if (!line.trim()) {
-      skipCommentParagraph = false;
-      ret.push(line);
-      continue;
-    }
+    const result = stripLatexLineCommentState(line, skipCommentParagraph);
 
-    if (skipCommentParagraph || line.trimStart().startsWith("%")) {
-      skipCommentParagraph = true;
-      ret.push("");
-      continue;
-    }
-
-    ret.push(stripLatexLineComment(line));
+    skipCommentParagraph = result.skipCommentParagraph;
+    ret.push(result.line);
   }
 
   return ret.join("\n");
+}
+
+function stripLatexLineCommentState(
+  line: string,
+  skipCommentParagraph: boolean,
+) {
+  if (!line.trim()) {
+    return { line, skipCommentParagraph: false };
+  }
+
+  if (skipCommentParagraph || line.trimStart().startsWith("%")) {
+    return { line: "", skipCommentParagraph: true };
+  }
+
+  return {
+    line: stripLatexLineComment(line),
+    skipCommentParagraph,
+  };
 }
 
 function stripLatexLineComment(line: string) {

@@ -138,6 +138,9 @@ type ScriptPluginContext = {
   }[];
   receivedGlobalScripts: { type: string; src: string }[];
 };
+type ReceivedScript = ScriptPluginContext["receivedScripts"][number];
+type ReceivedGlobalScript =
+  ScriptPluginContext["receivedGlobalScripts"][number];
 type RouteScripts = NonNullable<Route["scripts"]>;
 type ScriptContextInput = {
   name: string;
@@ -347,45 +350,69 @@ async function handleScriptMessage({
   const { type, payload } = message;
 
   if (type === "fileChanged") {
-    if (payload.type === "foundScripts") {
-      const foundScripts = await loadScripts();
-
-      // TODO: Make this more refined by sending a replaceScript event
-      // and the script that changed so that it can be replaced as
-      // that avoids a full page reload.
-      return {
-        send: [{ type: "reloadPage" as const, payload: undefined }],
-        pluginContext: { foundScripts },
-      };
-    }
+    return await handleScriptFileChangedMessage(payload, loadScripts);
   }
 
   if (type === "addGlobalScripts") {
-    payload.forEach(({ src: path }) =>
-      // TODO: Scope to router- instead
-      send("*", { type: "addDynamicRoute", payload: { path } }),
-    );
-
-    return {
-      pluginContext: {
-        receivedGlobalScripts:
-          pluginContext.receivedGlobalScripts.concat(payload),
-      },
-    };
+    return handleAddGlobalScriptsMessage(payload, pluginContext, send);
   }
 
   if (type === "addScripts") {
-    payload.forEach(({ name: path }) =>
-      // TODO: Scope to router- instead
-      send("*", { type: "addDynamicRoute", payload: { path } }),
-    );
-
-    return {
-      pluginContext: {
-        receivedScripts: pluginContext.receivedScripts.concat(payload),
-      },
-    };
+    return handleAddScriptsMessage(payload, pluginContext, send);
   }
+}
+
+async function handleScriptFileChangedMessage(
+  payload: { type: string },
+  loadScripts: () => Promise<FoundScript[]>,
+) {
+  if (payload.type !== "foundScripts") {
+    return;
+  }
+
+  const foundScripts = await loadScripts();
+
+  // TODO: Make this more refined by sending a replaceScript event
+  // and the script that changed so that it can be replaced as
+  // that avoids a full page reload.
+  return {
+    send: [{ type: "reloadPage" as const, payload: undefined }],
+    pluginContext: { foundScripts },
+  };
+}
+
+function handleAddGlobalScriptsMessage(
+  payload: ReceivedGlobalScript[],
+  pluginContext: ScriptPluginContext,
+  send: Send,
+) {
+  payload.forEach(({ src: path }) => addScriptDynamicRoute(send, path));
+
+  return {
+    pluginContext: {
+      receivedGlobalScripts:
+        pluginContext.receivedGlobalScripts.concat(payload),
+    },
+  };
+}
+
+function handleAddScriptsMessage(
+  payload: ReceivedScript[],
+  pluginContext: ScriptPluginContext,
+  send: Send,
+) {
+  payload.forEach(({ name: path }) => addScriptDynamicRoute(send, path));
+
+  return {
+    pluginContext: {
+      receivedScripts: pluginContext.receivedScripts.concat(payload),
+    },
+  };
+}
+
+function addScriptDynamicRoute(send: Send, path: string) {
+  // TODO: Scope to router- instead
+  send("*", { type: "addDynamicRoute", payload: { path } });
 }
 
 function normalizeScriptEntryAssets(scriptAssets: ScriptEntryAssets) {
@@ -483,11 +510,7 @@ function isRemotePath(scriptPath: string) {
 }
 
 function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
-  if (!scriptPath) {
-    return undefined;
-  }
-
-  if (isRemotePath(scriptPath)) {
+  if (!isLocalDevScriptPath(scriptPath)) {
     return undefined;
   }
 
@@ -500,6 +523,12 @@ function getDevScriptPath(scriptPath: string | undefined, cwd: string) {
     : scriptPath;
 
   return `/${normalizedPath.split(path.sep).join("/")}`;
+}
+
+function isLocalDevScriptPath(
+  scriptPath: string | undefined,
+): scriptPath is string {
+  return Boolean(scriptPath && !isRemotePath(scriptPath));
 }
 
 function getAbsoluteDevScriptPath(scriptPath: string, cwd: string) {

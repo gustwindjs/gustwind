@@ -45,23 +45,14 @@ function getParseSingle<ExpressionReturnType>(
     };
 
     for (let i = 0; i < LIMIT; i++) {
-      const c = getCharacter.next();
-
-      if (c === null) {
-        return handleSingleParserEnd(parseState, expressions, matchCounts);
-      }
-
-      const parseResult = parseSingleCharacter(
+      const characterResult = parseSingleNextCharacter(
         parseState,
         getCharacter,
         expressions,
         [parseSingle, ...nestedParsers],
         matchCounts,
-        c,
         i,
       );
-
-      const characterResult = applySingleParseResult(parseResult);
 
       if (characterResult.matchCounts) {
         matchCounts = characterResult.matchCounts;
@@ -74,6 +65,43 @@ function getParseSingle<ExpressionReturnType>(
 
     throw new Error("No matching expression was found");
   };
+}
+
+function parseSingleNextCharacter<ExpressionReturnType>(
+  parseState: SingleParseState,
+  getCharacter: CharacterGenerator,
+  expressions: Record<string, SingleParser<ExpressionReturnType>>,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+    matchCounts?: MatchCounts,
+  ) => {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  })[],
+  matchCounts: MatchCounts | undefined,
+  index: number,
+) {
+  const c = getCharacter.next();
+
+  if (c === null) {
+    return {
+      matchCounts: undefined,
+      result: handleSingleParserEnd(parseState, expressions, matchCounts),
+    };
+  }
+
+  return applySingleParseResult(
+    parseSingleCharacter(
+      parseState,
+      getCharacter,
+      expressions,
+      parsers,
+      matchCounts,
+      c,
+      index,
+    ),
+  );
 }
 
 function handleSingleParserEnd<ExpressionReturnType>(
@@ -340,24 +368,80 @@ function parseNestedExpression<ExpressionReturnType>(
   flushStringBuffer(parseState);
   getCharacter.previous();
 
-  try {
-    const parseResult = runParsers(getCharacter, parsers, matchCounts);
+  const parseResult = parseNestedExpressionResult(
+    getCharacter,
+    parsers,
+    matchCounts,
+  );
 
-    if (parseResult && typeof parseResult.match === "string") {
-      parseState.parts.push(parseResult.value);
+  if (parseResult) {
+    parseState.parts.push(parseResult.value);
 
-      return { matchCounts: parseResult.matchCounts };
-    }
-  } catch (error) {
-    if (!isUnknownExpressionError(error)) {
-      throw error;
-    }
+    return { matchCounts: parseResult.matchCounts };
   }
 
   getCharacter.setIndex(characterIndex - 1);
   parseState.stringBuffer += readLatexCommand(getCharacter);
 
   return {};
+}
+
+function parseNestedExpressionResult<ExpressionReturnType>(
+  getCharacter: CharacterGenerator,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+    matchCounts?: MatchCounts,
+  ) => {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  })[],
+  matchCounts: MatchCounts | undefined,
+) {
+  return asNestedExpressionResult(
+    runNestedExpressionParsers(getCharacter, parsers, matchCounts),
+  );
+}
+
+function runNestedExpressionParsers<ExpressionReturnType>(
+  getCharacter: CharacterGenerator,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+    matchCounts?: MatchCounts,
+  ) => {
+    match: string;
+    value: ExpressionReturnType;
+    matchCounts?: MatchCounts;
+  })[],
+  matchCounts: MatchCounts | undefined,
+) {
+  try {
+    return runParsers(getCharacter, parsers, matchCounts);
+  } catch (error) {
+    handleNestedExpressionError(error);
+  }
+}
+
+function handleNestedExpressionError(error: unknown) {
+  if (!isUnknownExpressionError(error)) {
+    throw error;
+  }
+}
+
+function asNestedExpressionResult<ExpressionReturnType>(
+  parseResult:
+    | {
+      match: string | boolean;
+      value?: ExpressionReturnType;
+      matchCounts?: MatchCounts;
+    }
+    | undefined,
+) {
+  return parseResult &&
+      typeof parseResult.match === "string" &&
+      "value" in parseResult
+    ? parseResult
+    : undefined;
 }
 
 function finishExpression<ExpressionReturnType>(

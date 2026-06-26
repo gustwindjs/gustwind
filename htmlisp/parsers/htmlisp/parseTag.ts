@@ -68,6 +68,10 @@ function parseTag(
     }
   }
 
+  return getParseTagResult(parseState);
+}
+
+function getParseTagResult(parseState: ParseTagState) {
   if (parseState.content.trim()) {
     return parseState.capturedTags.concat(parseState.content);
   }
@@ -246,16 +250,9 @@ function parseChildOpening(
   parseState: ParseTagState,
   getCharacter: CharacterGenerator,
 ) {
-  if (getCharacter.get() === "/") {
-    parseState.state = STATES.PARSE_END_TAG;
+  const handledOpening = handleChildOpening(parseState, getCharacter);
 
-    return false;
-  }
-
-  if (parseState.currentTag?.type) {
-    parseNestedChild(parseState, getCharacter);
-    parseState.state = STATES.IDLE;
-
+  if (handledOpening) {
     return false;
   }
 
@@ -267,6 +264,26 @@ function parseChildOpening(
   parseState.content = "";
   getCharacter.previous();
   parseState.state = STATES.IDLE;
+
+  return false;
+}
+
+function handleChildOpening(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  if (getCharacter.get() === "/") {
+    parseState.state = STATES.PARSE_END_TAG;
+
+    return true;
+  }
+
+  if (parseState.currentTag?.type) {
+    parseNestedChild(parseState, getCharacter);
+    parseState.state = STATES.IDLE;
+
+    return true;
+  }
 
   return false;
 }
@@ -303,26 +320,30 @@ function parseEndTag(
   const c = getCharacter.next();
 
   if (c === ">") {
-    parseState.depth--;
-
-    if (parseState.content.trim()) {
-      parseState.currentTag?.children.push(parseState.content);
-    }
-
-    parseState.content = "";
-    parseState.currentTag = null;
-
-    // Escape once the current element has been parsed but only if we are not at the root
-    if (parseState.depth === 0 && isChild) {
-      return true;
-    }
-
-    parseState.state = STATES.IDLE;
-
-    return false;
+    return closeEndTag(parseState, isChild);
   }
 
   return c === null;
+}
+
+function closeEndTag(parseState: ParseTagState, isChild?: boolean) {
+  parseState.depth--;
+
+  if (parseState.content.trim()) {
+    parseState.currentTag?.children.push(parseState.content);
+  }
+
+  parseState.content = "";
+  parseState.currentTag = null;
+
+  // Escape once the current element has been parsed but only if we are not at the root
+  if (parseState.depth === 0 && isChild) {
+    return true;
+  }
+
+  parseState.state = STATES.IDLE;
+
+  return false;
 }
 
 function isChildlessTag(tag: Element | null) {

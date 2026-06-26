@@ -53,14 +53,29 @@ function parseBlockBegin(getCharacter: CharacterGenerator) {
     ],
   );
 
-  if (
-    parseResult?.match && "value" in parseResult &&
-    typeof parseResult.value === "string"
-  ) {
-    return parseResult.value;
+  const value = getBlockBeginValue(parseResult);
+
+  if (value) {
+    return value;
   }
 
   throwNoMatchingExpression();
+}
+
+function getBlockBeginValue(parseResult: unknown) {
+  if (!isParseResultObject(parseResult)) {
+    return;
+  }
+
+  return parseResult.match && typeof parseResult.value === "string"
+    ? parseResult.value
+    : undefined;
+}
+
+function isParseResultObject(
+  parseResult: unknown,
+): parseResult is { match?: unknown; value?: unknown } {
+  return Boolean(parseResult && typeof parseResult === "object");
 }
 
 function collectBlockItems<ItemReturnValue>(

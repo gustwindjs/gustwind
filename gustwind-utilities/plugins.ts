@@ -251,16 +251,7 @@ async function resolvePluginPath(cwd: string, path: string) {
   return join(cwd, path);
 }
 
-async function importPlugin({
-  cwd,
-  pluginModule,
-  options,
-  outputDirectory,
-  renderComponent,
-  renderComponentSync,
-  initLoadApi,
-  mode,
-}: {
+type ImportPluginInput = {
   cwd: string;
   pluginModule: Plugin;
   options: Record<string, unknown>;
@@ -269,9 +260,38 @@ async function importPlugin({
   renderComponentSync?: RenderSync;
   initLoadApi: InitLoadApi;
   mode: Mode;
-}): Promise<LoadedPlugin> {
+};
+
+async function importPlugin(input: ImportPluginInput): Promise<LoadedPlugin> {
   const tasks: Tasks = [];
-  const api = await pluginModule.init({
+  const api = await initPluginApi(input, tasks);
+
+  return {
+    plugin: {
+      meta: input.pluginModule.meta,
+      api,
+      context: api.initPluginContext ? await api.initPluginContext() : {},
+      moduleTasks: [],
+      tasks,
+    },
+    tasks,
+  };
+}
+
+async function initPluginApi(
+  {
+    cwd,
+    pluginModule,
+    options,
+    outputDirectory,
+    renderComponent,
+    renderComponentSync,
+    initLoadApi,
+    mode,
+  }: ImportPluginInput,
+  tasks: Tasks,
+) {
+  return await pluginModule.init({
     cwd,
     mode,
     options: options || {},
@@ -280,17 +300,6 @@ async function importPlugin({
     renderComponentSync: renderComponentSync || (() => ""),
     load: initLoadApi(tasks),
   });
-
-  return {
-    plugin: {
-      meta: pluginModule.meta,
-      api,
-      context: api.initPluginContext ? await api.initPluginContext() : {},
-      moduleTasks: [],
-      tasks,
-    },
-    tasks,
-  };
 }
 
 async function sendMessages(plugins: PluginDefinition[]) {

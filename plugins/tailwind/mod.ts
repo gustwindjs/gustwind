@@ -295,19 +295,41 @@ async function hashTailwindContent(cwd: string, setupPath: string) {
   const { baseDirectory, patterns } = contentConfig;
   const hash = createHash("sha256");
 
-  hash.update(path.relative(cwd, baseDirectory));
-  hash.update("\n");
-  hash.update(JSON.stringify(patterns));
-  hash.update("\n");
+  updateTailwindContentConfigHash(hash, cwd, baseDirectory, patterns);
 
   if (patterns.length === 0) {
     return hash.digest("hex");
   }
 
-  let contentFiles: string[];
+  const contentFiles = await findTailwindContentFiles(patterns, baseDirectory);
 
+  if (!contentFiles) {
+    return null;
+  }
+
+  await updateTailwindContentFilesHash(hash, cwd, contentFiles);
+
+  return hash.digest("hex");
+}
+
+function updateTailwindContentConfigHash(
+  hash: ReturnType<typeof createHash>,
+  cwd: string,
+  baseDirectory: string,
+  patterns: string[],
+) {
+  hash.update(path.relative(cwd, baseDirectory));
+  hash.update("\n");
+  hash.update(JSON.stringify(patterns));
+  hash.update("\n");
+}
+
+async function findTailwindContentFiles(
+  patterns: string[],
+  baseDirectory: string,
+) {
   try {
-    contentFiles = await glob(patterns, {
+    return await glob(patterns, {
       absolute: true,
       cwd: baseDirectory,
       dot: true,
@@ -317,15 +339,19 @@ async function hashTailwindContent(cwd: string, setupPath: string) {
   } catch {
     return null;
   }
+}
 
+async function updateTailwindContentFilesHash(
+  hash: ReturnType<typeof createHash>,
+  cwd: string,
+  contentFiles: string[],
+) {
   for (const filePath of [...new Set(contentFiles)].sort()) {
     hash.update(path.relative(cwd, filePath));
     hash.update("\n");
     hash.update(await readFile(filePath));
     hash.update("\n");
   }
-
-  return hash.digest("hex");
 }
 
 async function getTailwindContentConfig(cwd: string, setupPath: string) {
@@ -352,27 +378,47 @@ function extractTailwindContentConfig(
   baseDirectory: string;
   patterns: string[];
 } | null {
-  if (content === undefined) {
-    return { baseDirectory: cwd, patterns: [] };
-  }
-
-  if (isTailwindContentString(content)) {
-    return { baseDirectory: cwd, patterns: [content] };
-  }
-
-  if (isTailwindContentArray(content)) {
-    return createTailwindContentConfig(
-      cwd,
-      extractTailwindContentFiles(content),
-    );
-  }
-
-  if (!isTailwindContentObject(content)) {
-    return null;
-  }
-
-  return extractTailwindContentObjectConfig(content, cwd, setupPath);
+  return tailwindContentConfigResolvers
+    .find(({ matches }) => matches(content))
+    ?.resolve(content, cwd, setupPath) ?? null;
 }
+
+const tailwindContentConfigResolvers = [
+  {
+    matches: (content: unknown) => content === undefined,
+    resolve: (_content: unknown, cwd: string) => ({
+      baseDirectory: cwd,
+      patterns: [],
+    }),
+  },
+  {
+    matches: isTailwindContentString,
+    resolve: (content: unknown, cwd: string) => ({
+      baseDirectory: cwd,
+      patterns: [content as string],
+    }),
+  },
+  {
+    matches: isTailwindContentArray,
+    resolve: (content: unknown, cwd: string) =>
+      createTailwindContentConfig(
+        cwd,
+        extractTailwindContentFiles(content as unknown[]),
+      ),
+  },
+  {
+    matches: isTailwindContentObject,
+    resolve: (content: unknown, cwd: string, setupPath: string) =>
+      extractTailwindContentObjectConfig(content as object, cwd, setupPath),
+  },
+] satisfies {
+  matches: (content: unknown) => boolean;
+  resolve: (
+    content: unknown,
+    cwd: string,
+    setupPath: string,
+  ) => { baseDirectory: string; patterns: string[] } | null;
+}[];
 
 function isTailwindContentString(content: unknown): content is string {
   return typeof content === "string";
