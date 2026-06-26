@@ -369,36 +369,56 @@ function extractTailwindContentConfig(
   }
 
   if (Array.isArray(content)) {
-    const patterns = extractTailwindContentFiles(content);
-
-    return patterns ? { baseDirectory: cwd, patterns } : null;
+    return createTailwindContentConfig(
+      cwd,
+      extractTailwindContentFiles(content),
+    );
   }
 
   if (!content || typeof content !== "object") {
     return null;
   }
 
+  return extractTailwindContentObjectConfig(content, cwd, setupPath);
+}
+
+function extractTailwindContentObjectConfig(
+  content: object,
+  cwd: string,
+  setupPath: string,
+) {
   if (!("files" in content)) {
     return { baseDirectory: cwd, patterns: [] };
   }
 
   const contentObject = content as { files?: unknown; relative?: unknown };
-  const files = contentObject.files;
   const baseDirectory = contentObject.relative === true
     ? path.dirname(setupPath)
     : cwd;
 
+  return createTailwindContentConfig(
+    baseDirectory,
+    extractTailwindContentPatterns(contentObject.files),
+  );
+}
+
+function extractTailwindContentPatterns(files: unknown) {
   if (typeof files === "string") {
-    return { baseDirectory, patterns: [files] };
+    return [files];
   }
 
   if (Array.isArray(files)) {
-    const patterns = extractTailwindContentFiles(files);
-
-    return patterns ? { baseDirectory, patterns } : null;
+    return extractTailwindContentFiles(files);
   }
 
   return null;
+}
+
+function createTailwindContentConfig(
+  baseDirectory: string,
+  patterns: string[] | null,
+) {
+  return patterns ? { baseDirectory, patterns } : null;
 }
 
 function extractTailwindContentFiles(files: unknown[]) {
