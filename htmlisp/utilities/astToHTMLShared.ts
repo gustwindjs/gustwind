@@ -77,15 +77,26 @@ function createForeachProps(
     value: item,
   };
 
-  if (item && typeof item === "object" && !Array.isArray(item)) {
+  assignObjectItemProps(loopProps, item);
+  assignAliasProp(loopProps, item, alias);
+
+  return loopProps;
+}
+
+function assignObjectItemProps(loopProps: Context, item: unknown) {
+  if (isPlainObjectItem(item)) {
     Object.assign(loopProps, item);
   }
+}
 
+function isPlainObjectItem(item: unknown) {
+  return item && typeof item === "object" && !Array.isArray(item);
+}
+
+function assignAliasProp(loopProps: Context, item: unknown, alias?: string) {
   if (alias) {
     loopProps[alias] = item;
   }
-
-  return loopProps;
 }
 
 function getForeachItems(parsedAttributes: Context) {
@@ -137,19 +148,21 @@ function getExpressionUtilities(
 function isComponentTag(type: string, components?: Components) {
   const typeFirstLetter = type[0];
 
-  return !["!", "?"].some((s) => s === typeFirstLetter) &&
+  return (
+    !["!", "?"].some((s) => s === typeFirstLetter) &&
     components &&
     type[0]?.toUpperCase() === typeFirstLetter &&
-    !type.split("").every((t) => t.toUpperCase() === t);
+    !type.split("").every((t) => t.toUpperCase() === t)
+  );
 }
 
 function isHidden(parsedAttributes: Context) {
-  return Object.hasOwn(parsedAttributes, "visibleIf") &&
-    (
-      parsedAttributes.visibleIf === false ||
+  return (
+    Object.hasOwn(parsedAttributes, "visibleIf") &&
+    (parsedAttributes.visibleIf === false ||
       parsedAttributes.visibleIf === undefined ||
-      (parsedAttributes.visibleIf as { length?: number })?.length === 0
-    );
+      (parsedAttributes.visibleIf as { length?: number })?.length === 0)
+  );
 }
 
 function createRenderComponentParameters(
@@ -187,9 +200,10 @@ function slotsToObject(
   wrapRenderedOutput?: boolean,
 ) {
   return Object.fromEntries(
-    slots.map((
-      [name, value],
-    ) => [name, wrapRenderedOutput ? raw(value) : value]),
+    slots.map(([name, value]) => [
+      name,
+      wrapRenderedOutput ? raw(value) : value,
+    ]),
   );
 }
 

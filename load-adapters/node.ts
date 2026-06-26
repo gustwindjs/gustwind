@@ -63,21 +63,25 @@ function initLoadApiWithOptions(
   };
 }
 
-async function dir(
-  { path: directoryPath, extension, recursive }: {
-    path: string;
-    extension?: string;
-    recursive?: boolean;
-  },
-) {
+async function dir({
+  path: directoryPath,
+  extension,
+  recursive,
+}: {
+  path: string;
+  extension?: string;
+  recursive?: boolean;
+}) {
   const entries = await collectFiles(directoryPath, recursive ?? false);
 
-  return entries.filter(({ path: filePath }) =>
-    extension ? filePath.endsWith(extension) : true
-  ).map((entry) => ({
-    ...entry,
-    name: path.relative(directoryPath, entry.path),
-  }));
+  return entries
+    .filter(({ path: filePath }) =>
+      extension ? filePath.endsWith(extension) : true,
+    )
+    .map((entry) => ({
+      ...entry,
+      name: path.relative(directoryPath, entry.path),
+    }));
 }
 
 async function collectFiles(directoryPath: string, recursive: boolean) {
@@ -93,7 +97,7 @@ async function collectFiles(directoryPath: string, recursive: boolean) {
     }
 
     if (recursive && entry.isDirectory()) {
-      files.push(...await collectFiles(entryPath, recursive));
+      files.push(...(await collectFiles(entryPath, recursive)));
     }
   }
 
@@ -110,16 +114,14 @@ async function importModule<T>(
 ) {
   if (await shouldBundleModule(modulePath, options.bundleMode)) {
     const bundledSource = await bundleModule(modulePath);
-    const importPath = `data:text/javascript;base64,${
-      Buffer.from(`// cache-bust:${Date.now()}\n${bundledSource}`).toString(
-        "base64",
-      )
-    }`;
+    const importPath = `data:text/javascript;base64,${Buffer.from(
+      `// cache-bust:${Date.now()}\n${bundledSource}`,
+    ).toString("base64")}`;
 
-    return await import(importPath) as T;
+    return (await import(importPath)) as T;
   }
 
-  return await import(getImportPath(modulePath)) as T;
+  return (await import(getImportPath(modulePath))) as T;
 }
 
 async function shouldBundleModule(
@@ -191,52 +193,51 @@ function httpImportPlugin() {
     setup(build: {
       onResolve(
         options: { filter: RegExp; namespace?: string },
-        callback: (args: { path: string; importer: string }) =>
+        callback: (args: {
+          path: string;
+          importer: string;
+        }) =>
           | { external?: boolean; namespace?: string; path: string }
           | Promise<{ external?: boolean; namespace?: string; path: string }>,
       ): void;
       onLoad(
         options: { filter: RegExp; namespace: string },
-        callback: (args: { path: string }) =>
+        callback: (args: {
+          path: string;
+        }) =>
           | { contents: string; loader: string }
           | Promise<{ contents: string; loader: string }>,
       ): void;
     }) {
-      build.onResolve(
-        { filter: /^(node:|data:)/ },
-        (args) => ({ path: args.path, external: true }),
-      );
-      build.onResolve(
-        { filter: /^https?:\/\// },
-        (args) => ({ path: args.path, namespace: "http-url" }),
-      );
-      build.onResolve(
-        { filter: /.*/, namespace: "http-url" },
-        (args) => ({
-          path: new URL(args.path, args.importer).href,
-          namespace: "http-url",
-        }),
-      );
-      build.onLoad(
-        { filter: /.*/, namespace: "http-url" },
-        async (args) => {
-          const response = await fetch(args.path);
+      build.onResolve({ filter: /^(node:|data:)/ }, (args) => ({
+        path: args.path,
+        external: true,
+      }));
+      build.onResolve({ filter: /^https?:\/\// }, (args) => ({
+        path: args.path,
+        namespace: "http-url",
+      }));
+      build.onResolve({ filter: /.*/, namespace: "http-url" }, (args) => ({
+        path: new URL(args.path, args.importer).href,
+        namespace: "http-url",
+      }));
+      build.onLoad({ filter: /.*/, namespace: "http-url" }, async (args) => {
+        const response = await fetch(args.path);
 
-          if (!response.ok) {
-            throw new Error(
-              `Failed to load remote module ${args.path}: ${response.status} ${response.statusText}`,
-            );
-          }
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load remote module ${args.path}: ${response.status} ${response.statusText}`,
+          );
+        }
 
-          return {
-            contents: await response.text(),
-            loader: getLoader(
-              args.path,
-              response.headers.get("content-type") || "",
-            ),
-          };
-        },
-      );
+        return {
+          contents: await response.text(),
+          loader: getLoader(
+            args.path,
+            response.headers.get("content-type") || "",
+          ),
+        };
+      });
     },
   };
 }
@@ -290,8 +291,12 @@ function isRemoteSpecifier(specifier: string) {
 }
 
 function isLocalSpecifier(specifier: string) {
-  return specifier.startsWith("./") || specifier.startsWith("../") ||
-    specifier.startsWith("/") || specifier.startsWith("file:");
+  return (
+    specifier.startsWith("./") ||
+    specifier.startsWith("../") ||
+    specifier.startsWith("/") ||
+    specifier.startsWith("file:")
+  );
 }
 
 function getImportSpecifiers(source: string) {
@@ -332,10 +337,7 @@ function getLocalModulePath(modulePath: string) {
     return fileURLToPath(modulePath);
   }
 
-  if (
-    modulePath.startsWith("/") || modulePath.startsWith("./") ||
-    modulePath.startsWith("../")
-  ) {
+  if (isLocalModulePath(modulePath)) {
     return path.resolve(modulePath);
   }
 
@@ -343,10 +345,7 @@ function getLocalModulePath(modulePath: string) {
 }
 
 function getImportPath(modulePath: string) {
-  if (
-    modulePath.startsWith("http://") || modulePath.startsWith("https://") ||
-    modulePath.startsWith("node:") || modulePath.startsWith("data:")
-  ) {
+  if (isDirectImportPath(modulePath)) {
     return modulePath;
   }
 
@@ -359,9 +358,28 @@ function getImportPath(modulePath: string) {
   return `${pathToFileURL(localModulePath).href}?cache=${Date.now()}`;
 }
 
+function isLocalModulePath(modulePath: string) {
+  return (
+    modulePath.startsWith("/") ||
+    modulePath.startsWith("./") ||
+    modulePath.startsWith("../")
+  );
+}
+
+function isDirectImportPath(modulePath: string) {
+  return (
+    modulePath.startsWith("http://") ||
+    modulePath.startsWith("https://") ||
+    modulePath.startsWith("node:") ||
+    modulePath.startsWith("data:")
+  );
+}
+
 function getLoader(modulePath: string, contentType = "") {
-  return getContentTypeLoader(contentType) ||
-    getExtensionLoader(getModuleExtension(modulePath));
+  return (
+    getContentTypeLoader(contentType) ||
+    getExtensionLoader(getModuleExtension(modulePath))
+  );
 }
 
 function getContentTypeLoader(contentType: string) {
@@ -381,20 +399,16 @@ function getModuleExtension(modulePath: string) {
 }
 
 function getExtensionLoader(extension: string) {
-  switch (extension) {
-    case ".tsx":
-      return "tsx";
-    case ".jsx":
-      return "jsx";
-    case ".json":
-      return "json";
-    case ".mts":
-    case ".cts":
-    case ".ts":
-      return "ts";
-    default:
-      return "js";
-  }
+  return extensionLoaders[extension] || "js";
 }
+
+const extensionLoaders: Record<string, string> = {
+  ".cts": "ts",
+  ".jsx": "jsx",
+  ".json": "json",
+  ".mts": "ts",
+  ".ts": "ts",
+  ".tsx": "tsx",
+};
 
 export { initDevLoadApi, initLoadApi, stopModuleBundler };

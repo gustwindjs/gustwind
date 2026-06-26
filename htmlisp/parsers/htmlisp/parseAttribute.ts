@@ -18,8 +18,18 @@ type AttributeValueState = {
   backtickQuotesFound: number;
   attributeValue: string;
 };
+type AttributeStateParser = (
+  parseState: ParseAttributeState,
+  getCharacter: CharacterGenerator,
+) => boolean;
 const LIMIT = 100000;
 const ATTRIBUTE_NAME_END_CHARACTERS = new Set(["/", "<", ">", "=", "?", " "]);
+const attributeStateParsers: Record<State, AttributeStateParser> = {
+  [STATES.FIND_ATTRIBUTE_NAME]: findAttributeNameState,
+  [STATES.FIND_EQUALS]: findEquals,
+  [STATES.PARSE_ATTRIBUTE_NAME]: parseAttributeNameState,
+  [STATES.PARSE_ATTRIBUTE_VALUE]: parseAttributeValueState,
+};
 
 function parseAttribute(
   getCharacter: CharacterGenerator,
@@ -43,20 +53,24 @@ function parseAttributeState(
   parseState: ParseAttributeState,
   getCharacter: CharacterGenerator,
 ) {
-  switch (parseState.state) {
-    case STATES.FIND_ATTRIBUTE_NAME:
-      findAttributeName(parseState, getCharacter);
-      break;
-    case STATES.PARSE_ATTRIBUTE_NAME:
-      return parseAttributeNameState(parseState, getCharacter);
-    case STATES.FIND_EQUALS:
-      return findEquals(parseState, getCharacter);
-    case STATES.PARSE_ATTRIBUTE_VALUE:
-      parseState.attributeValue = parseAttributeValue(getCharacter) || null;
-      return true;
-  }
+  return attributeStateParsers[parseState.state](parseState, getCharacter);
+}
 
+function findAttributeNameState(
+  parseState: ParseAttributeState,
+  getCharacter: CharacterGenerator,
+) {
+  findAttributeName(parseState, getCharacter);
   return false;
+}
+
+function parseAttributeValueState(
+  parseState: ParseAttributeState,
+  getCharacter: CharacterGenerator,
+) {
+  parseState.attributeValue = parseAttributeValue(getCharacter) || null;
+
+  return true;
 }
 
 function findAttributeName(

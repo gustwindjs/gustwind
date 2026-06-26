@@ -59,12 +59,16 @@ function resolveScopedValue(
 
     const resolved = get(source, key);
 
-    if (!isUndefined(resolved) && resolved !== null) {
+    if (hasResolvedValue(resolved)) {
       return resolved;
     }
   }
 
   return defaultValue;
+}
+
+function hasResolvedValue(value: unknown) {
+  return !isUndefined(value) && value !== null;
 }
 
 function renderTextValue(value: unknown, renderOptions?: HtmlispRenderOptions) {

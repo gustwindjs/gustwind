@@ -7,21 +7,34 @@ const STATES = {
   PARSE_DESCRIPTION_WHITESPACE: "PARSE_DESCRIPTION_WHITESPACE",
   PARSE_DESCRIPTION: "PARSE_DESCRIPTION",
 } as const;
-type State = typeof STATES[keyof typeof STATES];
+type State = (typeof STATES)[keyof typeof STATES];
 type ParserState = {
   state: State;
   title: string;
   description: string;
   itemIndex: number;
 };
+type DefinitionCharacterParser = (
+  parserState: ParserState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) => boolean;
 
 const LIMIT = 100000;
 const ITEM_SYNTAX = "item";
+const definitionCharacterParsers: Record<State, DefinitionCharacterParser> = {
+  [STATES.IDLE]: parseIdle,
+  [STATES.PARSE_DESCRIPTION]: parseDescriptionCharacter,
+  [STATES.PARSE_DESCRIPTION_WHITESPACE]: parseDescriptionWhitespaceCharacter,
+  [STATES.PARSE_ITEM]: parseItemCharacter,
+  [STATES.PARSE_TITLE]: parseTitleCharacter,
+};
 
 // Parses the content within \item[<key>] <value>
-function parseDefinitionItem(
-  getCharacter: CharacterGenerator,
-): { title: string; description: string } {
+function parseDefinitionItem(getCharacter: CharacterGenerator): {
+  title: string;
+  description: string;
+} {
   const parserState: ParserState = {
     state: STATES.IDLE,
     title: "",
@@ -49,24 +62,31 @@ function parseDefinitionCharacter(
   getCharacter: CharacterGenerator,
   c: string,
 ) {
-  switch (parserState.state) {
-    case STATES.IDLE:
-      if (c === "\\") {
-        parserState.state = STATES.PARSE_ITEM;
-      }
-      break;
-    case STATES.PARSE_ITEM:
-      parseItem(parserState, c);
-      break;
-    case STATES.PARSE_TITLE:
-      parseTitle(parserState, c);
-      break;
-    case STATES.PARSE_DESCRIPTION_WHITESPACE:
-      parseDescriptionWhitespace(parserState, getCharacter, c);
-      break;
-    case STATES.PARSE_DESCRIPTION:
-      return parseDescription(parserState, c);
+  return definitionCharacterParsers[parserState.state](
+    parserState,
+    getCharacter,
+    c,
+  );
+}
+
+function parseIdle(
+  parserState: ParserState,
+  _getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (c === "\\") {
+    parserState.state = STATES.PARSE_ITEM;
   }
+
+  return false;
+}
+
+function parseItemCharacter(
+  parserState: ParserState,
+  _getCharacter: CharacterGenerator,
+  c: string,
+) {
+  parseItem(parserState, c);
 
   return false;
 }
@@ -83,6 +103,16 @@ function parseItem(parserState: ParserState, c: string) {
   }
 
   parserState.itemIndex++;
+}
+
+function parseTitleCharacter(
+  parserState: ParserState,
+  _getCharacter: CharacterGenerator,
+  c: string,
+) {
+  parseTitle(parserState, c);
+
+  return false;
 }
 
 function parseTitle(parserState: ParserState, c: string) {
@@ -108,7 +138,21 @@ function parseDescriptionWhitespace(
   parserState.state = STATES.PARSE_DESCRIPTION;
 }
 
-function parseDescription(parserState: ParserState, c: string) {
+function parseDescriptionWhitespaceCharacter(
+  parserState: ParserState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  parseDescriptionWhitespace(parserState, getCharacter, c);
+
+  return false;
+}
+
+function parseDescriptionCharacter(
+  parserState: ParserState,
+  _getCharacter: CharacterGenerator,
+  c: string,
+) {
   if (c === "\n") {
     return true;
   }
@@ -118,9 +162,10 @@ function parseDescription(parserState: ParserState, c: string) {
   return false;
 }
 
-function getParsedDefinition(
-  parserState: ParserState,
-): { title: string; description: string } {
+function getParsedDefinition(parserState: ParserState): {
+  title: string;
+  description: string;
+} {
   return {
     title: parserState.title,
     description: parserState.description,

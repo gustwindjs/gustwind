@@ -80,15 +80,16 @@ const cites = (
   footnote: (children, matchCounts) => {
     const title = childrenToText(children);
 
-    return ({
+    return {
       type: "sup",
       attributes: { title },
       children: [
         (matchCounts.footnote
           ? matchCounts.footnote.findIndex((e) => e === title) + 1
-          : 1).toString(),
+          : 1
+        ).toString(),
       ],
-    });
+    };
   },
   cite: (children, matchCounts) => {
     const ids = parseCitationIds(children[0]);
@@ -101,9 +102,11 @@ const cites = (
       },
       children: [
         "[" +
-        (ids.map((id) => getCitationIndex(id, matchCounts.cite))
-          .join(", ").toString()) +
-        "]",
+          ids
+            .map((id) => getCitationIndex(id, matchCounts.cite))
+            .join(", ")
+            .toString() +
+          "]",
       ],
     };
   },
@@ -112,32 +115,35 @@ const cites = (
       parseCitationIds(children[0]),
       bibtexEntries,
     );
-    const text = references.map(({ surname, year }) => `${surname} (${year})`)
+    const text = references
+      .map(({ surname, year }) => `${surname} (${year})`)
       .join(", ");
 
-    return ({
+    return {
       type: "span",
       attributes: { title: createCitationTitle(references) },
       children: [text],
-    });
+    };
   },
   citep: (children) => {
     const references = getAuthorYearCitationReferences(
       parseCitationIds(children[0]),
       bibtexEntries,
     );
-    const text = references.map(({ author, surname, year }) => {
-      const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
-      const authorText = authorCount > 1 ? `${surname} et al.` : surname;
+    const text = references
+      .map(({ author, surname, year }) => {
+        const authorCount = author.split(/\s+and\s+/i).filter(Boolean).length;
+        const authorText = authorCount > 1 ? `${surname} et al.` : surname;
 
-      return [authorText, year].filter(Boolean).join(", ");
-    }).join("; ");
+        return [authorText, year].filter(Boolean).join(", ");
+      })
+      .join("; ");
 
-    return ({
+    return {
       type: "span",
       attributes: { title: createCitationTitle(references) },
       children: [`(${text})`],
-    });
+    };
   },
   // TODO: Write reference using bibtex
   fullcite: (children) => ({
@@ -148,7 +154,10 @@ const cites = (
 });
 
 function parseCitationIds(input: string) {
-  return input.split(",").map((id) => id.trim()).filter(Boolean);
+  return input
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
 }
 
 function getCitationReferences(
@@ -181,23 +190,32 @@ function getAuthorYearCitationReference(
 function getCitationReference(
   entry: BibtexCollection | undefined,
 ): CitationReference {
+  const fields = requireCitationFields(entry);
+  const title = requireCitationTitle(fields.title);
+
+  return { title, author: fields.author || "" };
+}
+
+function requireCitationFields(entry: BibtexCollection | undefined) {
   if (!entry) {
     throw new Error("No matching BibTeX entry was found!");
   }
 
-  const title = entry.fields?.title;
+  return entry.fields || {};
+}
 
+function requireCitationTitle(title: string | undefined) {
   if (!title) {
     throw new Error("BibTeX entry was missing a title!");
   }
 
-  return { title, author: entry.fields?.author || "" };
+  return title;
 }
 
 function createCitationTitle(references: CitationReference[]) {
-  return references.map(({ title, author }) => `${title} - ${author}`).join(
-    ", ",
-  );
+  return references
+    .map(({ title, author }) => `${title} - ${author}`)
+    .join(", ");
 }
 
 function getCitationIndex(id: string, matches: string[] | undefined) {
@@ -243,11 +261,11 @@ const refs = (
       throw new Error("No matching ref was found");
     }
 
-    return ({
+    return {
       type: "a",
       attributes: { href: ref.slug },
       children: [ref.title],
-    });
+    };
   },
   ref: (children) => {
     const id = children[0];
@@ -257,11 +275,11 @@ const refs = (
       throw new Error("No matching ref was found");
     }
 
-    return ({
+    return {
       type: "a",
       attributes: { href: ref.slug },
       children: [ref.title],
-    });
+    };
   },
 });
 
@@ -272,7 +290,10 @@ function getAutorefLabel(id: string) {
 }
 
 function slugify(idBase: string) {
-  return idBase.toLowerCase().replace(/`/g, "").replace(/[^\w]+/g, "-");
+  return idBase
+    .toLowerCase()
+    .replace(/`/g, "")
+    .replace(/[^\w]+/g, "-");
 }
 
 function el(type: string) {
@@ -294,9 +315,11 @@ function element(
 }
 
 function childrenToText(children: (Element | string)[]): string {
-  return children.map((child) =>
-    typeof child === "string" ? child : childrenToText(child.children || [])
-  ).join("");
+  return children
+    .map((child) =>
+      typeof child === "string" ? child : childrenToText(child.children || []),
+    )
+    .join("");
 }
 
 export { blocks, cites, doubles, el, element, lists, refs, singles };

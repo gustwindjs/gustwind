@@ -11,7 +11,7 @@ const STATES = {
   PARSE_TAG_ATTRIBUTES: 3,
   PARSE_CHILDREN: 4,
 } as const;
-type State = typeof STATES[keyof typeof STATES];
+type State = (typeof STATES)[keyof typeof STATES];
 type ParseTagState = {
   state: State;
   currentTag: Element | null;
@@ -19,7 +19,30 @@ type ParseTagState = {
   content: string;
   depth: number;
 };
+type IdleTokenHandler = (
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) => boolean;
+type TagStateParser = (
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+  isChild?: boolean,
+) => boolean;
 const LIMIT = 100000;
+const tagStateParsers: Record<State, TagStateParser> = {
+  [STATES.IDLE]: parseIdle,
+  [STATES.PARSE_CHILDREN]: parseChildren,
+  [STATES.PARSE_END_TAG]: parseEndTag,
+  [STATES.PARSE_TAG_ATTRIBUTES]: parseTagAttributesState,
+  [STATES.PARSE_TAG_TYPE]: parseTagTypeState,
+};
+const idleTokenHandlers: Record<string, IdleTokenHandler> = {
+  "\n": () => false,
+  "<": handleIdleTagOpening,
+  "/": parseIdleSlash,
+  ">": handleIdleTagEnd,
+};
 
 const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
 function cachedParseTag(input: string) {
@@ -58,20 +81,14 @@ function parseTagState(
   getCharacter: CharacterGenerator,
   isChild?: boolean,
 ) {
-  switch (parseState.state) {
-    case STATES.IDLE:
-      return parseIdle(parseState, getCharacter, isChild);
-    case STATES.PARSE_TAG_TYPE:
-      return parseTagTypeState(parseState, getCharacter);
-    case STATES.PARSE_TAG_ATTRIBUTES:
-      parseTagAttributes(parseState, getCharacter);
-      break;
-    case STATES.PARSE_CHILDREN:
-      return parseChildren(parseState, getCharacter);
-    case STATES.PARSE_END_TAG:
-      return parseEndTag(parseState, getCharacter, isChild);
-  }
+  return tagStateParsers[parseState.state](parseState, getCharacter, isChild);
+}
 
+function parseTagAttributesState(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  parseTagAttributes(parseState, getCharacter);
   return false;
 }
 
@@ -82,24 +99,32 @@ function parseIdle(
 ) {
   const c = getCharacter.next();
 
-  switch (c) {
-    case "\n":
-      return false;
-    case "<":
-      parseTagOpening(parseState, getCharacter);
-      return false;
-    case "/":
-      return parseIdleSlash(parseState, getCharacter, isChild);
-    case ">":
-      parseState.state = isChildlessTag(parseState.currentTag)
-        ? STATES.IDLE
-        : STATES.PARSE_CHILDREN;
-      return false;
-    case null:
-      return true;
-    default:
-      return parseIdleContent(parseState, getCharacter, c);
+  if (c === null) {
+    return true;
   }
+
+  const handler = idleTokenHandlers[c];
+
+  return handler
+    ? handler(parseState, getCharacter, isChild)
+    : parseIdleContent(parseState, getCharacter, c);
+}
+
+function handleIdleTagOpening(
+  parseState: ParseTagState,
+  getCharacter: CharacterGenerator,
+) {
+  parseTagOpening(parseState, getCharacter);
+
+  return false;
+}
+
+function handleIdleTagEnd(parseState: ParseTagState) {
+  parseState.state = isChildlessTag(parseState.currentTag)
+    ? STATES.IDLE
+    : STATES.PARSE_CHILDREN;
+
+  return false;
 }
 
 function parseIdleSlash(

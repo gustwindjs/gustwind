@@ -167,15 +167,11 @@ const targets = {
       exports: {
         ".": "./mod.js",
         ...Object.fromEntries(
-          gustwindPackageEntries
-            .flatMap(({ exportPath, exportPaths, out }) =>
-              [exportPath, ...(exportPaths || [])]
-                .filter(Boolean)
-                .map((currentExportPath) => [
-                  currentExportPath,
-                  `./${out}.js`,
-                ])
-            ),
+          gustwindPackageEntries.flatMap(({ exportPath, exportPaths, out }) =>
+            [exportPath, ...(exportPaths || [])]
+              .filter(Boolean)
+              .map((currentExportPath) => [currentExportPath, `./${out}.js`]),
+          ),
         ),
       },
       files: [
@@ -282,7 +278,10 @@ await writeFile(
   path.join(target.outDirectory, "package.json"),
   `${JSON.stringify(target.packageJson, null, 2)}\n`,
 );
-await cp(path.join(rootDirectory, "LICENSE"), path.join(target.outDirectory, "LICENSE"));
+await cp(
+  path.join(rootDirectory, "LICENSE"),
+  path.join(target.outDirectory, "LICENSE"),
+);
 await cp(target.readmePath, path.join(target.outDirectory, "README.md"));
 
 if (targetName === "gustwind") {
@@ -290,29 +289,38 @@ if (targetName === "gustwind") {
 }
 
 async function writeGustwindDeclarations(outDirectory) {
-  await writeFile(path.join(outDirectory, "mod.d.ts"), createGustwindDeclaration());
+  await writeFile(
+    path.join(outDirectory, "mod.d.ts"),
+    createGustwindDeclaration(),
+  );
   await writeFile(
     path.join(outDirectory, "types.d.ts"),
-    rewriteDeclarationImports(rootTypesSource, [["./htmlisp/types.ts", "./htmlisp/types.js"]]),
+    rewriteDeclarationImports(rootTypesSource, [
+      ["./htmlisp/types.ts", "./htmlisp/types.js"],
+    ]),
   );
   await mkdir(path.join(outDirectory, "htmlisp"), { recursive: true });
   await writeFile(
     path.join(outDirectory, "htmlisp", "types.d.ts"),
-    rewriteDeclarationImports(htmlispTypesSource, [["../types.ts", "../types.js"]]),
+    rewriteDeclarationImports(htmlispTypesSource, [
+      ["../types.ts", "../types.js"],
+    ]),
   );
 
   await Promise.all(
     gustwindEntries
-      .filter(({ exportPath, exportPaths }) => exportPath || exportPaths?.length)
+      .filter(
+        ({ exportPath, exportPaths }) => exportPath || exportPaths?.length,
+      )
       .map(({ declaration, out }) =>
         writeFile(
           path.join(outDirectory, `${out}.d.ts`),
           declaration === "cloudflareWorker"
             ? createCloudflareWorkerDeclaration()
             : declaration === "scriptPlugin"
-            ? createScriptPluginDeclaration()
-            : createPluginDeclaration(),
-        )
+              ? createScriptPluginDeclaration()
+              : createPluginDeclaration(),
+        ),
       ),
   );
   await Promise.all(
@@ -320,7 +328,7 @@ async function writeGustwindDeclarations(outDirectory) {
       writeFile(
         path.join(outDirectory, `${out}.d.ts`),
         createHtmlispEntryDeclaration(declaration),
-      )
+      ),
     ),
   );
 }
@@ -345,7 +353,7 @@ function createScriptPluginDeclaration() {
   return [
     'import type { Plugin, Scripts } from "../../types.js";',
     "",
-    "export declare const SCRIPT_ASSETS_MANIFEST_PATH = \".gustwind/script-assets.json\";",
+    'export declare const SCRIPT_ASSETS_MANIFEST_PATH = ".gustwind/script-assets.json";',
     "",
     "export type ScriptEntryAsset = {",
     "  file: string;",
@@ -430,23 +438,23 @@ function createCloudflareWorkerDeclaration() {
 }
 
 function createHtmlispEntryDeclaration(declaration) {
-  switch (declaration) {
-    case "htmlisp":
-      return createHtmlispDeclaration();
-    case "htmlispToHTMLSync":
-      return createHtmlispToHTMLSyncDeclaration();
-    case "astToHTMLSync":
-      return createAstToHTMLSyncDeclaration();
-    case "parseLatex":
-      return createParseLatexDeclaration();
-    case "parseBibtexCollection":
-      return createParseBibtexCollectionDeclaration();
-    case "defaultExpressions":
-      return createDefaultExpressionsDeclaration();
-    default:
-      throw new Error(`Unknown htmlisp declaration "${declaration}"`);
+  const createDeclaration = htmlispEntryDeclarations[declaration];
+
+  if (!createDeclaration) {
+    throw new Error(`Unknown htmlisp declaration "${declaration}"`);
   }
+
+  return createDeclaration();
 }
+
+const htmlispEntryDeclarations = {
+  astToHTMLSync: createAstToHTMLSyncDeclaration,
+  defaultExpressions: createDefaultExpressionsDeclaration,
+  htmlisp: createHtmlispDeclaration,
+  htmlispToHTMLSync: createHtmlispToHTMLSyncDeclaration,
+  parseBibtexCollection: createParseBibtexCollectionDeclaration,
+  parseLatex: createParseLatexDeclaration,
+};
 
 function createHtmlispDeclaration() {
   return [
@@ -614,7 +622,7 @@ function createGustwindDeclaration() {
     "  validation?: ValidationResult;",
     "};",
     "",
-    "export * from \"./types.js\";",
+    'export * from "./types.js";',
     "",
     "export declare function buildNode(args: {",
     "  cwd: string;",

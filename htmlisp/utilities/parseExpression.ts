@@ -67,7 +67,7 @@ function startNestedExpression(state: ParseState, character: string) {
 }
 
 function consumeCharacter(state: ParseState, character: string) {
-  if (character === ")" && !state.captureEmpty) {
+  if (isExpressionEnd(state, character)) {
     state.level--;
 
     return true;
@@ -77,13 +77,21 @@ function consumeCharacter(state: ParseState, character: string) {
     return consumeQuote(state);
   }
 
-  if (character === " " && !state.captureEmpty) {
+  if (isUnquotedSpace(state, character)) {
     return true;
   }
 
   state.segment += character;
 
   return false;
+}
+
+function isExpressionEnd(state: ParseState, character: string) {
+  return character === ")" && !state.captureEmpty;
+}
+
+function isUnquotedSpace(state: ParseState, character: string) {
+  return character === " " && !state.captureEmpty;
 }
 
 function consumeQuote(state: ParseState) {

@@ -437,13 +437,21 @@ async function hashModule(
   hash.update(source);
   hash.update("\n");
 
+  return hashModuleImports(hash, modulePath, source, visitedPaths);
+}
+
+async function hashModuleImports(
+  hash: ReturnType<typeof createHash>,
+  modulePath: string,
+  source: string,
+  visitedPaths: Set<string>,
+) {
   for (const specifier of getImportSpecifiers(source)) {
     const specifierHash = await hashImportSpecifier(
       modulePath,
       specifier,
       visitedPaths,
     );
-
     if (specifierHash === null) {
       return null;
     }
