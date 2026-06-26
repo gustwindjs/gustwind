@@ -77,107 +77,119 @@ type BuildNodeOptions = {
   cacheFrom?: string;
   routeConcurrency?: number;
 };
+type NormalizedBuildNodeOptions =
+  & Required<
+    Pick<
+      BuildNodeOptions,
+      "collectBenchmark" | "incremental" | "routeConcurrency"
+    >
+  >
+  & Omit<
+    BuildNodeOptions,
+    "collectBenchmark" | "incremental" | "routeConcurrency"
+  >
+  & {
+    cacheFrom: string;
+    validateOutput: boolean;
+  };
+type BuildNodeRunConfig = NormalizedBuildNodeOptions & {
+  preservesCurrentOutput: boolean;
+  previousCache?: Awaited<ReturnType<typeof readIncrementalBuildCache>>;
+};
+type BuildInputs = Awaited<ReturnType<typeof loadBuildInputs>>;
 
 async function buildNode(
   options: BuildNodeOptions,
 ): Promise<BuildNodeResult> {
-  const {
-    cwd,
-    outputDirectory,
-    pluginDefinitions,
-    validateOutput = false,
-    collectBenchmark = false,
-    incremental = !collectBenchmark,
-    cacheFrom = outputDirectory,
-    routeConcurrency = getDefaultRouteConcurrency(),
-  } = options;
-  const previousCache = incremental
-    ? await readIncrementalBuildCache(cwd, cacheFrom)
-    : undefined;
-  const preservesCurrentOutput = previousCache?.source.kind === "filesystem" &&
-    path.resolve(previousCache.source.rootDirectory) ===
-      path.resolve(cwd, outputDirectory);
-
-  const releaseBuildLock = await acquireBuildLock(outputDirectory);
+  const config = await createBuildNodeRunConfig(options);
+  const releaseBuildLock = await acquireBuildLock(config.outputDirectory);
 
   try {
-    await prepareBuildOutputDirectory({
-      outputDirectory,
-      preservesCurrentOutput,
-    });
-    const benchmark = collectBenchmark
-      ? createBuildBenchmark(outputDirectory)
-      : undefined;
-    const buildInputs = await loadBuildInputs({
-      cwd,
-      outputDirectory,
-      pluginDefinitions,
-      routeConcurrency,
-    });
-
-    if (preservesCurrentOutput) {
-      await removeDeletedRouteOutputs(
-        outputDirectory,
-        previousCache?.cache,
-        Object.keys(buildInputs.routes).map(toRouteOutputUrl),
-      );
-    }
-
-    const nextIncrementalCacheRoutes: Record<
-      string,
-      IncrementalBuildRouteCacheEntry
-    > = {};
-    await runTaskQueue({
-      benchmark,
-      outputDirectory,
-      tasks: buildInputs.prepareTasks.concat(buildInputs.routerTasks),
-    });
-    const routeBuildResult = await runBuildTasks({
-      benchmark,
-      cwd,
-      outputDirectory,
-      incrementalCache: incremental ? previousCache?.cache : undefined,
-      incrementalCacheSource: incremental ? previousCache?.source : undefined,
-      incrementalCacheEnabled: incremental,
-      nextIncrementalCacheRoutes,
-      globalDependencyTasks: buildInputs.globalDependencyTasks,
-      rendererDependencyInfo: buildInputs.rendererDependencyInfo,
-      routeConcurrency,
-      router: buildInputs.router,
-      plugins: buildInputs.plugins,
-      tasks: createRouteBuildTasks(buildInputs.routes, outputDirectory),
-    });
-
-    await runTaskQueue({
-      benchmark,
-      outputDirectory,
-      tasks: await finishPlugins(buildInputs.plugins),
-    });
-
-    await cleanUpPlugins(buildInputs.plugins, buildInputs.routes);
-
-    const validation = validateOutput
-      ? await validateHtmlDirectory(outputDirectory)
-      : undefined;
-    const benchmarkResult = benchmark?.finish();
-
-    if (incremental) {
-      await writeIncrementalBuildCache(
-        outputDirectory,
-        nextIncrementalCacheRoutes,
-      );
-    }
-
-    return {
-      benchmark: benchmarkResult,
-      cacheHits: routeBuildResult.cacheHits,
-      routesBuilt: routeBuildResult.routesBuilt,
-      validation,
-    };
+    return await runNodeBuild(config);
   } finally {
     await releaseBuildLock();
     await stopModuleBundler();
   }
+}
+
+async function createBuildNodeRunConfig(
+  options: BuildNodeOptions,
+): Promise<BuildNodeRunConfig> {
+  const collectBenchmark = options.collectBenchmark ?? false;
+  const incremental = options.incremental ?? !collectBenchmark;
+  const cacheFrom = options.cacheFrom ?? options.outputDirectory;
+  const previousCache = incremental
+    ? await readIncrementalBuildCache(options.cwd, cacheFrom)
+    : undefined;
+
+  return {
+    ...options,
+    cacheFrom,
+    collectBenchmark,
+    incremental,
+    previousCache,
+    preservesCurrentOutput: preservesCurrentOutput(
+      previousCache,
+      options.cwd,
+      options.outputDirectory,
+    ),
+    routeConcurrency: options.routeConcurrency ?? getDefaultRouteConcurrency(),
+    validateOutput: options.validateOutput ?? false,
+  };
+}
+
+function preservesCurrentOutput(
+  previousCache: Awaited<ReturnType<typeof readIncrementalBuildCache>>,
+  cwd: string,
+  outputDirectory: string,
+) {
+  return previousCache?.source.kind === "filesystem" &&
+    path.resolve(previousCache.source.rootDirectory) ===
+      path.resolve(cwd, outputDirectory);
+}
+
+async function runNodeBuild(
+  config: BuildNodeRunConfig,
+): Promise<BuildNodeResult> {
+  const benchmark = await prepareNodeBuild(config);
+  const buildInputs = await loadBuildInputs(config);
+  const nextIncrementalCacheRoutes: Record<
+    string,
+    IncrementalBuildRouteCacheEntry
+  > = {};
+  const routeBuildResult = await runNodeBuildTasks({
+    benchmark,
+    buildInputs,
+    config,
+    nextIncrementalCacheRoutes,
+  });
+
+  await finishNodeBuild({
+    benchmark,
+    buildInputs,
+    config,
+    nextIncrementalCacheRoutes,
+  });
+
+  return {
+    benchmark: benchmark?.finish(),
+    cacheHits: routeBuildResult.cacheHits,
+    routesBuilt: routeBuildResult.routesBuilt,
+    validation: config.validateOutput
+      ? await validateHtmlDirectory(config.outputDirectory)
+      : undefined,
+  };
+}
+
+async function prepareNodeBuild(config: BuildNodeRunConfig) {
+  await prepareBuildOutputDirectory({
+    outputDirectory: config.outputDirectory,
+    preservesCurrentOutput: config.preservesCurrentOutput,
+  });
+
+  return config.collectBenchmark
+    ? createBuildBenchmark(config.outputDirectory)
+    : undefined;
 }
 
 async function prepareBuildOutputDirectory(
@@ -245,6 +257,83 @@ async function loadBuildInputs(
     routerTasks,
     routes,
   };
+}
+
+async function runNodeBuildTasks(
+  {
+    benchmark,
+    buildInputs,
+    config,
+    nextIncrementalCacheRoutes,
+  }: {
+    benchmark?: ReturnType<typeof createBuildBenchmark>;
+    buildInputs: BuildInputs;
+    config: BuildNodeRunConfig;
+    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  },
+) {
+  if (config.preservesCurrentOutput) {
+    await removeDeletedRouteOutputs(
+      config.outputDirectory,
+      config.previousCache?.cache,
+      Object.keys(buildInputs.routes).map(toRouteOutputUrl),
+    );
+  }
+
+  await runTaskQueue({
+    benchmark,
+    outputDirectory: config.outputDirectory,
+    tasks: buildInputs.prepareTasks.concat(buildInputs.routerTasks),
+  });
+
+  return await runBuildTasks({
+    benchmark,
+    cwd: config.cwd,
+    outputDirectory: config.outputDirectory,
+    incrementalCache: config.incremental
+      ? config.previousCache?.cache
+      : undefined,
+    incrementalCacheSource: config.incremental
+      ? config.previousCache?.source
+      : undefined,
+    incrementalCacheEnabled: config.incremental,
+    nextIncrementalCacheRoutes,
+    globalDependencyTasks: buildInputs.globalDependencyTasks,
+    rendererDependencyInfo: buildInputs.rendererDependencyInfo,
+    routeConcurrency: config.routeConcurrency,
+    router: buildInputs.router,
+    plugins: buildInputs.plugins,
+    tasks: createRouteBuildTasks(buildInputs.routes, config.outputDirectory),
+  });
+}
+
+async function finishNodeBuild(
+  {
+    benchmark,
+    buildInputs,
+    config,
+    nextIncrementalCacheRoutes,
+  }: {
+    benchmark?: ReturnType<typeof createBuildBenchmark>;
+    buildInputs: BuildInputs;
+    config: BuildNodeRunConfig;
+    nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
+  },
+) {
+  await runTaskQueue({
+    benchmark,
+    outputDirectory: config.outputDirectory,
+    tasks: await finishPlugins(buildInputs.plugins),
+  });
+
+  await cleanUpPlugins(buildInputs.plugins, buildInputs.routes);
+
+  if (config.incremental) {
+    await writeIncrementalBuildCache(
+      config.outputDirectory,
+      nextIncrementalCacheRoutes,
+    );
+  }
 }
 
 function createRouteBuildTasks(
