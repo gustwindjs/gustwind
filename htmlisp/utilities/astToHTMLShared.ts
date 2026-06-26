@@ -6,7 +6,7 @@ import type {
   HtmlispToHTMLParameters,
 } from "../types.ts";
 import type { Utilities } from "../../types.ts";
-import { raw } from "./runtime.ts";
+import { raw } from "./rawHtml.ts";
 import { isForeachBinding } from "./parseForeachExpression.ts";
 
 type RenderContextBase = {

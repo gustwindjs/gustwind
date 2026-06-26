@@ -14,7 +14,8 @@ import highlightJSON from "highlight.js/lib/languages/json";
 import highlightTS from "highlight.js/lib/languages/typescript";
 import highlightXML from "highlight.js/lib/languages/xml";
 import highlightYAML from "highlight.js/lib/languages/yaml";
-import { escapeHTML, isRawHtml } from "../../htmlisp/utilities/runtime.ts";
+import { isRawHtml } from "../../htmlisp/utilities/rawHtml.ts";
+import { escapeHTML } from "./escapeHTML.ts";
 
 type TableOfContentsEntry = { slug: string; level: number; text: string };
 type HeadingAnchor = TableOfContentsEntry;

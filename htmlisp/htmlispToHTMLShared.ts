@@ -1,7 +1,7 @@
 import { isString } from "../utilities/functional.ts";
 import { defaultUtilities } from "./defaultUtilities.ts";
 import type { Context, HtmlispToHTMLParameters, Utilities } from "./types.ts";
-import { raw } from "./utilities/runtime.ts";
+import { raw } from "./utilities/rawHtml.ts";
 
 function getHtmlInput({ htmlInput }: HtmlispToHTMLParameters) {
   if (!htmlInput) {

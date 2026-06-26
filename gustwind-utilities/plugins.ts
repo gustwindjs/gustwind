@@ -967,7 +967,6 @@ export {
   cleanUpPlugins,
   createSend,
   finishPlugins,
-  getDependencyLayers,
   importPlugin,
   importPlugins,
   preparePlugins,

@@ -1,7 +1,8 @@
 import { get, isObject } from "../utilities/functional.ts";
 import { trim } from "../utilities/string.ts";
 import type { Context } from "./types.ts";
-import { raw, resolveScopedValue } from "./utilities/runtime.ts";
+import { raw } from "./utilities/rawHtml.ts";
+import { resolveScopedValue } from "./utilities/runtime.ts";
 
 function id(s: unknown) {
   return s;

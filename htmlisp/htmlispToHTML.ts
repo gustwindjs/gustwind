@@ -1,7 +1,7 @@
 import { parseTag } from "./parsers/htmlisp/parseTag.ts";
 import { astToHTML } from "./utilities/astToHTML.ts";
 import type { HtmlispToHTMLParameters } from "./types.ts";
-import { isRawHtml, raw } from "./utilities/runtime.ts";
+import { isRawHtml, raw } from "./utilities/rawHtml.ts";
 import {
   createRenderUtilities,
   endRender,

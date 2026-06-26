@@ -3,7 +3,6 @@ import { performance } from "node:perf_hooks";
 import test from "node:test";
 import {
   finishPlugins,
-  getDependencyLayers,
   preparePlugins,
   type PluginDefinition,
 } from "./plugins.ts";
@@ -46,20 +45,6 @@ function createPluginDefinition(
     tasks: [],
   };
 }
-
-test("getDependencyLayers groups independent plugins together", () => {
-  const layers = getDependencyLayers([
-    createPluginDefinition({ name: "tailwind" }),
-    createPluginDefinition({ name: "sitemap", dependsOn: ["meta"] }),
-    createPluginDefinition({ name: "meta" }),
-    createPluginDefinition({ name: "pagefind" }),
-  ]);
-
-  assert.deepEqual(
-    layers.map((layer) => layer.map(({ meta }) => meta.name)),
-    [["tailwind", "meta", "pagefind"], ["sitemap"]],
-  );
-});
 
 test("preparePlugins runs independent prepareBuild hooks in parallel", async () => {
   const prepareEvents: string[] = [];

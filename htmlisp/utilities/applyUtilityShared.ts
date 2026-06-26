@@ -1,6 +1,6 @@
 import { isObject } from "../../utilities/functional.ts";
 import type { Utilities, Utility } from "../../types.ts";
-import { isRawHtml, unwrapRawHtml } from "./runtime.ts";
+import { isRawHtml, unwrapRawHtml } from "./rawHtml.ts";
 
 function assertUtilities(utilities: Utilities) {
   if (!utilities) {
