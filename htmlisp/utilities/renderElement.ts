@@ -12,10 +12,13 @@ function renderElement(
   const { type, closesWith } = tag;
   const isFragment = type === "noop" || type === "fragment";
 
-  if (!isFragment && !parsedChildren && typeof closesWith === "string") {
-    return `<${type}${
-      getAttributeBindings(parsedAttributes, renderOptions)
-    }${closesWith}>`;
+  if (isSelfClosingElement(isFragment, parsedChildren, closesWith)) {
+    return renderSelfClosingElement(
+      type,
+      parsedAttributes,
+      closesWith,
+      renderOptions,
+    );
   }
 
   const content = renderTextValue(parsedChildren, renderOptions).concat(
@@ -28,17 +31,52 @@ function renderElement(
 
   const t = type === "noop" && parsedAttributes.type || type;
 
-  if (t) {
-    if (type === "noop") {
-      delete parsedAttributes.type;
-    }
-
-    return `<${t}${
-      getAttributeBindings(parsedAttributes, renderOptions)
-    }>${content}</${t}>`;
+  if (!t) {
+    return content;
   }
 
-  return content;
+  return renderNormalElement(
+    String(t),
+    type,
+    parsedAttributes,
+    content,
+    renderOptions,
+  );
+}
+
+function isSelfClosingElement(
+  isFragment: boolean,
+  parsedChildren: unknown,
+  closesWith: Element["closesWith"],
+): closesWith is string {
+  return !isFragment && !parsedChildren && typeof closesWith === "string";
+}
+
+function renderSelfClosingElement(
+  type: string,
+  parsedAttributes: Record<string, unknown>,
+  closesWith: string,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  return `<${type}${
+    getAttributeBindings(parsedAttributes, renderOptions)
+  }${closesWith}>`;
+}
+
+function renderNormalElement(
+  renderedType: string,
+  originalType: string,
+  parsedAttributes: Record<string, unknown>,
+  content: string,
+  renderOptions?: HtmlispRenderOptions,
+) {
+  if (originalType === "noop") {
+    delete parsedAttributes.type;
+  }
+
+  return `<${renderedType}${
+    getAttributeBindings(parsedAttributes, renderOptions)
+  }>${content}</${renderedType}>`;
 }
 
 export { renderElement };
