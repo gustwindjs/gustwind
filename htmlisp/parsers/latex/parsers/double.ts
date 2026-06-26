@@ -12,6 +12,13 @@ const STATES = {
   PARSE_EXPRESSION_SECOND: "PARSE_EXPRESSION_SECOND",
 } as const;
 type State = typeof STATES[keyof typeof STATES];
+type DoubleParseState = {
+  state: State;
+  foundKey: string;
+  foundFirst: string;
+  stringBuffer: string;
+  bracesFound: number;
+};
 
 const LIMIT = 100000;
 
@@ -22,11 +29,13 @@ function getParseDouble<ExpressionReturnType>(
   return function parseDouble(
     getCharacter: CharacterGenerator,
   ): { match: string; value: ExpressionReturnType } {
-    let state: State = STATES.IDLE;
-    let foundKey = "";
-    let foundFirst = "";
-    let stringBuffer = "";
-    let bracesFound = 0;
+    const parseState: DoubleParseState = {
+      state: STATES.IDLE,
+      foundKey: "",
+      foundFirst: "",
+      stringBuffer: "",
+      bracesFound: 0,
+    };
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -35,71 +44,154 @@ function getParseDouble<ExpressionReturnType>(
         break;
       }
 
-      if (state === STATES.IDLE) {
-        if (c === "\\") {
-          if (i !== 0) {
-            throw new Error("No matching expression was found");
-          }
+      const result = parseDoubleCharacter(
+        parseState,
+        getCharacter,
+        expressions,
+        c,
+        i,
+      );
 
-          stringBuffer = "";
-          state = STATES.PARSE_EXPRESSION;
-        } else {
-          stringBuffer += c;
-        }
-      } else if (state === STATES.PARSE_EXPRESSION) {
-        if (c === "{") {
-          if (expressions[stringBuffer]) {
-            foundKey = stringBuffer;
-            stringBuffer = "";
-            state = STATES.PARSE_EXPRESSION_FIRST;
-          } else {
-            throw new Error("No matching expression was found");
-            // throw new Error(`Unknown expression: ${stringBuffer}`);
-          }
-        } else {
-          stringBuffer += c;
-        }
-      } else if (state === STATES.PARSE_EXPRESSION_FIRST) {
-        if (c === "\\" && getCharacter.get() === "%") {
-          stringBuffer += "%";
-          getCharacter.next();
-        } else if (c === "}") {
-          foundFirst = stringBuffer;
-
-          if (getCharacter.get() === "{") {
-            stringBuffer = "";
-            state = STATES.PARSE_EXPRESSION_SECOND;
-            getCharacter.next();
-          } else {
-            throw new Error("No matching expression was found");
-            // throw new Error("Argument was missing");
-          }
-        } else {
-          stringBuffer += c;
-        }
-      } else if (state === STATES.PARSE_EXPRESSION_SECOND) {
-        if (c === "\\" && getCharacter.get() === "%") {
-          stringBuffer += "%";
-          getCharacter.next();
-        } else if (c === "{") {
-          bracesFound++;
-        } else if (c === "}") {
-          if (bracesFound) {
-            bracesFound--;
-          } else {
-            return {
-              match: foundKey,
-              value: expressions[foundKey](foundFirst, stringBuffer),
-            };
-          }
-        }
-
-        stringBuffer += c;
+      if (result) {
+        return result;
       }
     }
 
     throw new Error("No matching expression was found");
   };
+}
+
+function parseDoubleCharacter<ExpressionReturnType>(
+  parseState: DoubleParseState,
+  getCharacter: CharacterGenerator,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+  c: string,
+  index: number,
+) {
+  switch (parseState.state) {
+    case STATES.IDLE:
+      parseIdle(parseState, c, index);
+      break;
+    case STATES.PARSE_EXPRESSION:
+      parseExpressionName(parseState, expressions, c);
+      break;
+    case STATES.PARSE_EXPRESSION_FIRST:
+      parseFirstArgument(parseState, getCharacter, c);
+      break;
+    case STATES.PARSE_EXPRESSION_SECOND:
+      return parseSecondArgument(parseState, getCharacter, expressions, c);
+  }
+}
+
+function parseIdle(
+  parseState: DoubleParseState,
+  c: string,
+  index: number,
+) {
+  if (c === "\\") {
+    if (index !== 0) {
+      throw new Error("No matching expression was found");
+    }
+
+    parseState.stringBuffer = "";
+    parseState.state = STATES.PARSE_EXPRESSION;
+  } else {
+    parseState.stringBuffer += c;
+  }
+}
+
+function parseExpressionName<ExpressionReturnType>(
+  parseState: DoubleParseState,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+  c: string,
+) {
+  if (c !== "{") {
+    parseState.stringBuffer += c;
+
+    return;
+  }
+
+  if (!expressions[parseState.stringBuffer]) {
+    throw new Error("No matching expression was found");
+    // throw new Error(`Unknown expression: ${parseState.stringBuffer}`);
+  }
+
+  parseState.foundKey = parseState.stringBuffer;
+  parseState.stringBuffer = "";
+  parseState.state = STATES.PARSE_EXPRESSION_FIRST;
+}
+
+function parseFirstArgument(
+  parseState: DoubleParseState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (parseEscapedPercent(parseState, getCharacter, c)) {
+    return;
+  }
+
+  if (c !== "}") {
+    parseState.stringBuffer += c;
+
+    return;
+  }
+
+  parseState.foundFirst = parseState.stringBuffer;
+
+  if (getCharacter.get() !== "{") {
+    throw new Error("No matching expression was found");
+    // throw new Error("Argument was missing");
+  }
+
+  parseState.stringBuffer = "";
+  parseState.state = STATES.PARSE_EXPRESSION_SECOND;
+  getCharacter.next();
+}
+
+function parseSecondArgument<ExpressionReturnType>(
+  parseState: DoubleParseState,
+  getCharacter: CharacterGenerator,
+  expressions: Record<string, DoubleParser<ExpressionReturnType>>,
+  c: string,
+) {
+  if (parseEscapedPercent(parseState, getCharacter, c)) {
+    parseState.stringBuffer += c;
+
+    return;
+  }
+
+  if (c === "{") {
+    parseState.bracesFound++;
+  } else if (c === "}") {
+    if (parseState.bracesFound) {
+      parseState.bracesFound--;
+    } else {
+      return {
+        match: parseState.foundKey,
+        value: expressions[parseState.foundKey](
+          parseState.foundFirst,
+          parseState.stringBuffer,
+        ),
+      };
+    }
+  }
+
+  parseState.stringBuffer += c;
+}
+
+function parseEscapedPercent(
+  parseState: DoubleParseState,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (c !== "\\" || getCharacter.get() !== "%") {
+    return false;
+  }
+
+  parseState.stringBuffer += "%";
+  getCharacter.next();
+
+  return true;
 }
 
 export { type DoubleParser, getParseDouble };

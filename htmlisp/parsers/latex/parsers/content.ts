@@ -2,6 +2,12 @@ import { type MatchCounts, runParsers } from "./runParsers.ts";
 import type { CharacterGenerator } from "../../types.ts";
 
 const LIMIT = 100000;
+type ParseContentState<ExpressionReturnType> = {
+  stringBuffer: string;
+  foundComment: boolean;
+  parts: ExpressionReturnType[];
+  matchCounts: MatchCounts;
+};
 
 // Parses content until \ or \n\n or until string to parse ends
 function getParseContent<ExpressionReturnType>(
@@ -16,10 +22,12 @@ function getParseContent<ExpressionReturnType>(
     getCharacter: CharacterGenerator,
     initialMatchCounts?: MatchCounts,
   ): ExpressionReturnType {
-    let stringBuffer = "";
-    let foundComment = false;
-    const parts: ExpressionReturnType[] = [];
-    let matchCounts: MatchCounts = initialMatchCounts || {};
+    const state: ParseContentState<ExpressionReturnType> = {
+      stringBuffer: "",
+      foundComment: false,
+      parts: [],
+      matchCounts: initialMatchCounts || {},
+    };
 
     for (let i = 0; i < LIMIT; i++) {
       const c = getCharacter.next();
@@ -28,66 +36,34 @@ function getParseContent<ExpressionReturnType>(
         break;
       }
 
-      // TODO: Allow also whitespace before a comment
-      if (i === 0 && c === "%") {
-        foundComment = true;
-      }
-
-      if (c === "\n" && getCharacter.get() === "\n") {
-        break;
-      } else if (c === "\\" && getCharacter.get() === "%") {
-        stringBuffer += "%";
-        getCharacter.next();
-      } else if (c === "\\" && getCharacter.get() === "-") {
-        // LaTeX discretionary hyphen. It only marks a possible break point.
-        getCharacter.next();
-      } else if (c === "\\" && !foundComment) {
-        // @ts-expect-error This is fine
-        parts.push(stringBuffer);
-        stringBuffer = "";
-
-        getCharacter.previous();
-
-        const parseResult = runParsers<ExpressionReturnType>(
+      if (
+        parseContentCharacter(
+          state,
           getCharacter,
           parsers,
-          structuredClone(matchCounts),
-        );
-
-        if (parseResult) {
-          // @ts-expect-error There's some type confusion here
-          if (parseResult.matchCounts) {
-            // @ts-expect-error There's some type confusion here
-            matchCounts = parseResult.matchCounts;
-          }
-
-          // @ts-expect-error There's some type confusion here
-          parts.push(parseResult.value);
-        } else {
-          break;
-        }
-      } else if (c === "~" && getCharacter.get() === "\\") {
-        stringBuffer += " ";
-      } else {
-        stringBuffer += c;
+          c,
+          i,
+        )
+      ) {
+        break;
       }
     }
 
     // Skip comments
-    if (stringBuffer.startsWith("%")) {
+    if (state.stringBuffer.startsWith("%")) {
       throw new Error("Skip");
     }
 
-    if (stringBuffer) {
+    if (state.stringBuffer) {
       // @ts-expect-error This is fine
-      parts.push(stringBuffer);
+      state.parts.push(state.stringBuffer);
     }
 
-    const value = expression(parts);
+    const value = expression(state.parts);
 
     if (!!value) {
       if (initialMatchCounts) {
-        Object.assign(initialMatchCounts, matchCounts);
+        Object.assign(initialMatchCounts, state.matchCounts);
       }
 
       return value;
@@ -95,6 +71,102 @@ function getParseContent<ExpressionReturnType>(
 
     throw new Error("No matching expression was found");
   };
+}
+
+function parseContentCharacter<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+  ) => { match: string; value: ExpressionReturnType })[],
+  c: string,
+  index: number,
+) {
+  // TODO: Allow also whitespace before a comment
+  if (index === 0 && c === "%") {
+    state.foundComment = true;
+  }
+
+  if (isParagraphBreak(getCharacter, c)) {
+    return true;
+  }
+
+  if (parseEscapedCharacter(state, getCharacter, c)) {
+    return false;
+  }
+
+  if (c === "\\" && !state.foundComment) {
+    return !parseExpression(state, getCharacter, parsers);
+  }
+
+  state.stringBuffer += c === "~" && getCharacter.get() === "\\" ? " " : c;
+
+  return false;
+}
+
+function isParagraphBreak(getCharacter: CharacterGenerator, c: string) {
+  return c === "\n" && getCharacter.get() === "\n";
+}
+
+function parseEscapedCharacter<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  c: string,
+) {
+  if (c !== "\\") {
+    return false;
+  }
+
+  if (getCharacter.get() === "%") {
+    state.stringBuffer += "%";
+    getCharacter.next();
+
+    return true;
+  }
+
+  if (getCharacter.get() === "-") {
+    // LaTeX discretionary hyphen. It only marks a possible break point.
+    getCharacter.next();
+
+    return true;
+  }
+
+  return false;
+}
+
+function parseExpression<ExpressionReturnType>(
+  state: ParseContentState<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  parsers: ((
+    getCharacter: CharacterGenerator,
+  ) => { match: string; value: ExpressionReturnType })[],
+) {
+  // @ts-expect-error This is fine
+  state.parts.push(state.stringBuffer);
+  state.stringBuffer = "";
+
+  getCharacter.previous();
+
+  const parseResult = runParsers<ExpressionReturnType>(
+    getCharacter,
+    parsers,
+    structuredClone(state.matchCounts),
+  );
+
+  if (!parseResult) {
+    return false;
+  }
+
+  // @ts-expect-error There's some type confusion here
+  if (parseResult.matchCounts) {
+    // @ts-expect-error There's some type confusion here
+    state.matchCounts = parseResult.matchCounts;
+  }
+
+  // @ts-expect-error There's some type confusion here
+  state.parts.push(parseResult.value);
+
+  return true;
 }
 
 export { getParseContent };
