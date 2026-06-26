@@ -17,30 +17,11 @@ function parseBibtexCollection(
       [parseBibtex],
     );
 
-    if (parseResult?.match) {
-      // Force type to be in uppercase always
-      // @ts-expect-error There's some type confusion here
-      if (parseResult.value?.type) {
-        // @ts-expect-error There's some type confusion here
-        parseResult.value.type = parseResult.value.type.toUpperCase();
-      }
+    const parseValue = getBibtexParseValue(parseResult);
 
-      // @ts-expect-error There's some type confusion here
-      const fields = parseResult.value.fields;
-      // @ts-expect-error There's some type confusion here
-      parseResult.value.fields = normalizeBibtexFields(fields);
-
-      // Remove title braces
-      // @ts-expect-error There's some type confusion here
-      if (parseResult.value?.fields?.title) {
-        // @ts-expect-error There's some type confusion here
-        parseResult.value.fields.title = parseResult.value.fields.title
-          .replaceAll("{", "")
-          .replaceAll("}", "");
-      }
-
-      // @ts-expect-error This is fine. Likely runParsers return type can be simplified
-      ret[parseResult.value.id] = parseResult.value;
+    if (parseValue) {
+      const value = normalizeBibtexEntry(parseValue);
+      ret[value.id] = value;
     }
 
     const c = getCharacter.next();
@@ -53,13 +34,68 @@ function parseBibtexCollection(
   return ret;
 }
 
+function getBibtexParseValue(parseResult: unknown) {
+  if (!hasParseValue(parseResult)) {
+    return;
+  }
+
+  if (!isBibtexCollection(parseResult.value)) {
+    return;
+  }
+
+  return parseResult.value;
+}
+
+function hasParseValue(
+  parseResult: unknown,
+): parseResult is { match: unknown; value: unknown } {
+  if (
+    parseResult === null ||
+    typeof parseResult !== "object" ||
+    !("match" in parseResult)
+  ) {
+    return false;
+  }
+
+  return Boolean(parseResult.match) &&
+    "value" in parseResult;
+}
+
+function isBibtexCollection(value: unknown): value is BibtexCollection {
+  return Boolean(value) &&
+    typeof value === "object" &&
+    typeof (value as Partial<BibtexCollection>).id === "string" &&
+    typeof (value as Partial<BibtexCollection>).type === "string";
+}
+
+function normalizeBibtexEntry(value: BibtexCollection): BibtexCollection {
+  return {
+    ...value,
+    type: value.type.toUpperCase(),
+    fields: normalizeBibtexFields(value.fields),
+  };
+}
+
 function normalizeBibtexFields(fields: Record<string, string> = {}) {
-  return Object.fromEntries(
+  const normalizedFields = Object.fromEntries(
     Object.entries(fields).map(([key, value]) => [
       key,
       decodeLatexAccents(value),
     ]),
   );
+
+  return stripTitleBraces(normalizedFields);
+}
+
+function stripTitleBraces(fields: Record<string, string>) {
+  if (!fields.title) {
+    return fields;
+  }
+
+  return {
+    ...fields,
+    title: fields.title.replaceAll("{", "").replaceAll("}", ""),
+  };
 }
 
 function decodeLatexAccents(value: string) {
