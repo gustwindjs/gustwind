@@ -62,75 +62,95 @@ const plugin: Plugin<
     dependsOn: ["gustwind-meta-plugin"],
   },
   init({ cwd, options, load, renderComponent, renderComponentSync, mode }) {
-    const { components, globalUtilitiesPath } = options;
-    const getRuntimeUtilities = createRuntimeUtilitiesResolver({
+    const services = createRendererServices({
+      cwd,
+      load,
+      mode,
+      options,
+      renderComponent,
+      renderComponentSync,
+    });
+
+    return createRendererPluginApi(services);
+  },
+};
+
+function createRendererServices(
+  {
+    cwd,
+    load,
+    mode,
+    options,
+    renderComponent,
+    renderComponentSync,
+  }: {
+    cwd: string;
+    load: LoadApi;
+    mode: Mode;
+    options: {
+      components: ComponentPathDefinition[];
+      globalUtilitiesPath: string;
+    };
+    renderComponent: Render;
+    renderComponentSync: RenderSync;
+  },
+): RendererServices {
+  const { components, globalUtilitiesPath } = options;
+
+  // TODO: Push the check to the plugin system core
+  if (!globalUtilitiesPath) {
+    throw new Error(
+      "htmlisp-renderer-plugin - globalUtilitiesPath was not provided",
+    );
+  }
+
+  return {
+    components,
+    cwd,
+    getRuntimeUtilities: createRuntimeUtilitiesResolver({
       load,
       render: renderComponent,
       renderSync: renderComponentSync,
-    });
-    const services: RendererServices = {
-      components,
-      cwd,
-      getRuntimeUtilities,
-      globalUtilitiesPath,
-      load,
-      mode,
-      renderComponent,
-      renderComponentSync,
-    };
+    }),
+    globalUtilitiesPath,
+    load,
+    mode,
+    renderComponent,
+    renderComponentSync,
+  };
+}
 
-    // TODO: Push the check to the plugin system core
-    if (!globalUtilitiesPath) {
-      throw new Error(
-        "htmlisp-renderer-plugin - globalUtilitiesPath was not provided",
-      );
-    }
-
-    return {
-      initPluginContext: () => initRendererPluginContext(services),
-      sendMessages: async () => undefined,
-      prepareContext: ({ url, route, send }) =>
-        prepareRendererContext({ mode, route, send, url }),
-      renderLayout: (args) => renderRendererLayout(args, services),
-      renderComponent: ({
-        matchRoute,
-        componentName,
-        htmlInput,
-        context,
-        props,
-        pluginContext,
-      }) =>
-        renderRendererComponent({
-          componentName,
-          context,
-          htmlInput,
-          matchRoute,
-          pluginContext,
-          props,
-          services,
-        }),
-      renderComponentSync: ({
-        matchRoute,
-        componentName,
-        htmlInput,
-        context,
-        props,
-        pluginContext,
-      }) =>
-        renderRendererComponentSync({
-          componentName,
-          context,
-          htmlInput,
-          matchRoute,
-          pluginContext,
-          props,
-          services,
-        }),
-      onMessage: ({ message, pluginContext }) =>
-        handleRendererMessage({ message, pluginContext, services }),
-    };
-  },
-};
+function createRendererPluginApi(
+  services: RendererServices,
+): PluginApi<HtmlispRendererPluginContext> {
+  return {
+    initPluginContext: () => initRendererPluginContext(services),
+    sendMessages: async () => undefined,
+    prepareContext: ({ url, route, send }) =>
+      prepareRendererContext({ mode: services.mode, route, send, url }),
+    renderLayout: (args) => renderRendererLayout(args, services),
+    renderComponent: (args) => renderRendererComponent({
+      componentName: args.componentName,
+      context: args.context,
+      htmlInput: args.htmlInput,
+      matchRoute: args.matchRoute,
+      pluginContext: args.pluginContext,
+      props: args.props,
+      services,
+    }),
+    renderComponentSync: (args) => renderRendererComponentSync({
+      componentName: args.componentName,
+      context: args.context,
+      htmlInput: args.htmlInput,
+      matchRoute: args.matchRoute,
+      pluginContext: args.pluginContext,
+      props: args.props,
+      services,
+    }),
+    onMessage: ({ message, pluginContext }) =>
+      handleRendererMessage({ message, pluginContext, services }),
+  };
+}
 
 async function initRendererPluginContext(
   services: RendererServices,

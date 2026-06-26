@@ -3,6 +3,72 @@ import { runParsers } from "./parsers/runParsers.ts";
 import { characterGenerator } from "../characterGenerator.ts";
 
 const LIMIT = 100000;
+const latexAccentMap: Record<string, Record<string, string>> = {
+  '"': {
+    A: "Ä",
+    E: "Ë",
+    I: "Ï",
+    O: "Ö",
+    U: "Ü",
+    Y: "Ÿ",
+    a: "ä",
+    e: "ë",
+    i: "ï",
+    o: "ö",
+    u: "ü",
+    y: "ÿ",
+  },
+  "'": {
+    A: "Á",
+    E: "É",
+    I: "Í",
+    O: "Ó",
+    U: "Ú",
+    Y: "Ý",
+    a: "á",
+    e: "é",
+    i: "í",
+    o: "ó",
+    u: "ú",
+    y: "ý",
+  },
+  "`": {
+    A: "À",
+    E: "È",
+    I: "Ì",
+    O: "Ò",
+    U: "Ù",
+    a: "à",
+    e: "è",
+    i: "ì",
+    o: "ò",
+    u: "ù",
+  },
+  "^": {
+    A: "Â",
+    E: "Ê",
+    I: "Î",
+    O: "Ô",
+    U: "Û",
+    a: "â",
+    e: "ê",
+    i: "î",
+    o: "ô",
+    u: "û",
+  },
+  "~": {
+    A: "Ã",
+    N: "Ñ",
+    O: "Õ",
+    a: "ã",
+    n: "ñ",
+    o: "õ",
+  },
+  c: {
+    C: "Ç",
+    c: "ç",
+  },
+};
 
 function parseBibtexCollection(
   input: string,
@@ -152,74 +218,7 @@ function decodeLatexAccents(value: string) {
 }
 
 function decodeLatexAccent(accent: string, letter: string) {
-  const accents: Record<string, Record<string, string>> = {
-    '"': {
-      A: "Ä",
-      E: "Ë",
-      I: "Ï",
-      O: "Ö",
-      U: "Ü",
-      Y: "Ÿ",
-      a: "ä",
-      e: "ë",
-      i: "ï",
-      o: "ö",
-      u: "ü",
-      y: "ÿ",
-    },
-    "'": {
-      A: "Á",
-      E: "É",
-      I: "Í",
-      O: "Ó",
-      U: "Ú",
-      Y: "Ý",
-      a: "á",
-      e: "é",
-      i: "í",
-      o: "ó",
-      u: "ú",
-      y: "ý",
-    },
-    "`": {
-      A: "À",
-      E: "È",
-      I: "Ì",
-      O: "Ò",
-      U: "Ù",
-      a: "à",
-      e: "è",
-      i: "ì",
-      o: "ò",
-      u: "ù",
-    },
-    "^": {
-      A: "Â",
-      E: "Ê",
-      I: "Î",
-      O: "Ô",
-      U: "Û",
-      a: "â",
-      e: "ê",
-      i: "î",
-      o: "ô",
-      u: "û",
-    },
-    "~": {
-      A: "Ã",
-      N: "Ñ",
-      O: "Õ",
-      a: "ã",
-      n: "ñ",
-      o: "õ",
-    },
-    c: {
-      C: "Ç",
-      c: "ç",
-    },
-  };
-
-  return accents[accent]?.[letter] || letter;
+  return latexAccentMap[accent]?.[letter] || letter;
 }
 
 export { parseBibtexCollection };
