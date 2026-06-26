@@ -74,12 +74,7 @@ function buildDependencyTasks(
         type: "components",
       },
     };
-    const sourceKey = JSON.stringify(sourceTask);
-
-    if (!seen.has(sourceKey)) {
-      tasks.push(sourceTask);
-      seen.add(sourceKey);
-    }
+    addUniqueTask(tasks, seen, sourceTask);
 
     if (definition.utilitiesPath) {
       const utilitiesTask = {
@@ -89,16 +84,24 @@ function buildDependencyTasks(
           type: "globalUtilities",
         },
       };
-      const utilitiesKey = JSON.stringify(utilitiesTask);
-
-      if (!seen.has(utilitiesKey)) {
-        tasks.push(utilitiesTask);
-        seen.add(utilitiesKey);
-      }
+      addUniqueTask(tasks, seen, utilitiesTask);
     }
   }
 
   return tasks;
+}
+
+function addUniqueTask(
+  tasks: BuildWorkerEvent[],
+  seen: Set<string>,
+  task: BuildWorkerEvent,
+) {
+  const taskKey = JSON.stringify(task);
+
+  if (!seen.has(taskKey)) {
+    tasks.push(task);
+    seen.add(taskKey);
+  }
 }
 
 function collectDirectComponentDependencies(
@@ -149,16 +152,15 @@ function collectTransitiveDependencies(
 function isComponentReference(type: string, componentNames: Set<string>) {
   const firstLetter = type[0];
 
-  return !["!", "?"].includes(firstLetter) &&
+  return (
+    !["!", "?"].includes(firstLetter) &&
     componentNames.has(type) &&
     firstLetter?.toUpperCase() === firstLetter &&
-    !type.split("").every((character) => character.toUpperCase() === character);
+    !type.split("").every((character) => character.toUpperCase() === character)
+  );
 }
 
-function walkAst(
-  ast: (string | Element)[],
-  visit: (element: Element) => void,
-) {
+function walkAst(ast: (string | Element)[], visit: (element: Element) => void) {
   for (const node of ast) {
     if (typeof node === "string") {
       continue;

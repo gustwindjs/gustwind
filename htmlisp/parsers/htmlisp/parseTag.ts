@@ -43,6 +43,7 @@ const idleTokenHandlers: Record<string, IdleTokenHandler> = {
   "/": parseIdleSlash,
   ">": handleIdleTagEnd,
 };
+const TAG_TYPE_END_CHARACTERS = new Set([" ", "/", ">"]);
 
 const memo = getMemo<CharacterGenerator, (Element | string)[]>(new Map());
 function cachedParseTag(input: string) {
@@ -333,7 +334,7 @@ function parseTagType(getCharacter: CharacterGenerator) {
 
   let c = getCharacter.next();
   while (c) {
-    if (c === " " || c === "/" || c === ">") {
+    if (isTagTypeEnd(c)) {
       return tagType;
     } else if (c !== "\n") {
       tagType += c;
@@ -343,6 +344,10 @@ function parseTagType(getCharacter: CharacterGenerator) {
   }
 
   return tagType;
+}
+
+function isTagTypeEnd(c: string) {
+  return TAG_TYPE_END_CHARACTERS.has(c);
 }
 
 export { cachedParseTag as parseTag };

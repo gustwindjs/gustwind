@@ -21,19 +21,44 @@ function runParsers<ExpressionReturnType>(
 
   // For async version this could use Promise.race
   for (const parser of parsers) {
-    try {
-      if (shouldSkipCurrentCharacter(getCharacter)) {
-        return { match: false };
-      }
+    const result = tryParser(parser, getCharacter, characterIndex, matchCounts);
 
-      return parseWithParser(parser, getCharacter, matchCounts);
-    } catch (error) {
-      if (shouldResetParser(error)) {
-        getCharacter.setIndex(characterIndex);
-      } else if (!shouldSkipParser(error)) {
-        throw error;
-      }
+    if (result) {
+      return result;
     }
+  }
+}
+
+function tryParser<ExpressionReturnType>(
+  parser: Parser<ExpressionReturnType>,
+  getCharacter: CharacterGenerator,
+  characterIndex: number,
+  matchCounts?: MatchCounts,
+) {
+  try {
+    if (shouldSkipCurrentCharacter(getCharacter)) {
+      return { match: false };
+    }
+
+    return parseWithParser(parser, getCharacter, matchCounts);
+  } catch (error) {
+    handleParserError(error, getCharacter, characterIndex);
+  }
+}
+
+function handleParserError(
+  error: unknown,
+  getCharacter: CharacterGenerator,
+  characterIndex: number,
+) {
+  if (shouldResetParser(error)) {
+    getCharacter.setIndex(characterIndex);
+
+    return;
+  }
+
+  if (!shouldSkipParser(error)) {
+    throw error;
   }
 }
 
@@ -62,8 +87,10 @@ function parseWithParser<ExpressionReturnType>(
 }
 
 function shouldResetParser(error: unknown) {
-  return error instanceof Error &&
-    error.message === "No matching expression was found";
+  return (
+    error instanceof Error &&
+    error.message === "No matching expression was found"
+  );
 }
 
 function shouldSkipParser(error: unknown) {

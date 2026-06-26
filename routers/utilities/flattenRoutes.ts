@@ -14,22 +14,21 @@ function flattenRoutes(
       const flattenedRoute = routeScripts
         ? { ...route, scripts: routeScripts }
         : route;
+      const routeUrl = joinRoutePath(prefix, url);
 
       if (route.routes) {
-        return [[prefix ? prefix + "/" + url : url, flattenedRoute]].concat(
-          Object.entries(
-            flattenRoutes(
-              route.routes,
-              prefix ? `${prefix}/${url}` : url,
-              routeScripts,
-            ),
-          ),
+        return [[routeUrl, flattenedRoute]].concat(
+          Object.entries(flattenRoutes(route.routes, routeUrl, routeScripts)),
         );
       }
 
-      return [[prefix ? prefix + "/" + url : url, flattenedRoute]];
+      return [[routeUrl, flattenedRoute]];
     }),
   );
+}
+
+function joinRoutePath(prefix: string | undefined, url: string) {
+  return prefix ? `${prefix}/${url}` : url;
 }
 
 export { flattenRoutes };
