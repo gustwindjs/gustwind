@@ -18,14 +18,10 @@ import { createBuildBenchmark } from "../utilities/buildBenchmark.ts";
 import { validateHtmlDirectory } from "../utilities/htmlValidation.ts";
 import {
   CACHE_MANIFEST_PATH,
-  clearCachedOutputs,
   hashDependencyTasks,
-  hashRouteFingerprint,
   normalizeDependencyTasks,
-  outputsExist,
   readIncrementalBuildCache,
   removeDeletedRouteOutputs,
-  restoreCachedOutputs,
   writeIncrementalBuildCache,
 } from "../utilities/incrementalBuildCache.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
@@ -45,6 +41,10 @@ import {
   removeOutputDirectoryContents,
 } from "./buildOutput.ts";
 import { runTaskQueue, writeRenderedPage } from "./buildRenderOutput.ts";
+import {
+  restoreRouteBuildFromCache,
+  updateRouteBuildCache,
+} from "./buildRouteCache.ts";
 
 const DEBUG = isDebugEnabled();
 type BuildNodeResult = {
@@ -89,19 +89,6 @@ type BuildNodeRunConfig = NormalizedBuildNodeOptions & {
   previousCache?: Awaited<ReturnType<typeof readIncrementalBuildCache>>;
 };
 type BuildInputs = Awaited<ReturnType<typeof loadBuildInputs>>;
-type RestoreRouteBuildFromCacheOptions = {
-  cwd: string;
-  globalFingerprint: string | null;
-  incrementalCache?: IncrementalBuildCache;
-  incrementalCacheEnabled: boolean;
-  incrementalCacheSource?: NonNullable<
-    Awaited<ReturnType<typeof readIncrementalBuildCache>>
-  >["source"];
-  matchedRoute: Route;
-  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  outputDirectory: string;
-  url: string;
-};
 type RunBuildTasksOptions = {
   benchmark?: ReturnType<typeof createBuildBenchmark>;
   cwd: string;
@@ -626,77 +613,6 @@ async function prepareRouteBuildInput(
   return { matchedRoute, matchDependencyTasks };
 }
 
-async function restoreRouteBuildFromCache({
-  cwd,
-  globalFingerprint,
-  incrementalCache,
-  incrementalCacheEnabled,
-  incrementalCacheSource,
-  matchedRoute,
-  nextIncrementalCacheRoutes,
-  outputDirectory,
-  url,
-}: RestoreRouteBuildFromCacheOptions) {
-  const previousRouteCache = incrementalCache?.routes[url];
-
-  if (!previousRouteCache) {
-    return false;
-  }
-
-  const previousRouteFingerprint = await hashRouteFingerprint(
-    cwd,
-    globalFingerprint,
-    matchedRoute,
-    previousRouteCache.dependencyTasks,
-  );
-
-  if (
-    incrementalCacheSource &&
-    (await canRestoreCachedRoute({
-      incrementalCacheEnabled,
-      incrementalCacheSource,
-      previousRouteCache,
-      previousRouteFingerprint,
-    }))
-  ) {
-    await restoreCachedOutputs(
-      incrementalCacheSource,
-      outputDirectory,
-      previousRouteCache.outputPaths,
-    );
-    nextIncrementalCacheRoutes[url] = previousRouteCache;
-    return true;
-  }
-
-  await clearCachedOutputs(outputDirectory, previousRouteCache.outputPaths);
-
-  return false;
-}
-
-async function canRestoreCachedRoute({
-  incrementalCacheEnabled,
-  incrementalCacheSource,
-  previousRouteCache,
-  previousRouteFingerprint,
-}: {
-  incrementalCacheEnabled: boolean;
-  incrementalCacheSource: NonNullable<
-    RestoreRouteBuildFromCacheOptions["incrementalCacheSource"]
-  >;
-  previousRouteCache: IncrementalBuildRouteCacheEntry;
-  previousRouteFingerprint: string | null;
-}) {
-  if (!incrementalCacheEnabled || !incrementalCacheSource) {
-    return false;
-  }
-
-  if (previousRouteFingerprint !== previousRouteCache.fingerprint) {
-    return false;
-  }
-
-  return outputsExist(incrementalCacheSource, previousRouteCache.outputPaths);
-}
-
 async function buildRouteOutput({
   benchmark,
   cwd,
@@ -804,45 +720,6 @@ function recordRouteBenchmark({
     outputPath: writeResult.outputPath,
     url,
   });
-}
-
-async function updateRouteBuildCache({
-  cwd,
-  dependencyTasks,
-  globalFingerprint,
-  incrementalCacheEnabled,
-  matchedRoute,
-  nextIncrementalCacheRoutes,
-  outputPaths,
-  url,
-}: {
-  cwd: string;
-  dependencyTasks: DependencyTask[];
-  globalFingerprint: string | null;
-  incrementalCacheEnabled: boolean;
-  matchedRoute: Route;
-  nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
-  outputPaths: string[];
-  url: string;
-}) {
-  if (!incrementalCacheEnabled) {
-    return;
-  }
-
-  const fingerprint = await hashRouteFingerprint(
-    cwd,
-    globalFingerprint,
-    matchedRoute,
-    dependencyTasks,
-  );
-
-  if (fingerprint) {
-    nextIncrementalCacheRoutes[url] = {
-      dependencyTasks,
-      fingerprint,
-      outputPaths,
-    };
-  }
 }
 
 export { buildNode };
