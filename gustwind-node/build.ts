@@ -614,18 +614,11 @@ async function buildRouteOutput(
   },
 ) {
   const routeStartTime = performance.now();
-  const { result: renderResult, tasks: renderDependencyTasks } =
-    await runWithTaskLog(() =>
-      applyPlugins({
-        plugins,
-        url,
-        route: matchedRoute,
-        matchRoute(routeUrl: string) {
-          return applyMatchRoutes({ plugins, url: routeUrl });
-        },
-      })
-    );
-
+  const { renderResult, renderDependencyTasks } = await renderRoute({
+    matchedRoute,
+    plugins,
+    url,
+  });
   const dependencyTasks = normalizeDependencyTasks(
     matchDependencyTasks.concat(
       getComponentDependencyTasks(rendererDependencyInfo, matchedRoute.layout),
@@ -646,9 +639,10 @@ async function buildRouteOutput(
     outputDirectory,
     url,
   });
-  const outputPaths = [writeResult.outputPath].concat(
-    getTaskOutputPaths(renderResult.tasks),
-  ).filter((outputPath) => outputPath !== CACHE_MANIFEST_PATH);
+  const outputPaths = getRouteOutputPaths(
+    writeResult.outputPath,
+    renderResult.tasks,
+  );
 
   await updateRouteBuildCache({
     cwd,
@@ -661,6 +655,54 @@ async function buildRouteOutput(
     url,
   });
 
+  recordRouteBenchmark({ benchmark, routeStartTime, url, writeResult });
+}
+
+async function renderRoute(
+  {
+    matchedRoute,
+    plugins,
+    url,
+  }: {
+    matchedRoute: Route;
+    plugins: BuildPlugins;
+    url: string;
+  },
+) {
+  const { result: renderResult, tasks: renderDependencyTasks } =
+    await runWithTaskLog(() =>
+      applyPlugins({
+        plugins,
+        url,
+        route: matchedRoute,
+        matchRoute(routeUrl: string) {
+          return applyMatchRoutes({ plugins, url: routeUrl });
+        },
+      })
+    );
+
+  return { renderDependencyTasks, renderResult };
+}
+
+function getRouteOutputPaths(outputPath: string, tasks: Tasks) {
+  return [outputPath].concat(
+    getTaskOutputPaths(tasks),
+  ).filter((outputPath) => outputPath !== CACHE_MANIFEST_PATH);
+}
+
+function recordRouteBenchmark(
+  {
+    benchmark,
+    routeStartTime,
+    url,
+    writeResult,
+  }: {
+    benchmark?: ReturnType<typeof createBuildBenchmark>;
+    routeStartTime: number;
+    url: string;
+    writeResult: Awaited<ReturnType<typeof writeRenderedPage>>;
+  },
+) {
   benchmark?.recordRoute({
     bytesWritten: writeResult.bytesWritten,
     durationMs: performance.now() - routeStartTime,
@@ -725,50 +767,69 @@ async function executeTask(
   DEBUG && console.log("node build - running task", task.type);
   benchmark?.markTaskProcessed();
 
-  switch (task.type) {
-    case "writeFile": {
-      if (!task.payload.outputDirectory.endsWith(".html")) {
-        const filePath = path.join(
-          task.payload.outputDirectory,
-          task.payload.file,
-        );
-
-        await mkdir(path.dirname(filePath), { recursive: true });
-        await writeFile(filePath, task.payload.data);
-      }
-      break;
-    }
-    case "writeTextFile": {
-      if (!task.payload.outputDirectory.endsWith(".html")) {
-        const filePath = path.join(
-          task.payload.outputDirectory,
-          task.payload.file,
-        );
-
-        await mkdir(path.dirname(filePath), { recursive: true });
-        await writeFile(filePath, task.payload.data);
-      }
-      break;
-    }
-    case "copyFiles": {
-      await cp(
-        task.payload.inputDirectory,
-        path.join(task.payload.outputDirectory, task.payload.outputPath),
-        { force: true, recursive: true },
-      );
-      break;
-    }
-    case "loadJSON":
-    case "loadModule":
-    case "listDirectory":
-    case "readTextFile":
-    case "init":
-      break;
-    default: {
-      const _exhaustive: never = task;
-      throw new Error(`Unsupported build task ${_exhaustive}`);
-    }
+  if (isWriteTask(task)) {
+    await executeWriteTask(task.payload);
+    return;
   }
+
+  if (task.type === "copyFiles") {
+    await executeCopyTask(task.payload);
+    return;
+  }
+
+  if (isReadOnlyTask(task)) {
+    return;
+  }
+
+  const _exhaustive: never = task;
+  throw new Error(`Unsupported build task ${_exhaustive}`);
+}
+
+function isWriteTask(
+  task: Exclude<Tasks[number], { type: "build" }>,
+): task is Extract<Tasks[number], { type: "writeFile" | "writeTextFile" }> {
+  return task.type === "writeFile" || task.type === "writeTextFile";
+}
+
+function isReadOnlyTask(
+  task: Exclude<Tasks[number], { type: "build" }>,
+): task is Extract<
+  Tasks[number],
+  {
+    type: "loadJSON" | "loadModule" | "listDirectory" | "readTextFile" | "init";
+  }
+> {
+  return task.type === "loadJSON" ||
+    task.type === "loadModule" ||
+    task.type === "listDirectory" ||
+    task.type === "readTextFile" ||
+    task.type === "init";
+}
+
+async function executeWriteTask(
+  payload: Extract<
+    Tasks[number],
+    { type: "writeFile" | "writeTextFile" }
+  >["payload"],
+) {
+  if (payload.outputDirectory.endsWith(".html")) {
+    return;
+  }
+
+  const filePath = path.join(payload.outputDirectory, payload.file);
+
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, payload.data);
+}
+
+async function executeCopyTask(
+  payload: Extract<Tasks[number], { type: "copyFiles" }>["payload"],
+) {
+  await cp(
+    payload.inputDirectory,
+    path.join(payload.outputDirectory, payload.outputPath),
+    { force: true, recursive: true },
+  );
 }
 
 function getDefaultRouteConcurrency() {
