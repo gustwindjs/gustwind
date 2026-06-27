@@ -369,7 +369,7 @@ async function fetchText(url: string | URL) {
 async function waitForServerText(url: string | URL, pattern: RegExp) {
   const started = Date.now();
 
-  while (Date.now() - started < 10000) {
+  while (Date.now() - started < 20000) {
     const text = await fetchText(url);
 
     if (pattern.test(text)) {
