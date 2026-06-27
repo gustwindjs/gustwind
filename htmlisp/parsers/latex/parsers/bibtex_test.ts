@@ -22,6 +22,13 @@ test(`entry with an id`, () => {
   );
 });
 
+test(`trims entry type and id`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@BOOK  {  foobar  }`)),
+    { type: "BOOK", id: "foobar", fields: {} },
+  );
+});
+
 test(`entry with a field in a single line`, () => {
   const type = "BOOK";
   const id = "foobar";
@@ -33,6 +40,27 @@ test(`entry with a field in a single line`, () => {
       characterGenerator(`@${type}{${id}, ${fieldName} = {${value}}`),
     ),
     { type, id, fields: { [fieldName]: value } },
+  );
+});
+
+test(`trims field keys and bare values`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@BOOK{foobar,  year   =   1992   }`)),
+    { type: "BOOK", id: "foobar", fields: { year: "1992" } },
+  );
+});
+
+test(`trims quoted field values`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@BOOK{foobar, title = " Testing book "}`)),
+    { type: "BOOK", id: "foobar", fields: { title: "Testing book" } },
+  );
+});
+
+test(`trims balanced field values`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@BOOK{foobar, title = { Testing book }}`)),
+    { type: "BOOK", id: "foobar", fields: { title: "Testing book" } },
   );
 });
 
@@ -121,6 +149,21 @@ test(`preserves nested braces in field values`, () => {
   );
 });
 
+test(`preserves a single balanced brace in field values`, () => {
+  assert.deepEqual(
+    parseBibtex(characterGenerator(`@article{Knuth92,
+  title = {{T}}
+}`)),
+    {
+      type: "article",
+      id: "Knuth92",
+      fields: {
+        title: "{T}",
+      },
+    },
+  );
+});
+
 test(`entry with a field in multiple lines`, () => {
   const type = "BOOK";
   const id = "foobar";
@@ -173,15 +216,34 @@ test(`parses only the first entry`, () => {
 test(`throws if argument is missing`, () => {
   assert.throws(
     () => parseBibtex(characterGenerator("foo")),
-    Error,
-    `No matching expression was found`,
+    { message: "No matching expression was found" },
   );
 });
 
 test(`throws if argument is missing 2`, () => {
   assert.throws(
     () => parseBibtex(characterGenerator("")),
-    Error,
-    `No matching expression was found`,
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`throws if entry type is missing`, () => {
+  assert.throws(
+    () => parseBibtex(characterGenerator("@{id}")),
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`throws if a field key is missing`, () => {
+  assert.throws(
+    () => parseBibtex(characterGenerator("@BOOK{id, = value}")),
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`throws if a field assignment is missing`, () => {
+  assert.throws(
+    () => parseBibtex(characterGenerator("@BOOK{id, year}")),
+    { message: "No matching expression was found" },
   );
 });
