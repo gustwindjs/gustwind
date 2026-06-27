@@ -128,6 +128,114 @@ test(`simple definition list`, () => {
   );
 });
 
-// TODO: Assert that begin/end block names are the same - if not, throw
-// TODO: Test that the logic throws in case a matching expression was not found
-// TODO: Test that the logic throws in case an expression is incomplete
+test(`throws if block name is not configured`, () => {
+  const parseBlock = getParseBlock<Element, string>({
+    known: {
+      container: (children) => ({
+        type: "div",
+        attributes: {},
+        children,
+      }),
+      item: getParseContent<string>((s) => s.join("")),
+    },
+  });
+
+  assert.throws(
+    () => parseBlock(characterGenerator(String.raw`\begin{unknown}\end{unknown}`)),
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`throws if begin and end block names differ`, () => {
+  const parseBlock = getParseBlock<Element, string>({
+    begin: {
+      container: (children) => ({
+        type: "div",
+        attributes: {},
+        children,
+      }),
+      item: getParseContent<string>((s) => s.join("")),
+    },
+  });
+
+  assert.throws(
+    () => parseBlock(characterGenerator(String.raw`\begin{begin}\end{end}`)),
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`throws if a block expression is incomplete`, () => {
+  const parseBlock = getParseBlock<Element, string>({
+    verbatim: {
+      container: (children) => ({
+        type: "div",
+        attributes: {},
+        children,
+      }),
+      item: getParseContent<string>((s) => s.join("")),
+    },
+  });
+
+  assert.throws(
+    () => parseBlock(characterGenerator(String.raw`\begin{verbatim}`)),
+    { message: "No matching expression was found" },
+  );
+});
+
+test(`stops collecting items after the item parser stops matching`, () => {
+  let callCount = 0;
+  const parseBlock = getParseBlock<Element, string>({
+    demo: {
+      container: (children) => ({
+        type: "div",
+        attributes: {},
+        children,
+      }),
+      item(getCharacter) {
+        callCount++;
+
+        if (getCharacter.get() === "\\") {
+          throw new Error("No matching expression was found");
+        }
+
+        return getCharacter.next() as string;
+      },
+    },
+  });
+
+  assert.deepEqual(
+    parseBlock(characterGenerator(String.raw`\begin{demo}x\end{demo}`)),
+    { type: "div", attributes: {}, children: ["x"] },
+  );
+  assert.equal(callCount, 2);
+});
+
+test(`keeps non-empty array items as block children`, () => {
+  let callCount = 0;
+  const parseBlock = getParseBlock<{ children: string[][] }, string[]>({
+    demo: {
+      container: (children) => ({ children }),
+      item(getCharacter) {
+        callCount++;
+
+        if (callCount === 1) {
+          getCharacter.next();
+
+          return ["x"];
+        }
+
+        if (callCount === 2) {
+          return [];
+        }
+
+        throw new Error("No matching expression was found");
+      },
+    },
+  });
+
+  assert.deepEqual(
+    parseBlock(characterGenerator(String.raw`\begin{demo}x\end{demo}`)),
+    { children: [["x"]] },
+  );
+  assert.equal(callCount, 3);
+});
