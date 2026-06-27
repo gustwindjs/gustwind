@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import test from "node:test";
+import { setTimeout as delay } from "node:timers/promises";
 import { startDevServer } from "./dev.ts";
 
 test(
@@ -133,16 +134,126 @@ export const plugin = {
         const copiedAsset = await fetch(
           new URL("/copied/copied.txt", server.url),
         );
+        const missingResponse = await fetch(
+          new URL("/missing", server.url),
+        );
 
         assert.equal(routeResponse.status, 200);
         assert.equal(xmlResponse.status, 200);
         assert.equal(generatedAsset.status, 200);
         assert.equal(copiedAsset.status, 200);
+        assert.equal(missingResponse.status, 404);
+        assert.equal(
+          routeResponse.headers.get("content-type"),
+          "text/html; charset=utf-8",
+        );
+        assert.equal(
+          xmlResponse.headers.get("content-type"),
+          "text/xml; charset=utf-8",
+        );
+        assert.equal(
+          generatedAsset.headers.get("content-type"),
+          "text/plain; charset=utf-8",
+        );
+        assert.equal(
+          missingResponse.headers.get("content-type"),
+          "text/plain; charset=utf-8",
+        );
         assert.match(routeHtml, /\/@vite\/client/);
         assert.match(routeHtml, /<h1>Page<\/h1>/);
         assert.equal(await xmlResponse.text(), "<feed>feed</feed>");
         assert.equal(await generatedAsset.text(), "hello\n");
         assert.equal(await copiedAsset.text(), "copied\n");
+        assert.equal(
+          await missingResponse.text(),
+          "No matching route in /, /feed.xml.",
+        );
+      } finally {
+        await server.close();
+      }
+    } finally {
+      await rm(cwd, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  "gustwind-node reloads the runtime when loaded plugin modules change",
+  async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-dev-reload-"));
+    const routerPluginPath = path.join(cwd, "router-plugin.ts");
+
+    async function writeRouterPlugin(message: string) {
+      await writeFile(
+        routerPluginPath,
+        `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies reloadable routes for the Node dev-server test.",
+  },
+  init() {
+    const routes = {
+      "/": {
+        layout: "Page",
+        context: { message: ${JSON.stringify(message)} },
+      },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        return routes[url];
+      },
+    };
+  },
+};
+`.trimStart(),
+      );
+    }
+
+    try {
+      await writeRouterPlugin("before reload");
+      await writeFile(
+        path.join(cwd, "renderer-plugin.ts"),
+        `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders reloadable output for the Node dev-server test.",
+  },
+  init() {
+    return {
+      prepareContext({ route }) {
+        return {
+          context: route.context,
+        };
+      },
+      renderLayout({ context }) {
+        return \`<html><body><p>\${context.message}</p></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+      );
+
+      const server = await startDevServer({
+        cwd,
+        pluginDefinitions: [
+          { path: "./router-plugin.ts", options: {}, module: undefined as never },
+          { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+        ],
+        port: 0,
+      });
+
+      try {
+        assert.match(await fetchText(server.url), /before reload/);
+
+        await writeRouterPlugin("after reload");
+        await waitForServerText(server.url, /after reload/);
       } finally {
         await server.close();
       }
@@ -247,3 +358,25 @@ export const plugin = {
     }
   },
 );
+
+async function fetchText(url: string | URL) {
+  const response = await fetch(url);
+
+  return await response.text();
+}
+
+async function waitForServerText(url: string | URL, pattern: RegExp) {
+  const started = Date.now();
+
+  while (Date.now() - started < 3000) {
+    const text = await fetchText(url);
+
+    if (pattern.test(text)) {
+      return;
+    }
+
+    await delay(50);
+  }
+
+  assert.fail(`Timed out waiting for ${pattern}`);
+}
