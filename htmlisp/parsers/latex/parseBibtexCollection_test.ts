@@ -163,6 +163,77 @@ test(`latex accents in all fields`, () => {
   );
 });
 
+test(`latex accent variants`, () => {
+  const input = `@article{accents,
+  author={{\\"A} {\\"E} {\\"I} {\\"O} {\\"U} {\\"Y} {\\"a} {\\"e} {\\"i} {\\"o} {\\"u} {\\"y} {\\'A} {\\'E} {\\'I} {\\'O} {\\'U} {\\'Y} {\\'a} {\\'e} {\\'i} {\\'o} {\\'u} {\\'y} {\\\`A} {\\\`E} {\\\`I} {\\\`O} {\\\`U} {\\\`a} {\\\`e} {\\\`i} {\\\`o} {\\\`u} {\\^A} {\\^E} {\\^I} {\\^O} {\\^U} {\\^a} {\\^e} {\\^i} {\\^o} {\\^u} {\\~A} {\\~N} {\\~O} {\\~a} {\\~n} {\\~o} {\\c{C}} {\\c{c}}},
+  note={\\"A \\'a \\\`i \\^o \\~n \\c{c}}
+}`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {
+      accents: {
+        type: "ARTICLE",
+        id: "accents",
+        fields: {
+          author:
+            "Ä Ë Ï Ö Ü Ÿ ä ë ï ö ü ÿ Á É Í Ó Ú Ý á é í ó ú ý À È Ì Ò Ù à è ì ò ù Â Ê Î Ô Û â ê î ô û Ã Ñ Õ ã ñ õ Ç ç",
+          note: "Ä á ì ô ñ ç",
+        },
+      },
+    },
+  );
+});
+
+test(`braced latex accents can omit the backslash`, () => {
+  const input = `@article{accents,
+  author={{"A} {'a} {\`i} {^o} {~n}},
+  note={"A}
+}`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {
+      accents: {
+        type: "ARTICLE",
+        id: "accents",
+        fields: {
+          author: "Ä á ì ô ñ",
+          note: "Ä",
+        },
+      },
+    },
+  );
+});
+
+test(`ignores non-bibtex content`, () => {
+  const input = `not bibtex`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {},
+  );
+});
+
+test(`entry without title`, () => {
+  const input = `@article{zhou2012,
+  author={Vepsalainen, Juho}
+}`;
+
+  assert.deepEqual(
+    parseBibtexCollection(input),
+    {
+      zhou2012: {
+        type: "ARTICLE",
+        id: "zhou2012",
+        fields: {
+          author: "Vepsalainen, Juho",
+        },
+      },
+    },
+  );
+});
+
 test(`author ö umlaut`, () => {
   const input = `@article{zhou2012,
   title={Quantifying},
