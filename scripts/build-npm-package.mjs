@@ -371,7 +371,8 @@ function createScriptPluginDeclaration() {
   ].join("\n");
 }
 
-const cloudflareWorkerDeclarationLines = [
+function createCloudflareWorkerDeclaration() {
+  return [
     'import type { Plugin, Tasks } from "../../types.js";',
     "",
     "type PluginDefinition = [Plugin, Record<string, unknown>];",
@@ -433,30 +434,27 @@ const cloudflareWorkerDeclarationLines = [
     "  CloudflareWorkerOptions,",
     "};",
     "",
-  ];
-
-function createCloudflareWorkerDeclaration() {
-  return cloudflareWorkerDeclarationLines.join("\n");
+  ].join("\n");
 }
 
 function createHtmlispEntryDeclaration(declaration) {
-  const createDeclaration = htmlispEntryDeclarations[declaration];
-
-  if (!createDeclaration) {
-    throw new Error(`Unknown htmlisp declaration "${declaration}"`);
+  switch (declaration) {
+    case "astToHTMLSync":
+      return createAstToHTMLSyncDeclaration();
+    case "defaultExpressions":
+      return createDefaultExpressionsDeclaration();
+    case "htmlisp":
+      return createHtmlispDeclaration();
+    case "htmlispToHTMLSync":
+      return createHtmlispToHTMLSyncDeclaration();
+    case "parseBibtexCollection":
+      return createParseBibtexCollectionDeclaration();
+    case "parseLatex":
+      return createParseLatexDeclaration();
+    default:
+      throw new Error(`Unknown htmlisp declaration "${declaration}"`);
   }
-
-  return createDeclaration();
 }
-
-const htmlispEntryDeclarations = {
-  astToHTMLSync: createAstToHTMLSyncDeclaration,
-  defaultExpressions: createDefaultExpressionsDeclaration,
-  htmlisp: createHtmlispDeclaration,
-  htmlispToHTMLSync: createHtmlispToHTMLSyncDeclaration,
-  parseBibtexCollection: createParseBibtexCollectionDeclaration,
-  parseLatex: createParseLatexDeclaration,
-};
 
 function createHtmlispDeclaration() {
   return [
@@ -574,7 +572,8 @@ function createDefaultExpressionsDeclaration() {
   ].join("\n");
 }
 
-const gustwindDeclarationLines = [
+function createGustwindDeclaration() {
+  return [
     'import type { InitLoadApi, Plugin, PluginOptions, Tasks } from "./types.js";',
     "",
     "type PluginDefinition = [Plugin, Record<string, unknown>];",
@@ -656,8 +655,5 @@ const gustwindDeclarationLines = [
     "",
     "export type { BuildBenchmark, BuildNodeResult, BuildRouteBenchmark, RenderFn };",
     "",
-  ];
-
-function createGustwindDeclaration() {
-  return gustwindDeclarationLines.join("\n");
+  ].join("\n");
 }

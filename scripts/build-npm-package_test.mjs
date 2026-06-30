@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+
+const execFileAsync = promisify(execFile);
 
 const rootDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -42,4 +46,12 @@ test("all local plugins are exposed as package subpath exports", async () => {
   );
 
   assert.deepEqual(missingPluginNames, []);
+});
+
+test("gustwind package build completes", async () => {
+  await execFileAsync(
+    process.execPath,
+    ["./scripts/build-npm-package.mjs", "gustwind", "0.0.0-test"],
+    { cwd: rootDirectory },
+  );
 });
