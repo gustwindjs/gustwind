@@ -77,6 +77,31 @@ test(`begin and end next to each other`, () => {
   );
 });
 
+test(`block begin supports a discarded second argument`, () => {
+  const name = "verbatim";
+  const input = "foobar";
+
+  assert.deepEqual(
+    getParseBlock<Element, string>(
+      {
+        [name]: {
+          container: (children) => ({
+            type: "div",
+            attributes: {},
+            children,
+          }),
+          item: getParseContent<string>((s) => s.join("")),
+        },
+      },
+    )(
+      characterGenerator(
+        String.raw`\begin{${name}}{ignored}${input}\end{${name}}`,
+      ),
+    ),
+    { type: "div", attributes: {}, children: [input] },
+  );
+});
+
 test(`simple list`, () => {
   const name = "itemize";
 
@@ -141,7 +166,8 @@ test(`throws if block name is not configured`, () => {
   });
 
   assert.throws(
-    () => parseBlock(characterGenerator(String.raw`\begin{unknown}\end{unknown}`)),
+    () =>
+      parseBlock(characterGenerator(String.raw`\begin{unknown}\end{unknown}`)),
     { message: "No matching expression was found" },
   );
 });
@@ -182,8 +208,35 @@ test(`throws if a block expression is incomplete`, () => {
   );
 });
 
+test(`does not ask for another item after input ends`, () => {
+  let callCount = 0;
+  const parseBlock = getParseBlock<Element, string>({
+    verbatim: {
+      container: (children) => ({
+        type: "div",
+        attributes: {},
+        children,
+      }),
+      item() {
+        callCount++;
+
+        return "unexpected";
+      },
+    },
+  });
+
+  assert.throws(
+    () => parseBlock(characterGenerator(String.raw`\begin{verbatim}`)),
+    { message: "No matching expression was found" },
+  );
+  assert.equal(callCount, 0);
+});
+
 test(`stops collecting items after the item parser stops matching`, () => {
   let callCount = 0;
+  const getCharacter = characterGenerator(
+    String.raw`\begin{demo}x\end{demo}tail`,
+  );
   const parseBlock = getParseBlock<Element, string>({
     demo: {
       container: (children) => ({
@@ -195,6 +248,8 @@ test(`stops collecting items after the item parser stops matching`, () => {
         callCount++;
 
         if (getCharacter.get() === "\\") {
+          getCharacter.next();
+
           throw new Error("No matching expression was found");
         }
 
@@ -204,10 +259,11 @@ test(`stops collecting items after the item parser stops matching`, () => {
   });
 
   assert.deepEqual(
-    parseBlock(characterGenerator(String.raw`\begin{demo}x\end{demo}`)),
+    parseBlock(getCharacter),
     { type: "div", attributes: {}, children: ["x"] },
   );
   assert.equal(callCount, 2);
+  assert.equal(getCharacter.rest(), "tail");
 });
 
 test(`keeps non-empty array items as block children`, () => {
@@ -238,4 +294,45 @@ test(`keeps non-empty array items as block children`, () => {
     { children: [["x"]] },
   );
   assert.equal(callCount, 3);
+});
+
+test(`ignores falsy block items`, () => {
+  let callCount = 0;
+  const parseBlock = getParseBlock<
+    { children: Array<string | 0 | false> },
+    string | 0 | false
+  >({
+    demo: {
+      container: (children) => ({ children }),
+      item(getCharacter) {
+        callCount++;
+
+        if (callCount === 1) {
+          getCharacter.next();
+
+          return 0;
+        }
+
+        if (callCount === 2) {
+          getCharacter.next();
+
+          return false;
+        }
+
+        if (callCount === 3) {
+          getCharacter.next();
+
+          return "x";
+        }
+
+        throw new Error("No matching expression was found");
+      },
+    },
+  });
+
+  assert.deepEqual(
+    parseBlock(characterGenerator(String.raw`\begin{demo}01x\end{demo}`)),
+    { children: ["x"] },
+  );
+  assert.equal(callCount, 4);
 });

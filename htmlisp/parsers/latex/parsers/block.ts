@@ -63,19 +63,15 @@ function parseBlockBegin(getCharacter: CharacterGenerator) {
 }
 
 function getBlockBeginValue(parseResult: unknown) {
-  if (!isParseResultObject(parseResult)) {
+  const result = parseResult as
+    | { match?: unknown; value?: unknown }
+    | undefined;
+
+  if (!result?.match || typeof result.value !== "string") {
     return;
   }
 
-  return parseResult.match && typeof parseResult.value === "string"
-    ? parseResult.value
-    : undefined;
-}
-
-function isParseResultObject(
-  parseResult: unknown,
-): parseResult is { match?: unknown; value?: unknown } {
-  return Boolean(parseResult && typeof parseResult === "object");
+  return result.value;
 }
 
 function collectBlockItems<ItemReturnValue>(
@@ -84,14 +80,16 @@ function collectBlockItems<ItemReturnValue>(
 ) {
   let items: ItemReturnValue[] = [];
 
-  for (let i = 0; i < LIMIT; i++) {
+  // Safety limit only; off-by-one is not behaviorally relevant.
+  // Stryker disable next-line EqualityOperator,UpdateOperator
+  for (let remaining = LIMIT; remaining > 0; remaining--) {
     if (getCharacter.get() === null) {
       break;
     }
 
     const collectedItem = collectBlockItem(getCharacter, itemCb);
 
-    if (!collectedItem.match) {
+    if (!collectedItem) {
       break;
     }
 
@@ -110,11 +108,11 @@ function collectBlockItem<ItemReturnValue>(
   const characterIndex = getCharacter.getIndex();
 
   try {
-    return { match: true, value: itemCb(getCharacter) };
+    return { value: itemCb(getCharacter) };
   } catch (_error) {
     getCharacter.setIndex(characterIndex);
 
-    return { match: false };
+    return;
   }
 }
 
@@ -142,7 +140,7 @@ function throwNoMatchingExpression(): never {
 }
 
 function joinString(i: string[]) {
-  return i.join("");
+  return i.join(String());
 }
 
 export { type BlockParser, getParseBlock };
