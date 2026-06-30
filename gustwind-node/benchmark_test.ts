@@ -94,6 +94,8 @@ export const plugin = {
 test("gustwind-node CLI writes benchmark JSON output", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-benchmark-"));
   const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
 
   try {
     await writeFile(
@@ -159,6 +161,9 @@ export const plugin = {
     );
 
     process.chdir(cwd);
+    console.log = (...args) => {
+      logs.push(args.join(" "));
+    };
 
     const exitCode = await main([
       "--benchmark",
@@ -175,7 +180,10 @@ export const plugin = {
     assert.equal(benchmark.schemaVersion, 1);
     assert.equal(benchmark.routesBuilt, 1);
     assert.equal(benchmark.routeResults[0].url, "/");
+    assert.match(logs.join("\n"), /Benchmarked 1 routes/);
+    assert.match(logs.join("\n"), /Results written to/);
   } finally {
+    console.log = previousLog;
     process.chdir(previousCwd);
     await rm(cwd, { recursive: true, force: true });
   }
@@ -274,6 +282,59 @@ export const plugin = {
       ["/", "/docs/"],
     );
   } finally {
+    process.chdir(previousCwd);
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("gustwind-node CLI reports incremental build summary", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-build-summary-"));
+  const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
+
+  try {
+    await writeSingleRouteProject(cwd);
+    process.chdir(cwd);
+    console.log = (...args) => {
+      logs.push(args.join(" "));
+    };
+
+    const exitCode = await main(["--build", "--output", "./dist"]);
+
+    assert.equal(exitCode, 0);
+    assert.match(logs.join("\n"), /Incremental build reused 0 routes and rebuilt 1\./);
+  } finally {
+    console.log = previousLog;
+    process.chdir(previousCwd);
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
+test("gustwind-node CLI reports full build summary", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-full-build-summary-"));
+  const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
+
+  try {
+    await writeSingleRouteProject(cwd);
+    process.chdir(cwd);
+    console.log = (...args) => {
+      logs.push(args.join(" "));
+    };
+
+    const exitCode = await main([
+      "--build",
+      "--output",
+      "./dist",
+      "--no-incremental",
+    ]);
+
+    assert.equal(exitCode, 0);
+    assert.match(logs.join("\n"), /Full build rebuilt 1 routes\./);
+  } finally {
+    console.log = previousLog;
     process.chdir(previousCwd);
     await rm(cwd, { recursive: true, force: true });
   }
@@ -379,6 +440,70 @@ export const plugin = {
     await rm(cwd, { recursive: true, force: true });
   }
 });
+
+async function writeSingleRouteProject(cwd: string) {
+  await writeFile(
+    path.join(cwd, "plugins.json"),
+    JSON.stringify({
+      env: {},
+      plugins: [
+        {
+          path: "./router-plugin.ts",
+          options: {},
+        },
+        {
+          path: "./renderer-plugin.ts",
+          options: {},
+        },
+      ],
+    }, null, 2),
+  );
+  await writeFile(
+    path.join(cwd, "router-plugin.ts"),
+    `
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies one route for CLI build summary testing.",
+  },
+  init() {
+    const routes = {
+      "/": { layout: "Page" },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      matchRoute(url) {
+        if (url === "/") {
+          return routes["/"];
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+  );
+  await writeFile(
+    path.join(cwd, "renderer-plugin.ts"),
+    `
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Renders HTML for CLI build summary testing.",
+  },
+  init() {
+    return {
+      renderLayout() {
+        return "<html><head><title>ok</title></head><body><h1>ok</h1></body></html>";
+      },
+    };
+  },
+};
+`.trimStart(),
+  );
+}
 
 test("gustwind-node packaged CLI does not use top-level await", async () => {
   const outDirectory = await mkdtemp(path.join(tmpdir(), "gustwind-node-packaged-cli-"));
