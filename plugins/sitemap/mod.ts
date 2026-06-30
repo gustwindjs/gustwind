@@ -49,7 +49,7 @@ const plugin: Plugin<SitemapPluginOptions> = {
 async function buildSitemapXml({
   siteUrl,
   outputDirectory,
-  exclude = [],
+  exclude,
   excludeNoindex = false,
 }: {
   siteUrl: string;
