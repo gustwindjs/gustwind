@@ -1,17 +1,22 @@
 import * as path from "node:path";
 import type { Dirent } from "node:fs";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import type { Plugin } from "../../types.ts";
 import { urlJoin } from "../../utilities/urlJoin.ts";
 
+type SitemapPluginOptions = {
+  exclude?: string[];
+  excludeNoindex?: boolean;
+};
+
 // Note that this works only in production mode for now!
-const plugin: Plugin = {
+const plugin: Plugin<SitemapPluginOptions> = {
   meta: {
     name: "gustwind-sitemap-plugin",
     description: "${name} writes a sitemap.xml file based on project output.",
     dependsOn: ["gustwind-meta-plugin"],
   },
-  init({ cwd, outputDirectory }) {
+  init({ cwd, outputDirectory, options }) {
     return {
       finishBuild: async ({ send }) => {
         const meta = await send("gustwind-meta-plugin", {
@@ -22,6 +27,8 @@ const plugin: Plugin = {
           // @ts-expect-error How to type this?
           siteUrl: meta.url,
           outputDirectory: path.join(cwd, outputDirectory),
+          exclude: options.exclude,
+          excludeNoindex: options.excludeNoindex,
         });
 
         return [
@@ -42,22 +49,40 @@ const plugin: Plugin = {
 async function buildSitemapXml({
   siteUrl,
   outputDirectory,
+  exclude = [],
+  excludeNoindex = false,
 }: {
   siteUrl: string;
   outputDirectory: string;
+  exclude?: string[];
+  excludeNoindex?: boolean;
 }) {
   const entries = await listPublicPaths(outputDirectory);
-  const urls = entries
-    .filter((entry) => entry !== "sitemap.xml")
-    .map((entry) => {
-      const pathname = toSitemapPath(entry);
+  const excludedPaths = new Set(exclude);
+  const urls: string[] = [];
 
-      return [
+  for (const entry of entries) {
+    if (entry === "sitemap.xml") {
+      continue;
+    }
+
+    const pathname = toSitemapPath(entry);
+
+    if (
+      excludedPaths.has(pathname) ||
+      (excludeNoindex && await isNoindexHtml(path.join(outputDirectory, entry)))
+    ) {
+      continue;
+    }
+
+    urls.push(
+      [
         "  <url>",
         `    <loc>${escapeXml(urlJoin(siteUrl, pathname))}</loc>`,
         "  </url>",
-      ].join("\n");
-    });
+      ].join("\n"),
+    );
+  }
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -106,6 +131,28 @@ function isSitemapFile(fileName: string) {
   return fileName.endsWith(".html") || fileName.endsWith(".xml");
 }
 
+async function isNoindexHtml(filePath: string) {
+  if (!filePath.endsWith(".html")) {
+    return false;
+  }
+
+  const html = await readFile(filePath, "utf8");
+
+  return hasNoindexRobotsMeta(html);
+}
+
+function hasNoindexRobotsMeta(html: string) {
+  return [...html.matchAll(/<meta\b[^>]*>/gi)].some(([tag]) =>
+    getHtmlAttribute(tag, "name")?.toLowerCase() === "robots" &&
+    getHtmlAttribute(tag, "content")?.toLowerCase().includes("noindex")
+  );
+}
+
+function getHtmlAttribute(tag: string, name: string) {
+  return tag.match(new RegExp(`\\b${name}\\s*=\\s*["']([^"']*)["']`, "i"))
+    ?.[1];
+}
+
 function toSitemapPath(relativePath: string) {
   if (relativePath === "index.html") {
     return "/";
@@ -129,4 +176,4 @@ function escapeXml(value: string) {
     .replaceAll("'", "&apos;");
 }
 
-export { plugin };
+export { buildSitemapXml, plugin };
