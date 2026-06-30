@@ -573,8 +573,4 @@ function runCli() {
   );
 }
 
-if (import.meta.main) {
-  runCli();
-}
-
 export { main, runCli };

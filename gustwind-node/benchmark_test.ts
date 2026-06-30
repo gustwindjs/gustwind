@@ -409,6 +409,7 @@ test("gustwind-node packaged CLI does not use top-level await", async () => {
     assert.doesNotMatch(cliSource, /await main\(/);
     assert.match(cliSource, /function runCli\(\)/);
     assert.match(cliSource, /void main\(/);
+    assert.equal(cliSource.match(/if \(import\.meta\.main\)/g)?.length, 1);
   } finally {
     await rm(outDirectory, { recursive: true, force: true });
   }
