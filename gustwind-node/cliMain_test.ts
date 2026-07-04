@@ -4,7 +4,7 @@ import * as path from "node:path";
 import process from "node:process";
 import test from "node:test";
 import { tmpdir } from "node:os";
-import { main, runCli } from "./cliMain.ts";
+import { createBuildProgressReporter, main, runCli } from "./cliMain.ts";
 
 test("main prints version and returns success", async () => {
   const logs = await captureConsoleLog(async () => {
@@ -31,6 +31,36 @@ test("main prints usage with help", async () => {
   });
 
   assert.match(logs.join("\n"), /Shows the help message/);
+});
+
+test("build progress reporter prints bounded progress checkpoints", async () => {
+  const logs = await captureConsoleLog(async () => {
+    const report = createBuildProgressReporter();
+    let routesBuilt = 0;
+
+    for (let completedRoutes = 1; completedRoutes <= 1400; completedRoutes++) {
+      routesBuilt++;
+      report({
+        cacheHits: 0,
+        completedRoutes,
+        routesBuilt,
+        status: "rebuilt",
+        totalRoutes: 1400,
+        url: `/route-${completedRoutes}/`,
+      });
+    }
+  });
+
+  assert.equal(logs.length, 20);
+  assert.equal(
+    logs[0],
+    "Build progress: [#-------------------] 5% 70/1400 routes (70 rebuilt, 0 reused).",
+  );
+  assert.equal(
+    logs.at(-1),
+    "Build progress: [####################] 100% 1400/1400 routes (1400 rebuilt, 0 reused).",
+  );
+  assert.ok(logs.every((line) => !line.includes("/route-")));
 });
 
 test("main rejects unknown arguments", async () => {

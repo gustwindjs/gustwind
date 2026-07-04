@@ -363,7 +363,7 @@ test("gustwind-node CLI reports build progress", async () => {
     const output = logs.join("\n");
 
     assert.equal(exitCode, 0);
-    assert.match(output, /Build progress: 1\/1 routes complete \(1 rebuilt, 0 reused\)\. \/ rebuilt\./);
+    assert.match(output, /Build progress: \[####################\] 100% 1\/1 routes \(1 rebuilt, 0 reused\)\./);
     assert.match(output, /Incremental build reused 0 routes and rebuilt 1\./);
   } finally {
     console.log = previousLog;

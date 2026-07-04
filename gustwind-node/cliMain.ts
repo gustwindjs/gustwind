@@ -75,6 +75,10 @@ type CliCommand = {
   matches(args: CliArgs): boolean;
   run(context: CliExecutionContext): Promise<number>;
 };
+type BuildProgressReporter = (event: BuildProgressEvent) => void;
+
+const PROGRESS_BAR_WIDTH = 20;
+const PROGRESS_REPORT_INTERVAL_PERCENT = 5;
 
 function usage() {
   console.log(`
@@ -96,7 +100,7 @@ Options:
   -s, --serve          Serves a static build directory.
   -i, --input          Input directory for --serve (default: ./build).
   --no-incremental     Disables incremental route reuse for --build.
-  --progress           Prints route build progress as routes complete.
+  --progress           Prints bounded route build progress checkpoints.
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
@@ -222,17 +226,55 @@ async function runBuild(
     collectBenchmark,
     incremental: getBuildIncrementalMode(args, collectBenchmark),
     outputDirectory: args.output,
-    onProgress: args.progress ? reportBuildProgress : undefined,
+    onProgress: args.progress ? createBuildProgressReporter() : undefined,
     pluginDefinitions: evaluatedPluginsDefinition,
     routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
 }
 
-function reportBuildProgress(event: BuildProgressEvent) {
+function createBuildProgressReporter(): BuildProgressReporter {
+  let lastReportedBucket = 0;
+
+  return (event) => {
+    const bucket = getBuildProgressBucket(event);
+
+    if (bucket <= lastReportedBucket && event.completedRoutes < event.totalRoutes) {
+      return;
+    }
+
+    lastReportedBucket = bucket;
+    reportBuildProgress(event, bucket);
+  };
+}
+
+function getBuildProgressBucket(event: BuildProgressEvent) {
+  if (event.totalRoutes <= 0) {
+    return 100;
+  }
+
+  const percent = Math.floor(event.completedRoutes / event.totalRoutes * 100);
+
+  if (event.completedRoutes >= event.totalRoutes) {
+    return 100;
+  }
+
+  return Math.floor(percent / PROGRESS_REPORT_INTERVAL_PERCENT) *
+    PROGRESS_REPORT_INTERVAL_PERCENT;
+}
+
+function reportBuildProgress(event: BuildProgressEvent, percent: number) {
+  const progressBar = createProgressBar(percent);
+
   console.log(
-    `Build progress: ${event.completedRoutes}/${event.totalRoutes} routes complete (${event.routesBuilt} rebuilt, ${event.cacheHits} reused). ${event.url} ${event.status}.`,
+    `Build progress: [${progressBar}] ${percent}% ${event.completedRoutes}/${event.totalRoutes} routes (${event.routesBuilt} rebuilt, ${event.cacheHits} reused).`,
   );
+}
+
+function createProgressBar(percent: number) {
+  const completed = Math.round(percent / 100 * PROGRESS_BAR_WIDTH);
+
+  return `${"#".repeat(completed)}${"-".repeat(PROGRESS_BAR_WIDTH - completed)}`;
 }
 
 function getBuildIncrementalMode(args: CliArgs, collectBenchmark: boolean) {
@@ -586,4 +628,4 @@ function runCli() {
   );
 }
 
-export { main, runCli };
+export { createBuildProgressReporter, main, runCli };
