@@ -3,6 +3,7 @@ import process from "node:process";
 import { readFile, writeFile } from "node:fs/promises";
 import { VERSION } from "../version.ts";
 import { buildNode } from "./build.ts";
+import type { BuildProgressEvent } from "./build.ts";
 import { startDevServer } from "./dev.ts";
 import { startStaticServer } from "./serve.ts";
 import { evaluatePluginsDefinition } from "../utilities/evaluatePluginsDefinition.ts";
@@ -22,6 +23,7 @@ type CliArgs = {
   incremental: boolean;
   output: string;
   port: number;
+  progress: boolean;
   plugins: string;
   routeConcurrency?: number;
   serve: boolean;
@@ -45,6 +47,7 @@ type CliOptionDefinition =
 type BooleanCliArg =
   | "develop"
   | "help"
+  | "progress"
   | "serve"
   | "validate"
   | "version";
@@ -93,6 +96,7 @@ Options:
   -s, --serve          Serves a static build directory.
   -i, --input          Input directory for --serve (default: ./build).
   --no-incremental     Disables incremental route reuse for --build.
+  --progress           Prints route build progress as routes complete.
   -P, --plugins        Plugins definition path (default: plugins.json).
   -o, --output         Build output directory (default: ./build).
   -p, --port           Development server port (default: 3000).
@@ -218,10 +222,17 @@ async function runBuild(
     collectBenchmark,
     incremental: getBuildIncrementalMode(args, collectBenchmark),
     outputDirectory: args.output,
+    onProgress: args.progress ? reportBuildProgress : undefined,
     pluginDefinitions: evaluatedPluginsDefinition,
     routeConcurrency: args.routeConcurrency,
     validateOutput: args.validate,
   });
+}
+
+function reportBuildProgress(event: BuildProgressEvent) {
+  console.log(
+    `Build progress: ${event.completedRoutes}/${event.totalRoutes} routes complete (${event.routesBuilt} rebuilt, ${event.cacheHits} reused). ${event.url} ${event.status}.`,
+  );
 }
 
 function getBuildIncrementalMode(args: CliArgs, collectBenchmark: boolean) {
@@ -372,6 +383,7 @@ function createDefaultCliArgs(): CliArgs {
     incremental: true,
     output: "./build",
     port: 3000,
+    progress: false,
     plugins: "plugins.json",
     routeConcurrency: undefined,
     serve: false,
@@ -430,6 +442,7 @@ const CLI_OPTION_PARSERS: Record<string, CliOptionDefinition> = {
   "--no-incremental": { kind: "disableIncremental" },
   "-p": { kind: "port", missing: "Missing port" },
   "--port": { kind: "port", missing: "Missing port" },
+  "--progress": { kind: "boolean", field: "progress" },
   "--route-concurrency": {
     kind: "integer",
     field: "routeConcurrency",

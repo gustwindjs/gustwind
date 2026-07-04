@@ -56,6 +56,8 @@ When the previous build cache is still valid, `npm run build` rebuilds only the 
 
 Production builds also render independent routes with bounded concurrency, defaulting to `available CPUs - 1` to keep the machine responsive without underutilizing it. Use `gustwind --route-concurrency <count>` or `buildNode({ routeConcurrency: <count>, ... })` when you want a fixed benchmark setting across machines.
 
+Use `gustwind --build --progress` or `npm run build -- --progress` to print route completion counts while a production build runs.
+
 This repository now separates fast local builds from release builds. `npm run build` skips Pagefind indexing to keep first builds fast, while `npm run build:release` includes the search index and is the path used for deployment and browser tests.
 
 Independent `prepareBuild` and `finishBuild` hooks now also run in dependency layers, so global plugin work like asset preparation and release-only finishing steps can overlap when they do not depend on each other.

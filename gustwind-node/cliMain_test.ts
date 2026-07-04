@@ -22,6 +22,7 @@ test("main prints usage without an action", async () => {
 
   assert.match(logs.join("\n"), /gustwind --build/);
   assert.match(logs.join("\n"), /--route-concurrency/);
+  assert.match(logs.join("\n"), /--progress/);
 });
 
 test("main prints usage with help", async () => {

@@ -340,6 +340,38 @@ test("gustwind-node CLI reports full build summary", async () => {
   }
 });
 
+test("gustwind-node CLI reports build progress", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-build-progress-"));
+  const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
+
+  try {
+    await writeSingleRouteProject(cwd);
+    process.chdir(cwd);
+    console.log = (...args) => {
+      logs.push(args.join(" "));
+    };
+
+    const exitCode = await main([
+      "--build",
+      "--output",
+      "./dist",
+      "--progress",
+    ]);
+
+    const output = logs.join("\n");
+
+    assert.equal(exitCode, 0);
+    assert.match(output, /Build progress: 1\/1 routes complete \(1 rebuilt, 0 reused\)\. \/ rebuilt\./);
+    assert.match(output, /Incremental build reused 0 routes and rebuilt 1\./);
+  } finally {
+    console.log = previousLog;
+    process.chdir(previousCwd);
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("gustwind-node CLI can print route diagnostics", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-cli-diagnostics-"));
   const previousCwd = process.cwd();

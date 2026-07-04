@@ -54,6 +54,14 @@ type BuildNodeResult = {
   routesBuilt?: number;
   validation?: Awaited<ReturnType<typeof validateHtmlDirectory>>;
 };
+type BuildProgressEvent = {
+  cacheHits: number;
+  completedRoutes: number;
+  routesBuilt: number;
+  status: "rebuilt" | "reused";
+  totalRoutes: number;
+  url: string;
+};
 
 type RendererDependencyInfo = {
   componentGraph: ComponentDependencyGraph;
@@ -69,6 +77,7 @@ type BuildNodeOptions = {
   collectBenchmark?: boolean;
   incremental?: boolean;
   cacheFrom?: string;
+  onProgress?: (event: BuildProgressEvent) => void;
   routeConcurrency?: number;
 };
 type NormalizedBuildNodeOptions = Required<
@@ -101,6 +110,7 @@ type RunBuildTasksOptions = {
   nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
   globalDependencyTasks?: DependencyTask[];
   rendererDependencyInfo?: RendererDependencyInfo;
+  onProgress?: (event: BuildProgressEvent) => void;
   routeConcurrency: number;
   router: {
     matchRoute(url: string): Promise<Route | undefined>;
@@ -379,6 +389,7 @@ async function runCachedBuildTasks(
     nextIncrementalCacheRoutes,
     globalDependencyTasks: buildInputs.globalDependencyTasks,
     rendererDependencyInfo: buildInputs.rendererDependencyInfo,
+    onProgress: config.onProgress,
     routeConcurrency: config.routeConcurrency,
     router: buildInputs.router,
     plugins: buildInputs.plugins,
@@ -512,6 +523,7 @@ async function runBuildTasks({
   nextIncrementalCacheRoutes,
   globalDependencyTasks,
   rendererDependencyInfo,
+  onProgress,
   routeConcurrency,
   router,
   plugins,
@@ -541,6 +553,15 @@ async function runBuildTasks({
 
     cacheHits += result.cacheHit ? 1 : 0;
     routesBuilt += result.routeBuilt ? 1 : 0;
+
+    onProgress?.({
+      cacheHits,
+      completedRoutes: cacheHits + routesBuilt,
+      routesBuilt,
+      status: result.cacheHit ? "reused" : "rebuilt",
+      totalRoutes: tasks.length,
+      url: task.payload.url,
+    });
   });
 
   return { cacheHits, nextIncrementalCacheRoutes, routesBuilt };
@@ -723,4 +744,4 @@ function recordRouteBenchmark({
 }
 
 export { buildNode };
-export type { BuildBenchmark, BuildNodeResult };
+export type { BuildBenchmark, BuildNodeResult, BuildProgressEvent };
