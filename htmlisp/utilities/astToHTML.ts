@@ -209,6 +209,7 @@ async function renderComponent(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
+  const startTime = globalThis.performance?.now?.() ?? Date.now();
   const foundComponent = getComponentOrThrow(tag, renderContext);
 
   const componentSlots = await slotsToProps(
@@ -236,12 +237,19 @@ async function renderComponent(
     ? await foundComponent(componentProps)
     : foundComponent;
 
-  return renderContext.htmlispToHTML(createRenderComponentParameters(
+  const rendered = await renderContext.htmlispToHTML(createRenderComponentParameters(
     tag,
     renderedComponent,
     componentProps,
     renderContext,
   ));
+
+  renderContext.renderOptions?.onComponentRender?.({
+    componentName: tag.type,
+    durationMs: (globalThis.performance?.now?.() ?? Date.now()) - startTime,
+  });
+
+  return rendered;
 }
 
 async function slotsToProps(

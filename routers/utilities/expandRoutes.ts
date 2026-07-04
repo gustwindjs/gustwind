@@ -1,5 +1,10 @@
 import { get } from "../../utilities/functional.ts";
-import type { DataSource, DataSources, Route } from "../../types.ts";
+import type {
+  BuildDiagnostics,
+  DataSource,
+  DataSources,
+  Route,
+} from "../../types.ts";
 import { getDataSourceContext } from "./getDataSourceContext.ts";
 import { mergeRouteScripts } from "./routeScripts.ts";
 import { normalizeRouteDataSources } from "./normalizeRouteDataSources.ts";
@@ -9,6 +14,7 @@ type ExpandRouteOptions = {
   url: string;
   route: Route;
   dataSources: DataSources;
+  buildDiagnostics?: BuildDiagnostics;
   inheritedScripts?: Route["scripts"];
   routeConcurrency?: number;
   recurse: boolean;
@@ -18,11 +24,13 @@ type RouteExpansionMatch = NonNullable<RouteExpansion["matchBy"]>;
 
 async function expandRoutes({
   routes,
+  buildDiagnostics,
   dataSources,
   inheritedScripts,
   routeConcurrency = Number.POSITIVE_INFINITY,
 }: {
   routes: Record<string, Route>;
+  buildDiagnostics?: BuildDiagnostics;
   dataSources: DataSources;
   inheritedScripts?: Route["scripts"];
   routeConcurrency?: number;
@@ -34,6 +42,7 @@ async function expandRoutes({
       ([url, route]) =>
         expandRoute({
           url,
+          buildDiagnostics,
           route,
           dataSources,
           inheritedScripts,
@@ -63,6 +72,7 @@ async function expandRoute(
     url,
     route,
     dataSources,
+    buildDiagnostics,
     inheritedScripts,
     routeConcurrency = Number.POSITIVE_INFINITY,
     recurse,
@@ -73,6 +83,7 @@ async function expandRoute(
   if (shouldExpandChildRoutes(recurse, route)) {
     ret = await expandChildRoutes({
       dataSources,
+      buildDiagnostics,
       ret,
       route,
       routeConcurrency,
@@ -84,6 +95,7 @@ async function expandRoute(
 }
 
 async function expandRouteIndex({
+  buildDiagnostics,
   dataSources,
   route,
   routeConcurrency = Number.POSITIVE_INFINITY,
@@ -96,6 +108,7 @@ async function expandRouteIndex({
   return {
     ...route,
     routes: await expandRouteByIndex({
+      buildDiagnostics,
       dataSources,
       expansion: route.expand,
       route,
@@ -111,12 +124,14 @@ function shouldExpandChildRoutes(recurse: boolean, route: Route) {
 
 async function expandChildRoutes({
   dataSources,
+  buildDiagnostics,
   ret,
   route,
   routeConcurrency,
   routeScripts,
 }: {
   dataSources: DataSources;
+  buildDiagnostics?: BuildDiagnostics;
   ret: Route;
   route: Route;
   routeConcurrency: number;
@@ -124,6 +139,7 @@ async function expandChildRoutes({
 }) {
   const expandedRouteRoutes = await expandRoutes({
     routes: route.routes || {},
+    buildDiagnostics,
     dataSources,
     inheritedScripts: routeScripts,
     routeConcurrency,
@@ -137,19 +153,25 @@ async function expandChildRoutes({
 
 async function expandRouteByIndex({
   dataSources,
+  buildDiagnostics,
   expansion,
   route,
   routeConcurrency,
   routeScripts,
 }: {
   dataSources: DataSources;
+  buildDiagnostics?: BuildDiagnostics;
   expansion: RouteExpansion;
   route: Route;
   routeConcurrency: number;
   routeScripts: Route["scripts"];
 }) {
   const matchBy = getRouteExpansionMatch(expansion);
-  const indexResults = await runRouteExpansionIndexer(dataSources, matchBy);
+  const indexResults = await runRouteExpansionIndexer(
+    dataSources,
+    matchBy,
+    buildDiagnostics,
+  );
 
   if (!Array.isArray(indexResults)) {
     throw new Error("Data source results are not an array");
@@ -162,6 +184,7 @@ async function expandRouteByIndex({
       route.dataSources,
       dataSources,
       routeConcurrency,
+      buildDiagnostics,
     )),
   };
   const matchByName = matchBy.name || matchBy.indexer.operation;
@@ -194,6 +217,7 @@ function getRouteExpansionMatch(expansion: RouteExpansion) {
 async function runRouteExpansionIndexer(
   dataSources: DataSources,
   matchBy: RouteExpansionMatch,
+  buildDiagnostics?: BuildDiagnostics,
 ) {
   const indexer = dataSources[matchBy.indexer.operation];
 
@@ -205,7 +229,20 @@ async function runRouteExpansionIndexer(
     throw new Error("Data source is not a function");
   }
 
-  return await indexer.apply(undefined, matchBy.indexer.parameters || []);
+  return (
+    await getDataSourceContext(
+      {},
+      {
+        __indexer: {
+          operation: matchBy.indexer.operation,
+          parameters: matchBy.indexer.parameters || [],
+        },
+      },
+      dataSources,
+      Number.POSITIVE_INFINITY,
+      buildDiagnostics,
+    )
+  ).__indexer;
 }
 
 function createExpandedRoute({

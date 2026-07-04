@@ -22,6 +22,10 @@ type RawHtml = {
 };
 type HtmlispRenderOptions = {
   escapeByDefault?: boolean;
+  onComponentRender?(result: {
+    componentName: string;
+    durationMs: number;
+  }): void;
 };
 type HTMLispComponent<Props = Context> =
   | string

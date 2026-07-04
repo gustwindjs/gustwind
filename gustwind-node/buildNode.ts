@@ -27,7 +27,12 @@ import {
 import { isDebugEnabled } from "../utilities/runtime.ts";
 import { runWithTaskLog } from "../utilities/taskLogContext.ts";
 import { runWithConcurrency } from "../utilities/concurrency.ts";
-import type { PluginOptions, Route, Tasks } from "../types.ts";
+import type {
+  BuildDiagnostics,
+  PluginOptions,
+  Route,
+  Tasks,
+} from "../types.ts";
 import type { BuildBenchmark } from "../utilities/buildBenchmark.ts";
 import type { ComponentDependencyGraph } from "../utilities/componentDependencyGraph.ts";
 import type {
@@ -79,16 +84,17 @@ type BuildNodeOptions = {
   cacheFrom?: string;
   onProgress?: (event: BuildProgressEvent) => void;
   routeConcurrency?: number;
+  memoizeDataSources?: boolean;
 };
 type NormalizedBuildNodeOptions = Required<
   Pick<
     BuildNodeOptions,
-    "collectBenchmark" | "incremental" | "routeConcurrency"
+    "collectBenchmark" | "incremental" | "memoizeDataSources" | "routeConcurrency"
   >
 > &
   Omit<
     BuildNodeOptions,
-    "collectBenchmark" | "incremental" | "routeConcurrency"
+    "collectBenchmark" | "incremental" | "memoizeDataSources" | "routeConcurrency"
   > & {
     cacheFrom: string;
     validateOutput: boolean;
@@ -100,6 +106,7 @@ type BuildNodeRunConfig = NormalizedBuildNodeOptions & {
 type BuildInputs = Awaited<ReturnType<typeof loadBuildInputs>>;
 type RunBuildTasksOptions = {
   benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildDiagnostics?: BuildDiagnostics;
   cwd: string;
   outputDirectory: string;
   incrementalCache?: IncrementalBuildCache;
@@ -113,7 +120,10 @@ type RunBuildTasksOptions = {
   onProgress?: (event: BuildProgressEvent) => void;
   routeConcurrency: number;
   router: {
-    matchRoute(url: string): Promise<Route | undefined>;
+    matchRoute(
+      url: string,
+      buildDiagnostics?: BuildDiagnostics,
+    ): Promise<Route | undefined>;
   };
   plugins: BuildPlugins;
   tasks: BuildTask[];
@@ -131,6 +141,7 @@ type ProcessBuildTaskResult = {
 };
 type BuildRouteOutputOptions = {
   benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildDiagnostics?: BuildDiagnostics;
   cwd: string;
   dir: string;
   globalFingerprint: string | null;
@@ -180,6 +191,7 @@ async function createBuildNodeRunConfig(
       options.outputDirectory,
     ),
     routeConcurrency: options.routeConcurrency ?? getDefaultRouteConcurrency(),
+    memoizeDataSources: options.memoizeDataSources ?? false,
     validateOutput: options.validateOutput ?? false,
   };
 }
@@ -221,13 +233,15 @@ async function runNodeBuild(
   config: BuildNodeRunConfig,
 ): Promise<BuildNodeResult> {
   const benchmark = await prepareNodeBuild(config);
-  const buildInputs = await loadBuildInputs(config);
+  const buildDiagnostics = createBuildDiagnostics(config, benchmark);
+  const buildInputs = await loadBuildInputs(config, benchmark, buildDiagnostics);
   const nextIncrementalCacheRoutes: Record<
     string,
     IncrementalBuildRouteCacheEntry
   > = {};
   const routeBuildResult = await runNodeBuildTasks({
     benchmark,
+    buildDiagnostics,
     buildInputs,
     config,
     nextIncrementalCacheRoutes,
@@ -235,6 +249,7 @@ async function runNodeBuild(
 
   await finishNodeBuild({
     benchmark,
+    buildDiagnostics,
     buildInputs,
     config,
     nextIncrementalCacheRoutes,
@@ -245,20 +260,49 @@ async function runNodeBuild(
     cacheHits: routeBuildResult.cacheHits,
     routesBuilt: routeBuildResult.routesBuilt,
     validation: config.validateOutput
-      ? await validateHtmlDirectory(config.outputDirectory)
+      ? await timeBuildPhase(benchmark, "validation", () =>
+        validateHtmlDirectory(config.outputDirectory)
+      )
       : undefined,
   };
 }
 
-async function prepareNodeBuild(config: BuildNodeRunConfig) {
-  await prepareBuildOutputDirectory({
-    outputDirectory: config.outputDirectory,
-    preservesCurrentOutput: config.preservesCurrentOutput,
-  });
+function createBuildDiagnostics(
+  config: BuildNodeRunConfig,
+  benchmark: ReturnType<typeof createBuildBenchmark> | undefined,
+): BuildDiagnostics | undefined {
+  if (!benchmark && !config.memoizeDataSources) {
+    return;
+  }
 
-  return config.collectBenchmark
+  return {
+    dataSourceCache: config.memoizeDataSources ? new Map() : undefined,
+    recordComponentRender: benchmark?.recordComponentRender,
+    recordDataSourceCall: benchmark?.recordDataSourceCall,
+  };
+}
+
+async function timeBuildPhase<T>(
+  benchmark: ReturnType<typeof createBuildBenchmark> | undefined,
+  name: string,
+  fn: () => Promise<T>,
+) {
+  return benchmark ? await benchmark.timePhase(name, fn) : await fn();
+}
+
+async function prepareNodeBuild(config: BuildNodeRunConfig) {
+  const benchmark = config.collectBenchmark
     ? createBuildBenchmark(config.outputDirectory)
     : undefined;
+
+  await timeBuildPhase(benchmark, "prepareOutputDirectory", () =>
+    prepareBuildOutputDirectory({
+      outputDirectory: config.outputDirectory,
+      preservesCurrentOutput: config.preservesCurrentOutput,
+    })
+  );
+
+  return benchmark;
 }
 
 async function prepareBuildOutputDirectory({
@@ -285,32 +329,51 @@ async function loadBuildInputs({
   outputDirectory: string;
   pluginDefinitions: PluginOptions[];
   routeConcurrency: number;
-}) {
-  const { plugins, router } = await importPlugins({
-    cwd,
-    pluginDefinitions,
-    outputDirectory,
-    initLoadApi: initNodeLoadApi,
-    mode: "production",
-  });
-  const prepareTasks = await preparePlugins(plugins);
-  const { routes, tasks: routerTasks } = await router.getAllRoutes({
-    routeConcurrency,
-  });
+}, benchmark?: ReturnType<typeof createBuildBenchmark>, buildDiagnostics?: BuildDiagnostics) {
+  const { plugins, router } = await timeBuildPhase(benchmark, "importPlugins", () =>
+    importPlugins({
+      cwd,
+      pluginDefinitions,
+      outputDirectory,
+      initLoadApi: initNodeLoadApi,
+      mode: "production",
+    })
+  );
+  const prepareTasks = await timeBuildPhase(benchmark, "preparePlugins", () =>
+    preparePlugins(plugins)
+  );
+  const { routes, tasks: routerTasks } = await timeBuildPhase(
+    benchmark,
+    "routingExpansion",
+    () =>
+      router.getAllRoutes({
+        buildDiagnostics,
+        routeConcurrency,
+      }),
+  );
 
   if (!routes) {
     throw new Error("No routes found");
   }
 
-  const rendererDependencyInfo = await getRendererDependencyInfo(plugins);
-  const globalDependencyTasks = normalizeDependencyTasks(
-    getGlobalDependencyTasks({
-      plugins,
-      prepareTasks,
-      rendererDependencyInfo,
-      routerTasks,
-    }),
-    cwd,
+  const rendererDependencyInfo = await timeBuildPhase(
+    benchmark,
+    "rendererDependencyInfo",
+    () => getRendererDependencyInfo(plugins),
+  );
+  const globalDependencyTasks = await timeBuildPhase(
+    benchmark,
+    "dependencyNormalization",
+    async () =>
+      normalizeDependencyTasks(
+        getGlobalDependencyTasks({
+          plugins,
+          prepareTasks,
+          rendererDependencyInfo,
+          routerTasks,
+        }),
+        cwd,
+      ),
   );
 
   return {
@@ -326,11 +389,13 @@ async function loadBuildInputs({
 
 async function runNodeBuildTasks({
   benchmark,
+  buildDiagnostics,
   buildInputs,
   config,
   nextIncrementalCacheRoutes,
 }: {
   benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildDiagnostics?: BuildDiagnostics;
   buildInputs: BuildInputs;
   config: BuildNodeRunConfig;
   nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
@@ -340,6 +405,7 @@ async function runNodeBuildTasks({
 
   return await runCachedBuildTasks(
     benchmark,
+    buildDiagnostics,
     config,
     buildInputs,
     nextIncrementalCacheRoutes,
@@ -373,6 +439,7 @@ async function runPrepareAndRouterTasks(
 
 async function runCachedBuildTasks(
   benchmark: ReturnType<typeof createBuildBenchmark> | undefined,
+  buildDiagnostics: BuildDiagnostics | undefined,
   config: BuildNodeRunConfig,
   buildInputs: BuildInputs,
   nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>,
@@ -381,6 +448,7 @@ async function runCachedBuildTasks(
 
   return await runBuildTasks({
     benchmark,
+    buildDiagnostics,
     cwd: config.cwd,
     outputDirectory: config.outputDirectory,
     incrementalCache: previousCache?.cache,
@@ -403,27 +471,38 @@ function getPreviousIncrementalCache(config: BuildNodeRunConfig) {
 
 async function finishNodeBuild({
   benchmark,
+  buildDiagnostics: _buildDiagnostics,
   buildInputs,
   config,
   nextIncrementalCacheRoutes,
 }: {
   benchmark?: ReturnType<typeof createBuildBenchmark>;
+  buildDiagnostics?: BuildDiagnostics;
   buildInputs: BuildInputs;
   config: BuildNodeRunConfig;
   nextIncrementalCacheRoutes: Record<string, IncrementalBuildRouteCacheEntry>;
 }) {
-  await runTaskQueue({
-    benchmark,
-    outputDirectory: config.outputDirectory,
-    tasks: await finishPlugins(buildInputs.plugins),
-  });
+  await timeBuildPhase(benchmark, "finishPlugins", async () =>
+    runTaskQueue({
+      benchmark,
+      outputDirectory: config.outputDirectory,
+      tasks: await finishPlugins(buildInputs.plugins),
+    })
+  );
 
-  await cleanUpPlugins(buildInputs.plugins, buildInputs.routes);
+  await timeBuildPhase(benchmark, "cleanupPlugins", () =>
+    cleanUpPlugins(buildInputs.plugins, buildInputs.routes)
+  );
 
   if (config.incremental) {
-    await writeIncrementalBuildCache(
-      config.outputDirectory,
-      nextIncrementalCacheRoutes,
+    await timeBuildPhase(
+      benchmark,
+      "writeIncrementalCache",
+      () =>
+        writeIncrementalBuildCache(
+          config.outputDirectory,
+          nextIncrementalCacheRoutes,
+        ),
     );
   }
 }
@@ -515,6 +594,7 @@ function getTaskOutputPaths(tasks: Tasks) {
 
 async function runBuildTasks({
   benchmark,
+  buildDiagnostics,
   cwd,
   outputDirectory,
   incrementalCache,
@@ -530,7 +610,9 @@ async function runBuildTasks({
   tasks,
 }: RunBuildTasksOptions) {
   const globalFingerprint = globalDependencyTasks
-    ? await hashDependencyTasks(cwd, globalDependencyTasks)
+    ? await timeBuildPhase(benchmark, "globalDependencyHash", () =>
+      hashDependencyTasks(cwd, globalDependencyTasks)
+    )
     : null;
   let cacheHits = 0;
   let routesBuilt = 0;
@@ -538,6 +620,7 @@ async function runBuildTasks({
   await runWithConcurrency(tasks, routeConcurrency, async (task) => {
     const result = await processBuildTask({
       benchmark,
+      buildDiagnostics,
       cwd,
       globalFingerprint,
       incrementalCache,
@@ -569,6 +652,7 @@ async function runBuildTasks({
 
 async function processBuildTask({
   benchmark,
+  buildDiagnostics,
   cwd,
   globalFingerprint,
   incrementalCache,
@@ -585,18 +669,25 @@ async function processBuildTask({
     console.log("node build - running task", task.type, task.payload.url);
   benchmark?.markTaskProcessed();
 
-  const routeBuildInput = await prepareRouteBuildInput(router, task);
-  const cacheRestore = await restoreRouteBuildFromCache({
-    cwd,
-    globalFingerprint,
-    incrementalCache,
-    incrementalCacheEnabled,
-    incrementalCacheSource,
-    matchedRoute: routeBuildInput.matchedRoute,
-    nextIncrementalCacheRoutes,
-    outputDirectory,
-    url: task.payload.url,
-  });
+  const routeBuildInput = await prepareRouteBuildInput(
+    router,
+    task,
+    benchmark,
+    buildDiagnostics,
+  );
+  const cacheRestore = await timeBuildPhase(benchmark, "cacheRestore", () =>
+    restoreRouteBuildFromCache({
+      cwd,
+      globalFingerprint,
+      incrementalCache,
+      incrementalCacheEnabled,
+      incrementalCacheSource,
+      matchedRoute: routeBuildInput.matchedRoute,
+      nextIncrementalCacheRoutes,
+      outputDirectory,
+      url: task.payload.url,
+    })
+  );
 
   if (cacheRestore) {
     return { cacheHit: true, routeBuilt: false };
@@ -604,6 +695,7 @@ async function processBuildTask({
 
   await buildRouteOutput({
     benchmark,
+    buildDiagnostics,
     cwd,
     dir: task.payload.dir,
     globalFingerprint,
@@ -623,9 +715,15 @@ async function processBuildTask({
 async function prepareRouteBuildInput(
   router: ProcessBuildTaskOptions["router"],
   task: BuildTask,
+  benchmark?: ReturnType<typeof createBuildBenchmark>,
+  buildDiagnostics?: BuildDiagnostics,
 ) {
   const { result: matchedRoute, tasks: matchDependencyTasks } =
-    await runWithTaskLog(() => router.matchRoute(task.payload.url));
+    await timeBuildPhase(benchmark, "routeMatch", () =>
+      runWithTaskLog(() =>
+        router.matchRoute(task.payload.url, buildDiagnostics)
+      )
+    );
 
   if (!matchedRoute) {
     throw new Error(`Failed to find route ${task.payload.url} while building`);
@@ -636,6 +734,7 @@ async function prepareRouteBuildInput(
 
 async function buildRouteOutput({
   benchmark,
+  buildDiagnostics,
   cwd,
   dir,
   globalFingerprint,
@@ -649,55 +748,74 @@ async function buildRouteOutput({
   url,
 }: BuildRouteOutputOptions) {
   const routeStartTime = performance.now();
-  const { renderResult, renderDependencyTasks } = await renderRoute({
-    matchedRoute,
-    plugins,
-    url,
-  });
-  const dependencyTasks = normalizeDependencyTasks(
-    matchDependencyTasks.concat(
-      getComponentDependencyTasks(rendererDependencyInfo, matchedRoute.layout),
-      renderDependencyTasks,
-    ),
-    cwd,
+  const { renderResult, renderDependencyTasks } = await timeBuildPhase(
+    benchmark,
+    "routeRender",
+    () =>
+      renderRoute({
+        buildDiagnostics,
+        matchedRoute,
+        plugins,
+        url,
+      }),
+  );
+  const dependencyTasks = await timeBuildPhase(
+    benchmark,
+    "routeDependencyNormalization",
+    async () =>
+      normalizeDependencyTasks(
+        matchDependencyTasks.concat(
+          getComponentDependencyTasks(rendererDependencyInfo, matchedRoute.layout),
+          renderDependencyTasks,
+        ),
+        cwd,
+      ),
   );
 
-  await runTaskQueue({
-    benchmark,
-    outputDirectory,
-    tasks: renderResult.tasks,
-  });
+  await timeBuildPhase(benchmark, "renderTasks", () =>
+    runTaskQueue({
+      benchmark,
+      outputDirectory,
+      tasks: renderResult.tasks,
+    })
+  );
 
-  const writeResult = await writeRenderedPage({
-    dir,
-    markup: renderResult.markup,
-    outputDirectory,
-    url,
-  });
+  const writeResult = await timeBuildPhase(benchmark, "writeFiles", () =>
+    writeRenderedPage({
+      dir,
+      markup: renderResult.markup,
+      outputDirectory,
+      url,
+    })
+  );
   const outputPaths = getRouteOutputPaths(
     writeResult.outputPath,
     renderResult.tasks,
   );
 
-  await updateRouteBuildCache({
-    cwd,
-    dependencyTasks,
-    globalFingerprint,
-    incrementalCacheEnabled,
-    matchedRoute,
-    nextIncrementalCacheRoutes,
-    outputPaths,
-    url,
-  });
+  await timeBuildPhase(benchmark, "cacheUpdate", () =>
+    updateRouteBuildCache({
+      cwd,
+      dependencyTasks,
+      globalFingerprint,
+      incrementalCacheEnabled,
+      matchedRoute,
+      nextIncrementalCacheRoutes,
+      outputPaths,
+      url,
+    })
+  );
 
   recordRouteBenchmark({ benchmark, routeStartTime, url, writeResult });
 }
 
 async function renderRoute({
+  buildDiagnostics,
   matchedRoute,
   plugins,
   url,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   matchedRoute: Route;
   plugins: BuildPlugins;
   url: string;
@@ -705,11 +823,16 @@ async function renderRoute({
   const { result: renderResult, tasks: renderDependencyTasks } =
     await runWithTaskLog(() =>
       applyPlugins({
+        buildDiagnostics,
         plugins,
         url,
         route: matchedRoute,
         matchRoute(routeUrl: string) {
-          return applyMatchRoutes({ plugins, url: routeUrl });
+          return applyMatchRoutes({
+            buildDiagnostics,
+            plugins,
+            url: routeUrl,
+          }) as Promise<Route | undefined>;
         },
       }),
     );

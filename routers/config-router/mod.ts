@@ -6,6 +6,7 @@ import { matchRoute } from "../utilities/matchRoute.ts";
 import { getDataSourceContext } from "../utilities/getDataSourceContext.ts";
 import { trim } from "../../utilities/string.ts";
 import type {
+  BuildDiagnostics,
   DataSources,
   DataSourcesModule,
   LoadApi,
@@ -19,10 +20,12 @@ import type {
 type Routes = Record<string, Route>;
 type ConfigRouterOptions = {
   dataSourcesPath: string;
+  memoizeDataSources?: boolean;
   routesPath: string;
   emitAllRoutes: boolean;
 };
 type ConfigRouterContext = {
+  dataSourceCache?: Map<string, Promise<unknown>>;
   routes: Routes;
   dataSources: DataSources;
   dynamicRoutes: string[];
@@ -31,6 +34,7 @@ type ConfigRouterServices = {
   cwd: string;
   dataSourcesPath: string;
   load: LoadApi;
+  memoizeDataSources: boolean;
   outputDirectory: string;
   renderComponent: Render;
   renderComponentSync: RenderSync;
@@ -47,7 +51,7 @@ const plugin: Plugin<ConfigRouterOptions, ConfigRouterContext> = {
     {
       cwd,
       outputDirectory,
-      options: { dataSourcesPath, routesPath, emitAllRoutes },
+      options: { dataSourcesPath, memoizeDataSources, routesPath, emitAllRoutes },
       load,
       renderComponent,
       renderComponentSync,
@@ -57,6 +61,7 @@ const plugin: Plugin<ConfigRouterOptions, ConfigRouterContext> = {
       cwd,
       dataSourcesPath,
       load,
+      memoizeDataSources: memoizeDataSources ?? false,
       outputDirectory,
       renderComponent,
       renderComponentSync,
@@ -65,15 +70,16 @@ const plugin: Plugin<ConfigRouterOptions, ConfigRouterContext> = {
 
     return {
       initPluginContext: () => initConfigRouterContext(services),
-      getAllRoutes: ({ pluginContext, routeConcurrency }) =>
+      getAllRoutes: ({ buildDiagnostics, pluginContext, routeConcurrency }) =>
         getConfigRouterRoutes({
+          buildDiagnostics,
           emitAllRoutes,
           outputDirectory,
           pluginContext,
           routeConcurrency,
         }),
-      matchRoute: (url: string, pluginContext) =>
-        matchConfigRoute(url, pluginContext),
+      matchRoute: (url: string, pluginContext, buildDiagnostics) =>
+        matchConfigRoute(url, pluginContext, buildDiagnostics),
       onMessage: ({ message, pluginContext }) =>
         handleConfigRouterMessage({ message, pluginContext, services }),
     };
@@ -86,17 +92,24 @@ async function initConfigRouterContext(services: ConfigRouterServices) {
     loadDataSources(services),
   ]);
 
-  return { routes, dataSources, dynamicRoutes: [] };
+  return {
+    routes,
+    dataSources,
+    dataSourceCache: services.memoizeDataSources ? new Map() : undefined,
+    dynamicRoutes: [],
+  };
 }
 
 async function getConfigRouterRoutes(
   {
     emitAllRoutes,
+    buildDiagnostics,
     outputDirectory,
     pluginContext,
     routeConcurrency,
   }: {
     emitAllRoutes: boolean;
+    buildDiagnostics?: BuildDiagnostics;
     outputDirectory: string;
     pluginContext: ConfigRouterContext;
     routeConcurrency?: number;
@@ -106,6 +119,7 @@ async function getConfigRouterRoutes(
     pluginContext.routes,
     pluginContext.dataSources,
     routeConcurrency,
+    withPluginDataSourceCache(pluginContext, buildDiagnostics),
   );
 
   return {
@@ -128,6 +142,7 @@ function createAllRoutesTask(outputDirectory: string, routes: Routes) {
 async function matchConfigRoute(
   url: string,
   pluginContext: ConfigRouterContext,
+  buildDiagnostics?: BuildDiagnostics,
 ) {
   if (pluginContext.dynamicRoutes.includes(trim(url, "/"))) {
     return;
@@ -142,11 +157,27 @@ async function matchConfigRoute(
     route.parentDataSources,
     route.dataSources,
     pluginContext.dataSources,
+    Number.POSITIVE_INFINITY,
+    withPluginDataSourceCache(pluginContext, buildDiagnostics),
   );
 
   return {
     ...route,
     context: { ...route.parentDataSources, ...route.context, ...context },
+  };
+}
+
+function withPluginDataSourceCache(
+  pluginContext: ConfigRouterContext,
+  buildDiagnostics?: BuildDiagnostics,
+): BuildDiagnostics | undefined {
+  if (buildDiagnostics?.dataSourceCache || !pluginContext.dataSourceCache) {
+    return buildDiagnostics;
+  }
+
+  return {
+    ...buildDiagnostics,
+    dataSourceCache: pluginContext.dataSourceCache,
   };
 }
 
@@ -247,9 +278,11 @@ async function getAllRoutes(
   routes: Routes,
   dataSources: DataSources,
   routeConcurrency?: number,
+  buildDiagnostics?: BuildDiagnostics,
 ) {
   const allRoutes = await expandRoutes({
     routes,
+    buildDiagnostics,
     dataSources,
     routeConcurrency,
   });

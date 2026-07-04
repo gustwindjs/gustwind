@@ -42,6 +42,21 @@ type DataSource = { operation: string; parameters?: unknown[] };
 type NamedDataSource = DataSource & { name: string };
 type RouteDataSources = Record<string, DataSource> | NamedDataSource[];
 type DataSources = Record<string, (...args: any) => unknown>;
+type BuildDiagnostics = {
+  dataSourceCache?: Map<string, Promise<unknown>>;
+  recordDataSourceCall?(result: {
+    cacheHit: boolean;
+    durationMs: number;
+    name: string;
+    operation: string;
+    parameters: unknown[];
+  }): void;
+  recordComponentRender?(result: {
+    componentName: string;
+    durationMs: number;
+    url?: string;
+  }): void;
+};
 
 type LoadedPlugin = {
   plugin: {
@@ -152,6 +167,7 @@ type PluginApi<C = Context> = {
     | Tasks
     | void;
   renderLayout?(o: {
+    buildDiagnostics?: BuildDiagnostics;
     matchRoute: MatchRoute;
     route: Route;
     context: Context;
@@ -160,6 +176,7 @@ type PluginApi<C = Context> = {
     pluginContext: C;
   }): Promise<string> | string;
   renderComponent?(o: {
+    buildDiagnostics?: BuildDiagnostics;
     matchRoute: MatchRoute;
     componentName?: string;
     htmlInput?: string;
@@ -168,6 +185,7 @@ type PluginApi<C = Context> = {
     pluginContext: C;
   }): Promise<string>;
   renderComponentSync?(o: {
+    buildDiagnostics?: BuildDiagnostics;
     matchRoute: MatchRoute;
     componentName?: string;
     htmlInput?: string;
@@ -197,12 +215,17 @@ type PluginApi<C = Context> = {
         result?: unknown;
       }
     >;
-  getAllRoutes?(o: { pluginContext: C; routeConcurrency?: number }):
+  getAllRoutes?(o: {
+    buildDiagnostics?: BuildDiagnostics;
+    pluginContext: C;
+    routeConcurrency?: number;
+  }):
     | Promise<{ routes: Record<string, Route>; tasks: Tasks }>
     | { routes: Record<string, Route>; tasks: Tasks };
   matchRoute?(
     url: string,
     pluginContext: C,
+    buildDiagnostics?: BuildDiagnostics,
   ): Promise<Route | undefined> | undefined;
   onTasksRegistered?({ send, tasks }: { tasks: Tasks; send: Send }): void;
 };
@@ -384,6 +407,7 @@ type GlobalUtilities = {
 
 export type {
   Attributes,
+  BuildDiagnostics,
   BuildWorkerEvent,
   BuildWorkerMessageTypes,
   Category,

@@ -1,5 +1,6 @@
 import type {
   Context,
+  BuildDiagnostics,
   InitLoadApi,
   LoadedPlugin,
   MatchRoute,
@@ -20,9 +21,13 @@ const DEBUG = isDebugEnabled();
 export type PluginDefinition = LoadedPlugin["plugin"];
 type PluginRouter = {
   getAllRoutes(options?: {
+    buildDiagnostics?: BuildDiagnostics;
     routeConcurrency?: number;
   }): ReturnType<typeof applyGetAllRoutes>;
-  matchRoute(url: string): Promise<Route | undefined>;
+  matchRoute(
+    url: string,
+    buildDiagnostics?: BuildDiagnostics,
+  ): Promise<Route | undefined>;
 };
 
 async function importPlugins({
@@ -237,12 +242,18 @@ function addPluginDefinition(
 function createPluginRouter(plugins: PluginDefinition[]): PluginRouter {
   return {
     // Last definition wins
-    getAllRoutes(options?: { routeConcurrency?: number }) {
+    getAllRoutes(options?: {
+      buildDiagnostics?: BuildDiagnostics;
+      routeConcurrency?: number;
+    }) {
       return applyGetAllRoutes({ plugins, options });
     },
     // First match wins
-    matchRoute(url: string): Promise<Route | undefined> {
-      return applyMatchRoutes({ plugins, url });
+    matchRoute(
+      url: string,
+      buildDiagnostics?: BuildDiagnostics,
+    ): Promise<Route | undefined> {
+      return applyMatchRoutes({ buildDiagnostics, plugins, url });
     },
   };
 }
@@ -387,12 +398,14 @@ async function cleanUpPlugins(plugins: PluginDefinition[], routes: Routes) {
 }
 
 async function applyPlugins({
+  buildDiagnostics,
   plugins,
   url,
   route,
   initialContext,
   matchRoute,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   route: Route;
   plugins: PluginDefinition[];
   url: string;
@@ -421,6 +434,7 @@ async function applyPlugins({
   await applyOnTasksRegistered({ plugins, tasks });
 
   const markup = await applyRenderLayouts({
+    buildDiagnostics,
     context,
     plugins,
     route,
@@ -447,7 +461,7 @@ async function applyGetAllRoutes({
   options,
 }: {
   plugins: PluginDefinition[];
-  options?: { routeConcurrency?: number };
+  options?: { buildDiagnostics?: BuildDiagnostics; routeConcurrency?: number };
 }) {
   const getAllRoutes = plugins
     .map(({ api, context }) => api.getAllRoutes && [api.getAllRoutes, context])
@@ -467,9 +481,11 @@ async function applyGetAllRoutes({
 }
 
 async function applyMatchRoutes({
+  buildDiagnostics,
   plugins,
   url,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   plugins: PluginDefinition[];
   url: string;
 }) {
@@ -479,7 +495,8 @@ async function applyMatchRoutes({
 
   // @ts-expect-error Figure out the right type for this
   for await (const [matchRoute, pluginContext] of matchRoutes) {
-    const matchedRoute = matchRoute && matchRoute(url, pluginContext);
+    const matchedRoute = matchRoute &&
+      await matchRoute(url, pluginContext, buildDiagnostics);
 
     if (matchedRoute) {
       return matchedRoute;
@@ -553,6 +570,7 @@ async function applyBeforeEachRenders({
 }
 
 async function applyRenderComponents({
+  buildDiagnostics,
   componentName,
   htmlInput,
   props,
@@ -560,6 +578,7 @@ async function applyRenderComponents({
   plugins,
   matchRoute,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   componentName?: string;
   htmlInput?: string;
   context?: Context;
@@ -580,6 +599,7 @@ async function applyRenderComponents({
   // @ts-expect-error Figure out the right type for this
   for await (const [renderComponent, pluginContext] of renders) {
     markup = await renderComponent({
+      buildDiagnostics,
       componentName,
       htmlInput,
       context,
@@ -593,6 +613,7 @@ async function applyRenderComponents({
 }
 
 function applyRenderComponentsSync({
+  buildDiagnostics,
   componentName,
   htmlInput,
   props,
@@ -600,6 +621,7 @@ function applyRenderComponentsSync({
   plugins,
   matchRoute,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   componentName?: string;
   htmlInput?: string;
   context?: Context;
@@ -620,6 +642,7 @@ function applyRenderComponentsSync({
   // @ts-expect-error Figure out the right type for this
   for (const [renderComponent, pluginContext] of renders) {
     markup = renderComponent({
+      buildDiagnostics,
       componentName,
       htmlInput,
       context,
@@ -633,6 +656,7 @@ function applyRenderComponentsSync({
 }
 
 async function applyRenderLayouts({
+  buildDiagnostics,
   context,
   plugins,
   route,
@@ -640,6 +664,7 @@ async function applyRenderLayouts({
   url,
   matchRoute,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   context: Context;
   plugins: PluginDefinition[];
   route: Route;
@@ -657,6 +682,7 @@ async function applyRenderLayouts({
   // @ts-expect-error Figure out the right type for this
   for await (const [renderLayout, pluginContext] of renders) {
     markup = await renderLayout({
+      buildDiagnostics,
       context,
       route,
       send,

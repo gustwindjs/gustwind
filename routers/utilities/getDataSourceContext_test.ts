@@ -79,3 +79,41 @@ test("passes data from parent data sources to this", async () => {
     },
   );
 });
+
+test("memoizes identical data source calls within a provided cache", async () => {
+  let callCount = 0;
+  const calls: { cacheHit: boolean; operation: string }[] = [];
+  const context = await getDataSourceContext(
+    {},
+    {
+      first: { operation: "processInput", parameters: ["foo"] },
+      second: { operation: "processInput", parameters: ["foo"] },
+    },
+    {
+      async processInput(input: string) {
+        callCount++;
+        return input.toUpperCase();
+      },
+    },
+    Number.POSITIVE_INFINITY,
+    {
+      dataSourceCache: new Map(),
+      recordDataSourceCall(result) {
+        calls.push({
+          cacheHit: result.cacheHit,
+          operation: result.operation,
+        });
+      },
+    },
+  );
+
+  assert.equal(callCount, 1);
+  assert.deepEqual(context, {
+    first: "FOO",
+    second: "FOO",
+  });
+  assert.deepEqual(
+    calls.map(({ cacheHit }) => cacheHit).sort(),
+    [false, true],
+  );
+});

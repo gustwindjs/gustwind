@@ -82,6 +82,12 @@ export const plugin = {
     assert.ok(result.benchmark.totalDurationMs >= 0);
     assert.ok(result.benchmark.peakMemoryRssBytes > 0);
     assert.ok(result.benchmark.tasksProcessed >= 2);
+    assert.ok(result.benchmark.phaseResults.length > 0);
+    assert.ok(result.benchmark.phaseSummary.length > 0);
+    assert.ok(Array.isArray(result.benchmark.componentResults));
+    assert.ok(Array.isArray(result.benchmark.componentSummary));
+    assert.ok(Array.isArray(result.benchmark.dataSourceResults));
+    assert.ok(Array.isArray(result.benchmark.dataSourceSummary));
     assert.deepEqual(
       result.benchmark.routeResults.map(({ url }) => url).sort(),
       ["/", "/docs/"],

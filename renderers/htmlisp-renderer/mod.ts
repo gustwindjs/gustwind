@@ -11,6 +11,7 @@ import {
 import { initLoader } from "../../utilities/htmlLoader.ts";
 import { createRuntimeUtilitiesResolver } from "../../utilities/runtimeUtilitiesCache.ts";
 import type {
+  BuildDiagnostics,
   BuildWorkerEvent,
   GlobalUtilities,
   LoadApi,
@@ -130,6 +131,7 @@ function createRendererPluginApi(
       prepareRendererContext({ mode: services.mode, route, send, url }),
     renderLayout: (args) => renderRendererLayout(args, services),
     renderComponent: (args) => renderRendererComponent({
+      buildDiagnostics: args.buildDiagnostics,
       componentName: args.componentName,
       context: args.context,
       htmlInput: args.htmlInput,
@@ -139,6 +141,7 @@ function createRendererPluginApi(
       services,
     }),
     renderComponentSync: (args) => renderRendererComponentSync({
+      buildDiagnostics: args.buildDiagnostics,
       componentName: args.componentName,
       context: args.context,
       htmlInput: args.htmlInput,
@@ -235,12 +238,14 @@ async function prepareRendererContext({
 
 async function renderRendererLayout(
   {
+    buildDiagnostics,
     matchRoute,
     route,
     context,
     url,
     pluginContext,
   }: {
+    buildDiagnostics?: BuildDiagnostics;
     matchRoute: MatchRoute;
     route: Route;
     context: Context;
@@ -266,7 +271,8 @@ async function renderRendererLayout(
   });
 
   try {
-    return await htmlispToHTML({
+    const startTime = globalThis.performance?.now?.() ?? Date.now();
+    const markup = await htmlispToHTML({
       htmlInput: layout,
       components,
       context,
@@ -280,7 +286,22 @@ async function renderRendererLayout(
         }),
       },
       componentUtilities: runtimeUtilities.componentUtilities,
+      renderOptions: {
+        onComponentRender: (result) =>
+          buildDiagnostics?.recordComponentRender?.({
+            ...result,
+            url,
+          }),
+      },
     });
+
+    buildDiagnostics?.recordComponentRender?.({
+      componentName: route.layout,
+      durationMs: (globalThis.performance?.now?.() ?? Date.now()) - startTime,
+      url,
+    });
+
+    return markup;
   } catch (error) {
     throw withRenderContext(error, { layout: route.layout, url });
   }
@@ -311,6 +332,7 @@ function getLayoutUtilities({
 }
 
 function renderRendererComponent({
+  buildDiagnostics,
   componentName,
   context,
   htmlInput,
@@ -319,6 +341,7 @@ function renderRendererComponent({
   props,
   services,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   componentName?: string;
   context: Context;
   htmlInput?: string;
@@ -342,10 +365,14 @@ function renderRendererComponent({
     props,
     utilities: runtimeUtilities.utilities,
     componentUtilities: runtimeUtilities.componentUtilities,
+    renderOptions: {
+      onComponentRender: buildDiagnostics?.recordComponentRender,
+    },
   });
 }
 
 function renderRendererComponentSync({
+  buildDiagnostics,
   componentName,
   context,
   htmlInput,
@@ -354,6 +381,7 @@ function renderRendererComponentSync({
   props,
   services,
 }: {
+  buildDiagnostics?: BuildDiagnostics;
   componentName?: string;
   context: Context;
   htmlInput?: string;
@@ -377,6 +405,9 @@ function renderRendererComponentSync({
     props,
     utilities: runtimeUtilities.utilities,
     componentUtilities: runtimeUtilities.componentUtilities,
+    renderOptions: {
+      onComponentRender: buildDiagnostics?.recordComponentRender,
+    },
   });
 }
 

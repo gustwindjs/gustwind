@@ -207,6 +207,7 @@ function renderComponentSync(
   local: Context | undefined,
   renderContext: RenderContext,
 ) {
+  const startTime = globalThis.performance?.now?.() ?? Date.now();
   const foundComponent = getComponentOrThrow(tag, renderContext);
 
   const componentSlots = slotsToPropsSync(
@@ -240,12 +241,19 @@ function renderComponentSync(
     );
   }
 
-  return renderContext.htmlispToHTML(createRenderComponentParameters(
+  const rendered = renderContext.htmlispToHTML(createRenderComponentParameters(
     tag,
     renderedComponent,
     componentProps,
     renderContext,
   ));
+
+  renderContext.renderOptions?.onComponentRender?.({
+    componentName: tag.type,
+    durationMs: (globalThis.performance?.now?.() ?? Date.now()) - startTime,
+  });
+
+  return rendered;
 }
 
 function slotsToPropsSync(

@@ -21,6 +21,7 @@ type CliArgs = {
   help: boolean;
   input: string;
   incremental: boolean;
+  memoizeDataSources: boolean;
   output: string;
   port: number;
   progress: boolean;
@@ -47,6 +48,7 @@ type CliOptionDefinition =
 type BooleanCliArg =
   | "develop"
   | "help"
+  | "memoizeDataSources"
   | "progress"
   | "serve"
   | "validate"
@@ -82,9 +84,9 @@ const PROGRESS_REPORT_INTERVAL_PERCENT = 5;
 
 function usage() {
   console.log(`
-Build:   gustwind --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental] [--route-concurrency <count>]
-Benchmark: gustwind --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>] [--route-concurrency <count>]
-Diagnose: gustwind --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>] [--route-concurrency <count>]
+Build:   gustwind --build [--output <directory>] [--plugins <path>] [--validate] [--cache-from <directory-or-url>] [--no-incremental] [--route-concurrency <count>] [--memoize-data-sources]
+Benchmark: gustwind --benchmark [--output <directory>] [--plugins <path>] [--benchmark-output <file>] [--route-concurrency <count>] [--memoize-data-sources]
+Diagnose: gustwind --diagnose-routes [--output <directory>] [--plugins <path>] [--diagnostics-top <count>] [--route-concurrency <count>] [--memoize-data-sources]
 Develop: gustwind --develop [--port <port>] [--plugins <path>]
 Serve:   gustwind --serve [--input <directory>] [--port <port>]
 Validate: gustwind --validate [--input <directory>]
@@ -99,6 +101,8 @@ Options:
   --diagnostics-top    Number of routes to show in --diagnose-routes output (default: 5).
   -s, --serve          Serves a static build directory.
   -i, --input          Input directory for --serve (default: ./build).
+  --memoize-data-sources
+                       Reuses identical data-source calls during one build.
   --no-incremental     Disables incremental route reuse for --build.
   --progress           Prints bounded route build progress checkpoints.
   -P, --plugins        Plugins definition path (default: plugins.json).
@@ -225,6 +229,7 @@ async function runBuild(
     cacheFrom: args.cacheFrom || args.output,
     collectBenchmark,
     incremental: getBuildIncrementalMode(args, collectBenchmark),
+    memoizeDataSources: args.memoizeDataSources,
     outputDirectory: args.output,
     onProgress: args.progress ? createBuildProgressReporter() : undefined,
     pluginDefinitions: evaluatedPluginsDefinition,
@@ -423,6 +428,7 @@ function createDefaultCliArgs(): CliArgs {
     help: false,
     input: "./build",
     incremental: true,
+    memoizeDataSources: false,
     output: "./build",
     port: 3000,
     progress: false,
@@ -471,6 +477,7 @@ const CLI_OPTION_PARSERS: Record<string, CliOptionDefinition> = {
   },
   "-d": { kind: "boolean", field: "develop" },
   "--develop": { kind: "boolean", field: "develop" },
+  "--memoize-data-sources": { kind: "boolean", field: "memoizeDataSources" },
   "-s": { kind: "boolean", field: "serve" },
   "--serve": { kind: "boolean", field: "serve" },
   "-h": { kind: "boolean", field: "help" },
