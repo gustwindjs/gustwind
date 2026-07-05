@@ -638,6 +638,199 @@ export const plugin = {
   }
 });
 
+test("gustwind-node reuses remote incremental cache outputs without HEAD checks", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-remote-cache-"));
+  const originalFetch = globalThis.fetch;
+
+  try {
+    await writeFile(path.join(cwd, "home.txt"), "home\n");
+    await writeFile(path.join(cwd, "docs.txt"), "docs\n");
+    await writeFile(
+      path.join(cwd, "router-plugin.ts"),
+      `
+import * as path from "node:path";
+
+export const plugin = {
+  meta: {
+    name: "test-router-plugin",
+    description: "Supplies routes with route-specific file dependencies.",
+  },
+  init({ cwd, load }) {
+    const routes = {
+      "/": { layout: "Page" },
+      docs: { layout: "Page" },
+    };
+
+    return {
+      getAllRoutes() {
+        return { routes, tasks: [] };
+      },
+      async matchRoute(url) {
+        if (url === "/") {
+          return {
+            ...routes["/"],
+            context: {
+              marker: "home",
+              message: (await load.textFile(path.join(cwd, "home.txt"))).trim(),
+            },
+          };
+        }
+
+        if (url === "/docs/") {
+          return {
+            ...routes.docs,
+            context: {
+              marker: "docs",
+              message: (await load.textFile(path.join(cwd, "docs.txt"))).trim(),
+            },
+          };
+        }
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+    await writeFile(
+      path.join(cwd, "renderer-plugin.ts"),
+      `
+import * as path from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+
+export const plugin = {
+  meta: {
+    name: "test-renderer-plugin",
+    description: "Writes per-route markers so remote cache reuse is observable.",
+  },
+  init({ cwd, outputDirectory }) {
+    const countsPath = path.join(cwd, "render-counts.json");
+
+    return {
+      prepareContext({ route }) {
+        return { context: route.context || {} };
+      },
+      async beforeEachRender({ context }) {
+        let counts = {};
+
+        try {
+          counts = JSON.parse(await readFile(countsPath, "utf8"));
+        } catch {
+          counts = {};
+        }
+
+        const marker = context.marker;
+        counts[marker] = (counts[marker] || 0) + 1;
+        await writeFile(countsPath, JSON.stringify(counts), "utf8");
+
+        return [{
+          type: "writeTextFile",
+          payload: {
+            outputDirectory,
+            file: path.join("markers", marker + ".txt"),
+            data: String(counts[marker]),
+          },
+        }];
+      },
+      renderLayout({ context }) {
+        return \`<html><body><p>\${context.message}</p></body></html>\`;
+      },
+    };
+  },
+};
+`.trimStart(),
+    );
+
+    const outputDirectory = path.join(cwd, "dist-a");
+    const remoteOutputDirectory = path.join(cwd, "dist-remote");
+    const fallbackOutputDirectory = path.join(cwd, "dist-fallback");
+    const pluginDefinitions = [
+      { path: "./router-plugin.ts", options: {}, module: undefined as never },
+      { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
+    ];
+
+    await buildNode({
+      cwd,
+      outputDirectory,
+      pluginDefinitions,
+      routeConcurrency: 1,
+    });
+
+    const requestedMethods: string[] = [];
+    let missingRemotePath: string | undefined;
+
+    globalThis.fetch = (async (input, init) => {
+      const url = new URL(String(input));
+      const outputPath = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+      const method = init?.method?.toString().toUpperCase() ?? "GET";
+
+      requestedMethods.push(method);
+
+      if (method === "HEAD") {
+        return new Response(null, { status: 500 });
+      }
+
+      if (outputPath === missingRemotePath) {
+        return new Response("missing", { status: 404, statusText: "Not Found" });
+      }
+
+      try {
+        return new Response(
+          await readFile(path.join(outputDirectory, outputPath)),
+          { status: 200 },
+        );
+      } catch {
+        return new Response("missing", { status: 404, statusText: "Not Found" });
+      }
+    }) as typeof fetch;
+
+    const remoteBuild = await buildNode({
+      cwd,
+      cacheFrom: "https://cache.example",
+      outputDirectory: remoteOutputDirectory,
+      pluginDefinitions,
+      routeConcurrency: 1,
+    });
+
+    assert.equal(remoteBuild.cacheHits, 2);
+    assert.equal(remoteBuild.routesBuilt, 0);
+    assert.deepEqual([...new Set(requestedMethods)], ["GET"]);
+    assert.equal(
+      await readFile(path.join(remoteOutputDirectory, "markers", "home.txt"), "utf8"),
+      "1",
+    );
+    assert.equal(
+      await readFile(path.join(remoteOutputDirectory, "markers", "docs.txt"), "utf8"),
+      "1",
+    );
+
+    requestedMethods.length = 0;
+    missingRemotePath = "markers/home.txt";
+
+    const fallbackBuild = await buildNode({
+      cwd,
+      cacheFrom: "https://cache.example",
+      outputDirectory: fallbackOutputDirectory,
+      pluginDefinitions,
+      routeConcurrency: 1,
+    });
+
+    assert.equal(fallbackBuild.cacheHits, 1);
+    assert.equal(fallbackBuild.routesBuilt, 1);
+    assert.deepEqual([...new Set(requestedMethods)], ["GET"]);
+    assert.equal(
+      await readFile(path.join(fallbackOutputDirectory, "markers", "home.txt"), "utf8"),
+      "2",
+    );
+    assert.equal(
+      await readFile(path.join(fallbackOutputDirectory, "markers", "docs.txt"), "utf8"),
+      "1",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    await rm(cwd, { recursive: true, force: true });
+  }
+});
+
 test("gustwind-node incrementally rebuilds only routes affected by component dependency changes", async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), "gustwind-node-build-components-"));
 

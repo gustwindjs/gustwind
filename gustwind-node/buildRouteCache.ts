@@ -67,11 +67,17 @@ async function restoreRouteBuildFromCache({
       previousRouteFingerprint,
     }))
   ) {
-    await restoreCachedOutputs(
-      incrementalCacheSource,
-      outputDirectory,
-      previousRouteCache.outputPaths,
-    );
+    try {
+      await restoreCachedOutputs(
+        incrementalCacheSource,
+        outputDirectory,
+        previousRouteCache.outputPaths,
+      );
+    } catch {
+      await clearCachedOutputs(outputDirectory, previousRouteCache.outputPaths);
+      return false;
+    }
+
     nextIncrementalCacheRoutes[url] = previousRouteCache;
     return true;
   }

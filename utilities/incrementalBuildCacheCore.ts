@@ -199,17 +199,8 @@ async function outputsExist(
       return true;
     }
 
-    await Promise.all(
-      outputPaths.map(async (outputPath) => {
-        const response = await fetch(joinUrl(cacheSource.rootUrl, outputPath), {
-          method: "HEAD",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Missing cached output ${outputPath}`);
-        }
-      }),
-    );
+    // The remote cache manifest is the source of truth. Avoid a HEAD request
+    // for every output here because restore will GET the same paths next.
     return true;
   } catch {
     return false;
