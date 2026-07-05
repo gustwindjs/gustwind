@@ -1,4 +1,3 @@
-import { performance } from "node:perf_hooks";
 import { isObject } from "../../utilities/functional.ts";
 import type { BuildDiagnostics, DataSources, Route } from "../../types.ts";
 import { normalizeRouteDataSources } from "./normalizeRouteDataSources.ts";
@@ -53,7 +52,7 @@ async function applyDataSourceContext(
   }
 
   const dataSourceParameters = Array.isArray(parameters) ? parameters : [];
-  const startTime = performance.now();
+  const startTime = now();
   const cachedResult = buildDiagnostics?.dataSourceCache
     ? await applyMemoizedDataSource({
       buildDiagnostics,
@@ -69,7 +68,7 @@ async function applyDataSourceContext(
 
   buildDiagnostics?.recordDataSourceCall?.({
     cacheHit: cachedResult.cacheHit,
-    durationMs: performance.now() - startTime,
+    durationMs: now() - startTime,
     name,
     operation,
     parameters: dataSourceParameters,
@@ -114,6 +113,10 @@ async function applyMemoizedDataSource({
 
 function getDataSourceCacheKey(operation: string, parameters: unknown[]) {
   return JSON.stringify({ operation, parameters });
+}
+
+function now() {
+  return globalThis.performance?.now?.() ?? Date.now();
 }
 
 function isMissingDataSourceContext(
