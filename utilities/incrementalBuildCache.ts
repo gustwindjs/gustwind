@@ -7,6 +7,7 @@ export {
   outputsExist,
   readIncrementalBuildCache,
   removeDeletedRouteOutputs,
+  restoreIncrementalBuildCacheArchive,
   restoreCachedOutputs,
   toRelativeOutputPath,
   writeIncrementalBuildCache,

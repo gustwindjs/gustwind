@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import { createHash } from "node:crypto";
 import type { Dirent } from "node:fs";
+import { brotliCompress, brotliDecompress } from "node:zlib";
 import {
   cp,
   mkdir,
@@ -10,12 +11,19 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
+import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import type { BuildWorkerEvent, Route } from "../types.ts";
 
 const CACHE_SCHEMA_VERSION = 3;
 const CACHE_MANIFEST_PATH = path.join(".gustwind", "build-cache.json");
+const CACHE_ARCHIVE_FORMAT = "tar+br";
+const CACHE_ARCHIVE_PATH = path.join(".gustwind", "build-cache.tar.br");
 const MISSING_DEPENDENCY_HASH = "(missing)";
+const TAR_BLOCK_SIZE = 512;
+const TAR_TYPE_FILE = "0";
+const brotliCompressAsync = promisify(brotliCompress);
+const brotliDecompressAsync = promisify(brotliDecompress);
 const dependencyTaskTypes = new Set([
   "listDirectory",
   "loadJSON",
@@ -35,8 +43,15 @@ type IncrementalBuildRouteCacheEntry = {
 };
 
 type IncrementalBuildCache = {
+  archive?: IncrementalBuildCacheArchive;
   routes: Record<string, IncrementalBuildRouteCacheEntry>;
   schemaVersion: number;
+};
+
+type IncrementalBuildCacheArchive = {
+  format: typeof CACHE_ARCHIVE_FORMAT;
+  hash: string;
+  path: string;
 };
 
 type IncrementalBuildCacheSource =
@@ -45,6 +60,7 @@ type IncrementalBuildCacheSource =
       rootDirectory: string;
     }
   | {
+      archiveRestored?: boolean;
       kind: "http";
       rootUrl: string;
     };
@@ -76,6 +92,25 @@ async function fetchCachedOutput(
   if (!response.ok) {
     throw new Error(
       `Failed to fetch cached output ${outputPath}: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function fetchCacheSourceFile(
+  cacheSource: IncrementalBuildCacheSource,
+  outputPath: string,
+) {
+  if (cacheSource.kind === "filesystem") {
+    return await readFile(path.join(cacheSource.rootDirectory, outputPath));
+  }
+
+  const response = await fetch(joinUrl(cacheSource.rootUrl, outputPath));
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch cached file ${outputPath}: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -271,6 +306,10 @@ async function restoreCachedOutputs(
   outputDirectory: string,
   outputPaths: string[],
 ) {
+  if (cacheSource.kind === "http" && cacheSource.archiveRestored) {
+    return;
+  }
+
   for (const outputPath of outputPaths) {
     if (shouldSkipCacheRestore(cacheSource, outputDirectory)) {
       continue;
@@ -318,18 +357,273 @@ async function writeIncrementalBuildCache(
   routes: Record<string, IncrementalBuildRouteCacheEntry>,
 ) {
   const cachePath = path.join(outputDirectory, CACHE_MANIFEST_PATH);
+  const archive = await writeIncrementalBuildCacheArchive(
+    outputDirectory,
+    getCachedOutputPaths(routes),
+  );
 
   await mkdir(path.dirname(cachePath), { recursive: true });
   await writeFile(
     cachePath,
     JSON.stringify(
       {
+        archive,
         routes,
         schemaVersion: CACHE_SCHEMA_VERSION,
       },
       null,
       2,
     ) + "\n",
+  );
+}
+
+async function restoreIncrementalBuildCacheArchive(
+  cache: IncrementalBuildCache,
+  cacheSource: IncrementalBuildCacheSource,
+  outputDirectory: string,
+) {
+  if (
+    cacheSource.kind !== "http" ||
+    cacheSource.archiveRestored ||
+    !isSupportedCacheArchive(cache.archive)
+  ) {
+    return false;
+  }
+
+  try {
+    const archive = await fetchCacheSourceFile(cacheSource, cache.archive.path);
+
+    if (hashArchive(archive) !== cache.archive.hash) {
+      return false;
+    }
+
+    await extractTarBrotliArchive(archive, outputDirectory);
+    cacheSource.archiveRestored = true;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function writeIncrementalBuildCacheArchive(
+  outputDirectory: string,
+  outputPaths: string[],
+): Promise<IncrementalBuildCacheArchive | undefined> {
+  if (!outputPaths.length) {
+    return;
+  }
+
+  const archivePath = path.join(outputDirectory, CACHE_ARCHIVE_PATH);
+  const archive = await createTarBrotliArchive(outputDirectory, outputPaths);
+
+  await mkdir(path.dirname(archivePath), { recursive: true });
+  await writeFile(archivePath, archive);
+
+  return {
+    format: CACHE_ARCHIVE_FORMAT,
+    hash: hashArchive(archive),
+    path: CACHE_ARCHIVE_PATH,
+  };
+}
+
+function getCachedOutputPaths(
+  routes: Record<string, IncrementalBuildRouteCacheEntry>,
+) {
+  return [
+    ...new Set(Object.values(routes).flatMap(({ outputPaths }) => outputPaths)),
+  ].sort();
+}
+
+function isSupportedCacheArchive(
+  archive: IncrementalBuildCache["archive"],
+): archive is IncrementalBuildCacheArchive {
+  return (
+    archive?.format === CACHE_ARCHIVE_FORMAT &&
+    typeof archive.hash === "string" &&
+    archive.hash.startsWith("sha256-") &&
+    typeof archive.path === "string" &&
+    isSafeRelativeOutputPath(archive.path)
+  );
+}
+
+function hashArchive(archive: Buffer) {
+  return `sha256-${createHash("sha256").update(archive).digest("base64")}`;
+}
+
+async function createTarBrotliArchive(
+  rootDirectory: string,
+  outputPaths: string[],
+) {
+  const chunks: Buffer[] = [];
+
+  for (const outputPath of outputPaths) {
+    if (!isSafeRelativeOutputPath(outputPath)) {
+      continue;
+    }
+
+    const data = await readFile(path.join(rootDirectory, outputPath));
+    chunks.push(createTarFileHeader(outputPath, data.length));
+    chunks.push(data);
+    chunks.push(createTarPadding(data.length));
+  }
+
+  chunks.push(Buffer.alloc(TAR_BLOCK_SIZE * 2));
+
+  return await brotliCompressAsync(Buffer.concat(chunks));
+}
+
+function createTarFileHeader(outputPath: string, size: number) {
+  const header = Buffer.alloc(TAR_BLOCK_SIZE);
+  const normalizedPath = toTarPath(outputPath);
+  const { name, prefix } = splitTarPath(normalizedPath);
+
+  writeTarString(header, name, 0, 100);
+  writeTarOctal(header, 0o644, 100, 8);
+  writeTarOctal(header, 0, 108, 8);
+  writeTarOctal(header, 0, 116, 8);
+  writeTarOctal(header, size, 124, 12);
+  writeTarOctal(header, Math.floor(Date.now() / 1000), 136, 12);
+  header.fill(0x20, 148, 156);
+  writeTarString(header, TAR_TYPE_FILE, 156, 1);
+  writeTarString(header, "ustar", 257, 6);
+  writeTarString(header, "00", 263, 2);
+  writeTarString(header, prefix, 345, 155);
+  writeTarOctal(header, tarChecksum(header), 148, 8);
+
+  return header;
+}
+
+function splitTarPath(outputPath: string) {
+  if (Buffer.byteLength(outputPath) <= 100) {
+    return { name: outputPath, prefix: "" };
+  }
+
+  for (let index = outputPath.lastIndexOf("/"); index > 0; index = outputPath.lastIndexOf("/", index - 1)) {
+    const prefix = outputPath.slice(0, index);
+    const name = outputPath.slice(index + 1);
+
+    if (Buffer.byteLength(prefix) <= 155 && Buffer.byteLength(name) <= 100) {
+      return { name, prefix };
+    }
+  }
+
+  throw new Error(`Cached output path is too long for cache archive: ${outputPath}`);
+}
+
+function writeTarString(
+  header: Buffer,
+  value: string,
+  offset: number,
+  length: number,
+) {
+  header.write(value, offset, length, "utf8");
+}
+
+function writeTarOctal(
+  header: Buffer,
+  value: number,
+  offset: number,
+  length: number,
+) {
+  const octal = value.toString(8).padStart(length - 1, "0");
+  header.write(octal.slice(-(length - 1)) + "\0", offset, length, "ascii");
+}
+
+function tarChecksum(header: Buffer) {
+  return header.reduce((total, value) => total + value, 0);
+}
+
+function createTarPadding(size: number) {
+  const padding = (TAR_BLOCK_SIZE - (size % TAR_BLOCK_SIZE)) % TAR_BLOCK_SIZE;
+
+  return Buffer.alloc(padding);
+}
+
+async function extractTarBrotliArchive(archive: Buffer, outputDirectory: string) {
+  const tar = await brotliDecompressAsync(archive);
+  let offset = 0;
+
+  while (offset + TAR_BLOCK_SIZE <= tar.length) {
+    const header = tar.subarray(offset, offset + TAR_BLOCK_SIZE);
+
+    if (isEmptyTarBlock(header)) {
+      break;
+    }
+
+    const outputPath = readTarPath(header);
+    const size = readTarOctal(header, 124, 12);
+    const type = header.toString("utf8", 156, 157);
+    const dataOffset = offset + TAR_BLOCK_SIZE;
+    const nextOffset = dataOffset + size + createTarPadding(size).length;
+
+    if (nextOffset > tar.length) {
+      throw new Error("Cache archive entry extends past archive data");
+    }
+
+    if ((type === TAR_TYPE_FILE || type === "\0") && outputPath) {
+      await extractTarFile(
+        outputDirectory,
+        outputPath,
+        tar.subarray(dataOffset, dataOffset + size),
+      );
+    }
+
+    offset = nextOffset;
+  }
+}
+
+async function extractTarFile(
+  outputDirectory: string,
+  outputPath: string,
+  data: Buffer,
+) {
+  if (!isSafeRelativeOutputPath(outputPath)) {
+    throw new Error(`Unsafe path in cache archive: ${outputPath}`);
+  }
+
+  const targetPath = path.join(outputDirectory, outputPath);
+
+  await mkdir(path.dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, data);
+}
+
+function isEmptyTarBlock(block: Buffer) {
+  return block.every((value) => value === 0);
+}
+
+function readTarPath(header: Buffer) {
+  const name = readTarString(header, 0, 100);
+  const prefix = readTarString(header, 345, 155);
+
+  return prefix ? `${prefix}/${name}` : name;
+}
+
+function readTarString(header: Buffer, offset: number, length: number) {
+  const end = header.indexOf(0, offset);
+  const valueEnd = end === -1 || end > offset + length ? offset + length : end;
+
+  return header.toString("utf8", offset, valueEnd);
+}
+
+function readTarOctal(header: Buffer, offset: number, length: number) {
+  const value = readTarString(header, offset, length).trim();
+
+  return value ? Number.parseInt(value, 8) : 0;
+}
+
+function toTarPath(outputPath: string) {
+  return outputPath.split(path.sep).join("/");
+}
+
+function isSafeRelativeOutputPath(outputPath: string) {
+  const normalized = path.posix.normalize(toTarPath(outputPath));
+
+  return (
+    Boolean(outputPath) &&
+    !path.posix.isAbsolute(normalized) &&
+    normalized !== ".." &&
+    !normalized.startsWith("../")
   );
 }
 
@@ -681,6 +975,7 @@ export {
   outputsExist,
   readIncrementalBuildCache,
   removeDeletedRouteOutputs,
+  restoreIncrementalBuildCacheArchive,
   restoreCachedOutputs,
   toRelativeOutputPath,
   writeIncrementalBuildCache,

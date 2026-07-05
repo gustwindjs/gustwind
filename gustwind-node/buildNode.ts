@@ -22,6 +22,7 @@ import {
   normalizeDependencyTasks,
   readIncrementalBuildCache,
   removeDeletedRouteOutputs,
+  restoreIncrementalBuildCacheArchive,
   writeIncrementalBuildCache,
 } from "../utilities/incrementalBuildCache.ts";
 import { isDebugEnabled } from "../utilities/runtime.ts";
@@ -301,8 +302,23 @@ async function prepareNodeBuild(config: BuildNodeRunConfig) {
       preservesCurrentOutput: config.preservesCurrentOutput,
     })
   );
+  await timeBuildPhase(benchmark, "restoreCacheArchive", () =>
+    restorePreviousCacheArchive(config)
+  );
 
   return benchmark;
+}
+
+async function restorePreviousCacheArchive(config: BuildNodeRunConfig) {
+  if (!config.previousCache) {
+    return false;
+  }
+
+  return await restoreIncrementalBuildCacheArchive(
+    config.previousCache.cache,
+    config.previousCache.source,
+    config.outputDirectory,
+  );
 }
 
 async function prepareBuildOutputDirectory({

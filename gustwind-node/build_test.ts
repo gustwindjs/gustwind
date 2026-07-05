@@ -756,6 +756,8 @@ export const plugin = {
     });
 
     const requestedMethods: string[] = [];
+    const requestedPaths: string[] = [];
+    let missingArchive = false;
     let missingRemotePath: string | undefined;
 
     globalThis.fetch = (async (input, init) => {
@@ -764,9 +766,14 @@ export const plugin = {
       const method = init?.method?.toString().toUpperCase() ?? "GET";
 
       requestedMethods.push(method);
+      requestedPaths.push(outputPath);
 
       if (method === "HEAD") {
         return new Response(null, { status: 500 });
+      }
+
+      if (missingArchive && outputPath === ".gustwind/build-cache.tar.br") {
+        return new Response("missing", { status: 404, statusText: "Not Found" });
       }
 
       if (outputPath === missingRemotePath) {
@@ -794,6 +801,10 @@ export const plugin = {
     assert.equal(remoteBuild.cacheHits, 2);
     assert.equal(remoteBuild.routesBuilt, 0);
     assert.deepEqual([...new Set(requestedMethods)], ["GET"]);
+    assert.deepEqual(requestedPaths, [
+      ".gustwind/build-cache.json",
+      ".gustwind/build-cache.tar.br",
+    ]);
     assert.equal(
       await readFile(path.join(remoteOutputDirectory, "markers", "home.txt"), "utf8"),
       "1",
@@ -804,6 +815,8 @@ export const plugin = {
     );
 
     requestedMethods.length = 0;
+    requestedPaths.length = 0;
+    missingArchive = true;
     missingRemotePath = "markers/home.txt";
 
     const fallbackBuild = await buildNode({
@@ -817,6 +830,14 @@ export const plugin = {
     assert.equal(fallbackBuild.cacheHits, 1);
     assert.equal(fallbackBuild.routesBuilt, 1);
     assert.deepEqual([...new Set(requestedMethods)], ["GET"]);
+    assert.deepEqual(requestedPaths, [
+      ".gustwind/build-cache.json",
+      ".gustwind/build-cache.tar.br",
+      "index.html",
+      "markers/home.txt",
+      "docs/index.html",
+      "markers/docs.txt",
+    ]);
     assert.equal(
       await readFile(path.join(fallbackOutputDirectory, "markers", "home.txt"), "utf8"),
       "2",
