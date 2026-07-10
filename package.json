@@ -63,40 +63,41 @@
   "author": "Juho Vepsäläinen",
   "license": "MIT",
   "dependencies": {
-    "@tailwindcss/postcss": "4.3.0",
-    "@tailwindcss/typography": "0.5.19",
-    "@unocss/preset-wind3": "66.6.8",
-    "@unocss/runtime": "66.6.8",
-    "autoprefixer": "10.5.0",
-    "cssnano": "8.0.1",
+    "@tailwindcss/postcss": "4.3.2",
+    "@tailwindcss/typography": "0.5.20",
+    "@unocss/preset-wind3": "66.7.5",
+    "@unocss/runtime": "66.7.5",
+    "autoprefixer": "10.5.2",
+    "cssnano": "8.0.2",
     "gray-matter": "4.0.3",
     "highlight.js": "11.11.1",
     "htm": "3.1.1",
-    "marked": "18.0.4",
-    "nanoid": "5.1.11",
+    "marked": "18.0.6",
+    "nanoid": "5.1.16",
     "pagefind": "1.5.2",
     "parse5": "8.0.1",
-    "postcss": "8.5.14",
-    "sharp": "0.34.5",
-    "tailwindcss": "4.3.0",
-    "tinyglobby": "0.2.16",
-    "vite": "8.0.13"
+    "postcss": "8.5.16",
+    "sharp": "0.35.3",
+    "tailwindcss": "4.3.2",
+    "tinyglobby": "0.2.17",
+    "vite": "8.1.4"
   },
   "engines": {
     "node": ">=24"
   },
   "devDependencies": {
-    "@netlify/functions": "5.2.2",
+    "@netlify/functions": "5.3.0",
     "@stryker-mutator/core": "9.6.1",
     "@stryker-mutator/typescript-checker": "9.6.1",
-    "@types/node": "25.9.0",
-    "esbuild": "0.28.0",
-    "fallow": "2.102.0",
-    "satteri": "0.9.3",
-    "typescript": "6.0.3",
-    "wrangler": "4.92.0"
+    "@types/node": "26.1.1",
+    "esbuild": "0.28.1",
+    "fallow": "3.3.0",
+    "satteri": "0.9.5",
+    "typescript": "7.0.2",
+    "wrangler": "4.110.0"
   },
   "overrides": {
-    "ws": "8.20.1"
+    "qs": "6.15.3",
+    "ws": "8.21.0"
   }
 }

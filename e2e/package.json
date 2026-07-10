@@ -7,8 +7,8 @@
     "test:headed": "playwright test --headed"
   },
   "devDependencies": {
-    "@playwright/test": "1.60.0",
-    "@types/node": "25.9.0",
-    "typescript": "6.0.3"
+    "@playwright/test": "1.61.1",
+    "@types/node": "26.1.1",
+    "typescript": "7.0.2"
   }
 }
