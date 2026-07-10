@@ -153,6 +153,11 @@ async function matchConfigRoute(
     url,
     pluginContext.dataSources,
   );
+
+  if (!route) {
+    return;
+  }
+
   const context = await getDataSourceContext(
     route.parentDataSources,
     route.dataSources,

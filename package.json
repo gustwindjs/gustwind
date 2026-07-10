@@ -31,7 +31,7 @@
     "test:node:htmlisp": "node --test --test-concurrency=1 ./htmlisp/html-tests/*.ts ./htmlisp/html-tests-sync/*.ts ./htmlisp/utilities/*_test.ts ./htmlisp/parsers/htmlisp/*_test.ts ./htmlisp/parsers/latex/*_test.ts ./htmlisp/parsers/latex/parsers/*_test.ts ./htmlisp/parsers/latex/tests/*_test.ts",
     "test:node:render": "node --test ./gustwind-node/mod_test.ts ./gustwind-node/build_test.ts",
     "test:node:worker": "node --test ./cloudflare-worker/mod_test.ts",
-    "test:node:router": "node --test ./routers/utilities/*_test.ts",
+    "test:node:router": "node --test ./routers/utilities/*_test.ts ./routers/config-router/*_test.ts ./routers/edge-router/*_test.ts",
     "test:node:plugins": "node --test ./gustwind-utilities/plugins_test.ts ./plugins/*/*_test.ts",
     "test:node:site": "node --test ./site/dataSources_test.ts ./site/transforms/markdownSatteri_test.ts",
     "test:node:runtime": "node --test ./utilities/runtimeUtilitiesCache_test.ts",

@@ -105,10 +105,7 @@ test("does not match a recursive route behind /", async () => {
     routes: { bar: route2 },
   };
 
-  await assert.rejects(
-    () => matchRoute({ "/": route1 }, "bar", {}),
-    /Route "bar" was not found!/,
-  );
+  assert.equal(await matchRoute({ "/": route1 }, "bar", {}), undefined);
 });
 
 test("matches a two-order recursive route", async () => {
@@ -465,8 +462,34 @@ test("fails to match", async () => {
     context: {},
   };
 
+  assert.equal(await matchRoute({ foo: route }, "bar", {}), undefined);
+});
+
+test("does not swallow errors while evaluating nested routes", async () => {
+  const route = {
+    layout: "fooIndex",
+    routes: {
+      blog: {
+        layout: "blogIndex",
+        expand: {
+          matchBy: {
+            name: "blogPosts",
+            indexer: { operation: "index", parameters: [] },
+            slug: "slug",
+          },
+          dataSources: {},
+          layout: "blogPage",
+        },
+      },
+    },
+  };
+
   await assert.rejects(
-    () => matchRoute({ foo: route }, "bar", {}),
-    /Route "bar" was not found!/,
+    () => matchRoute({ foo: route }, "foo/blog/post", {
+      index: () => {
+        throw new Error("Data source failed");
+      },
+    }),
+    /Data source failed/,
   );
 });

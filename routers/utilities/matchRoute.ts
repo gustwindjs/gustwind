@@ -1,10 +1,8 @@
 import { trim } from "../../utilities/string.ts";
 import { expandRoute } from "./expandRoutes.ts";
 import type { DataSources, Route } from "../../types.ts";
-import { isDebugEnabled } from "../../utilities/runtime.ts";
 import { mergeRouteScripts } from "./routeScripts.ts";
 
-const DEBUG = isDebugEnabled();
 type NestedRouteMatchInput = {
   dataSources: DataSources;
   inheritedScripts?: Route["scripts"];
@@ -19,24 +17,17 @@ async function matchRoute(
   url: string,
   dataSources: DataSources,
   inheritedScripts?: Route["scripts"],
-): Promise<Route> {
+): Promise<Route | undefined> {
   if (!routes) {
     throw new Error("No routes were provided!");
   }
 
-  const matchedRoute = await findRouteMatch(
+  return await findRouteMatch(
     routes,
     url,
     dataSources,
     inheritedScripts,
   );
-
-  if (matchedRoute) {
-    return matchedRoute;
-  }
-
-  DEBUG && console.error(routes, url);
-  throw new Error(`Route "${url}" was not found!`);
 }
 
 async function findRouteMatch(
@@ -133,16 +124,12 @@ async function matchNestedChildRoutes({
     return;
   }
 
-  try {
-    return await matchRoute(
-      match.routes,
-      parts.slice(1).join("/"),
-      dataSources,
-      matchScripts,
-    );
-  } catch (_error) {
-    return;
-  }
+  return await matchRoute(
+    match.routes,
+    parts.slice(1).join("/"),
+    dataSources,
+    matchScripts,
+  );
 }
 
 async function matchExpandedChildRoutes({

@@ -15,15 +15,8 @@ test(
       await mkdir(path.join(cwd, "public"), { recursive: true });
       await writeFile(path.join(cwd, "public", "copied.txt"), "copied\n");
       await writeFile(
-        path.join(cwd, "router-plugin.ts"),
-        `
-export const plugin = {
-  meta: {
-    name: "test-router-plugin",
-    description: "Supplies static routes for the Node dev-server test.",
-  },
-  init() {
-    const routes = {
+        path.join(cwd, "routes.json"),
+        JSON.stringify({
       "/": {
         layout: "Page",
         context: { message: "home" },
@@ -32,19 +25,11 @@ export const plugin = {
         layout: "Feed",
         context: { message: "feed" },
       },
-    };
-
-    return {
-      getAllRoutes() {
-        return { routes, tasks: [] };
+      "/broken": {
+        layout: "Broken",
+        context: {},
       },
-      matchRoute(url) {
-        return routes[url];
-      },
-    };
-  },
-};
-`.trimStart(),
+        }),
       );
       await writeFile(
         path.join(cwd, "renderer-plugin.ts"),
@@ -65,6 +50,10 @@ export const plugin = {
         };
       },
       renderLayout({ route, context, url }) {
+        if (route.layout === "Broken") {
+          throw new Error("Matched route failed to render");
+        }
+
         if (url.endsWith(".xml")) {
           return \`<feed>\${context.message}</feed>\`;
         }
@@ -117,7 +106,15 @@ export const plugin = {
       const server = await startDevServer({
         cwd,
         pluginDefinitions: [
-          { path: "./router-plugin.ts", options: {}, module: undefined as never },
+          {
+            path: path.resolve("routers/config-router/mod.ts"),
+            options: {
+              dataSourcesPath: "",
+              emitAllRoutes: false,
+              routesPath: "routes.json",
+            },
+            module: undefined as never,
+          },
           { path: "./renderer-plugin.ts", options: {}, module: undefined as never },
           { path: "./assets-plugin.ts", options: {}, module: undefined as never },
         ],
@@ -137,12 +134,21 @@ export const plugin = {
         const missingResponse = await fetch(
           new URL("/missing", server.url),
         );
+        const devToolsProbeResponse = await fetch(
+          new URL(
+            "/.well-known/appspecific/com.chrome.devtools.json",
+            server.url,
+          ),
+        );
+        const brokenResponse = await fetch(new URL("/broken", server.url));
 
         assert.equal(routeResponse.status, 200);
         assert.equal(xmlResponse.status, 200);
         assert.equal(generatedAsset.status, 200);
         assert.equal(copiedAsset.status, 200);
         assert.equal(missingResponse.status, 404);
+        assert.equal(devToolsProbeResponse.status, 404);
+        assert.equal(brokenResponse.status, 500);
         assert.equal(
           routeResponse.headers.get("content-type"),
           "text/html; charset=utf-8",
@@ -166,7 +172,11 @@ export const plugin = {
         assert.equal(await copiedAsset.text(), "copied\n");
         assert.equal(
           await missingResponse.text(),
-          "No matching route in /, /feed.xml.",
+          "No matching route in /, /feed.xml, /broken.",
+        );
+        assert.equal(
+          await devToolsProbeResponse.text(),
+          "No matching route in /, /feed.xml, /broken.",
         );
       } finally {
         await server.close();
